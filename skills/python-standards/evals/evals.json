@@ -1,0 +1,70 @@
+{
+  "skill_name": "python-standards",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Write a function that fetches user profiles from an external API, with proper error handling and type annotations.",
+      "context": "User is editing src/services/user_service.py",
+      "expected_output": "Function has full type annotations (params + return), uses httpx or similar with an explicit timeout, catches specific exceptions, uses raise...from for chaining, and follows the coding standards (no bare except, proper naming).",
+      "files": [],
+      "expectations": [
+        "Function signature has type annotations for all parameters and return type",
+        "Network call has an explicit timeout set",
+        "Exception handling catches specific exceptions, not bare except or broad Exception",
+        "Uses raise...from to preserve exception chain",
+        "Naming follows snake_case for the function and variables",
+        "Uses modern Python syntax (union types or built-in generics where applicable)"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Create a validation module that accepts user registration input (name, email, age) and validates it at the boundary. Use dataclasses or pydantic.",
+      "context": "User is creating src/validators/registration.py",
+      "expected_output": "Module defines a typed model or dataclass for the input, validates at the ingestion boundary, rejects invalid data strictly, and keeps validated data immutable. Docstrings are present on public classes/functions.",
+      "files": [],
+      "expectations": [
+        "Uses a dataclass, pydantic model, or typed structure - not raw dicts",
+        "Validation happens at the boundary (constructor or parse method), not deep in logic",
+        "Invalid input is rejected with a clear error, not silently coerced",
+        "Public class/function has a docstring with a summary line",
+        "Type annotations are present on all public signatures",
+        "Imports are grouped correctly: stdlib, third-party, local"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Write tests for the retry utility. It retries a function with exponential backoff and raises RetryExhaustedError after max attempts.",
+      "context": "User is editing tests/unit/test_retry.py",
+      "expected_output": "Tests are well-structured: one behaviour per test, external calls are mocked, fixtures are used for shared setup. Assertions use expected == actual order. No real network calls.",
+      "files": [],
+      "expectations": [
+        "Each test function tests one behaviour (names do not contain 'and')",
+        "External dependencies are mocked, no real I/O or network calls",
+        "Uses assert expected == actual ordering",
+        "Tests verify observable behaviour: success after retry, failure after exhaustion, correct delay timing",
+        "Test function names follow test_<behaviour> convention",
+        "Return type annotation -> None is present on test functions"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "Refactor this function to follow best practices:\n\ndef get_data(url, items=[]):\n    import requests\n    try:\n        r = requests.get(url)\n        data = r.json()\n    except:\n        print('error')\n        return None\n    for i in data:\n        items.append(i)\n    return items",
+      "context": "User is editing src/utils/fetcher.py",
+      "expected_output": "Refactored code fixes the mutable default argument, moves imports to top, catches specific exceptions, replaces print with logging, adds type annotations, and adds a timeout to the request.",
+      "files": [],
+      "expectations": [
+        "Mutable default argument is replaced with None + conditional creation inside the body",
+        "Import is at the top of the file (or justified if local)",
+        "Bare except is replaced with specific exception types",
+        "print() is replaced with logging or the error is raised/re-raised",
+        "Type annotations are added to the function signature",
+        "Network call includes an explicit timeout",
+        "Uses if x is None pattern rather than if not x for the None check"
+      ]
+    }
+  ]
+}
