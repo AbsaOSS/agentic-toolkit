@@ -1,0 +1,128 @@
+[
+  {
+    "id": "t01-review-pr-api-contract",
+    "query": "Review PR #42 for API contract changes before we merge.",
+    "should_trigger": true,
+    "reason": "Explicit PR review request with API-contract risk keywords."
+  },
+  {
+    "id": "t02-check-diff-ci",
+    "query": "Can you check this diff for CI/CD pipeline risks?",
+    "should_trigger": true,
+    "reason": "Direct diff review ask plus CI/CD domain trigger."
+  },
+  {
+    "id": "t03-lgtm-sanity-check",
+    "query": "LGTM? Please do a quick sanity check on these code changes.",
+    "should_trigger": true,
+    "reason": "Contains explicit trigger phrase 'LGTM' and asks for review."
+  },
+  {
+    "id": "t04-terraform-pr-review",
+    "query": "Please review this Terraform PR for security and least-privilege issues.",
+    "should_trigger": true,
+    "reason": "PR review request with infrastructure/security context."
+  },
+  {
+    "id": "t05-db-migration-review",
+    "query": "Can you review this migration diff and call out rollback risks?",
+    "should_trigger": true,
+    "reason": "Asks for review of DB migration with risk assessment."
+  },
+  {
+    "id": "t06-auth-refactor-feedback",
+    "query": "Need feedback on this auth refactor PR, especially permissions and secrets handling.",
+    "should_trigger": true,
+    "reason": "Explicit request for PR feedback; elevated-risk auth/security keywords."
+  },
+  {
+    "id": "t07-dependency-bump-review",
+    "query": "Review this dependency bump PR and tell me if any upgrades look dangerous.",
+    "should_trigger": true,
+    "reason": "PR review intent and dependency-bump risk language."
+  },
+  {
+    "id": "t08-pr-link-thoughts",
+    "query": "Here is the PR link, can you give review comments before I approve it?",
+    "should_trigger": true,
+    "reason": "Mentions PR link and asks for review comments directly."
+  },
+  {
+    "id": "t09-rename-field-risk",
+    "query": "Does this look right? I renamed a response field in an endpoint; please review for client breakage.",
+    "should_trigger": true,
+    "reason": "Paraphrased review ask with API-contract breakage concern."
+  },
+  {
+    "id": "t10-workflow-guardrails",
+    "query": "Can you sanity check this workflow file change for gate bypasses before merge?",
+    "should_trigger": true,
+    "reason": "Paraphrased PR review plus CI gate-bypass signal."
+  },
+  {
+    "id": "n01-implement-feature",
+    "query": "Implement OAuth login in FastAPI with refresh tokens and tests.",
+    "should_trigger": false,
+    "reason": "Feature implementation request, not a PR review."
+  },
+  {
+    "id": "n02-write-unit-tests",
+    "query": "Write unit tests for src/utils/date_utils.py.",
+    "should_trigger": false,
+    "reason": "Testing/code authoring request without review intent."
+  },
+  {
+    "id": "n03-generate-release-notes",
+    "query": "Generate release notes from this diff in bullet format.",
+    "should_trigger": false,
+    "reason": "Documentation summarization task, not review feedback."
+  },
+  {
+    "id": "n04-explain-error",
+    "query": "Why am I getting 'ModuleNotFoundError: psycopg2' in CI?",
+    "should_trigger": false,
+    "reason": "Debugging question; no PR/diff review request."
+  },
+  {
+    "id": "n05-open-issue",
+    "query": "Create a GitHub issue for flaky integration tests.",
+    "should_trigger": false,
+    "reason": "Issue creation request, should route to create-issue skill."
+  },
+  {
+    "id": "n06-refactor-function",
+    "query": "Refactor this function for readability and lower cyclomatic complexity.",
+    "should_trigger": false,
+    "reason": "Refactoring request without PR review context."
+  },
+  {
+    "id": "n07-kudos-message",
+    "query": "Give kudos to Sarah for helping with incident response.",
+    "should_trigger": false,
+    "reason": "Recognition workflow request, not code review."
+  },
+  {
+    "id": "n08-crossall-status",
+    "query": "Generate the crossall status update for this sprint from Jira.",
+    "should_trigger": false,
+    "reason": "Project status reporting task, unrelated to PR review."
+  },
+  {
+    "id": "n09-translate-text",
+    "query": "Translate this paragraph to French.",
+    "should_trigger": false,
+    "reason": "Language translation task; no overlap with PR review."
+  },
+  {
+    "id": "n10-math-help",
+    "query": "What is the derivative of x^3 * sin(x)?",
+    "should_trigger": false,
+    "reason": "General Q&A request; outside software review scope."
+  },
+  {
+    "id": "n11-release-notes-from-diff",
+    "query": "Please draft release notes bullets from this diff only, do not do a PR review",
+    "should_trigger": false,
+    "reason": "Explicit instruction NOT to do a PR review; generative documentation task covered by Does NOT trigger exclusion in description."
+  }
+]
