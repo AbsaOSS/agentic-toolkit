@@ -17,16 +17,16 @@ Steps to diagnose:
 4. If the skill still won't trigger, consider improving the description. See the
    [Contributing Guide](../CONTRIBUTING.md#3-writing-the-description) for guidance.
 
-## Certificate errors (Netskope / corporate proxy)
+## SSL / certificate errors (corporate proxy)
 
-If `npx skills` fails with SSL/certificate errors, configure npm to trust your corporate certificate bundle. Our
-corp certs are stored in [de-developer-configuration](https://github.com/absa-group/de-developer-configuration).
+If `npx skills` fails with SSL or certificate errors, you are likely behind a corporate proxy or TLS inspection
+tool. Configure npm to trust your organisation's certificate bundle:
 
 ```bash
-npm config set cafile ~/netskope-bundle.pem
+npm config set cafile /path/to/your/ca-bundle.pem
 ```
 
-This writes the setting to `~/.npmrc`. Replace the filename with the path to your actual certificate bundle.
+This writes the setting to `~/.npmrc`. Obtain the certificate bundle from your organisation's IT or security team.
 
 ## Skill removal doesn't update the lock file
 

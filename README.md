@@ -97,7 +97,7 @@ effective descriptions and bodies, [testing](./docs/skill-testing.md), and the P
 To propose a new skill — or to propose expanding the repo into agents, MCP servers, or
 plugins — [open an issue](https://github.com/AbsaOSS/agentic-toolkit/issues/new).
 
-Contributions are welcome from the ABSA technical team.
+Contributions are welcome from anyone.
 
 ## FAQ
 

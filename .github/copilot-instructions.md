@@ -2,13 +2,8 @@
 
 ## PR Review
 
-### Core review — covers standard, elevated risk, API contracts, deps, CI/CD, and IaC
-
 When reviewing a pull request, load and apply:
 https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/pr-review/SKILL.md
-
-Apply only the sections relevant to the files touched by the PR.
-Output findings grouped as: Blocker / Important / Nit.
 
 ### Skill-specific checks — apply when any `SKILL.md` is modified
 
