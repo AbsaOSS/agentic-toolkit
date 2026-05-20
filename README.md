@@ -1,205 +1,118 @@
 # Agentic Toolkit
 
-Curated, reusable AI skills — instructional context, domain conventions, and callable agent tools for any AI-assisted engineering.
+Curated, reusable AI skills — instructional context, domain conventions, and callable agent tools for AI-assisted
+engineering.
 
----
+Every AI assistant starts from zero — no accumulated engineering experience, no reusable workflows. This repo fixes
+that. It's a curated library of **skills**: bundles of domain knowledge, engineering patterns, and proven practices
+packaged for any [Agent Skills](https://agentskills.io)-compatible client (Copilot, Claude, Cursor, and others). The
+knowledge here is not internal or proprietary — it reflects universal software engineering practices used at ABSA.
+Tomorrow the scope may expand to agents, MCP servers, and plugins as agentic tooling matures (see [Scope](#scope)).
 
-## What Is A Skill?
+**Who is this for?** Anyone who uses AI for AI-assisted engineering. The primary audience is technical: engineers, tech
+leads, architects, or anyone on a technical team.
 
-**Skills** are folders of instructions, scripts, and resources that an AI agent can load on demand to improve its performance on specialised tasks.
+## Table of Contents
 
-The Agent Skills format is an open standard maintained by Anthropic, adopted by GitHub Copilot and other AI systems. See the [full specification](https://agentskills.io) and the [spec repository](https://github.com/agentskills/agentskills).
+- [Scope](#scope)
+- [How Skills Relate To Your Own](#how-skills-relate-to-your-own)
+- [Quickstart](#quickstart)
+- [Skill Catalog](#skill-catalog)
+- [Finding More Skills](#finding-more-skills)
+- [Contributing](#contributing)
+- [FAQ](#faq)
+- [Troubleshooting](#troubleshooting)
 
-### How Skills Work
+## Scope
 
-Skills manage an LLM context efficiently — the agent is not given all skill content upfront:
+This repo currently focuses on **Skills** — basically just folders of instructions, scripts, and resources that an AI
+agent can load on demand to improve its performance on specialised tasks.
 
-1. **Discovery** — At startup, the agent loads only the `name` and `description` of each available skill
-2. **Activation** — When a task matches a skill's description, the agent reads the full `SKILL.md` into context
-3. **Execution** — The agent follows the instructions, optionally loading referenced files or executing bundled scripts
+As our use of agentic tooling matures, the scope may expand to include:
 
-> ⚠️ **The `description` field is your most important content.** It is the sole signal the agent uses to decide whether to activate a skill. A vague description means the skill will never fire. See [CONTRIBUTING.md](./CONTRIBUTING.md) for authoring guidance.
-> 
-> For detailed skill testing and evaluation methodology, see [docs/SKILL_TESTING.md](docs/SKILL_TESTING.md).
+- **Agents** — custom agent definitions for recurring engineering tasks (code review, architecture, research)
+- **MCP Servers** — callable tool servers giving agents access to internal systems and data
+- **Plugins** — bundled distributions packaging skills, agents, and MCP servers into a single install
 
-### Skill Structure
-
-Each skill lives in its own folder, which is a top-level directory in this repository:
-
-```
-skill-name/
-├── SKILL.md          # Required — metadata frontmatter + instructions
-├── scripts/          # Optional — executable code the agent can run
-├── references/       # Optional — supporting documentation and specs
-├── assets/           # Optional — templates, examples, resources
-└── evals/            # Optional — test prompts and assertions
-```
-
-The `SKILL.md` file follows a standard frontmatter schema:
-
-```yaml
----
-name: skill-name                  # kebab-case, max 64 chars
-description: >                    # max 1024 chars — what it does AND when to use it
-  What this skill does and the specific situations in which it should be activated.
-  Be explicit. Include keywords that describe the task, domain, and trigger conditions.
-license: Proprietary              # optional
-compatibility: GitHub Copilot     # optional — intended tools or environment requirements
----
-
-# Skill Title
-
-## When To Use This Skill
-...
-
-## Instructions
-...
-```
-
-Required fields: `name`, `description`. Everything else is optional.
-
----
-
-## Skill Scopes
-
-GitHub Copilot, the primary AI productivity assistant, resolves skills from two locations:
-
-| Scope | Location | When To Use |
-|---|---|---|
-| **Personal Skills** | `~/.copilot/skills/` | Skills available across all your projects |
-| **Project Skills** | `.github/skills/` | Skills specific to a single repository |
-
-Other Agent Skills-compatible tools typically use:
-
-| Scope | Location |
-|---|---|
-| **Personal** | `~/.agents/skills/` |
-| **Project** | `.agents/skills/` |
-
----
+If and when that happens, the repo structure, name, and install instructions will be updated accordingly. For now,
+skills are the right place to start — they are the lowest friction, highest value layer, and the foundation everything
+else builds on.
 
 ## How Skills Relate To Your Own
 
-The skills in this repo are the **base layer** — conventions and capabilities applicable across most teams and projects in the sub-department. You load them into your personal space and extend with your own layers:
+The skills in this repo are the **base layer** — shared conventions and capabilities applicable across teams and
+projects. You load them into your personal or project space and extend with your own layers, so every session inherits
+the team's collective knowledge or workflows.
+
+If something might help the wider team, it belongs here.
 
 ```
-Agentic Skills              ← shared base (this repo)
-    └── Personal Skills         ← your individual skills (~/.copilot/skills/)
-            └── Project Skills  ← repository-specific (.github/skills/)
+Agentic Skills                    ← shared base (this repo)
+    └── Personal Skills           ← your individual skills (~/.copilot/skills/ or ~/.agents/skills/)
+            └── Project Skills    ← repository-specific (most commonly in .github/skills/)
 ```
 
-The base layer is the **foundation every engineer might share**. Personal and project layers are **extensions** — not replacements. If something belongs in the base, propose it here rather than duplicating it downstream.
-
----
+Each layer extends the one above — personal and project layers are **extensions**, not replacements.
 
 ## Quickstart
 
-This repo uses Copilot as the primary AI-assisted engineering tool. There are many ways how to use it, but here we leverage the [GitHub Copilot CLI](https://github.com/github/copilot-cli). Skills are managed through slash commands inside a Copilot CLI session.
-
-### 1. Install GitHub Copilot CLI
-
-```bash
-# macOS / Linux
-curl -fsSL https://gh.io/copilot-install | bash
-
-# macOS (Homebrew)
-brew install copilot-cli
-
-# Any platform (npm)
-npm install -g @github/copilot
-```
-
-Then launch a session from your project directory:
+Skills are managed through the [Vercel Skills CLI](https://github.com/vercel-labs/skills) or via
+[GitHub Copilot CLI](https://github.com/github/copilot-cli) slash commands.
 
 ```bash
-copilot
+# Install all skills globally
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g
+
+# Or install a single skill
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill pr-review
 ```
 
-### 2. Add Skills To Your Personal Space
+For the full guide — what skills are, how they activate, project-scoped installs, updates, Copilot CLI commands — see
+**[docs/getting-started.md](./docs/getting-started.md)**.
 
-Inside a Copilot CLI session, add skills from this repo one by one:
+## Skill Catalog
 
-```
-/skills add ~/.copilot/skills/pr-review
-/skills add ~/.copilot/skills/create-issue
-/skills add ~/.copilot/skills/kudos
-```
+Browse all available skills in the **[skills/](./skills/)** directory — each skill folder contains a `SKILL.md` with
+its purpose, trigger phrases, and full instructions.
 
-Or clone this repo and add all skills at once from your terminal before launching:
-
-```bash
-git clone https://github.com/AbsaOSS/agentic-toolkit.git
-cp -r agentic-toolkit/skills/*/  ~/.copilot/skills/
-```
-
-Skills in `~/.copilot/skills/` are loaded automatically at every session start — no further action needed.
-
-### 3. Verify Skills Are Loaded
-
-Inside a session, inspect the full loaded environment:
-
-```
-/env
-```
-
-This shows all loaded skills, MCP servers, agents, and instructions. Confirm your skills appear in the list.
-
-Alternatively, see all the available skills:
-
-```
-/skills list
-```
-
-### 4. Add Project-Specific Skills (Optional)
-
-For skills that only apply to a specific repository, place them in `.github/skills/` within that repo. These are loaded automatically when Copilot CLI is launched from that directory, layered on top of your personal as well as these project-specific skills.
-
-```
-your-project-repo/
-└── .github/
-    └── skills/
-        └── your-project-skill/
-            └── SKILL.md
-```
-
----
-
-## Using Review Skills With the Native Copilot Reviewer
-
-The native Copilot reviewer is the **Add Copilot as reviewer** button on a pull request on GitHub.com. It reads `.github/copilot-instructions.md` in your repository.
-
-This repo provides a set of review-related skills. `pr-review` is the first and most broadly applicable — a single unified skill covering standard review, elevated risk, API contracts, dependency bumps, CI/CD changes, and infrastructure. Additional review skills can be added to the instructions file in the same way.
-
-To apply review standards when Copilot is added as a reviewer on GitHub.com, add the following to your project's `.github/copilot-instructions.md`:
-
-```markdown
-## PR Review
-
-### Core review skill — covers standard, elevated risk, API contracts, deps, CI/CD, and IaC
-When reviewing a pull request, load and apply:
-https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/pr-review/SKILL.md
-
-Apply only the sections relevant to the files touched by the PR.
-Output findings grouped as: Blocker / Important / Nit.
-```
-
----
+> The catalog table will be populated as skills are added. See `skills/` for the current set.
 
 ## Finding More Skills
 
 Before building a new skill, check whether one already exists:
 
-| Source | What's available |
-|---|---|
+| Source                                                                               | What's Available                                                        |
+|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
 | [github/awesome-copilot](https://github.com/github/awesome-copilot/tree/main/skills) | 200+ community skills: cloud, languages, security, DevOps, productivity |
-| [skills.sh](https://skills.sh) | Open registry — install any GitHub-hosted skill with `npx skills add <owner/repo>` |
-| [anthropics/skills](https://github.com/anthropics/skills) | Anthropic reference skills including `skill-creator` |
-| [AbsaOSS/agentic-toolkit](https://github.com/AbsaOSS/agentic-toolkit) | Broader skill collection |
-
----
+| [skills.sh](https://skills.sh)                                                       | Open registry — install with `npx skills add <owner/repo>`              |
+| [anthropics/skills](https://github.com/anthropics/skills)                            | Anthropic reference skills including `skill-creator`                    |
+| [absa-group/agent-skills](https://github.com/absa-group/agent-skills)                | Broader ABSA-owned skill collection                                     |
+| [absa-group/cps-agentic-toolkit](https://github.com/absa-group/cps-agentic-toolkit)  | CPS team's skill set built on top of this repo                          |
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full authoring guide.
+See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for the skill authoring guide — folder layout, frontmatter schema, writing
+effective descriptions and bodies, [testing](./docs/skill-testing.md), and the PR checklist.
 
-To propose a new skill or a change to an existing one, open an issue using the **Skill Proposal** template.
+To propose a new skill — or to propose expanding the repo into agents, MCP servers, or
+plugins — [open an issue](https://github.com/AbsaOSS/agentic-toolkit/issues/new).
+
+Contributions are welcome from the ABSA technical team.
+
+## FAQ
+
+### What's the difference between a skill, an agent, and an MCP server?
+
+A **skill** gives the agent instructions — prose it reads into context when a task matches.
+An **agent** is a full persona: a system prompt, tools, and behavioural constraints bundled together — it may *use*
+multiple skills. An **MCP server** gives the agent callable tools for live integrations and API calls.
+Think of skills as books, agents as the people who read them, and MCP servers as the phone lines they dial.
+
+### Can I use these skills outside of GitHub Copilot?
+
+Yes. Skills follow the open [Agent Skills](https://agentskills.io) standard and work with any compatible tool —
+Claude, Cursor, Windsurf, and custom pipelines.
+
+## Troubleshooting
+
+Setup issues and common fixes are covered in **[docs/troubleshooting.md](./docs/troubleshooting.md)**.

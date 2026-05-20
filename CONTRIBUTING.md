@@ -1,8 +1,10 @@
 # Contributing to Agentic Toolkit
 
-This guide covers everything you need to author a high-quality skill for this repository — from file layout and frontmatter rules through description writing, body guidelines, and testing.
+This guide covers everything you need to author a high-quality skill for this repository — from file layout and
+frontmatter rules through description writing, body guidelines, and testing.
 
----
+> New here? Read **[docs/getting-started.md](./docs/getting-started.md)** first to understand what skills are and how
+> to install them before authoring your own.
 
 ## Table of Contents
 
@@ -12,8 +14,6 @@ This guide covers everything you need to author a high-quality skill for this re
 4. [Writing the skill body](#4-writing-the-skill-body)
 5. [Testing your skill](#5-testing-your-skill)
 6. [Proposing a skill via a pull request](#6-proposing-a-skill-via-a-pull-request)
-
----
 
 ## 1. Skill structure
 
@@ -33,11 +33,12 @@ skills/
 
 ### When to add each optional directory
 
-| Directory | Use for |
-|---|---|
-| `scripts/` | Deterministic or repetitive logic better run as code than described in prose (e.g. a validation script, a formatter, a data transformer) |
-| `references/` | Domain docs, API specs, decision tables, or anything too large to keep in `SKILL.md` without exceeding 500 lines |
-| `assets/` | Template files, example inputs/outputs, icons — anything the skill produces or consumes |
+| Directory     | Use for                                                                                                                                  |
+|---------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `scripts/`    | Deterministic or repetitive logic better run as code than described in prose (e.g. a validation script, a formatter, a data transformer) |
+| `references/` | Domain docs, API specs, decision tables, or anything too large to keep in `SKILL.md` without exceeding 500 lines                         |
+| `assets/`     | Template files, example inputs/outputs, icons — anything the skill produces or consumes                                                  |
+| `evals/`      | Test prompts and assertions to verify skill behavior and trigger accuracy. See [skill-testing.md](./docs/skill-testing.md)               |
 
 ---
 
@@ -61,7 +62,7 @@ compatibility: GitHub Copilot    # optional — only when env requirements exist
 | Field | Required | Constraints |
 |---|---|---|
 | `name` | ✅ | Lowercase letters, numbers, and hyphens only. Max 64 chars. Must not start or end with a hyphen. No consecutive hyphens (`--`). Must match the parent directory name. |
-| `description` | ✅ | Max 1024 chars. Non-empty. Must describe both **what** the skill does and **when** to activate it. See [§3](#3-writing-the-description). |
+| `description`   | ✅        | Max 1024 chars. Non-empty. Must describe both **what** the skill does and **when** to activate it. See [Writing the description](#3-writing-the-description).         |
 | `license` | ➖ | Short SPDX name or reference to a bundled `LICENSE.txt`. |
 | `compatibility` | ➖ | Max 500 chars. Only include if the skill has specific environment requirements (tools, Python version, network access, etc.). Most skills do not need this field. |
 
@@ -197,15 +198,20 @@ If every test run of your skill independently writes the same helper script (a f
 
 ## 5. Testing your skill
 
-Use the **GitHub Copilot CLI** and the `skill-creator` skill to test, compare, and optimize your skill. The full testing methodology — eval creation, fixture management, iterative improvement, trigger testing, and description optimization — is documented in [docs/SKILL_TESTING.md](./docs/SKILL_TESTING.md).
+Before proposing a PR, verify that your skill activates correctly and produces good output. The full testing
+methodology — eval creation, fixture management, with/without comparisons, trigger testing, and description
+optimization using the Anthropic [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
+skill — is covered in **[docs/skill-testing.md](./docs/skill-testing.md)**.
 
 ---
 
 ## 6. Proposing a skill via a pull request
 
-1. **Open an issue first** using the [Skill Proposal template](https://github.com/AbsaOSS/agentic-toolkit/issues/new/choose) to discuss scope before writing code
-2. Create your skill folder under `skills/` following the structure in [§1](#1-skill-structure)
-3. Run the tests described in [§5](#5-testing-your-skill) and include benchmark results in the PR description
+1. **Open an issue first** using
+   the [Skill Proposal template](https://github.com/AbsaOSS/agentic-toolkit/issues/new/choose) to discuss scope
+   before writing code
+2. Create your skill folder under `skills/` following the structure in [Skill structure](#1-skill-structure)
+3. Run the tests described in [Testing your skill](#5-testing-your-skill) and include benchmark results in the PR description
 4. Open a pull request; CODEOWNERS will be automatically requested for review
 5. Optionally, add `Copilot` as a reviewer to get automated skill quality feedback
 
