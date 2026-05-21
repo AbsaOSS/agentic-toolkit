@@ -1,0 +1,35 @@
+diff --git a/src/api/users/schemas.py b/src/api/users/schemas.py
+index a1b2c3d..e4f5a6b 100644
+--- a/src/api/users/schemas.py
++++ b/src/api/users/schemas.py
+@@ -4,8 +4,8 @@ from pydantic import BaseModel
+ 
+ class UserResponse(BaseModel):
+-    user_id: int
++    userId: int
+-    user_name: str
++    userName: str
+     email: str
+     created_at: datetime
+ 
+diff --git a/src/api/users/router.py b/src/api/users/router.py
+index b2c3d4e..f5a6b7c 100644
+--- a/src/api/users/router.py
++++ b/src/api/users/router.py
+@@ -12,7 +12,7 @@ router = APIRouter()
+ @router.get("/users/{id}", response_model=UserResponse)
+ async def get_user(id: int, db: Session = Depends(get_db)):
+     user = db.query(User).filter(User.id == id).first()
+-    return UserResponse(user_id=user.id, user_name=user.name, email=user.email, created_at=user.created_at)
++    return UserResponse(userId=user.id, userName=user.name, email=user.email, created_at=user.created_at)
+ 
+diff --git a/tests/test_users.py b/tests/test_users.py
+index c3d4e5f..a6b7c8d 100644
+--- a/tests/test_users.py
++++ b/tests/test_users.py
+@@ -18,5 +18,5 @@ def test_get_user():
+     response = client.get("/users/1")
+     assert response.status_code == 200
+     data = response.json()
+-    assert data["user_id"] == 1
++    assert data["userId"] == 1
