@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-05-15T08:00:00Z",
+  "catalog": {
+    "user_stories": [
+      {"id": "US-001", "title": "Place an online order", "status": "ready", "ac_count": 3},
+      {"id": "US-002", "title": "View order history", "status": "ready", "ac_count": 2},
+      {"id": "US-007", "title": "Apply a promotional discount", "status": "ready", "ac_count": 4}
+    ],
+    "features": [
+      {"id": "FEAT-checkout", "name": "Checkout Page", "user_stories": ["US-001"]},
+      {"id": "FEAT-account", "name": "Account Dashboard", "user_stories": ["US-002"]},
+      {"id": "FEAT-promo", "name": "Promotions Module", "user_stories": []},
+      {"id": "FEAT-orphan", "name": "Legacy Report Screen", "user_stories": [], "functionalities": []}
+    ],
+    "functionalities": [
+      {
+        "id": "FUNC-validate-cart",
+        "parent_feature": "FEAT-checkout",
+        "ac_count": 3,
+        "linked_tests": ["test_validate_cart.py::test_empty_cart"]
+      },
+      {
+        "id": "FUNC-apply-discount",
+        "parent_feature": "FEAT-promo",
+        "ac_count": 5,
+        "linked_tests": []
+      }
+    ]
+  },
+  "inventory": {
+    "ui_screens": [
+      "/checkout",
+      "/account/orders",
+      "/account/preferences",
+      "/promotions",
+      "/reports/legacy"
+    ],
+    "test_files": [
+      {"file": "test_validate_cart.py", "linked_ac": "FUNC-validate-cart-AC-1"},
+      {"file": "test_order_history.py", "linked_ac": null},
+      {"file": "test_login_flow.feature", "linked_ac": null}
+    ],
+    "bdd_scenarios": [
+      {"scenario": "Customer successfully places an order", "linked_ac": "US-001-AC-1"},
+      {"scenario": "View paginated order history", "linked_ac": null}
+    ]
+  },
+  "known_test_links": {
+    "US-001-AC-1": "tests/features/checkout.feature::Customer successfully places an order",
+    "US-001-AC-2": null,
+    "US-001-AC-3": null,
+    "US-002-AC-1": null,
+    "US-002-AC-2": null,
+    "US-007-AC-1": null,
+    "US-007-AC-2": null,
+    "US-007-AC-3": null,
+    "US-007-AC-4": null
+  }
+}

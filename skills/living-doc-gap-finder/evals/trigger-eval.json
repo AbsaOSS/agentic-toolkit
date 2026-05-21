@@ -1,0 +1,16 @@
+[
+  {"id":  1, "query": "Run a living doc gap analysis", "should_trigger": true, "reason": "'living doc gaps' trigger phrase"},
+  {"id":  2, "query": "What's missing in our living documentation?", "should_trigger": true, "reason": "'what's missing in living doc' trigger phrase"},
+  {"id":  3, "query": "Find undocumented features in the codebase", "should_trigger": true, "reason": "'find undocumented features' trigger phrase"},
+  {"id":  4, "query": "Which tests have no linked acceptance criteria (orphan tests)?", "should_trigger": true, "reason": "'orphan tests' trigger keyword"},
+  {"id":  5, "query": "Which ACs have no tests? (untested ACs)", "should_trigger": true, "reason": "'untested AC' trigger keyword"},
+  {"id":  6, "query": "What is our documentation coverage percentage?", "should_trigger": true, "reason": "'documentation coverage' trigger keyword"},
+  {"id":  7, "query": "Generate a gap report for the payments domain", "should_trigger": true, "reason": "'gap report' trigger keyword"},
+  {"id":  8, "query": "What behaviors are not covered in the living doc?", "should_trigger": true, "reason": "'what's not covered' trigger phrase"},
+  {"id":  9, "query": "Do a living doc audit before the release", "should_trigger": true, "reason": "'living doc audit' trigger phrase"},
+  {"id": 10, "query": "Which User Story ACs are critical but have no BDD scenario?", "should_trigger": true, "reason": "Finding untested critical ACs — core gap-finder task"},
+  {"id": 11, "query": "Find what's not documented in our test suite", "should_trigger": true, "reason": "'find what's not documented' trigger phrase"},
+  {"id": 12, "query": "Create a user story for the preferences screen gap", "should_trigger": false, "reason": "Creating a User Story — routes to living-doc-create-user-story"},
+  {"id": 13, "query": "Create a Feature entity for the account preferences screen", "should_trigger": false, "reason": "Creating a Feature — routes to living-doc-create-feature"},
+  {"id": 14, "query": "Generate a tutorial from the checkout .feature file", "should_trigger": false, "reason": "Tutorial generation — routes to living-doc-tutorial-creator"}
+]

@@ -77,7 +77,21 @@ its purpose, trigger phrases, and full instructions.
 
 | Skill                                                | Description                                                                                                                         |
 |------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[living-doc-create-user-story](./skills/living-doc-create-user-story/)** | Create a well-formed User Story with business-level Acceptance Criteria that are traceable, testable, and E2E-ready. |
+| **[living-doc-create-feature](./skills/living-doc-create-feature/)** | Document a system surface (UI screen, API endpoint, service) as a Feature entity with ownership and traceability links. |
+| **[living-doc-create-functionality](./skills/living-doc-create-functionality/)** | Define an atomic, testable behaviour (Functionality) with AC designed for fast unit or integration tests. |
+| **[living-doc-update](./skills/living-doc-update/)** | Amend or deprecate existing User Story, Feature, or Functionality entities — add ACs, change status, update ownership. |
+| **[living-doc-impact-analysis](./skills/living-doc-impact-analysis/)** | Trace which Features, Functionalities, User Stories, and Gherkin scenarios are affected by a code change or PR. |
+| **[living-doc-gap-finder](./skills/living-doc-gap-finder/)** | Identify undocumented behaviours, orphan tests, and untested ACs. Shared by `@living-doc-copilot` and `@bdd-copilot`. |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
+
+## Agent Roster
+
+Agents are pre-configured AI personas that orchestrate multiple skills for a specific engineering phase. Agent files live in **[.github/agents/](./.github/agents/)**.
+
+| Agent | Description |
+|---|---|
+| **[@living-doc-copilot](./.github/agents/living-doc-copilot.agent.md)** | Creates and maintains the living documentation catalog: User Stories, Features, Functionalities, AC updates, impact analysis, gap finding. |
 
 ## Finding More Skills
 

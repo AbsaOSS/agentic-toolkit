@@ -2,6 +2,12 @@
 
 Navigation hub for all guides in this repository. Browse by category below.
 
+## Contents
+
+- [Setup & Repository Guides](#setup--repository-guides)
+- [Skill Guides](#skill-guides)
+- [Agent Guides](#agent-guides)
+
 ## Setup & Repository Guides
 
 | Guide                                   | Description                                                                         |
@@ -16,6 +22,12 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide                               | Description                                                                        |
 |-------------------------------------|------------------------------------------------------------------------------------|
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
+
+## Agent Guides
+
+| Guide                                         | Description                                                                              |
+|-----------------------------------------------|------------------------------------------------------------------------------------------|
+| [Living Doc Copilot](./living-doc-copilot.md) | How the living-doc-copilot agent works, its scope, modes, and how to trigger it          |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 

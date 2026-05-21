@@ -1,0 +1,68 @@
+[
+  {
+    "id": "t01-impact-explicit",
+    "query": "What living doc entities does PR #217 affect?",
+    "should_trigger": true,
+    "reason": "'impact of PR on living doc' is a listed trigger phrase."
+  },
+  {
+    "id": "t02-trace-affected-us",
+    "query": "Which User Stories are affected by the PromoService refactor?",
+    "should_trigger": true,
+    "reason": "'trace affected user stories' is a listed trigger phrase."
+  },
+  {
+    "id": "t03-affected-features",
+    "query": "Which Features are affected by the checkout module changes?",
+    "should_trigger": true,
+    "reason": "'affected features' is a listed trigger phrase."
+  },
+  {
+    "id": "t04-impact-analysis",
+    "query": "Run a living doc impact analysis for the payment gateway refactor.",
+    "should_trigger": true,
+    "reason": "'impact analysis' is a listed trigger phrase."
+  },
+  {
+    "id": "t05-living-doc-sign-off",
+    "query": "I need a living doc sign-off before releasing the checkout changes.",
+    "should_trigger": true,
+    "reason": "'living doc sign-off' is a listed trigger phrase."
+  },
+  {
+    "id": "t06-what-does-change-affect",
+    "query": "What does the change to ShippingCalculator.java affect in the living doc?",
+    "should_trigger": true,
+    "reason": "'what does this change affect' is a listed trigger phrase."
+  },
+  {
+    "id": "t07-which-scenarios-rerun",
+    "query": "Which scenarios need re-running after we changed the orders endpoint?",
+    "should_trigger": true,
+    "reason": "'which scenarios need re-running' is a listed trigger phrase."
+  },
+  {
+    "id": "t08-pr-impact-docs",
+    "query": "Does PR #300 have any impact on the living doc?",
+    "should_trigger": true,
+    "reason": "'PR impact on docs' is a listed trigger phrase."
+  },
+  {
+    "id": "t09-not-update-entity",
+    "query": "Update US-042 to add a new AC for the expired promo path.",
+    "should_trigger": false,
+    "reason": "Updating entities is handled by living-doc-update, not living-doc-impact-analysis."
+  },
+  {
+    "id": "t10-not-gap-finder",
+    "query": "Which Functionalities don't have any User Stories?",
+    "should_trigger": false,
+    "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
+  },
+  {
+    "id": "t11-not-create",
+    "query": "Create a new User Story for the stacked discount feature.",
+    "should_trigger": false,
+    "reason": "Creating new entities is handled by living-doc-create-user-story."
+  }
+]

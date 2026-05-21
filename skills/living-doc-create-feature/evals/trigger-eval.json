@@ -1,0 +1,16 @@
+[
+  {"id":  1, "query": "Document the checkout page as a Feature entity", "should_trigger": true, "reason": "Explicit 'document feature entity' trigger phrase"},
+  {"id":  2, "query": "Create a Feature entity for the Orders API", "should_trigger": true, "reason": "Explicit 'create a feature entity' trigger keyword"},
+  {"id":  3, "query": "New screen documentation for the account preferences page", "should_trigger": true, "reason": "'new screen documentation' trigger phrase"},
+  {"id":  4, "query": "Document a new API endpoint — the payment initiation endpoint", "should_trigger": true, "reason": "'document an API endpoint' trigger phrase"},
+  {"id":  5, "query": "Update the feature registry with the new notification service", "should_trigger": true, "reason": "'feature registry' trigger keyword"},
+  {"id":  6, "query": "What feature owns the checkout screen?", "should_trigger": true, "reason": "'what feature owns this' trigger phrase"},
+  {"id":  7, "query": "Map User Story US-007 to its Feature", "should_trigger": true, "reason": "'map user story to feature' trigger phrase"},
+  {"id":  8, "query": "I need to document the discount engine as a system surface", "should_trigger": true, "reason": "Documenting a system surface — Feature creation workflow"},
+  {"id":  9, "query": "Create a feature entity for the authentication module", "should_trigger": true, "reason": "Explicit 'create feature entity' trigger"},
+  {"id": 10, "query": "What are the owners and dependencies for the checkout feature?", "should_trigger": true, "reason": "Asking about Feature properties — skill can populate or validate"},
+  {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story creation — routes to living-doc-create-user-story"},
+  {"id": 12, "query": "Document the atomic behavior: validate cart before checkout", "should_trigger": false, "reason": "Atomic behavior — routes to living-doc-create-functionality"},
+  {"id": 13, "query": "Scan the checkout page for PageObjects", "should_trigger": false, "reason": "UI scan — routes to living-doc-pageobject-scan"},
+  {"id": 14, "query": "Generate scenarios for the checkout User Story", "should_trigger": false, "reason": "Scenario creation — routes to living-doc-scenario-creator"}
+]

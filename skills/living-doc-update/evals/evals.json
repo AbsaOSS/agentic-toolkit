@@ -1,0 +1,157 @@
+{
+  "skill_name": "living-doc-update",
+  "evals": [
+    {
+      "id": 1,
+      "type": "happy-path",
+      "description": "Developer adds a new AC to an existing User Story.",
+      "prompt": "I need to add a new acceptance criterion to US-042 covering the case where a promo code has expired. How do I update the living doc?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Assign next sequential AC ID: US-042-AC-<n+1>",
+          "Use AC completeness checklist",
+          "Flag for gherkin-living-doc-sync if linked scenarios need updating",
+          "Output change summary"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "type": "regression",
+      "description": "Developer promotes a User Story from draft to ready but some invariants are unmet.",
+      "prompt": "I want to mark US-089 as ready for development, but I'm not sure it's complete.",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Check all promotion invariants: narrative complete, Feature linked, AC exists, error-path AC exists, no TODO markers",
+          "Warn for each failing invariant",
+          "Block promotion until all invariants pass"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "type": "regression",
+      "description": "Developer deprecates a Functionality whose code has been deleted.",
+      "prompt": "The `LegacyPaymentGatewayService` has been deleted from the codebase. How do I handle this in the living doc?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Set status: deprecated — never delete the entity file",
+          "Add deprecated_at and deprecation_reason fields",
+          "Link to commit that deleted the code if possible",
+          "Flag linked Gherkin scenarios for gherkin-living-doc-sync"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "type": "regression",
+      "description": "Developer changes Feature ownership after team restructure.",
+      "prompt": "The checkout feature is now owned by team-payments-v2 instead of team-checkout. How do I update this in the living doc?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Update owners array in Feature JSON",
+          "Update FEATURE_REGISTRY.md row",
+          "Add owner_changed_at and owner_change_reason fields",
+          "Notify new owner if open User Stories exist"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "type": "regression",
+      "description": "Developer modifies an AC description after sprint review.",
+      "prompt": "After the sprint review, the product owner clarified the wording of US-042-AC-1. How do I update it without breaking traceability?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Keep AC ID stable — never change the ID",
+          "Only update description, given, when, then fields",
+          "Flag for gherkin-living-doc-sync if linked scenario text needs updating"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "type": "negative",
+      "description": "Developer asks to create a new User Story — should trigger living-doc-create-user-story.",
+      "prompt": "Create a new User Story for the express checkout flow.",
+      "expected": {
+        "skill_triggered": false,
+        "reason": "Creating new US is handled by living-doc-create-user-story, not living-doc-update"
+      }
+    },
+    {
+      "id": 7,
+      "type": "negative",
+      "description": "Developer asks to find living doc gaps — should trigger living-doc-gap-finder.",
+      "prompt": "Which User Stories don't have any linked Gherkin scenarios?",
+      "expected": {
+        "skill_triggered": false,
+        "reason": "Finding gaps is handled by living-doc-gap-finder, not living-doc-update"
+      }
+    },
+    {
+      "id": 8,
+      "type": "paraphrase",
+      "description": "Same 'add AC' intent phrased as 'update the story' rather than 'add AC'.",
+      "prompt": "US-089 needs updating — we discovered a new edge case during testing: when the delivery address is outside our shipping zone, the order should be blocked with a clear message. Can you update the story?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Assign next sequential AC ID",
+          "AC format: Given customer with out-of-zone address / When order is placed / Then order is blocked with SHIPPING_ZONE_EXCLUDED error",
+          "Flag for gherkin-living-doc-sync if linked scenarios need updating",
+          "Output change summary with the new AC"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "type": "edge-case",
+      "description": "AC status changed to 'descoped' mid-sprint — should not be deleted, only status updated.",
+      "prompt": "We decided during the sprint to descope US-042-AC-3 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
+      "expected": {
+        "skill_triggered": true,
+        "key_guidance": [
+          "Set the AC status to 'descoped' — do not delete the AC",
+          "Add descoped_at and descoped_reason fields",
+          "Add a future_release reference if the work is planned for a later sprint",
+          "Flag any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": "output-format",
+      "prompt": "AC-5 on US-042 was changed from 'payment must complete within 3 seconds' to 'payment must complete within 2 seconds'. Show me what the update output looks like.",
+      "expected_output": "The response shows a diff-style update. The changed AC entry is presented with the old text labelled OLD and the new text labelled NEW (or using strikethrough markdown). The output also lists which Gherkin scenarios reference this AC (with filename and line number) and need re-syncing. No content beyond the changed AC and its directly linked scenarios is modified.",
+      "files": [],
+      "expectations": [
+        "Old text clearly labelled (OLD or strikethrough)",
+        "New text clearly labelled (NEW)",
+        "Linked Gherkin scenarios listed with filename and line number",
+        "No content beyond changed AC and linked scenarios is modified"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "file-based",
+      "description": "Update a living doc file where AC-2 has been changed to tighten the response time SLA.",
+      "prompt": "Apply this AC change to evals/files/payment-living-doc.md: AC-2 'Payment must complete within 3 seconds' changes to 'Payment must complete within 1 second (p99)'.",
+      "expected_output": "Agent shows the old AC-2 text (labelled OLD) and the new AC-2 text (labelled NEW or in diff format). It also lists the Gherkin scenario linked to AC-2 in the file that needs to be re-synced. No other ACs or sections of the living doc are changed.",
+      "files": [
+        "evals/files/payment-living-doc.md"
+      ],
+      "expectations": [
+        "Old AC-2 text shown (labelled OLD or struck-through)",
+        "New AC-2 text shown (labelled NEW)",
+        "Linked Gherkin scenario identified for re-sync",
+        "No other ACs or sections modified"
+      ]
+    }
+  ]
+}

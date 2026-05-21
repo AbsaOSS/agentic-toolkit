@@ -1,0 +1,110 @@
+{
+  "skill_name": "living-doc-gap-finder",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 (critical ACs) have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Important — /account/preferences screen discovered in webapp with no Feature entity; Important — FEAT-orphan (Legacy Report Screen) has no User Stories and no Functionalities; Important — test_order_history.py and test_login_flow.feature have no linked ACs (orphan tests); Nit — FUNC-apply-discount has 5 ACs with no linked tests. Documentation coverage = 1/9 ACs covered = 11%.",
+      "files": [
+        "evals/files/catalog-snapshot.json"
+      ],
+      "expectations": [
+        "Identifies US-001-AC-2 and US-001-AC-3 as untested critical ACs (Blockers)",
+        "Identifies all 4 US-007 ACs as untested (Blockers)",
+        "Identifies /account/preferences as undocumented surface (Important)",
+        "Identifies FEAT-orphan as orphan Feature (Important)",
+        "Identifies test_order_history.py and test_login_flow.feature as orphan tests (Important)",
+        "Identifies FUNC-apply-discount ACs as untested (Nit)",
+        "Calculates documentation coverage percentage"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "What is documentation coverage and how is it calculated?",
+      "expected_output": "Documentation coverage = (ACs with at least one linked test) / (total ACs) × 100%. Reported separately for User Story ACs (E2E coverage) and Functionality ACs (unit/integration coverage). A project with 100% documentation coverage has every AC backed by at least one test. The metric drives the gap-finder workflow toward zero gaps.",
+      "files": [],
+      "expectations": [
+        "Correct formula: covered ACs / total ACs × 100",
+        "Reported separately for US ACs and Functionality ACs",
+        "Notes 100% means every AC has at least one test"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "A test file exists with no linked AC. What gap type is this and what should I do?",
+      "expected_output": "This is an orphan test (Gap type 4 — Important). Resolution options: (1) find an existing AC in the living doc that this test covers and add the link; (2) if no AC exists, create a Functionality entity for the behavior being tested using living-doc-create-functionality, then link the test to the new Functionality's AC. Never delete a test to resolve an orphan — that would remove coverage.",
+      "files": [],
+      "expectations": [
+        "Classifies as Gap type 4: ORPHAN_TEST",
+        "Provides two resolution options: link to existing AC, or create new Functionality",
+        "Explicitly warns against deleting the test"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "We have 200 orphan tests from a legacy codebase. Should I run gap-finder on all of them at once?",
+      "expected_output": "Batch the gap-finder run by domain or Feature area rather than running across the entire codebase at once. Process the highest-risk areas first (payment, auth, security). For each batch: identify which Functionalities or User Stories the tests correspond to, create missing living doc entities, and link tests. Processing all 200 at once produces an unmanageable gap report — prioritise by business risk.",
+      "files": [],
+      "expectations": [
+        "Recommends batching by domain or Feature area",
+        "Prioritises highest-risk areas first (payment, auth, security)",
+        "Advises against running full-codebase analysis in one pass"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Create a new User Story for the account preferences screen.",
+      "expected_output": "Creating a User Story is not a gap-finder action — routes to living-doc-create-user-story. living-doc-gap-finder identifies and proposes new entities; the creation itself is delegated to the appropriate create-* skill.",
+      "files": [],
+      "expectations": [
+        "Does not create the User Story",
+        "Routes to living-doc-create-user-story",
+        "Notes the gap-finder proposes, the create-* skills execute"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Where are the holes in our living documentation? I want to make sure everything is covered before the release.",
+      "expected_output": "Agent runs the full gap analysis workflow. Reports: untested ACs (by priority), undocumented surfaces (features visible in code/UI with no Feature entity), orphan tests (tests with no linked AC), orphan Features (no User Stories or Functionalities). Produces documentation coverage percentage. Highlights Blockers first (untested critical ACs), then Important (undocumented surfaces, orphan tests), then Nit (low-priority untested ACs).",
+      "files": [],
+      "expectations": [
+        "Identifies this as a gap analysis request despite 'holes' phrasing",
+        "Reports gap types by severity (Blocker/Important/Nit)",
+        "Produces documentation coverage percentage",
+        "Covers all four gap types: untested ACs, undocumented surfaces, orphan tests, orphan features"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "A test is linked to an AC, but the AC was deleted from the living doc. How is this classified and what should I do?",
+      "expected_output": "This is a broken-link gap (variant of Gap type 4: ORPHAN_TEST). The test references an AC ID that no longer exists. Resolution options: (1) If the behavior the test covers is still required, recreate the Functionality/AC entity and relink. (2) If the behavior has been removed, the test should be deleted after confirming with the product owner. (3) If the AC was merged into another entity, update the test's link comment to the new AC ID. Never delete a test without product owner confirmation.",
+      "files": [],
+      "expectations": [
+        "Classifies as broken-link orphan test",
+        "Provides three resolution options",
+        "Warns against deleting the test without product owner confirmation",
+        "Notes the possibility of AC merge as a resolution path"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Run a gap analysis and show me exactly what format the output report uses.",
+      "expected_output": "The gap report has two clearly labelled sections: 'Missing Scenarios' (ACs with no linked Gherkin scenario) and 'Missing ACs' (scenarios with no corresponding AC). Each missing item is a bulleted entry with the AC or scenario ID and its description. The report ends with a count summary line: 'X ACs missing scenarios, Y scenarios missing ACs'. No implementation changes are suggested — the report is diagnostic only.",
+      "files": [],
+      "expectations": [
+        "Two sections: Missing Scenarios and Missing ACs",
+        "Each item is a bulleted entry with ID and description",
+        "Count summary line at the end",
+        "Diagnostic only — no implementation suggestions"
+      ]
+    }
+  ]
+}

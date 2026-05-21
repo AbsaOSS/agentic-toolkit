@@ -1,0 +1,16 @@
+[
+  {"id":  1, "query": "Create a functionality for validating cart contents before checkout", "should_trigger": true, "reason": "Explicit 'create a functionality' trigger keyword"},
+  {"id":  2, "query": "Document the atomic behavior: apply discount to a cart item", "should_trigger": true, "reason": "'document an atomic behavior' trigger phrase"},
+  {"id":  3, "query": "Write Functionality ACs for the discount engine", "should_trigger": true, "reason": "'functionality AC' trigger phrase"},
+  {"id":  4, "query": "Define a unit-testable behavior for the coupon validation module", "should_trigger": true, "reason": "'unit-testable behavior' and 'define component behavior' trigger phrases"},
+  {"id":  5, "query": "Document the business rule: orders over $100 get free shipping", "should_trigger": true, "reason": "'document a business rule' trigger phrase"},
+  {"id":  6, "query": "Create a functionality entity for the payment retry logic", "should_trigger": true, "reason": "'create a functionality entity' trigger phrase"},
+  {"id":  7, "query": "What ACs should I write for the email validator function?", "should_trigger": true, "reason": "Asking for atomic AC writing — core functionality skill task"},
+  {"id":  8, "query": "What test_type should I use for checking DB uniqueness constraints?", "should_trigger": true, "reason": "Deciding unit vs integration — functionality skill task"},
+  {"id":  9, "query": "Review this functionality for completeness — it only has a happy path", "should_trigger": true, "reason": "Completeness check of Functionality ACs is a core task"},
+  {"id": 10, "query": "I see this AC in both US-001 and US-007 — should I split it out?", "should_trigger": true, "reason": "Reuse candidate identification — a core functionality skill task"},
+  {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story — routes to living-doc-create-user-story"},
+  {"id": 12, "query": "Document the checkout page as a Feature", "should_trigger": false, "reason": "Feature entity — routes to living-doc-create-feature"},
+  {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
+  {"id": 14, "query": "Run a gap analysis on the living documentation", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"}
+]

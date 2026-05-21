@@ -1,0 +1,124 @@
+{
+  "skill_name": "living-doc-create-feature",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I want to document the Checkout Page as a Feature entity.",
+      "expected_output": "Agent identifies surface type as UI. Asks for: purpose and scope (what user interactions it owns), linked User Stories, known Functionalities, owners, external dependencies. Outputs a canonical Feature JSON with id=FEAT-checkout, surface_type=UI, at least one US link, at least two Functionality references, owners, and external_dependencies including payment-gateway and order-service.",
+      "files": [],
+      "expectations": [
+        "Identifies surface_type as UI for a web page",
+        "Asks what user interactions the screen owns",
+        "Asks for User Story links",
+        "Asks for Functionalities owned by this Feature",
+        "Asks for owners and external dependencies",
+        "Outputs valid canonical Feature JSON with all fields populated",
+        "Notes: 1 Feature ≈ 1 PageObject"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "I want to document the Orders API as a Feature.",
+      "expected_output": "Agent identifies surface_type as API. Asks for endpoint group description, linked User Stories, owned Functionalities, team owners, and external dependencies (e.g. order-db, notification-service). Outputs Feature JSON with id=FEAT-orders-api, surface_type=API.",
+      "files": [],
+      "expectations": [
+        "surface_type is API",
+        "Purpose describes the API endpoint group in business terms",
+        "Outputs valid canonical Feature JSON"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "regression",
+      "prompt": "My Feature entity has no User Stories linked and no Functionalities. Is that OK?",
+      "expected_output": "Agent warns: an orphaned Feature with no User Stories and no Functionalities contributes no traceable business value. Either link to at least one User Story (or flag as 'candidate' status if it is exploratory), or delete it if it is no longer relevant. Notes that orphan Features will appear in living-doc-gap-finder reports as a gap.",
+      "files": [],
+      "expectations": [
+        "Warns about orphaned Feature",
+        "Suggests linking to at least one User Story or setting status to 'candidate'",
+        "Notes orphan Features appear in gap reports"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "Should I name my Feature 'Process Payment' or 'Payment Page'?",
+      "expected_output": "Feature names should be nouns — they identify a system surface. 'Payment Page' is correct. 'Process Payment' is a verb phrase that describes a Functionality or an action, not a surface. The naming rule: if it can be a PageObject class name, it's a good Feature name.",
+      "files": [],
+      "expectations": [
+        "Recommends noun name 'Payment Page'",
+        "Explains that verb phrases (Process Payment) belong to Functionalities",
+        "Mentions PageObject class naming as an alignment check"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Create a User Story for the checkout capability.",
+      "expected_output": "User Story creation — routes to living-doc-create-user-story. This skill creates Feature entities (system surfaces), not User Stories.",
+      "files": [],
+      "expectations": [
+        "Does not create a User Story",
+        "Routes to living-doc-create-user-story"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "I want to add the Notification Service to the living doc as a system component. Where do I start?",
+      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: what type of surface is it (API, Worker, UI)? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? Outputs a canonical Feature JSON for FEAT-notification-service with surface_type=Worker or API, at least one User Story link, owners, and external_dependencies.",
+      "files": [],
+      "expectations": [
+        "Identifies this as a Feature creation request despite 'system component' phrasing",
+        "Asks for surface_type (Worker/API for a notification service)",
+        "Asks for User Story links, owners, and external dependencies",
+        "Outputs valid canonical Feature JSON"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "We have a shared utility library used by three different services. Should it be documented as a Feature entity?",
+      "expected_output": "A shared utility library is not a Feature — it is not a system surface with its own UI, API, or event stream. Document it as an external_dependency in the Feature entities of the services that consume it. If the library is substantial enough to warrant its own living doc entry, create it as a Feature with surface_type=Library and explicitly mark it as a shared internal dependency. Note: Features map 1:1 to deployable/distinct surfaces — shared libraries are infrastructure, not surfaces.",
+      "files": [],
+      "expectations": [
+        "Advises against creating a Feature for a shared utility library by default",
+        "Recommends listing it as external_dependency in consumer Feature entities",
+        "Notes the surface_type=Library option for substantial libraries",
+        "Explains the 1:1 Feature-to-surface mapping rule"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Create a Feature entity for the 'User Profile' screen in our banking app. It is owned by team-identity and depends on the customer-service API.",
+      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field follows the FEAT-<kebab-name> convention. The surface_type value is one of: UI, API, Service, Module. No prose appears inside the JSON code block.",
+      "files": [],
+      "expectations": [
+        "Single fenced ```json code block",
+        "All required fields present: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies",
+        "id follows FEAT-<kebab-name> convention",
+        "surface_type is one of UI/API/Service/Module",
+        "No prose inside the code block"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "file-based",
+      "description": "Create a Feature entity from rough notes provided as a markdown file.",
+      "prompt": "Read evals/files/raw-feature-notes.md and produce a canonical Feature entity JSON from the notes.",
+      "expected_output": "Agent extracts the surface type, purpose, owners, and dependencies from the notes and produces a Feature entity JSON in a fenced ```json block. The id follows FEAT-<kebab> convention derived from the feature name in the notes. The surface_type, owners, and external_dependencies fields are populated from the file content. user_stories and functionalities are empty arrays with a warning that they must be linked.",
+      "files": [
+        "evals/files/raw-feature-notes.md"
+      ],
+      "expectations": [
+        "Feature entity JSON in fenced ```json block",
+        "id follows FEAT-<kebab> from the notes",
+        "surface_type, owners, external_dependencies populated from file",
+        "user_stories and functionalities are empty arrays with a linking warning"
+      ]
+    }
+  ]
+}

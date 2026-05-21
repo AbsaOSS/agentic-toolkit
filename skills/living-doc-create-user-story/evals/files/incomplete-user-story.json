@@ -1,0 +1,23 @@
+{
+  "type": "UserStory",
+  "id": "US-042",
+  "title": "Reset account password",
+  "status": "draft",
+  "narrative": {
+    "as_a": "registered customer",
+    "i_can": "reset my password using my email address",
+    "so_that": "I can regain access to my account if I forget my password"
+  },
+  "features": ["FEAT-login"],
+  "acceptance_criteria": [
+    {
+      "id": "US-042-AC-1",
+      "description": "Happy path: password reset email is sent",
+      "given": "the customer is on the forgot password page",
+      "when": "the customer enters their registered email address and submits",
+      "then": "a password reset email is sent and the customer sees a confirmation message",
+      "priority": "critical",
+      "type": "happy_path"
+    }
+  ]
+}

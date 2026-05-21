@@ -1,0 +1,112 @@
+{
+  "skill_name": "living-doc-create-functionality",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I want to document the atomic behavior: validate that a cart contains at least one in-stock item before checkout.",
+      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Links to FEAT-checkout. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON.",
+      "files": [],
+      "expectations": [
+        "Name is a verb phrase (not a noun)",
+        "Asks about empty cart, out-of-stock, and boundary conditions",
+        "Runs the completeness checklist",
+        "Produces at least 3 ACs covering error codes explicitly",
+        "All ACs have test_type=unit",
+        "Outputs valid canonical Functionality JSON"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Review this Functionality and tell me what's wrong with it. File: evals/files/broad-functionality.json",
+      "expected_output": "Agent identifies: Blocker — name 'Handle checkout' is too broad (verb phrase should identify a single atomic behavior); Blocker — both ACs are vague ('works correctly', 'handles it appropriately') — not testable; Important — no error codes specified in the error AC; Important — no boundary value conditions. Proposes splitting into multiple focused Functionalities and rewriting ACs with exact When/Then conditions and error codes.",
+      "files": [
+        "evals/files/broad-functionality.json"
+      ],
+      "expectations": [
+        "Flags 'Handle checkout' as too broad — not atomic",
+        "Flags 'works correctly' as non-testable — no exact output",
+        "Flags 'handles it appropriately' as vague — no error code",
+        "Proposes splitting into at least 2 focused Functionalities",
+        "Provides rewritten AC examples with exact outputs and error codes"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Should this AC have test_type=unit or test_type=integration? The behavior is: validate that the customer's email is not already registered.",
+      "expected_output": "This requires a database read to check existing registrations — it cannot be tested in pure isolation. test_type=integration. Explains: unit tests mock the DB; an integration test uses a real or test DB to verify the uniqueness constraint actually works. Notes that if the validation logic is a pure function that takes a list of existing emails as input, it could be unit-testable — in that case unit is preferred.",
+      "files": [],
+      "expectations": [
+        "Recommends integration because it requires a real DB read",
+        "Explains the unit vs integration distinction",
+        "Notes the pure-function alternative that would allow unit testing"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "I noticed this AC appears in both US-001 and US-007: 'When the cart is empty, validation returns INVALID with code CART_EMPTY'. Should I duplicate it?",
+      "expected_output": "No. This is a reuse candidate. Create a single Functionality with this AC and link both US-001 and US-007 to it via the user_stories array. Duplicating ACs across User Stories creates maintenance burden — a change to the behavior must be updated in multiple places.",
+      "files": [],
+      "expectations": [
+        "Flags as a reuse candidate — not a duplication",
+        "Advises creating one Functionality and linking both USs via user_stories array",
+        "Explains the maintenance risk of duplication"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Create a User Story for the order placement capability.",
+      "expected_output": "User Story creation — routes to living-doc-create-user-story. This skill documents atomic behaviors (Functionalities), not end-to-end User Stories.",
+      "files": [],
+      "expectations": [
+        "Does not create a User Story",
+        "Routes to living-doc-create-user-story"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "I need to capture the business rule: a gold member gets a 20% discount on all orders over £50. How do I document this in the living doc?",
+      "expected_output": "Agent identifies this as a Functionality entity. Forms verb-phrase name: 'Apply gold member discount on qualifying orders'. Runs completeness checklist: asks about non-gold members, orders exactly £50 (boundary), orders under £50, combination with promo codes. Produces ACs: order>£50 and gold member → 20% discount applied; order<=£50 → no discount; non-gold member → no discount; combined with promo → define stacking rule. All ACs test_type=unit. Outputs canonical Functionality JSON.",
+      "files": [],
+      "expectations": [
+        "Identifies as Functionality (atomic business rule), not User Story",
+        "Verb-phrase name captures the business rule precisely",
+        "Boundary value at £50 is included in the completeness checklist",
+        "At least 3 ACs with explicit expected outcomes",
+        "Outputs valid canonical Functionality JSON"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "A Functionality has 12 ACs. Is that a sign of a design problem?",
+      "expected_output": "Yes. A Functionality with 12 ACs is almost certainly not atomic — it is covering multiple distinct behaviors. An atomic Functionality should have 3-7 ACs covering the happy path, key error codes, and important boundary values. With 12, review whether the ACs can be grouped into 2-3 distinct behaviors that each warrant their own Functionality entity. Split the Functionality by behavioral concern. The goal is one coherent unit-testable behavior per entity.",
+      "files": [],
+      "expectations": [
+        "Flags 12 ACs as a sign of non-atomic scope",
+        "Recommends 3-7 ACs as the target range",
+        "Advises splitting into 2-3 focused Functionalities",
+        "Explains the atomic unit-testable behavior criterion"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Document the atomic behavior: 'The system deducts the applied voucher discount from the basket total before tax is calculated.'",
+      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, feature_id, acceptance_criteria (array), test_coverage (array), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values.",
+      "files": [],
+      "expectations": [
+        "Single fenced ```json code block",
+        "type field is 'Functionality'",
+        "id follows FUNC-<kebab> convention",
+        "acceptance_criteria is an array of business-language strings",
+        "No implementation details in JSON values"
+      ]
+    }
+  ]
+}
