@@ -227,5 +227,6 @@ Before opening a pull request, verify:
 - [ ] No hardcoded credentials, secrets, or internal paths in skill body or scripts
 - [ ] Any script in `scripts/` is referenced from `SKILL.md` with usage guidance
 - [ ] New skill's description does not conflict with or shadow existing skills
+- [ ] Skill added to the catalog table in `README.md`
 - [ ] Evals exist (or a note explains why they are not applicable)
 - [ ] `skills-ref validate ./skills/my-skill` passes (install: `pip install skills-ref`)

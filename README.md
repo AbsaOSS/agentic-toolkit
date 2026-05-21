@@ -75,7 +75,9 @@ For the full guide — what skills are, how they activate, project-scoped instal
 Browse all available skills in the **[skills/](./skills/)** directory — each skill folder contains a `SKILL.md` with
 its purpose, trigger phrases, and full instructions.
 
-> The catalog table will be populated as skills are added. See `skills/` for the current set.
+| Skill                                                | Description                                                                                                                         |
+|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Finding More Skills
 
@@ -116,3 +118,4 @@ Claude, Cursor, Windsurf, and custom pipelines.
 ## Troubleshooting
 
 Setup issues and common fixes are covered in **[docs/troubleshooting.md](./docs/troubleshooting.md)**.
+All documentation guides are indexed at **[docs/](./docs/)**.
