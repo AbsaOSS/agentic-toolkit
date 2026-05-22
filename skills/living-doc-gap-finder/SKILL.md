@@ -10,8 +10,7 @@ description: >
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "untested AC", "documentation coverage",
   "gap report", "what's not covered", "living doc audit", "documentation audit".
-  Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills),
-  generating tutorials (use @living-doc-bdd-tutorial-copilot — planned).
+  Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
   Orchestrates: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot

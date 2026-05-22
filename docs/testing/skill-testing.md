@@ -7,7 +7,7 @@ This document provides a comprehensive methodology for testing, evaluating, and 
 ## 1. Recommended workflow
 
 1. Create eval cases in `skills/<skill-name>/evals/evals.json`
-2. Add fixture files under `skills/<skill-name>/evals/fixtures/` when prompts depend on local files
+2. Add fixture files under `skills/<skill-name>/evals/files/` when prompts depend on local files
 3. Start a Copilot CLI session from the repository root
 4. Ask Copilot to use the `skill-creator` skill to test the target skill
 5. Review outputs and diffs

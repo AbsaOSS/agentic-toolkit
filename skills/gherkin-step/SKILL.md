@@ -72,7 +72,7 @@ Use the framework-provided context object, which is instantiated fresh for each 
 | behave (Python) | `context` | Attach attributes: `context.order = ...` |
 | Cucumber (TypeScript) | `World` class | Extend `World`; access via `this` |
 | Cucumber (Java) | Shared class via PicoContainer or Spring | Constructor injection |
-| Cucumber (Scala) | Shared class via DI | `ScalaDI` or manual injection |
+| Cucumber (Scala) | Shared class via DI | PicoContainer or manual injection |
 
 ```python
 # ✅ behave — context carries state across steps
@@ -83,6 +83,27 @@ def step_given_customer(context, tier):
 @then("the discount is {rate:d}%")
 def step_assert_discount(context, rate):
     assert context.customer.discount_rate() == rate
+```
+
+```java
+// ✅ Cucumber (Java) — shared state via PicoContainer constructor injection
+public class OrderSteps {
+    private final OrderWorld world;
+
+    public OrderSteps(OrderWorld world) {
+        this.world = world;
+    }
+
+    @Given("a customer with a {string} membership")
+    public void givenCustomer(String tier) {
+        world.customer = new Customer(tier);
+    }
+
+    @Then("the discount is {int}%")
+    public void thenDiscount(int rate) {
+        assertEquals(rate, world.customer.discountRate());
+    }
+}
 ```
 
 ---

@@ -108,7 +108,7 @@ Every AC created or updated by this agent carries:
 
 ## Handoff
 
-**Inbound:** `@bdd-copilot` hands a surface list after webapp exploration. Load it and create the corresponding Feature and User Story entities.
+**Inbound:** `@living-doc-bdd-copilot` hands a surface list after webapp exploration. Load it and create the corresponding Feature and User Story entities.
 
 **Outbound:** When entities are confirmed and ready:
 

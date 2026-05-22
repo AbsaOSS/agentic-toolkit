@@ -83,6 +83,11 @@ its purpose, trigger phrases, and full instructions.
 | **[living-doc-update](./skills/living-doc-update/)** | Amend or deprecate existing User Story, Feature, or Functionality entities — add ACs, change status, update ownership. |
 | **[living-doc-impact-analysis](./skills/living-doc-impact-analysis/)** | Trace which Features, Functionalities, User Stories, and Gherkin scenarios are affected by a code change or PR. |
 | **[living-doc-gap-finder](./skills/living-doc-gap-finder/)** | Identify undocumented behaviours, orphan tests, and untested ACs. Shared by `@living-doc-copilot` and `@living-doc-bdd-copilot`. |
+| **[living-doc-pageobject-scan](./skills/living-doc-pageobject-scan/)** | Discover, create, and maintain PageObject classes from a live web application — bootstrapping from scratch and detecting selector drift after UI changes. |
+| **[living-doc-scenario-creator](./skills/living-doc-scenario-creator/)** | Generate Gherkin scenario skeletons from User Story ACs — one scenario per AC, coverage report, and missing step identification. |
+| **[gherkin-scenario](./skills/gherkin-scenario/)** | Write BDD Gherkin scenarios in plain business language — Given/When/Then rules, anti-patterns, Scenario Outlines, and Background. |
+| **[gherkin-step](./skills/gherkin-step/)** | Implement clean, reusable step definitions — behave (Python), Cucumber (Java, TypeScript, Scala), parameter types, DataTable, DocString, and hooks. |
+| **[gherkin-living-doc-sync](./skills/gherkin-living-doc-sync/)** | Synchronise Gherkin feature files with the living documentation catalog — fix missing AC traceability headers, step text drift, and stale scenario links. |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Agent Roster

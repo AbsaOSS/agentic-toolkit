@@ -17,7 +17,7 @@ description: >
 
 # Living Doc — PageObject Scan
 
-> **Glossary:** Feature, PageObject, Functionality — see `skills/references/living-doc-glossary.md`.
+> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
 **Scope:** This skill generates PageObjects only for `UI` Features (web pages, modals, screens).
 API Features use annotated endpoint methods as their living contract anchor — not PageObjects.
