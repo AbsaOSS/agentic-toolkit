@@ -54,19 +54,26 @@ If PageObjects or step files are not available, generate scenarios with stub ste
 
 Load the User Story. Confirm:
 - ID follows `US-<nnn>` format
-- At least one AC exists with state `Active` or `Implemented`
+- Which ACs are eligible for generation (`Active` or `Implemented`)
 - ACs are atomic — each has one input condition and one observable outcome
+
+Treat requests such as “write feature tests for US-007” as requests to generate BDD scenarios plus a coverage table for that User Story.
+
+If no ACs are `Active` or `Implemented`, do **not** generate empty or stub scenarios. Instead,
+output a coverage report that lists every AC with its state-specific skip reason (`Planned` →
+`skipped — not yet active`, `Deprecated` → `skipped — deprecated AC`) and advise the user to
+re-run the scenario creator when an AC becomes `Active` or `Implemented`.
 
 ### Step 2 — Map each AC to a scenario
 
 For each active AC, select the scenario pattern by AC type:
 - `happy_path` → `Scenario:` or `Scenario Outline:` (if data-driven)
-- `error` → `Scenario: <US title> — <error condition>`
+- `error` → `Scenario: <US title> — <error condition>`. If the AC text already gives a crisp business-facing failure title (for example, `Order rejected when payment card is declined`), prefer that exact title instead of mechanically prefixing the User Story title.
 - `alternative` → `Scenario: <US title> — <alternative path>`
 
 Generate a scenario for **every** active AC.
 
-Map Given-When-Then from the AC to existing step definitions — reuse exact step text where found.
+Map Given-When-Then from the AC to existing step definitions — reuse exact step text where found. Keep all step text in domain/business language only; never mention HTTP, APIs, selectors, DOM details, databases, or other implementation mechanics.
 
 ```gherkin
 # AC: US-001-01 (v1.0.0 – Active) — Customer places an order with a saved payment method
@@ -121,7 +128,12 @@ MISSING STEP + MISSING PAGEOBJECT METHOD:
 
 ### Step 4 — Validate AC coverage
 
-Every active AC must map to at least one scenario.
+Every `Active` or `Implemented` AC must map to at least one scenario.
+The coverage report must list **every** AC on the User Story, including skipped ones.
+Use these skip reasons verbatim so the output is predictable and auditable:
+- `Planned` → `skipped — not yet active`
+- `Deprecated` → `skipped — deprecated AC`
+
 Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full catalog report.
 
 ```
@@ -129,16 +141,18 @@ AC COVERAGE REPORT — US-001
   AC:US-001-01 (Active): ✅ covered by "Customer successfully places an order"
   AC:US-001-02 (Active): ✅ covered by "Order rejected when payment card is declined"
   AC:US-001-03 (Active): ❌ NOT COVERED — added to gap list
-  AC:US-001-04 (Deprecated): ⏭  skipped — deprecated AC
+  AC:US-001-04 (Planned): ⏭  skipped — not yet active
+  AC:US-001-05 (Deprecated): ⏭  skipped — deprecated AC
 ```
 
 Use `scripts/coverage_report.py` to generate this report across the full catalog.
 
 ### Step 5 — Output artifacts
 
-**`.feature` file** — one per User Story, named `<us-id>-<kebab-title>.feature`:
+**`.feature` file** — one per User Story, named `us-<nnn>-<kebab-title>.feature` in lowercase. When showing the generated output, include the filename in a comment or header inside the gherkin block:
 
 ```gherkin
+# us-001-place-an-online-order.feature
 Feature: Place an online order
   As a registered customer
   I can place an order for in-stock items
@@ -155,7 +169,7 @@ Feature: Place an online order
 
 **Missing step report** — generated stub implementations grouped by step file; Case B stubs include `NotImplementedError` failure guards and flag missing PageObject methods for extension (see Step 3).
 
-**Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`).
+**Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`). Append it immediately after the `.feature` code block in the response.
 
 ---
 

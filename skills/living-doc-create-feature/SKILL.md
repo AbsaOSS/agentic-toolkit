@@ -23,7 +23,7 @@ compatibility: GitHub Copilot
 
 ## Step 1 — Identify the system surface
 
-Before asking, **scan the conversation context** for a surface name, surface type, and owning team already stated by the user. If all three are present, propose the Feature directly and ask for confirmation rather than re-asking the questions.
+Before asking, **scan the conversation context** for a surface name, surface type, and owning team already stated by the user. If the prompt already gives enough information to draft the entity, infer the obvious details and propose the Feature directly instead of blocking on follow-up questions. Ask only for what is still missing or ambiguous.
 
 Ask only for what is missing: *What system surface does this Feature represent?*
 
@@ -33,6 +33,12 @@ Select the surface type:
 |---|---|
 | `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) |
 | `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public API contract (e.g. Orders API, Payment Gateway API) |
+| `Service` | A named backend/service surface with its own contract (e.g. Customer Profile Service) |
+| `Worker` | An asynchronous/background processor (e.g. Notification Worker) |
+| `Module` | A distinct internal module with a stable contract or bounded responsibility |
+| `Library` | A substantial shared internal library that is intentionally tracked as its own surface |
+
+Feature names should be **noun phrases** that name the surface. If it could plausibly be a PageObject or service/module class name (for example `PaymentPage`), it is usually a good Feature name.
 
 **One surface test abstraction ≈ one Feature** — a UI screen has a PageObject, an API endpoint group has an annotated endpoint method. See [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)) for details.
 
@@ -74,33 +80,35 @@ FUNC entries), leave the array as `[]` and add a warning:
 
 ## Step 6 — Output canonical Feature entity
 
-> **ID assignment:** before assigning a `FEAT-nnn` ID, run
-> `python scripts/next_id.py --type FEAT --catalog catalog.json`
-> to get the next available ID and avoid collisions.
+Use a readable slug ID based on the business surface name: `FEAT-<kebab-name>` (for example `FEAT-checkout`, `FEAT-orders-api`, `FEAT-notifications-centre`). For UI names ending in generic words like `Page`, `Screen`, or `Modal`, you may omit that trailing UI noun in the ID when the shorter slug stays unambiguous.
 
-Output using the project's Storage Profile format. Canonical fields:
+Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, `status: "planned"`, and `[]` for relationships that are still unknown. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
+
+Canonical JSON fields:
 
 | Field | Required | Value |
 |---|---|---|
-| entity type | Yes | `Feature` |
-| `id` | Yes | `FEAT-<nnn>` (e.g. `FEAT-001`) |
+| `type` | Yes | `Feature` |
+| `id` | Yes | `FEAT-<kebab-name>` |
 | `name` | Yes | Noun phrase (e.g. "Login Page") |
-| `surface_type` | Yes | `UI` \| `API` |
+| `surface_type` | Yes | `UI` \| `API` \| `Service` \| `Worker` \| `Module` \| `Library` |
 | `purpose` | Yes | One-to-two sentence description in business language |
-| `status` | Yes | `planned` \| `active` \| `deprecated` |
-| `user_stories` | Yes | List of `US-<nnn>` IDs (can be `[]` for new Features) |
-| `functionalities` | Yes | List of `FUNC-<nnn>` IDs (can be `[]` initially) |
+| `status` | Yes | `planned` \| `active` \| `candidate` \| `deprecated` |
+| `user_stories` | Yes | List of `US-<...>` IDs (use `[]` if unknown) |
+| `functionalities` | Yes | List of `FUNC-<...>` IDs (use `[]` if unknown or still only candidates) |
 | `owners` | Yes | Team name(s) |
-| `external_dependencies` | No | Names of services or systems this Feature calls |
+| `external_dependencies` | Yes | Names of services or systems this Feature calls |
+
+If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSON. If `functionalities` is `[]` because they are still just candidate notes, repeat the formal-definition warning from Step 4 outside the JSON.
 
 ## Anti-patterns to flag
 
 | Anti-pattern | Warning |
 |---|---|
 | Feature covers multiple unrelated screens | Split into one Feature per distinct screen |
-| Feature name is a verb (e.g. "Process Payment") | Feature names should be nouns — name the surface. Verb phrases describe *what the surface does*, which belongs in a Functionality entity (use **living-doc-create-functionality**) |
-| Feature has no User Stories and no Functionalities | Orphan Feature — link or delete |
-| Shared utility library documented as a Feature | A third-party dependency is not a system surface — document it as `external_dependency` in the Features that consume it. Internal module-level behaviors belong in Functionality entities under the API Feature that owns the service contract. |
+| Feature name is a verb (e.g. "Process Payment") | Feature names should be nouns — name the surface. Verb phrases describe *what the surface does*, which belongs in a Functionality entity (use **living-doc-create-functionality**). If it could be a PageObject or service/module class name, it is usually a better Feature name. |
+| Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story, mark it as `candidate` if it is still exploratory, or delete it if it is no longer relevant. Orphan Features will be surfaced as gaps in living-doc-gap-finder reports. |
+| Shared utility library documented as a Feature | By default, a shared utility library is not a Feature — document it as an `external_dependency` on the consumer Features. Only create a standalone Feature when the library is substantial enough to be treated as a distinct shared surface; in that case use `surface_type: "Library"` and mark it as a shared internal dependency. Features should map 1:1 to distinct/deployable surfaces. |
 | Feature name encodes implementation technology (e.g. "React Login Component", "Spring Payment Controller") | Feature names describe the business surface, not the stack. Use "Login Screen" (UI) or "Payment API" (API) — technology choice is an implementation detail that changes without the surface changing. |
 | `surface_type` is `UI` for a backend REST controller or service | A REST endpoint group is an `API` surface. `UI` is reserved for screens a human interacts with directly. Misclassification breaks impact analysis routing between frontend and backend changes. |
 | Feature shares a name with an existing Feature | Check for duplicates before creating. Identical names indicate a merge candidate or a scope overlap — clarify the boundary before proceeding. |

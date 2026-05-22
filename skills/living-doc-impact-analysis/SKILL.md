@@ -64,6 +64,7 @@ Start from the code change (PR diff, renamed module, deleted endpoint):
 3. For each changed module, identify the corresponding Feature by traversing entity relationships:
    - Which Feature owns this module? (check the Feature's `functionalities` links or ask the owning team)
    - Which Functionalities does this module implement?
+   - If the module has no matching `feature_registry` entry, treat it as missing living doc coverage for impact-analysis purposes: flag a **High-impact gap**, recommend `living-doc-create-functionality`, and note that the registry mapping must be added.
 
 ## Step 2 — Trace to living doc entities
 
@@ -127,6 +128,8 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
     3. Re-run E2E journeys: US-042 and US-067 critical path scenarios
        → Invoke test-e2e-standards
 ```
+
+If the request is framed as **"what needs re-testing"**, present Step 4 as a compact **re-test checklist**: group by Feature / Functionality / User Story, list the affected ACs, and then list every linked Gherkin scenario that must be re-run.
 
 ## Step 5 — Release sign-off checklist
 

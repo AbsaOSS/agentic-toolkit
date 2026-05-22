@@ -30,7 +30,14 @@ Scenario: Customer successfully places an order
   ...
 ```
 
+If the prompt already gives an AC ID and AC wording, copy that ID and wording into the comment;
+when no lifecycle marker is supplied, use `(v1.0.0 – Active)` as the default status text.
+
 If writing standalone scenarios (no User Story context), use `# AC: STANDALONE` as a placeholder.
+When asked what comment to use for exploratory work, answer with the placeholder, say that tutorial
+walkthroughs, exploratory probes, and other developer-authored scenarios without a User Story AC
+all qualify, and note that `gherkin-living-doc-sync` will report `STANDALONE` scenarios without
+flagging them as traceability gaps.
 Standalone scenarios are permitted when they live outside the project's dedicated living doc
 feature directory. Tutorial walkthroughs, exploratory probes, and any other developer-authored
 scenarios that don't map to a User Story AC all qualify — the decision is the developer's.
@@ -104,6 +111,11 @@ Scenario Outline: Discount is applied correctly for each membership tier
     | bronze | 95.00 |
 ```
 
+When illustrating discount calculations, show the resulting order total in the `Then` step or
+`Examples:` table rather than the raw discount percentage. If the prompt does not give an amount,
+default to a £100.00 order for comparison tables and to £200.00 for single-scenario threshold cases
+such as "orders over £100" so the discounted outcome is concrete.
+
 ---
 
 ## Use Background for shared preconditions
@@ -111,6 +123,10 @@ Scenario Outline: Discount is applied correctly for each membership tier
 Use `Background` when **every** scenario in the file shares the same precondition.
 Keep Background to 3 steps or fewer. If only 2–3 scenarios share a precondition,
 duplicate the `Given` step — prefer clarity over abstraction.
+When answering whether `Background` is appropriate, explicitly mention all three checks:
+shared-by-every-scenario, 3-steps-or-fewer, and duplicate the `Given` steps instead when only a
+subset of scenarios needs them. Keep `Background` to shared `Given` preconditions, not `When` or
+`Then` steps.
 
 ---
 
@@ -123,6 +139,9 @@ duplicate the `Given` step — prefer clarity over abstraction.
 | Multiple `When` per scenario | Usually signals multiple behaviours — try to avoid | Prefer splitting into separate scenarios; if all steps represent a single logical action, collapse into one declarative step |
 | Assertions in Given/When | Violates keyword semantics | Move all assertions to `Then` |
 | Scenario depends on a previous scenario's state | Hidden ordering dependency | Each scenario must be fully self-contained |
+
+When reviewing an existing scenario, explicitly check for a missing `# AC:` comment immediately
+above each `Scenario:` or `Scenario Outline:` and call that out as a traceability defect.
 
 ---
 
@@ -141,3 +160,7 @@ and `Examples:` inside the block.
 | Implementing step definitions | **gherkin-step** |
 | Writing unit tests | **test-unit-write** |
 | Designing a test case table | **test-case-design** |
+
+If asked for step definition code, do not write it here. Redirect to **gherkin-step** and explain
+that this skill writes or reviews Gherkin scenario text, while **gherkin-step** implements the step
+binding code.

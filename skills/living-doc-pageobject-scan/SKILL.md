@@ -135,6 +135,10 @@ Flag fragile selectors:
 > "Element `<description>` has a positional CSS selector. Please add:
 > `data-testid='<descriptive-kebab-name>'` — e.g. `data-testid='confirm-order-btn'`"
 
+Still include the current selector in the generated PageObject so test authoring is not blocked, but
+annotate that selector constant with a `FRAGILE` comment and repeat the warning in the scan / breaking
+change report.
+
 **4. Map PageObjects to Feature entities**
 
 One PageObject ≈ one `UI` Feature. For each generated PageObject:
@@ -172,13 +176,16 @@ def get_cart_item_by_sku(self, sku: str):
 
 For each selector in the existing PageObject, check if it still resolves:
 - **Present and unchanged**: no action
-- **Present but changed**: update selector; log as `UPDATED`
+- **Present but changed**: update selector; log as `UPDATED`; if the replacement selector is evident
+  (for example a renamed `data-testid`), report the exact new selector in the action required line
 - **Missing**: flag as `BREAKING CHANGE` — linked test steps may fail
 
 **2. Detect new elements** → propose additions.
 
 **3. Update PageObject files** — modify selector constants only. Preserve existing action and
-assertion method logic. Never auto-delete methods — flag removals for developer review.
+assertion method logic. Never auto-delete methods — flag removals for developer review. For missing
+selectors, keep the selector constant and annotate it with a `BREAKING` comment so developers can
+review whether the element was removed or renamed.
 
 **4. Breaking change report:**
 
@@ -214,3 +221,4 @@ files before running a full rescan.
 |---|---|
 | Generate BDD scenarios for a User Story | `living-doc-scenario-creator` |
 | Create a User Story for this screen | `living-doc-create-user-story` |
+| Document an API endpoint or REST surface | `living-doc-create-functionality` |

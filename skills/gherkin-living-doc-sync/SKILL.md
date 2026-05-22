@@ -34,7 +34,7 @@ sync run.
 | New `.feature` file added | Feature file → living doc | Link each scenario to an AC; create AC if missing |
 | User Story AC modified or added | Living doc → feature file | Update or add the corresponding scenario |
 | UI refactored (selector / method renamed) | Step text → PageObject | Update step text; re-link to PageObject method |
-| US deprecated | Living doc → feature file | Mark linked scenarios as `@deprecated` or remove |
+| US deprecated | Living doc → feature file | Emit one sync action per linked scenario; add `@deprecated`, record the reason, and flag `@review-needed` |
 | Scenario added without an AC comment | Feature file → living doc | Propose an AC and add the `# AC:` header |
 
 ---
@@ -90,10 +90,11 @@ DRIFT DETECTED: checkout.feature:17
 Apply the minimum necessary change per action:
 
 - **Add missing AC link** → insert `# AC: <id> (v<version> – <State>) — <description>` above `Scenario:`
-- **Update stale AC description** → update comment text; do not change the AC ID
+- **Update stale AC description** → update comment text only; do not change the AC ID. Show the exact change as `OLD:` and `NEW:` lines. If the revised AC intent changed materially, flag the linked step text for review instead of restructuring the scenario in the same sync action.
 - **Update scenario to match revised AC** → update step text; keep the `# AC:` link unchanged
-- **Fix broken step text** → update the `.feature` file to match the step definition
-- **Mark deprecated scenarios** → add `@deprecated` tag and a comment with the reason
+- **Fix broken step text** → prefer updating the `.feature` file to match the existing step definition and PageObject method; only update the step definition regex when the business wording genuinely changed
+- **Mark deprecated scenarios** → add `@deprecated` and `@review-needed`, plus a comment with the date and reason. Emit one action per affected scenario with file and line number.
+- **Broken AC reference** → never silently remove the `# AC:` comment. Either relink it to the correct AC ID, or create the missing living doc entity with `living-doc-create-user-story` / `living-doc-create-functionality`, then update the link.
 - **AC split into multiple ACs** → update the existing scenario's `# AC:` link to the primary AC; create new scenarios for additional ACs
 
 Never delete a scenario during sync — flag it with `@review-needed` for developer decision.
@@ -102,16 +103,31 @@ Never delete a scenario during sync — flag it with `@review-needed` for develo
 
 ## Step 5 — Output sync report
 
-```
-SYNC REPORT — 2026-05-22
-  Applied automatically (3):
-    checkout.feature:14 — added AC link header AC:US-001-01
-    checkout.feature:28 — updated AC description (AC:US-001-02)
-    login.feature:7    — fixed step text drift → "When the user submits valid credentials"
+Do **not** apply sync changes automatically. Report `DRIFT DETECTED` blocks first (tests fail), then `SYNC ACTION` blocks (traceability), and ask the developer to confirm each action before editing files.
 
-  Requires manual review (1):
-    checkout.feature:45 — Scenario "Apply promo and checkout" has no matching AC
-      → Either create a new AC in US-001, or remove this scenario if it is obsolete
+```
+DRIFT DETECTED: checkout.feature:17
+  Step: "When the customer clicks the Confirm Purchase button"
+  → No matching step definition found
+  → Previous match: "When the customer confirms the order" (checkout_steps.py:34)
+  → PageObject method: CheckoutPage.confirm_order()
+  → Recommended fix: update the feature file step text to match the existing step definition
+    OR update the step definition regex to match the new wording
+  → Apply change? (y/n)
+
+SYNC ACTION: checkout.feature:14
+  Scenario: "Customer successfully places an order"
+  → Missing AC link header
+  → Proposed link: # AC: US-001-01 (v1.0.0 – Active) — Customer places an order
+  → Apply change? (y/n)
+
+SYNC ACTION: checkout.feature:32
+  Scenario: "Customer reviews order totals before payment"
+  → Missing AC link header
+  → Proposed link: # AC: US-001-02 (v1.0.0 – Active) — Customer reviews the order summary before confirming payment
+  → Apply change? (y/n)
+
+Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n per action)
 ```
 
 ---
@@ -134,4 +150,4 @@ SYNC REPORT — 2026-05-22
 | Writing new Gherkin scenarios from scratch | `gherkin-scenario` |
 | Implementing step definition code | `gherkin-step` |
 | Finding ACs with no scenario coverage | `living-doc-gap-finder` |
-| Creating new User Story or Feature entities | `living-doc-create-user-story` |
+| Creating new User Story, Feature, or Functionality entities | `living-doc-create-user-story` / `living-doc-create-functionality` |

@@ -40,8 +40,10 @@ Ask: *Which entity is being updated, and what kind of change is this?*
 When adding a new AC to an existing User Story:
 
 1. Load the existing User Story entity
-2. Assign the next sequential AC ID: `AC:US-<nnn>-<nn>`
-3. Elicit the new AC using the same completeness checklist as `living-doc-create-user-story`:
+2. Assign the next sequential AC ID (for example `US-042-AC-4`; preserve an existing project
+   prefix such as `AC:US-042-04` if the catalog already uses it)
+3. Elicit the new AC using the same completeness checklist as `living-doc-create-user-story` and
+   capture it in `description`, `given`, `when`, `then` form:
    - Happy path covered?
    - Error paths covered?
    - Alternative flows covered?
@@ -49,9 +51,9 @@ When adding a new AC to an existing User Story:
    `gherkin-living-doc-sync` if so
 
 When modifying an existing AC **keep the AC ID stable** — changing the ID breaks traceability
-to linked tests and Gherkin scenarios. Only change the description text or state. If the changed
-AC text affects the wording of linked Gherkin steps, flag the linked scenarios for
-`gherkin-living-doc-sync`.
+to linked tests and Gherkin scenarios. Only update the `description`, `given`, `when`, `then`, or
+state fields. If the changed AC text affects the wording of linked Gherkin steps, flag the linked
+scenarios for `gherkin-living-doc-sync`.
 
 ## Promote a User Story from planned to active
 
@@ -78,10 +80,12 @@ Set the relevant fields in the project's Storage Profile format:
 | `status` | `deprecated` |
 | `deprecated_at` | Date of deprecation |
 | `deprecation_reason` | Why it was deprecated |
+| `deprecated_code_commit` | Commit SHA or URL that removed the backing code (if applicable) |
 | `superseded_by` | ID of the replacement entity (if applicable) |
 
 Rules:
 - Always deprecate — never delete entities (preserves audit trail)
+- Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
 - Flag any Gherkin scenarios linked to the deprecated entity for `gherkin-living-doc-sync`
 
@@ -94,13 +98,12 @@ When a team changes ownership of a Feature, update the `owners` field and set `o
 
 When an AC is moved out of the current sprint but not permanently removed:
 
-- Add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
-- The AC's official lifecycle state remains `Planned` (still required, just deferred)
+- Set `status: descoped` and add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
 - Add `future_release` field if the work is planned for a later sprint
 - Flag any linked Gherkin scenarios for `@wip` or `@pending` tagging via `gherkin-living-doc-sync`
 
 ```
-AC:US-042-03 (v1.2.0 – Planned)
+AC:US-042-03 (v1.2.0 – descoped)
    – Promo codes can be stacked and applied in defined priority order.
    – descoped_at: 2026-05-15
    – descoped_reason: Promo stacking rule deferred — too complex for current sprint

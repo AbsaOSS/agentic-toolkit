@@ -18,6 +18,14 @@ description: >
 
 > **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
+## Respect the boundary with Gherkin text
+
+If the user asks to write or review a **Gherkin scenario / feature file**, do not draft the
+scenario here. Explain that this skill covers **step definition code** only, then route the user to
+`gherkin-scenario` for the Gherkin text itself.
+
+---
+
 ## Keep step definitions thin
 
 Step definitions are bindings — they translate Gherkin text into calls to PageObjects, domain
@@ -122,11 +130,20 @@ def step_receive_payload(context):
 | `before_all` / `BeforeAll` | Expensive one-time setup (start containers) | Per-test state |
 | `after_all` / `AfterAll` | Stop containers, close connections | Per-test cleanup |
 
-Tag hooks to scope them to specific scenarios:
+`before_scenario` runs before **every** scenario by default, so add a tag check when setup
+should only apply to a subset. When explaining this pattern, say explicitly that the hook still
+fires for every scenario; the `if "database" in context.tags` check only gates the expensive setup.
+
+Tag hooks to scope them to specific scenarios, and pair setup with matching cleanup:
 
 ```python
 @before_scenario
 def setup_database(context):
     if "database" in context.tags:
         context.db = create_test_db()
+
+@after_scenario
+def teardown_database(context):
+    if "database" in context.tags:
+        context.db.teardown()
 ```

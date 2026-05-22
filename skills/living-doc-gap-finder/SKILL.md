@@ -40,6 +40,11 @@ Run the script first, then use its output to drive the Prioritise and Propose st
 The Workflow section describes the logic the script encodes — read it for understanding, but
 delegate the computation to the script rather than reproducing it through reasoning.
 
+Before presenting the final report, normalise the script output against the taxonomy in this skill:
+- Gap type 1 applies to **both User Story ACs and Functionality ACs**. If a Functionality has ACs and no linked tests, report those ACs as `UNTESTED_AC` **Blockers** (you may summarise as `FUNC-xyz has N ACs with no linked tests`) and do **not** leave the same root cause only as `UNDOCUMENTED_FUNCTIONALITY`.
+- Report documentation coverage **separately** for User Story ACs and Functionality ACs, even if the raw script output gives a combined number.
+- For Gap type 2, treat a discovered screen/API as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning (for example `/account/orders` ↔ `Account Dashboard`, `/reports/legacy` ↔ `Legacy Report Screen`). Only raise `UNDOCUMENTED_SURFACE` when no plausible owning Feature exists.
+
 ---
 
 ## Usage modes
@@ -253,7 +258,7 @@ have at least one covered AC.
 Once the baseline is met, continue by tackling the biggest remaining gaps first:
 
 1. **Rank gap clusters by count** — group all remaining gaps by type and sort descending by number of affected entities.
-2. **Work the largest cluster first** — a cluster of 20 UNTESTED_AC gaps in one domain has more impact than 5 scattered ORPHAN_TEST gaps.
+2. **Start with the highest-risk domain first** — payment, auth, security, or other release-critical areas take priority over lower-risk domains, even before broad legacy clean-up.
 3. **Batch by domain** — within a cluster, process one Feature or service at a time.
 4. **Iterate** — after each batch, re-run gap-finder on that domain before moving to the next.
 

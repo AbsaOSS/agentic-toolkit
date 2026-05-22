@@ -23,9 +23,9 @@ compatibility: GitHub Copilot
 
 ## Step 1 — Elicit the narrative
 
-Before asking, **scan the conversation context** for an actor, capability, or business outcome already stated by the user. If all three are present, form the narrative directly and ask for confirmation rather than re-asking the questions.
+Before asking, **scan the conversation context** for an actor, capability, or business outcome already stated by the user. If the user clearly provides all three parts and asks for the final artifact now, form the narrative directly and proceed to output. Otherwise, walk through all three questions in order. When a detail is already implied, restate it as a proposed answer and ask the user to confirm or refine it rather than silently skipping the question.
 
-Ask only for what is missing:
+Ask these three questions explicitly:
 
 1. **Who is the user?** — The actor using the system (a specific role, not "the user")
 2. **What do they want to do?** — The capability or action in business terms
@@ -64,15 +64,11 @@ Each AC must be:
 - **Binary** — clear pass/fail; no "should usually" or "typically"
 - **Single placeholder** — at most ONE `{placeholder}` per AC statement. If two aspects vary independently, write a separate AC for each.
 
-Use `{placeholder}` syntax when a value varies, and list the concrete values immediately below:
+Use `{placeholder}` syntax when a value varies, and list the concrete values immediately below. During elicitation, capture ACs in **Given / When / Then** language; in the final JSON, convert each accepted AC into a plain-language description with no Gherkin keywords.
 
-```
-AC:US-<nnn>-<nn> (v<version> – Planned)
-   – <end-to-end outcome from the user's perspective, with optional {placeholder}>
-   – <Placeholder>: value1, value2, ...
-```
+When reviewing an existing User Story, classify **only happy-path ACs present** as an **Important** gap. Name the missing cases in domain language and propose 2-3 extra Given / When / Then ACs. For password-reset stories, explicitly check for: unregistered email or phone, expired token or code, already-used token or code, wrong code, and retry limits.
 
-See full AC format and examples in [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+If the request is really for a single atomic rule or technical behavior rather than an end-to-end user outcome, say so explicitly: this is a **Functionality-level behavior**, not a User Story. Stop and redirect to `living-doc-create-functionality`.
 
 **Completeness check — always ask:**
 1. What happens on the happy path? (at least one AC required)
@@ -94,7 +90,6 @@ Warn if only happy-path ACs are present:
 > **ID assignment:** before assigning a `US-nnn` ID, run
 > `python scripts/next_id.py --type US --catalog catalog.json`
 > to get the next available ID and avoid collisions.
-> For AC IDs, use `--type AC --parent US-<nnn>` to get the next sequential AC number.
 
 Invariants that must hold before outputting:
 - At least one AC exists
@@ -102,19 +97,40 @@ Invariants that must hold before outputting:
 - Status defaults to `planned`
 - No open `[TODO]` markers
 
-Output the User Story using the project's Storage Profile format. Canonical fields:
+When creating a new User Story, output **one fenced `json` code block** using this canonical shape:
 
-| Field | Required | Value |
-|---|---|---|
-| entity type | Yes | `UserStory` |
-| `id` | Yes | `US-<nnn>` (e.g. `US-001`) |
-| `name` | Yes | Short imperative title (e.g. "Customer Login") |
-| `status` | Yes | `planned` — default for new entities |
-| `as_a` | Yes | Named actor |
-| `i_can` | Yes | The capability |
-| `so_that` | Yes | Business outcome |
-| `features` | Yes | List of `FEAT-<nnn>` IDs |
-| `acceptance_criteria` | Yes | List of ACs in the format defined in [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)) |
+```json
+{
+  "type": "UserStory",
+  "id": "US-001",
+  "title": "Reset password via SMS",
+  "status": "planned",
+  "as_a": "registered customer",
+  "i_want": "reset my password via SMS",
+  "so_that": "I can regain access even when I cannot use email",
+  "features": ["FEAT-login"],
+  "acceptance_criteria": [
+    {
+      "id": "US-001-AC-1",
+      "description": "A registered customer with a phone number on file can request a password reset code by SMS and sees confirmation that the code was sent."
+    },
+    {
+      "id": "US-001-AC-2",
+      "description": "A customer who enters an unregistered phone number is told that the reset request cannot be completed."
+    },
+    {
+      "id": "US-001-AC-3",
+      "description": "A customer who submits an expired or already-used reset code is told to request a new code."
+    }
+  ]
+}
+```
+
+Rules:
+- Use `title` rather than `name`
+- Use `as_a`, `i_want`, and `so_that`
+- Every AC object must have `id` in `US-<nnn>-AC-<n>` format and a plain-language `description`
+- Keep Gherkin keywords out of JSON values
 
 ## Anti-patterns to flag
 
@@ -123,8 +139,9 @@ Output the User Story using the project's Storage Profile format. Canonical fiel
 | AC says "the system saves to the database" | Technical implementation — restate as user outcome. Provide a rewritten AC: e.g. "When the customer confirms the order, then the order is acknowledged and the customer sees a confirmation message." |
 | AC says "unit test passes" | Test is not an AC — describe the behavior, not how it's verified |
 | Narrative says "As a system..." | System is not a user — name the human role |
-| Same capability described for two different actors | Two actors = two separate User Stories. Different actors have different permissions, audit requirements, and AC sets. Mixing two actor perspectives in one User Story produces ambiguous ACs. Shared Functionalities (e.g. OTP generation, email delivery) can be linked to both User Stories. || User Story "I can" clause contains "and" | Multiple capabilities in one User Story — split at each “and”. Each capability has its own failure paths and may touch different Features; bundling them makes ACs ambiguous and traceability impossible. |
+| Same capability described for two different actors | Two actors = two separate User Stories. Different actors have different permissions, audit requirements, and AC sets. Mixing two actor perspectives in one User Story produces ambiguous ACs. Shared Functionalities (e.g. OTP generation, email delivery) can be linked to both User Stories. |
+| User Story "I want" clause contains "and" | Multiple capabilities in one User Story — split at each “and”. Each capability has its own failure paths and may touch different Features; bundling them makes ACs ambiguous and traceability impossible. |
 | AC uses `{placeholder}` for a single value | Placeholder syntax is only justified when two or more values vary. If only one value applies, write it inline. Example: instead of `{error type}: inline validation message`, write `an inline validation message is shown`. |
 | AC describes a non-observable outcome | e.g. “a background job processes the record” — the user cannot observe this. Restate as the observable signal (e.g. “the confirmation email arrives within 60 seconds”), or redirect the behavior to a Functionality entity if it is purely technical. |
-| AC identifier is missing the version or state | AC format requires `AC:<parent-id>-<nn> (v<version> – <State>)`. An AC without version or state cannot be traced across releases or marked as deprecated without rewriting its ID. |
+| AC identifier does not follow `US-<nnn>-AC-<n>` | Every acceptance criterion in the JSON output needs a stable `US-<nnn>-AC-<n>` id so it can be referenced unambiguously. |
 | AC behavior already documented in another User Story | Duplicate ACs create a maintenance burden — any change must be applied in every copy. Extract the shared behavior into a Functionality entity and link both User Stories to it. |
