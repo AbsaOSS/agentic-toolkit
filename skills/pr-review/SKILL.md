@@ -1,18 +1,16 @@
 ---
 name: pr-review
 description: >
-  Pull request code review. Use this skill whenever the user asks to review a PR, check a diff,
-  give feedback on code changes, or do a sanity check on changes — even if they just say "LGTM?"
-  or "does this look right?". Also activate when the user shares a GitHub PR link and asks for
-  thoughts, or when reviewing changes before merging. Covers standard risk, elevated risk,
-  API contracts, dependency bumps, CI/CD changes, and infrastructure changes. Applies the
-  relevant sections based on what files the PR touches. Produces concise comments grouped
-  by severity: Blocker / Important / Nit.
-  Triggers on: "review my PR", "check this diff for issues/risks", "any issues with these
-  changes", "feedback on my code", "can you review", "look at this PR", "sanity check",
-  "LGTM?", "does this look right?".
-  Does NOT trigger for purely generative tasks on a diff (e.g. "generate release notes from
-  this diff", "summarise this diff") — those are documentation tasks, not code review.
+  PR code review with structured domain checklists. ALWAYS invoke for any request to review a
+  PR, diff, or code changes — even casual ones like "LGTM?" or "does this look right?". This
+  skill provides domain-specific risk checklists that Claude won't apply without it: dependency
+  upgrade risks, database migration rollback safety, CI/CD gate bypass detection, API contract
+  breaking-change analysis, Terraform/IaC least-privilege review, and elevated-risk auth pattern
+  detection. Outputs are severity-tiered (Blocker / Important / Nit) for actionable triage.
+  Invoke whenever: PR review, sanity check on a diff, pre-merge approval feedback, "any issues
+  with this PR?", or when a user shares a PR link and wants feedback.
+  Does NOT invoke for: generating release notes/changelogs from a diff, refactoring tasks,
+  writing new code, or debugging errors.
 ---
 
 # PR Review

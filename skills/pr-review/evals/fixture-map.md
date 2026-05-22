@@ -16,16 +16,19 @@ This file links each eval test case to its related fixture diff.
 | 10 | paraphrase | evals/files/api-rename.diff |
 | 11 | paraphrase | evals/files/ci-gate-bypass.diff |
 | 12 | multi-section | evals/files/multi-section-risks.diff |
+| 13 | happy-path | evals/files/skill-definition-clean.diff |
+| 14 | regression | evals/files/skill-definition-violations.diff |
+| 15 | paraphrase | evals/files/skill-definition-violations.diff |
 
 > **Note:** Eval-9 (release-notes negative case) was moved to `trigger-eval.json` as entry `n11-release-notes-from-diff` — it tests trigger boundary, not review quality.
 
 ## Coverage Summary
 
-- happy-path: 4
-- regression: 3
+- happy-path: 5
+- regression: 4
 - edge-case: 1
 - negative: 1
-- paraphrase: 2
+- paraphrase: 3
 - multi-section: 1
-- total: 12
+- total: 15
 

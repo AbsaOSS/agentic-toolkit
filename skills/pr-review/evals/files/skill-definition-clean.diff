@@ -1,0 +1,72 @@
+diff --git a/skills/data-masking/SKILL.md b/skills/data-masking/SKILL.md
+new file mode 100644
+index 0000000..1a2b3c4
+--- /dev/null
++++ b/skills/data-masking/SKILL.md
+@@ -0,0 +1,47 @@
++---
++name: data-masking
++description: >
++  Applies PII masking rules to data pipelines and service code. Use this skill when
++  reviewing or writing code that handles personal data, applying field-level masking,
++  or auditing logging statements for PII leakage. Covers ingestion masking, log safety,
++  approved masking strategies, and acceptable exceptions for audit trails.
++  Triggers on: "mask PII", "redact personal data", "field-level masking", "PII in logs",
++  "anonymise data", "data masking", "GDPR masking", "mask sensitive fields",
++  "PII leakage", "sanitise output".
++  Does NOT trigger for: general data transformation without PII concerns (use etl-standards),
++  writing GDPR compliance documentation (use compliance-docs).
++---
++
++# Data Masking
++
++Apply PII masking rules consistently across data pipelines and service logs.
++
++## When to apply
++
++Apply when code touches fields classified as PII: names, email addresses, phone numbers,
++national ID numbers, financial account numbers, or any field tagged `pii: true` in the
++data catalogue.
++
++## Masking rules
++
++- Mask at the point of ingestion — do not store raw PII unless retention is explicitly justified
++- Use the team masking helper: `core.masking.mask_field(value, strategy)`
++- Supported strategies: `hash`, `redact`, `partial` (last 4 digits), `pseudonymise`
++- Log statements must never emit raw PII — wrap with `mask_field` before interpolating
++- Test coverage must include a case where a masked field is verified absent from output
++
++## Acceptable exceptions
++
++- Raw PII in audit trails only when the audit store is classified at the same level as the source
++- Partial masking (`last4`) is acceptable for payment card display; full storage must remain masked
++
++## Helpers
++
++Run `scripts/scan_pii_fields.py <filepath>` to scan a Python module for field names matching
++common PII patterns before submitting for review.
++
++## References
++
++See `references/masking-strategies.md` for the full list of approved strategies.
+diff --git a/skills/data-masking/scripts/scan_pii_fields.py b/skills/data-masking/scripts/scan_pii_fields.py
+new file mode 100644
+index 0000000..2c3d4e5
+--- /dev/null
++++ b/skills/data-masking/scripts/scan_pii_fields.py
+@@ -0,0 +1,14 @@
++"""Scans a Python module for field names matching common PII patterns."""
++import re
++import sys
++
++PII_PATTERNS = [r"\bemail\b", r"\bphone\b", r"\bfull_name\b", r"\bnational_id\b"]
++
++
++def scan(filepath: str) -> list[str]:
++    with open(filepath) as f:
++        content = f.read()
++    return [p for p in PII_PATTERNS if re.search(p, content)]
++
++
++if __name__ == "__main__":
++    print(scan(sys.argv[1]))

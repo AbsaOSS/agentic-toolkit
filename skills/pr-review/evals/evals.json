@@ -96,7 +96,7 @@
         "Dropping phone_number while code references it is flagged as Blocker",
         "Adding non-nullable column without default to existing rows is flagged as Blocker (will fail)",
         "Lack of downgrade path is flagged as Important",
-        "audit_log changes without online schema change tools on a large table is flagged as Important",
+        "audit_log changes without online schema change tools on a large table is flagged as Blocker or Important",
         "Each comment includes What, Why, and How to fix",
         "The DB migrations section was applied (not generic standard review)"
       ]
@@ -113,7 +113,7 @@
         "Output is grouped into Blocker / Important / Nit sections",
         "Hardcoded secret token 'super_secret_key_12345' is flagged as a Blocker security issue",
         "Hardcoded user IDs [1, 2, 42] bypass for 'development speed' is flagged (Blocker or Important)",
-        "Inlined admin check contradicts prior review feedback (mentioned in code) \u2014 flagged as Important",
+        "Inlined admin check (header-based admin role) is flagged as Blocker or Important",
         "Removing legacy_phone while 40+ queries reference it is flagged as Blocker or Important",
         "Wide refactor (multiple endpoints + services) with incomplete test coverage is flagged as elevated risk",
         "Permission logic refactor with partial test coverage is flagged as Important/elevated risk",
@@ -196,7 +196,58 @@
         "CI/CD: skipping test_user_api tests (-k flag) flagged as quality gate bypass (Blocker)",
         "CI/CD: deploy trigger widened from branch-scoped to all pushes flagged",
         "Elevated-risk overlay is NOT applied \u2014 PR has no auth/security/infra/wide-refactor touches despite touching multiple sections"
+      ]    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "Can you review this new skill PR before I merge? evals/files/skill-definition-clean.diff",
+      "expected_output": "Review applies the Skill definitions section. All checks pass: name is kebab-case matching the directory, description covers what it does and when to trigger with explicit keywords, body is under 500 lines, no hardcoded paths or secrets, and the bundled script is referenced in SKILL.md. No Blocker or Important findings.",
+      "files": [
+        "evals/files/skill-definition-clean.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied (listed in Applied sections header)",
+        "No Blocker or Important issues are raised — the skill is well-formed",
+        "Reviewer confirms name is kebab-case and matches the directory name",
+        "Reviewer confirms description includes explicit trigger keywords",
+        "Reviewer confirms the bundled script is referenced in SKILL.md",
+        "The review is concise — it does not manufacture problems where none exist"
       ]
-    }
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Review this new skill before we add it to the toolkit. Diff: evals/files/skill-definition-violations.diff",
+      "expected_output": "Review applies the Skill definitions section and flags: (1) name 'DataTransformer' is PascalCase and does not match directory 'data-transformer' (Important), (2) description has no trigger keywords — vague prose only (Important), (3) hardcoded absolute path in skill body (Important), (4) scripts/run_transform.sh is not referenced in SKILL.md (Important).",
+      "files": [
+        "evals/files/skill-definition-violations.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied (listed in Applied sections header)",
+        "name 'DataTransformer' not being kebab-case or not matching directory 'data-transformer' is flagged",
+        "Missing trigger keywords in description is flagged",
+        "Hardcoded absolute path '/Users/john.doe/repos/internal-toolkit/...' in skill body is flagged",
+        "scripts/run_transform.sh not referenced from SKILL.md is flagged",
+        "Each comment includes What, Why, and How to fix"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "paraphrase",
+      "prompt": "Does this SKILL.md look right to you? Please check it follows our conventions. File: evals/files/skill-definition-violations.diff",
+      "expected_output": "Same core behaviour as test 14: review flags the name casing/mismatch, missing trigger keywords, hardcoded absolute path, and unreferenced script.",
+      "files": [
+        "evals/files/skill-definition-violations.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied",
+        "name field violation (casing or directory mismatch) is flagged",
+        "Missing trigger keywords in description is flagged",
+        "Hardcoded absolute path is flagged",
+        "Unreferenced script is flagged"
+      ]    }
   ]
 }
