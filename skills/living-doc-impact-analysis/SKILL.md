@@ -21,6 +21,33 @@ compatibility: GitHub Copilot
 
 > **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
+## Script — `scripts/trace_impact.py`
+
+Run this script to trace changed files to living doc entities before producing the impact map.
+The catalog JSON must include a `feature_registry` section mapping path patterns to Feature IDs.
+
+```bash
+# Trace from an explicit file list
+python scripts/trace_impact.py --files src/payments/PromoService.java --catalog catalog.json --summary
+
+# Trace from a unified git diff
+python scripts/trace_impact.py --diff changes.diff --catalog catalog.json --output impact.json
+```
+
+Feature registry format (add to your catalog JSON):
+```json
+{
+  "feature_registry": [
+    { "feature_id": "FEAT-001", "paths": ["src/auth/**", "src/security/login*"] }
+  ]
+}
+```
+
+The script handles Steps 1–2 (file classification and entity traversal). Use its output JSON
+to drive Steps 3–5 (impact classification, impact map narrative, and sign-off checklist).
+
+---
+
 ## Step 1 — Identify the changed surface area
 
 Start from the code change (PR diff, renamed module, deleted endpoint):

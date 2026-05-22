@@ -74,6 +74,10 @@ FUNC entries), leave the array as `[]` and add a warning:
 
 ## Step 6 — Output canonical Feature entity
 
+> **ID assignment:** before assigning a `FEAT-nnn` ID, run
+> `python scripts/next_id.py --type FEAT --catalog catalog.json`
+> to get the next available ID and avoid collisions.
+
 Output using the project's Storage Profile format. Canonical fields:
 
 | Field | Required | Value |

@@ -90,6 +90,11 @@ Warn if only happy-path ACs are present:
 
 ## Step 4 — Validate and output
 
+> **ID assignment:** before assigning a `US-nnn` ID, run
+> `python scripts/next_id.py --type US --catalog catalog.json`
+> to get the next available ID and avoid collisions.
+> For AC IDs, use `--type AC --parent US-<nnn>` to get the next sequential AC number.
+
 Invariants that must hold before outputting:
 - At least one AC exists
 - At least one Feature is linked (or flagged as `[NEW]`)

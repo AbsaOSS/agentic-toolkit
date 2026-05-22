@@ -32,7 +32,7 @@ Ask: *Which entity is being updated, and what kind of change is this?*
 | Change status | Any entity | Update `status` field; record the transition event |
 | Change owner | Feature | Update `owners` field |
 | Add a linked User Story | Feature | Append to `user_stories` |
-| Deprecate an entity | Any entity | Set `status: deprecated`; add `deprecated_at` and `reason` |
+| Deprecate an entity | Any entity | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
 | Delete a Functionality | Functionality | Do not delete — deprecate it and link to the commit that removed the code |
 
 ## Update a User Story — add or modify ACs
@@ -53,9 +53,9 @@ to linked tests and Gherkin scenarios. Only change the description text or state
 AC text affects the wording of linked Gherkin steps, flag the linked scenarios for
 `gherkin-living-doc-sync`.
 
-## Promote a User Story from draft to ready
+## Promote a User Story from planned to active
 
-Invariants that must hold before setting `status: ready`:
+Invariants that must hold before setting `status: active`:
 
 | Check | Requirement |
 |---|---|
@@ -65,7 +65,7 @@ Invariants that must hold before setting `status: ready`:
 | No open `[TODO]` markers | Description and ACs are finalised |
 
 Warn if any invariant fails:
-> "User Story US-042 cannot be moved to 'ready': no error-path AC exists. Add at least one
+> "User Story US-042 cannot be promoted from 'planned' to 'active': no error-path AC exists. Add at least one
 > AC for a failure or edge case before promoting."
 
 ## Deprecate a Feature or Functionality
@@ -116,6 +116,28 @@ AC:US-042-03 (v1.2.0 – Planned)
 | Create a new Functionality | `living-doc-create-functionality` |
 | Find gaps in living documentation | `living-doc-gap-finder` |
 | Generate Gherkin scenarios from a User Story | `living-doc-scenario-creator` |
+
+## Script — `scripts/validate_entity.py`
+
+After updating any entity, run this script to validate the result against the canonical schema.
+It checks required fields, ID format, status values, AC structure, and (with `--catalog`)
+referential integrity against the full catalog.
+
+```bash
+# Validate a single entity file
+python scripts/validate_entity.py entity.json
+
+# Validate with referential integrity checks
+python scripts/validate_entity.py entity.json --catalog catalog.json
+
+# Machine-readable output (exits 1 if any error)
+python scripts/validate_entity.py entity.json --json
+```
+
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing,
+an ID format is wrong, or a status value is invalid.
+
+---
 
 ## Output change summary
 

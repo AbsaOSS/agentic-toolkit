@@ -21,6 +21,28 @@ compatibility: GitHub Copilot
 
 > **Key concepts:** Feature, Functionality, User Story, AC, PageObject — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
+## Script — `scripts/compute_gaps.py`
+
+Run this script to compute all 9 gap types deterministically before producing the gap report.
+It takes a catalog snapshot JSON as input and outputs the `gaps[]` array and coverage stats.
+
+```bash
+# Human-readable summary
+python scripts/compute_gaps.py catalog-snapshot.json --summary
+
+# Machine-readable report
+python scripts/compute_gaps.py catalog-snapshot.json --output gap-report.json
+```
+
+The catalog must contain `catalog`, `inventory`, and `known_test_links` sections —
+see `evals/files/catalog-snapshot.json` for a worked example.
+
+Run the script first, then use its output to drive the Prioritise and Propose steps below.
+The Workflow section describes the logic the script encodes — read it for understanding, but
+delegate the computation to the script rather than reproducing it through reasoning.
+
+---
+
 ## Gap taxonomy
 
 Nine types of gaps are detected, in order of risk:
