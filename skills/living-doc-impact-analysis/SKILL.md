@@ -19,7 +19,7 @@ compatibility: GitHub Copilot
 
 # Living Doc — Impact Analysis
 
-> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
+> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
 ## Step 1 — Identify the changed surface area
 

@@ -22,6 +22,10 @@ so that <business outcome>.
 - Owns: end-to-end **Acceptance Criteria (AC)**
 - Links to: one or more **Features** (system surfaces the User Story touches)
 - Status: `planned | active | deprecated`
+- Deprecation metadata (set when `status: deprecated`):
+  - `deprecated_at` — date the entity was deprecated
+  - `deprecation_reason` — why it was deprecated
+  - `superseded_by` — ID of the replacement entity (optional)
 
 ### Feature
 
@@ -38,7 +42,15 @@ A named system surface — the structural layer between User Stories and atomic 
 
 - Owns: one or more **Functionalities**
 - Links to: one or more **User Stories**
+- `owners`: team or person responsible for this Feature
 - Status: `planned | active | deprecated`
+- Deprecation metadata (set when `status: deprecated`):
+  - `deprecated_at` — date the entity was deprecated
+  - `deprecation_reason` — why it was deprecated
+  - `superseded_by` — ID of the replacement entity (optional)
+- Ownership change metadata (set when `owners` changes):
+  - `owner_changed_at` — date of ownership transfer
+  - `owner_change_reason` — reason for the transfer
 
 ### Functionality (FUNC)
 
@@ -49,6 +61,10 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
 - Belongs to: one parent **Feature**
 - Owns: **Functionality-level Acceptance Criteria** (atomic input → output statements)
 - Status: `planned | active | deprecated`
+- Deprecation metadata (set when `status: deprecated`):
+  - `deprecated_at` — date the entity was deprecated
+  - `deprecation_reason` — why it was deprecated
+  - `superseded_by` — ID of the replacement entity (optional)
 
 Functionalities differ from User Story ACs: they are atomic and fast-testable, not end-to-end.
 A single User Story may trigger multiple Functionalities.
@@ -77,6 +93,16 @@ Deprecated ACs include a removal note:
 
 ```
 AC:<parent-id>-<nn> (v<version> – Deprecated – removal planned v<version>)
+```
+
+**Descoped ACs** (deferred mid-sprint — state stays `Planned`):
+
+```
+AC:<parent-id>-<nn> (v<version> – Planned)
+   – <description>
+   – descoped_at: <date>           ← date AC was deferred out of the current sprint
+   – descoped_reason: <text>
+   – future_release: <sprint/tag>  ← optional; target sprint or release
 ```
 
 **User Story AC examples — end-to-end, written from the user's perspective:**

@@ -19,7 +19,7 @@ compatibility: GitHub Copilot
 
 # Living Doc — Gap Finder
 
-> **Key concepts:** Feature, Functionality, User Story, AC, PageObject — see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
+> **Key concepts:** Feature, Functionality, User Story, AC, PageObject — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
 ## Gap taxonomy
 
@@ -50,11 +50,12 @@ Output: `inventory.json` — a flat list of discovered artifacts.
 
 ### Step 2 — Top-down entity traversal
 
-Traverse the entity graph by following relationship fields:
-- All User Stories (with their ACs and status) — the root entry points
-- All Features (via User Story `features` links)
-- All Functionalities (via Feature `functionalities` links)
-- All existing test links (test file → AC mappings)
+Traverse the entity graph top-down, starting from User Stories as roots:
+
+- **User Stories** (root) — load all entities with their ACs and status
+- **Features** — for each User Story, follow its `features` list to reach linked Features
+- **Functionalities** — for each Feature, follow its `functionalities` list to reach owned Functionalities
+- **Test links** — collect all test file → AC mappings for cross-referencing in Step 3
 
 ### Step 3 — Compute gaps
 
