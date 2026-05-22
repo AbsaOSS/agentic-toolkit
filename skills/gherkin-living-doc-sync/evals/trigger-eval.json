@@ -13,5 +13,6 @@
   {"id": 12, "query": "Write a new scenario for the expired promo AC", "should_trigger": false, "reason": "Writing new scenarios — routes to gherkin-scenario"},
   {"id": 13, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
   {"id": 14, "query": "Find which User Stories have no Gherkin scenarios", "should_trigger": false, "reason": "Finding living doc gaps — routes to living-doc-gap-finder"},
-  {"id": 15, "query": "Create a new User Story for the checkout capability", "should_trigger": false, "reason": "Creating new entities — routes to living-doc-create-user-story"}
+  {"id": 15, "query": "Create a new User Story for the checkout capability", "should_trigger": false, "reason": "Creating new entities — routes to living-doc-create-user-story"},
+  {"id": 16, "query": "Propagate AC changes from the living doc back to the feature files", "should_trigger": true, "reason": "'propagate AC changes' trigger phrase"}
 ]

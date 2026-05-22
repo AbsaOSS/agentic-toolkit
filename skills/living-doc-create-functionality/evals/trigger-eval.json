@@ -14,5 +14,7 @@
   {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
   {"id": 14, "query": "Run a gap analysis on the living documentation", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"},
   {"id": 15, "query": "How should I define the component behavior for the payment validator?", "should_trigger": true, "reason": "'define component behavior' trigger phrase"},
-  {"id": 16, "query": "Write atomic acceptance criteria for the session expiry logic", "should_trigger": true, "reason": "'atomic acceptance criteria' trigger phrase"}
+  {"id": 16, "query": "Write atomic acceptance criteria for the session expiry logic", "should_trigger": true, "reason": "'atomic acceptance criteria' trigger phrase"},
+  {"id": 17, "query": "Should this behavior be tested with a unit test or an integration test?", "should_trigger": true, "reason": "'unit vs integration test' trigger phrase"},
+  {"id": 18, "query": "Help me choose test type for the loyalty points calculation — it calls no external services", "should_trigger": true, "reason": "'choose test type' trigger phrase"}
 ]

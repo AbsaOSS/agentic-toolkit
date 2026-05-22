@@ -3,12 +3,13 @@ name: gherkin-living-doc-sync
 description: >
   Synchronise Gherkin feature files and BDD scenarios with the living documentation catalog.
   Activate when scenarios diverge from User Story ACs, when step text drifts after a UI
-  refactor, or when AC link headers are missing or stale. Distinct from gap-finder (which
-  detects missing coverage) — corrects existing links.
+  refactor, when AC link headers or # AC: comment annotations are missing or stale, or when
+  propagating AC changes from the living doc back to feature files. Distinct from gap-finder
+  (which detects missing coverage) — corrects existing links.
   Triggers on: "sync gherkin to living doc", "feature file out of sync", "scenario not linked
   to AC", "step text changed", "gherkin drift", "update living doc after BDD change",
   "BDD sync", "AC link missing in feature file", "sync scenarios",
-  "gherkin out of sync with living doc", "traceability broken".
+  "gherkin out of sync with living doc", "traceability broken", "propagate AC changes".
   Does NOT trigger for: writing new scenarios (use gherkin-scenario), implementing step
   definitions (use gherkin-step), finding living doc gaps (use living-doc-gap-finder),
   creating new US/Feature entities (use living-doc-create-user-story).

@@ -1,11 +1,11 @@
 ---
 name: living-doc-create-feature
 description: >
-  Define a system surface (UI screen or API endpoint group) as a Feature entity, enabling impact
-  analysis and change-management traceability in the living documentation. Activate when
-  documenting a new screen or API endpoint, mapping system surfaces to User Stories, enumerating
-  which Functionalities a surface owns, or bootstrapping the structural layer between User Stories
-  and atomic behaviors.
+  Define a system surface (UI screen, API endpoint, service, or module) as a Feature entity,
+  enabling impact analysis and change-management traceability in the living documentation.
+  Activate when documenting a new screen, API endpoint, service, or module; maintaining a
+  Feature Registry; mapping system surfaces to User Stories; enumerating which Functionalities
+  a surface owns; or bootstrapping the structural layer between User Stories and atomic behaviors.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
   feature", "create feature entity", "system surface documentation", "feature owners",
