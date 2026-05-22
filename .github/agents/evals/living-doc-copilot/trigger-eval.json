@@ -1,0 +1,18 @@
+[
+  {"id":  1, "query": "Create a user story for the checkout capability", "should_trigger": true, "reason": "'create user story' trigger phrase"},
+  {"id":  2, "query": "Document the Orders API as a Feature in the living doc", "should_trigger": true, "reason": "'document feature' trigger phrase"},
+  {"id":  3, "query": "Update the AC on US-007 — the payment timeout is now 30 seconds, not 60", "should_trigger": true, "reason": "'update AC' trigger phrase"},
+  {"id":  4, "query": "Run an impact analysis on the PaymentService refactor", "should_trigger": true, "reason": "'impact analysis' trigger phrase"},
+  {"id":  5, "query": "Find gaps in the living documentation catalog", "should_trigger": true, "reason": "'living doc gaps' trigger phrase"},
+  {"id":  6, "query": "Enter PLAN mode — the PO has a new checkout initiative that hasn't been built yet", "should_trigger": true, "reason": "'PLAN mode' trigger phrase"},
+  {"id":  7, "query": "Run HEALING mode on the living doc catalog — we've deleted several old flows", "should_trigger": true, "reason": "'HEALING mode' trigger phrase"},
+  {"id":  8, "query": "Deprecate the legacy payment flow entities in the living doc", "should_trigger": true, "reason": "'deprecate entity' trigger phrase"},
+  {"id":  9, "query": "@living-doc-copilot help me update the requirements catalog", "should_trigger": true, "reason": "'living doc copilot' trigger phrase — explicit agent invocation"},
+  {"id": 10, "query": "Add an AC to user story US-003 for the expired promo code case", "should_trigger": true, "reason": "'add AC to user story' trigger phrase"},
+  {"id": 11, "query": "Trace which features are affected by the change to the notification service", "should_trigger": true, "reason": "'trace affected features' trigger phrase"},
+  {"id": 12, "query": "Update the feature registry to include the new reporting module", "should_trigger": true, "reason": "'update feature registry' trigger phrase"},
+  {"id": 13, "query": "Scan the webapp and generate PageObjects for the checkout screen", "should_trigger": false, "reason": "UI crawl and PageObject generation — routes to @living-doc-bdd-copilot"},
+  {"id": 14, "query": "Generate Gherkin scenarios for US-007", "should_trigger": false, "reason": "Scenario generation — routes to @living-doc-bdd-copilot"},
+  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Test code authoring — routes to @sdet-copilot"},
+  {"id": 16, "query": "Fix the failing BDD tests after the UI redesign", "should_trigger": false, "reason": "PageObject and step definition repair — routes to @living-doc-bdd-copilot"}
+]

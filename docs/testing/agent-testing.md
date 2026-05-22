@@ -1,6 +1,6 @@
 # Agent Testing Guide
 
-This document describes how to test, evaluate, and tune `.agent.md` files — specifically how to use `agent-customization` (for structural edits) together with `skill-creator`'s eval methodology (for description trigger accuracy). This is the practical equivalent of [skill-testing.md](./skill-testing.md) applied to agents.
+This document describes how to test, evaluate, and tune `.agent.md` files — specifically how to use `skill-creator`'s eval methodology (for description trigger accuracy). This is the practical equivalent of [skill-testing.md](./skill-testing.md) applied to agents.
 
 ---
 
@@ -11,7 +11,6 @@ This document describes how to test, evaluate, and tune `.agent.md` files — sp
 | Trigger mechanism | `description:` field in SKILL.md YAML | `description:` field in `.agent.md` YAML |
 | Body loaded when? | When skill is activated by description match | When user addresses `@agent-name` or description matches |
 | What to tune | Description trigger keywords + body instructions | Description trigger keywords + body sections (scope, handoff, maintenance modes) |
-| Tool for structural edits | `skill-creator` | `agent-customization` |
 | Tool for eval loop | `skill-creator` (fully supported) | `skill-creator` (description eval loop applies directly) |
 
 The key insight: an agent's `description:` block is read by the same matching mechanism as a skill's `description:`. Everything `skill-creator` does to optimize skill descriptions applies 1-for-1 to agent descriptions.
@@ -25,7 +24,7 @@ The key insight: an agent's `description:` block is read by the same matching me
 3. Start a Copilot Chat session from the repository root
 4. Ask Copilot to use the `skill-creator` skill, pointing it at the agent's eval files
 5. Review trigger accuracy and output quality
-6. Use `agent-customization` to edit structural sections (tools list, scope, handoff, modes)
+6. Edit structural sections directly in the `.agent.md` file (tools list, scope, handoff, modes)
 7. Re-run evals; repeat until stable
 
 ---
@@ -138,21 +137,13 @@ Use the same with-skill / baseline comparison flow described in [skill-testing.m
 
 ---
 
-## 6. Structural edits — use `agent-customization`
+## 6. Structural edits
 
-When body evals reveal a section is wrong (wrong scope, missing tool, bad handoff), use the `agent-customization` skill to fix the structural parts:
+When body evals reveal a section is wrong (wrong scope, missing tool, bad handoff), edit the `.agent.md` file directly:
 
-```
-Use the agent-customization skill to add `mcp_microsoft_pla_browser_wait_for` to the tools list
-in .github/agents/my-agent.agent.md.
-```
-
-```
-Use the agent-customization skill to update the HEALING mode scope in
-.github/agents/my-agent.agent.md — it should be scoped to failing tests only.
-```
-
-`agent-customization` understands `.agent.md` YAML frontmatter and section structure, so it handles these edits safely without breaking the file format.
+- **Missing tool** — add the tool name to the `tools:` list in the YAML frontmatter
+- **Wrong scope boundary** — update the relevant section (`## Scope`, `## Does NOT`, or the specific mode block)
+- **Broken handoff** — update the `## Handoff` section with the correct target agent and conditions
 
 ---
 
@@ -221,7 +212,7 @@ gh copilot
 → "Use the skill-creator skill to test the agent at .github/agents/my-agent.agent.md
    using the evals at .github/agents/evals/my-agent/"
 → inspect trigger accuracy and body output diffs
-→ use agent-customization to fix structural issues
+→ edit the `.agent.md` file directly to fix structural issues
 → "Use the skill-creator skill to optimize the description using the trigger-eval.json"
 → re-run evals until stable
 ```

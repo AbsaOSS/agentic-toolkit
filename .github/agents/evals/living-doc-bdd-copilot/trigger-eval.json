@@ -1,0 +1,22 @@
+[
+  {"id":  1, "query": "Scan the webapp at https://app.example.com and generate PageObjects", "should_trigger": true, "reason": "'scan webapp' trigger phrase"},
+  {"id":  2, "query": "Generate PageObjects for the checkout and login screens", "should_trigger": true, "reason": "'generate pageobjects' trigger phrase"},
+  {"id":  3, "query": "Heal the PageObjects after the UI redesign — selectors are broken", "should_trigger": true, "reason": "'heal pageobjects' trigger phrase"},
+  {"id":  4, "query": "Generate BDD scenarios for the active User Stories", "should_trigger": true, "reason": "'generate scenarios' trigger phrase"},
+  {"id":  5, "query": "Sync the Gherkin feature files with the living doc AC catalog", "should_trigger": true, "reason": "'sync gherkin' trigger phrase"},
+  {"id":  6, "query": "Use Playwright to crawl the application and discover all screens", "should_trigger": true, "reason": "'playwright crawl' trigger phrase"},
+  {"id":  7, "query": "Explore the app and map all the UI surfaces", "should_trigger": true, "reason": "'explore the app' trigger phrase"},
+  {"id":  8, "query": "@bdd-copilot scan the dashboard and generate scenarios", "should_trigger": true, "reason": "'bdd copilot' trigger phrase — explicit agent invocation"},
+  {"id":  9, "query": "@living-doc-bdd-copilot set up the BDD suite for our new module", "should_trigger": true, "reason": "'living doc bdd copilot' trigger phrase — explicit agent invocation"},
+  {"id": 10, "query": "Run the full BDD pipeline — crawl, generate PageObjects, and produce feature files", "should_trigger": true, "reason": "'BDD pipeline' trigger phrase"},
+  {"id": 11, "query": "Crawl the UI to discover all reachable pages", "should_trigger": true, "reason": "'crawl the UI' trigger phrase"},
+  {"id": 12, "query": "Create page objects for the admin portal", "should_trigger": true, "reason": "'create page objects' trigger phrase"},
+  {"id": 13, "query": "Generate a feature file for US-007 — Place an Online Order", "should_trigger": true, "reason": "'generate feature file' trigger phrase"},
+  {"id": 14, "query": "What is the scenario coverage for US-007?", "should_trigger": true, "reason": "'scenario coverage' trigger phrase"},
+  {"id": 15, "query": "Write the step definitions for the checkout scenarios", "should_trigger": true, "reason": "'step definitions' trigger phrase"},
+  {"id": 16, "query": "Generate Gherkin from user story US-003", "should_trigger": true, "reason": "'gherkin from user story' trigger phrase"},
+  {"id": 17, "query": "Create a User Story for the loyalty points redemption feature", "should_trigger": false, "reason": "Living doc catalog entity creation — routes to @living-doc-copilot"},
+  {"id": 18, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test authoring — routes to @sdet-copilot"},
+  {"id": 19, "query": "Update the AC state on US-007-02 to DEPRECATED", "should_trigger": false, "reason": "Catalog entity state update — routes to @living-doc-copilot"},
+  {"id": 20, "query": "Run the TypeScript quality gate for the frontend", "should_trigger": false, "reason": "Quality gate execution — routes to @quality-gate-copilot"}
+]

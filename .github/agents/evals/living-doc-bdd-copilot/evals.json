@@ -1,0 +1,119 @@
+{
+  "agent_name": "living-doc-bdd-copilot",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Start a BDD session for a new project. The living doc catalog is in docs/living-doc/. The app runs at https://app.example.com. Login is required.",
+      "expected_output": "Agent assembles the Business Seed file at the discovered or default location. Sources: (A) loads Feature names and AC texts from docs/living-doc/; (B) looks for route config (Angular router, React Router, sitemap.xml); (D) checks for an existing manifest.json. Creates seed.yaml with: base_url, credentials using env: references (never literal values), known_routes from catalog Features, and an empty guided_steps list. Proposes adding BDD artifact paths to .github/copilot-instructions.md for future sessions.",
+      "files": [],
+      "expectations": [
+        "Creates seed.yaml with base_url, credentials as env: references, and known_routes",
+        "Never stores literal credentials — always env:VAR_NAME",
+        "Loads Feature names and routes from the living doc catalog (Source A)",
+        "Checks for existing manifest.json before starting (Source D)",
+        "Proposes adding artifact paths to .github/copilot-instructions.md"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Crawl the webapp and generate a PageObject for the checkout screen at /checkout.",
+      "expected_output": "Agent navigates to /checkout via MCP Playwright. Takes a snapshot and identifies interactive elements: promo code input, confirm order button, error banner. Generates CheckoutPage with: file-level living-doc: FEAT-<nnn> | /checkout comment, ALL_CAPS selector constants using data-testid preference, __init__ or constructor taking a page parameter, and method stubs for each interactive element. Adds the surface to manifest.json. If no matching Feature entity exists, hands off to @living-doc-copilot to create FEAT-<nnn>. Flags any element using positional CSS selectors as fragile.",
+      "files": [],
+      "expectations": [
+        "Uses MCP Playwright to navigate and snapshot the page",
+        "Generates CheckoutPage with data-testid selector preference",
+        "File-level living-doc: FEAT-nnn | /checkout comment",
+        "Adds entry to manifest.json",
+        "Hands off to @living-doc-copilot for missing Feature entities",
+        "Flags positional CSS selectors as fragile"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Generate Gherkin scenarios for US-007 — Place an Online Order. ACs: (1) Active — happy path: customer places order with saved payment. (2) Active — error: order rejected when card declined.",
+      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated — one per Active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 – Active) — ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
+      "files": [],
+      "expectations": [
+        "Feature file named us-007-place-an-online-order.feature",
+        "Each Scenario: immediately preceded by a # AC: traceability comment",
+        "Skips Planned and Deprecated ACs — only Active ACs drive generation",
+        "Step text in domain language — no implementation details",
+        "Case A stubs delegate to PageObject methods",
+        "Case B stubs raise NotImplementedError and flag the missing PageObject method"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "RE-SCAN mode — the checkout screen had a UI update. Re-validate all manifest entries and discover any new routes.",
+      "expected_output": "Agent reloads seed.yaml and manifest.json. For every existing manifest entry: navigates to the URL, snapshots the DOM, and checks each recorded component_id selector. Selectors that no longer resolve are flagged as BREAKING CHANGE. On each visited page, agent also actively discovers new routes — follows <a href> links, clicks navigation-suggesting buttons, and checks tab panels and side-nav items not yet in the manifest. New surfaces are added to manifest.json. Removed surfaces are marked as deprecated. Stale PageObject selectors are updated.",
+      "files": [],
+      "expectations": [
+        "Reloads both seed.yaml and manifest.json before starting",
+        "Validates every manifest entry's component_id selectors against the current DOM",
+        "Flags broken selectors as BREAKING CHANGE with linked step definition details",
+        "Actively discovers new routes beyond existing manifest entries",
+        "Adds new surfaces to manifest.json; marks removed ones as deprecated",
+        "Updates stale selector constants in PageObjects"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "regression",
+      "prompt": "HEALING mode — the checkout test 'Scenario: Customer successfully places an order' is failing. The confirm button selector is broken.",
+      "expected_output": "Agent enters HEALING mode — scope is limited to the failing test only. Traces the failure to CheckoutPage.CONFIRM_BUTTON and the step 'When the customer confirms the order'. Navigates to /checkout via MCP Playwright, snapshots the DOM, and finds the updated selector. Updates CONFIRM_BUTTON in CheckoutPage only. Verifies the linked step definition binding still resolves. Re-runs only the previously failing test to confirm healing. Does not touch passing tests or unrelated PageObjects.",
+      "files": [],
+      "expectations": [
+        "Scope limited to the failing test — does not touch passing tests",
+        "Navigates to the affected page via MCP Playwright and snapshots DOM",
+        "Updates the broken selector in CheckoutPage only",
+        "Verifies the step definition binding is intact",
+        "Re-runs only the failing test to confirm healing"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "Create a User Story for the guest checkout capability.",
+      "expected_output": "Creating living doc catalog entities is out of scope for this agent — hands off to @living-doc-copilot. @living-doc-bdd-copilot owns the automation layer (PageObjects, scenarios, step definitions); @living-doc-copilot owns the catalog layer (User Stories, Features, Functionalities).",
+      "files": [],
+      "expectations": [
+        "Does not create a User Story",
+        "Routes to @living-doc-copilot",
+        "Explains the catalog vs automation layer boundary"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "paraphrase",
+      "prompt": "Our BDD tests are all failing after the UI redesign — buttons and inputs have new IDs.",
+      "expected_output": "Agent recognises this as a HEALING mode request. Asks for the list of failing test names or scenario titles. Scopes repair to only those failing scenarios. For each failing scenario: traces to the affected PageObject, navigates to the screen via MCP Playwright, snapshots DOM to find updated selectors, and updates affected PageObject constants. Verifies step definition bindings. Re-runs only the previously failing tests. Does not touch unrelated PageObjects.",
+      "files": [],
+      "expectations": [
+        "Identifies this as HEALING mode",
+        "Asks for the failing test list to scope the repair",
+        "Traces each failure to its PageObject and step definition",
+        "Uses MCP Playwright to discover updated selectors",
+        "Re-runs only previously failing tests after healing"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "edge-case",
+      "prompt": "REMOVE mode — the legacy promo code feature has been removed from the product. Clean up the BDD artifacts.",
+      "expected_output": "Agent enters REMOVE mode. Identifies all .feature files whose scenarios carry # AC: tags matching the removed promo code Feature/US IDs. Finds PageObjects referenced only by those scenarios. Finds step definitions used only by those scenarios. Presents the complete deletion list to the user for confirmation before touching any file. After confirmation: removes confirmed files, updates manifest.json to remove the deprecated entries. Flags the linked US/AC entities in the catalog as deprecation candidates and hands off to @living-doc-copilot.",
+      "files": [],
+      "expectations": [
+        "Identifies all .feature file scenarios linked to the removed Feature via # AC: tags",
+        "Identifies PageObjects and step definitions used exclusively by those scenarios",
+        "Presents the full deletion list for user confirmation before any file is touched",
+        "Removes only confirmed files — does not auto-delete",
+        "Updates manifest.json to remove deprecated entries",
+        "Flags catalog entities for deprecation and hands off to @living-doc-copilot"
+      ]
+    }
+  ]
+}

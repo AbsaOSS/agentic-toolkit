@@ -102,6 +102,8 @@ guided_steps: []  # populated during Source E traversal
 5. Repeat until coverage plateau — no new surfaces found in the last full iteration.
 6. Report any unreachable areas — auth walls, dead links, CAPTCHA gates, or forms that cannot be progressed due to missing business knowledge (unknown valid input values, business-specific field formats, required lookup codes, conditional field logic). Offer to enrich `seed.yaml` with missing routes, credentials, or form values, then loop.
 
+**PageObject generation rule:** For every new or changed UI surface, load `living-doc-pageobject-scan` — `Create` mode for first-time generation and `Maintain` mode for selector drift. Generated PageObjects must use a file-level `living-doc: FEAT-<nnn> | /route` header comment, prefer `data-testid` selectors, keep selector constants in `ALL_CAPS`, accept `page` in `__init__` / `constructor`, and expose method stubs for each interactive element. Flag any positional CSS selector as `FRAGILE`. If no matching Feature exists in the catalog, hand the surface to `@living-doc-copilot`; do not create catalog entities here.
+
 **Output artifact:** `.copilot/bdd/manifest.json`
 
 ```json
@@ -148,14 +150,17 @@ guided_steps:
 After exploration completes (manifest is up to date):
 
 1. Use the `living-doc-gap-finder` skill (bottom-up mode) to identify User Stories with `ACTIVE` ACs that have no linked Gherkin scenario.
-2. For each gap: load the `living-doc-scenario-creator` skill and generate Gherkin scenario skeletons — one scenario per AC, with the mandatory `# AC:` traceability tag.
-3. Write `.feature` files under the project's feature directory.
-4. For each generated scenario, resolve step definitions:
+2. For each gap: load the `living-doc-scenario-creator` skill and generate Gherkin scenario skeletons — one scenario per `Active` or `Implemented` AC, with the mandatory `# AC:` traceability tag. Skip `Planned` and `Deprecated` ACs.
+3. Write `.feature` files under the project's feature directory using `<us-id>-<kebab-title>.feature` naming, e.g. `us-007-place-an-online-order.feature`.
+4. The `Feature:` header must restate the User Story narrative in `As a / I can / so that` form.
+5. Scenario step text must stay in business/domain language only — never mention selectors, HTTP calls, DOM details, or database operations.
+6. For each generated scenario, resolve step definitions:
    a. **Narrow the search scope to the page first** — identify which PageObject the scenario's steps will interact with. Look in step definition files that already import or reference that PageObject; these are the most likely candidates for reuse.
    b. **Match by purpose, not just pattern** — read the step's implementation body to confirm it performs the same business action (e.g. a `fill` on `username-input` vs a `fill` on `search-input` look identical in text but serve different purposes). Only reuse if purpose matches.
    c. If a purpose-matching step exists, reuse it as-is; note which library file it lives in.
-   d. Only if no match exists: write a new stub using the `gherkin-step` skill; extend the relevant PageObject where a new UI interaction is needed.
-5. Update `manifest.json` to record any new PageObject paths created.
+   d. If no reusable step exists but the needed PageObject method already exists, generate a full step stub via `gherkin-step` that delegates directly to that PageObject method.
+   e. If neither the step nor the PageObject method exists, generate a stub that raises `NotImplementedError` (or the language-equivalent pending marker) and explicitly flag that the PageObject must be extended with the missing interaction.
+7. Update `manifest.json` to record any new PageObject paths created.
 
 **Gap detection logic:** An AC is considered uncovered if no scenario in any `.feature` file carries the AC's traceability tag (`# AC: <id>`).
 
@@ -170,14 +175,14 @@ After exploration completes (manifest is up to date):
 **Scope:** Full re-run of every path recorded in `manifest.json`, plus active discovery of new routes not yet in the manifest.
 
 1. Reload `seed.yaml` and `manifest.json`.
-2. For every existing manifest entry: navigate to its URL, snapshot the DOM, and validate that every recorded `component_id` locator still resolves. Flag any locator that no longer matches as `stale`.
+2. For every existing manifest entry: navigate to its URL, snapshot the DOM, and validate that every recorded `component_id` locator still resolves. Flag any locator that no longer matches as `BREAKING CHANGE`, including the linked step definition / scenario details that may fail.
 3. **Actively discover new routes from each visited page** — do not limit discovery to routes already in `seed.yaml`. On each page snapshot:
    - Find all `<a href>` links that resolve to new paths not yet in the manifest.
    - Find all buttons and interactive components whose purpose suggests navigation to a new screen (e.g. "Create order", "View details", "Go to settings") — click them and record the resulting URL.
    - Find tab panels, side-nav items, and wizard steps that expose sub-routes.
    - Any new URL discovered this way is a candidate manifest entry; add it and crawl it recursively.
-4. Add new surfaces to `manifest.json`; mark removed or stale-locator surfaces as `deprecated`.
-5. Update PageObjects for any locators flagged as stale in step 2.
+4. Add new surfaces to `manifest.json`; mark removed surfaces as `deprecated`.
+5. Update stale selector constants in PageObjects for any locators flagged in step 2.
 6. Generate new scenarios for newly discovered ACs (Scenario Generation logic).
 
 ### HEALING mode
@@ -186,10 +191,10 @@ After exploration completes (manifest is up to date):
 
 **Scope:** Failing tests only — do not touch passing tests or unrelated PageObjects.
 
-1. Receive or discover the list of failing test names / scenario titles.
+1. Receive or discover the list of failing test names / scenario titles. If the request only says tests are failing but does not include the failing list, ask for it before making changes so scope stays limited to the failing scenarios.
 2. Trace each failure back to its PageObject and step definition.
 3. Navigate to the affected page via MCP Playwright; snapshot the current DOM.
-4. Find updated element IDs or selectors; update the affected PageObject(s) accordingly.
+4. Find updated element IDs or selectors; update only the affected PageObject(s) accordingly.
 5. Verify the step definition binding still resolves; fix if broken.
 6. Re-run only the previously failing tests to confirm healing. Do not re-run the full suite.
 
