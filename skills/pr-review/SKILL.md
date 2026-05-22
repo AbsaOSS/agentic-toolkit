@@ -46,6 +46,7 @@ Single unified PR review skill. Read the full skill and apply only the sections 
 | CI/CD | .github/workflows/, Jenkinsfile, Justfile, Makefile (pipeline), deployment jobs |
 | Infrastructure | *.tf, *.tfvars, CloudFormation, Helm, Dockerfiles, docker-compose.yml, iac/, infra/ |
 | DB migrations | alembic/, flyway/, liquibase/, migrations/, *.sql, db/ |
+| Skill definitions | skills/*/SKILL.md, any SKILL.md |
 
 > A file may match multiple sections (e.g. a DB migration inside an IaC repo). Apply all matching sections — do not skip a section because another one already fired.
 
@@ -259,3 +260,13 @@ Backward-compatibility decision guide:
 - Migration filenames/versions must be monotonically increasing — gaps or reordering breaks
   migration runners on environments that haven't applied intermediate steps.
 - Must include a rollback/down script or document that rollback is not safe and why.
+
+## Check skill definitions (when PR touches: skills/*/SKILL.md, any SKILL.md)
+
+- `name` is kebab-case, matches the directory name, and is ≤ 64 chars
+- `description` covers both "what it does" AND "when to trigger" with explicit trigger keywords
+- `description` is ≤ 1024 chars and not padded with filler
+- SKILL.md body is < 500 lines, or uses progressive disclosure via `references/`
+- No hardcoded credentials, secrets, or absolute internal paths in skill body or scripts
+- Any bundled script in `scripts/` is referenced from SKILL.md with clear usage guidance
+- The new or modified skill's description does not conflict with or shadow existing skills
