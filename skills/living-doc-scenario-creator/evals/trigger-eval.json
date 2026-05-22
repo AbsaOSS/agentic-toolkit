@@ -1,0 +1,16 @@
+[
+  {"id":  1, "query": "Create BDD scenarios for user story US-007 — Place an Online Order", "should_trigger": true, "reason": "'create BDD scenarios for user story' trigger phrase"},
+  {"id":  2, "query": "Generate scenarios for US-003 — Apply Promo Code", "should_trigger": true, "reason": "'generate scenarios for US' trigger phrase"},
+  {"id":  3, "query": "Cover all ACs of US-011 with BDD scenarios", "should_trigger": true, "reason": "'cover AC with scenarios' trigger phrase"},
+  {"id":  4, "query": "Generate a feature file from user story US-015", "should_trigger": true, "reason": "'generate feature file from user story' trigger phrase"},
+  {"id":  5, "query": "Create BDD scenarios from requirements for the login flow", "should_trigger": true, "reason": "'BDD from requirements' trigger phrase"},
+  {"id":  6, "query": "What is the scenario coverage for US-007?", "should_trigger": true, "reason": "'scenario coverage for US' trigger phrase"},
+  {"id":  7, "query": "Map the ACs of US-009 to Gherkin scenarios", "should_trigger": true, "reason": "'map AC to scenarios' trigger phrase"},
+  {"id":  8, "query": "Generate Gherkin from user story US-012", "should_trigger": true, "reason": "'gherkin from user story' trigger phrase"},
+  {"id":  9, "query": "Create scenarios for US-007", "should_trigger": true, "reason": "'scenarios for US-' trigger phrase — explicitly mentions a US ID"},
+  {"id": 10, "query": "Generate a .feature file for the checkout flow", "should_trigger": true, "reason": "'generate .feature file' trigger phrase"},
+  {"id": 11, "query": "Write standalone Gherkin scenarios for an exploratory test", "should_trigger": false, "reason": "Standalone Gherkin without a User Story — routes to gherkin-scenario"},
+  {"id": 12, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
+  {"id": 13, "query": "Write a unit test for the promo code calculation", "should_trigger": false, "reason": "Unit test request — routes to test-unit-write"},
+  {"id": 14, "query": "Find which User Stories have no Gherkin coverage at all", "should_trigger": false, "reason": "Finding doc gaps — routes to living-doc-gap-finder"}
+]

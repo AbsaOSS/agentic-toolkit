@@ -1,0 +1,115 @@
+{
+  "skill_name": "living-doc-pageobject-scan",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "We have a new checkout screen at https://app.example.com/checkout with no PageObjects yet. Please bootstrap a PageObject for it.",
+      "expected_output": "Operates in Create mode. Crawls /checkout and discovers interactive elements: a promo code input, a confirm order button, and an error banner. Generates a CheckoutPage skeleton with one selector constant per element, following data-testid selector preference. Outputs Python or TypeScript class with: class-level selector constants, __init__ or constructor that takes a page, and method stubs for each interactive element (enter_promo_code, confirm_order, assert_error_visible). Includes a file-level '# living-doc: FEAT-<nnn> | /checkout' comment. If no matching Feature exists in the catalog, proposes drafting FEAT-<nnn> via living-doc-create-feature.",
+      "files": [],
+      "expectations": [
+        "Operates in Create mode",
+        "Generates a PageObject named CheckoutPage",
+        "Selector constants use data-testid preference over CSS class or positional selectors",
+        "Includes file-level living-doc: FEAT-nnn | /route comment",
+        "Method stubs for each interactive element",
+        "Proposes creating Feature entity if none exists in catalog"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "The checkout screen has an element that only has a positional CSS selector like 'button:nth-child(2)'. How should this be handled in the PageObject?",
+      "expected_output": "Flags the element as fragile with a recommendation: 'Element <description> has a positional CSS selector. Please add: data-testid=\"confirm-order-btn\"'. The selector is still included in the generated PageObject (to avoid blocking test authoring) but is annotated with a comment like '# FRAGILE: positional selector — add data-testid=\"confirm-order-btn\" to the element'. The flag is also added to the breaking change report / scan output.",
+      "files": [],
+      "expectations": [
+        "Flags the positional selector as fragile",
+        "Provides the specific data-testid recommendation in kebab-case",
+        "Still includes the selector in the PageObject to avoid blocking development",
+        "Annotates the selector constant with a FRAGILE comment"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "After a UI update the confirm order button changed its data-testid from 'confirm-order-btn' to 'submit-order-btn'. CheckoutPage still uses the old selector. What does the Maintain mode output look like?",
+      "expected_output": "Operates in Maintain mode. Diffs the existing CheckoutPage selector against the current DOM. CONFIRM_BUTTON resolves to the old data-testid which is no longer present. Outputs a BREAKING CHANGE report: 'CheckoutPage.CONFIRM_BUTTON: [data-testid=\"confirm-order-btn\"] not found in DOM → Linked step: \"When the customer confirms the order\" (checkout.feature:14) → Action required: update selector to [data-testid=\"submit-order-btn\"]'. Updates the selector constant in CheckoutPage. Never auto-deletes the method.",
+      "files": [],
+      "expectations": [
+        "Operates in Maintain mode",
+        "Detects the broken selector as a BREAKING CHANGE",
+        "Links the broken selector to affected step definitions and feature file lines",
+        "Proposes the updated selector",
+        "Updates selector constants only — preserves method logic",
+        "Never auto-deletes a method"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "The order summary table element was removed from the checkout page in the latest release, but CheckoutPage still has get_order_summary() referencing '[data-testid=\"order-summary\"]'. What happens?",
+      "expected_output": "Maintains mode detects the missing element. ORDER_SUMMARY selector resolves to nothing in the current DOM. Flags as BREAKING CHANGE with the linked step definition. Does NOT auto-delete the get_order_summary() method — flags it for developer review with the comment '# BREAKING: [data-testid=\"order-summary\"] not found in DOM — verify if element was removed or renamed'. The breaking change report includes the linked step text so the developer knows which test steps will fail.",
+      "files": [],
+      "expectations": [
+        "Detects missing element as BREAKING CHANGE",
+        "Does not auto-delete the method",
+        "Adds a BREAKING comment to the selector constant",
+        "Lists linked step definitions that will be affected",
+        "Flags for developer review rather than auto-removing"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order.",
+      "expected_output": "Generating scenarios from User Stories is out of scope for this skill — routes to living-doc-scenario-creator. living-doc-pageobject-scan generates PageObjects from a live webapp or test suite; scenario generation from User Story ACs is handled by living-doc-scenario-creator.",
+      "files": [],
+      "expectations": [
+        "Does not generate BDD scenarios",
+        "Routes to living-doc-scenario-creator",
+        "Explains the distinction: PageObject discovery vs. scenario generation"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Our login page was redesigned and the Playwright tests are all failing because the selectors are wrong. Can you help?",
+      "expected_output": "This is a Maintain mode request. Agent rescans the login page, diffs LoginPage selectors against the current DOM, and identifies which selector constants are broken. Outputs BREAKING CHANGE entries for each missing selector and proposes the updated data-testid values. Updates the selector constants in LoginPage while preserving existing method logic. Flags any remaining positional selectors for the dev team to add proper data-testid attributes.",
+      "files": [],
+      "expectations": [
+        "Identifies this as a Maintain mode operation",
+        "Diffs existing LoginPage selectors against the current DOM",
+        "Outputs BREAKING CHANGE entries for each broken selector",
+        "Updates selector constants — does not touch method bodies",
+        "Flags any remaining positional selectors"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "Should I create a PageObject for the /api/orders REST endpoint?",
+      "expected_output": "No — this skill generates PageObjects only for UI Features (web pages, modals, screens). API Features use annotated endpoint methods as their living contract anchor, not PageObjects. For API surfaces, the appropriate living doc anchor is a Functionality entity documenting the endpoint behaviour. Routes this request to living-doc-create-functionality for the endpoint behavior documentation.",
+      "files": [],
+      "expectations": [
+        "Explains that PageObjects are for UI Features only — not API endpoints",
+        "Explains the alternative: Functionality entities for API surfaces",
+        "Routes to living-doc-create-functionality for API documentation"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me the expected structure of a generated CheckoutPage PageObject in Python for a screen at /checkout linked to FEAT-003.",
+      "expected_output": "Output is a Python code block. Line 1: '# living-doc: FEAT-003 | /checkout'. The class is named CheckoutPage. Selector constants are ALL_CAPS class attributes with data-testid values. The __init__ takes a page parameter and assigns self.page. Methods are named in snake_case, each wrapping a single page action or assertion. No inline selectors in method bodies — selectors are referenced only via the class constants. Methods include at least one action method and one assertion method (assert_*).",
+      "files": [],
+      "expectations": [
+        "Output is a Python code block",
+        "File-level comment: # living-doc: FEAT-003 | /checkout",
+        "Class named CheckoutPage",
+        "Selector constants are ALL_CAPS class attributes",
+        "Methods reference class-level selector constants — no inline selectors",
+        "At least one action method and one assertion method"
+      ]
+    }
+  ]
+}

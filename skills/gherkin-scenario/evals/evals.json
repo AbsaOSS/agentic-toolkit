@@ -1,0 +1,112 @@
+{
+  "skill_name": "gherkin-scenario",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Write a Gherkin scenario for AC:US-003-01 — 'Customer with a gold membership receives a 20% discount on orders over £100'. Use business language.",
+      "expected_output": "Outputs a fenced gherkin block starting with Feature:. The Scenario: is preceded by a '# AC: US-003-01 (v1.0.0 – Active) — Customer with gold membership receives 20% discount on orders over £100' comment. Given describes the customer's membership tier (not a database row). When describes the customer placing an order (not a POST request). Then asserts the discounted total in business terms (e.g. 'Then the order total is £160.00'). No CSS selectors, endpoint URLs, or implementation details appear in the steps.",
+      "files": [],
+      "expectations": [
+        "Output is a single fenced gherkin block",
+        "Feature: tag appears at the top of the block",
+        "# AC: US-003-01 comment appears on the line immediately above Scenario:",
+        "Scenario uses business language — no database rows, HTTP requests, or CSS selectors",
+        "Given describes state only, When describes exactly one action, Then describes outcome"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Should I use a Scenario Outline for testing the discount calculation across gold (20%), silver (10%), and bronze (5%) membership tiers?",
+      "expected_output": "Yes — this is a classic data-driven case with a single behaviour repeated across input variations. Outputs a Scenario Outline with a parameterised step body and an Examples: table containing the three tiers (gold/80.00, silver/90.00, bronze/95.00 for £100 order). The # AC: comment appears above the Scenario Outline:. Explains that Scenario Outline is correct here because all rows exercise the same observable behaviour — the discount calculation — with different inputs.",
+      "files": [],
+      "expectations": [
+        "Recommends Scenario Outline with Examples: table for the three tiers",
+        "# AC: comment appears above Scenario Outline:",
+        "Parameters are used in the step text: <tier> and <total>",
+        "Examples table includes all three membership tiers",
+        "Explains why Scenario Outline is appropriate here"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "I have a feature file where every scenario starts with the same two Given steps: 'Given the user is logged in as a gold member' and 'Given the cart has items'. Should I use a Background block?",
+      "expected_output": "Yes — Background is appropriate when every scenario in the file shares the same preconditions and the shared block is 3 steps or fewer. The Background: block replaces the repeated Given steps in each scenario. Provides guidance: if only 2–3 scenarios share the precondition, prefer duplicating the step for clarity. Warns to keep Background to 3 steps or fewer.",
+      "files": [],
+      "expectations": [
+        "Recommends Background block since all scenarios share the same preconditions",
+        "Correctly states the no-more-than-3-steps guideline",
+        "Notes the alternative (duplicate Given steps) when only a subset of scenarios share the precondition",
+        "Does not put When or Then steps in the Background"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "Review this scenario for anti-patterns:\n\nScenario: Checkout flow\n  When the customer clicks the 'Submit Order' button\n  And the customer enters their credit card number '4111111111111111'\n  And the customer clicks the 'Confirm Payment' button\n  Then the response status is 201",
+      "expected_output": "Flags multiple anti-patterns: (1) UI selectors in steps — 'clicks the Submit Order button' and 'clicks the Confirm Payment button' expose implementation details; rewrite using domain actions ('the customer submits the order'). (2) Multiple When actions — the scenario has three When-equivalent steps describing a multi-step flow; should be collapsed into one declarative step or split. (3) Implementation detail in Then — 'response status is 201' is technical; rewrite as 'the order is confirmed'. (4) Missing # AC: comment. Provides a corrected version using domain language.",
+      "files": [],
+      "expectations": [
+        "Flags UI selectors in step text (button clicks) as anti-pattern",
+        "Flags multiple When-equivalent actions",
+        "Flags technical assertion ('status 201') in Then",
+        "Flags missing # AC: comment",
+        "Provides a corrected version using domain language"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Write the step definition code for 'When the customer confirms the order' in Python behave.",
+      "expected_output": "Implementing step definitions is out of scope for this skill — routes to gherkin-step. This skill writes the Gherkin text; gherkin-step handles the binding code.",
+      "files": [],
+      "expectations": [
+        "Does not write step definition code",
+        "Routes to gherkin-step",
+        "Explains the distinction: Gherkin text vs. step binding code"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Convert these acceptance criteria into Gherkin:\nAC1: When the promo code is valid, the cart total decreases by 10%.\nAC2: When the promo code is expired, an error message is shown.",
+      "expected_output": "Outputs a fenced gherkin block with two Scenarios. Each Scenario is preceded by a # AC: comment. Scenario 1 (AC1): Given/When covers the valid promo path resulting in a 10% reduction. Scenario 2 (AC2): covers the expired promo error path. Business language throughout — no HTTP calls, selectors, or raw data.",
+      "files": [],
+      "expectations": [
+        "Two scenarios, one per AC",
+        "# AC: comment above each Scenario",
+        "AC1 scenario covers the valid promo path",
+        "AC2 scenario covers the expired promo error path",
+        "Business language used throughout — no implementation details"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "I'm writing exploratory scenarios for a spike that doesn't have a User Story yet. What should I use for the # AC: comment?",
+      "expected_output": "For scenarios without a User Story context, use '# AC: STANDALONE' as a placeholder. Standalone scenarios are permitted when they live outside the project's dedicated living doc feature directory. Tutorial walkthroughs, exploratory probes, and developer-authored scenarios without a User Story AC all qualify. gherkin-living-doc-sync will note STANDALONE-tagged scenarios but will not flag them as traceability gaps.",
+      "files": [],
+      "expectations": [
+        "Recommends '# AC: STANDALONE' as the placeholder",
+        "Explains that standalone is permitted for exploratory probes",
+        "Notes that gherkin-living-doc-sync will report but not flag STANDALONE scenarios as gaps"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Write a Gherkin scenario for AC:US-005-02 — 'Order is rejected when the payment card is declined'. Show the expected output format.",
+      "expected_output": "Output is a single fenced gherkin code block. The block starts with 'Feature:' followed by a feature title. The # AC: comment appears on the line immediately above the Scenario: keyword. The scenario has Given/When/Then steps. The entire output is inside one gherkin block — no extra prose inside the code block.",
+      "files": [],
+      "expectations": [
+        "Entire output is a single fenced gherkin code block",
+        "Block starts with Feature:",
+        "# AC: US-005-02 comment immediately precedes Scenario:",
+        "Scenario has Given, When, and Then steps",
+        "No implementation details (no HTTP, selectors, DB) in steps"
+      ]
+    }
+  ]
+}

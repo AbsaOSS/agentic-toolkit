@@ -1,0 +1,18 @@
+[
+  {"id":  1, "query": "Write a Gherkin scenario for when a customer applies a promo code", "should_trigger": true, "reason": "'write a Gherkin scenario' trigger phrase"},
+  {"id":  2, "query": "Help me write a BDD scenario for the payment failure case", "should_trigger": true, "reason": "'BDD scenario' trigger phrase"},
+  {"id":  3, "query": "Review my feature file for anti-patterns", "should_trigger": true, "reason": "'feature file' and 'review my feature file' trigger phrases"},
+  {"id":  4, "query": "I'm not sure how to write Given When Then for the order flow", "should_trigger": true, "reason": "'Given When Then' trigger phrase"},
+  {"id":  5, "query": "Should I use a Scenario Outline here?", "should_trigger": true, "reason": "'Scenario Outline' trigger phrase"},
+  {"id":  6, "query": "How do I write a Cucumber scenario for logging in?", "should_trigger": true, "reason": "'Cucumber scenario' trigger phrase"},
+  {"id":  7, "query": "Write a behave scenario for the discount calculation", "should_trigger": true, "reason": "'behave scenario' trigger phrase"},
+  {"id":  8, "query": "Can you help me write acceptance tests in Gherkin?", "should_trigger": true, "reason": "'acceptance test in Gherkin' trigger phrase"},
+  {"id":  9, "query": "Should I use Background for shared login steps?", "should_trigger": true, "reason": "'should I use Background' trigger phrase"},
+  {"id": 10, "query": "What are BDD anti-patterns I should avoid in feature files?", "should_trigger": true, "reason": "'BDD anti-patterns' trigger phrase"},
+  {"id": 11, "query": "Review my feature file and give feedback", "should_trigger": true, "reason": "'review my feature file' trigger phrase"},
+  {"id": 12, "query": "Can you write BDD scenarios for the checkout flow?", "should_trigger": true, "reason": "'BDD scenarios for' trigger phrase"},
+  {"id": 13, "query": "Convert these acceptance criteria to Gherkin", "should_trigger": true, "reason": "'convert acceptance criteria to Gherkin' trigger phrase"},
+  {"id": 14, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
+  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test request — routes to test-unit-write"},
+  {"id": 16, "query": "Design a test case table for the promo code feature", "should_trigger": false, "reason": "Test case table design — routes to test-case-design"}
+]
