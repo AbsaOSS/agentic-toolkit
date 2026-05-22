@@ -7,7 +7,8 @@ description: >
   Criteria, or validating User Story completeness before handing off to scenario creation.
   Triggers on: "create a user story", "new user story for", "write acceptance criteria for",
   "document a business requirement", "define US AC", "user story template", "as a user I want",
-  "elicit requirements", "AC for user story", "US acceptance criteria".
+  "elicit requirements", "AC for user story", "US acceptance criteria",
+  "review this user story", "is my narrative well-formed".
   Does NOT trigger for: atomic component behaviors (use living-doc-create-functionality),
   documenting system surfaces (use living-doc-create-feature), generating BDD scenarios
   (use living-doc-scenario-creator).

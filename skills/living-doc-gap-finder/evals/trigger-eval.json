@@ -12,5 +12,6 @@
   {"id": 11, "query": "Find what's not documented in our test suite", "should_trigger": true, "reason": "'find what's not documented' trigger phrase"},
   {"id": 12, "query": "Create a user story for the preferences screen gap", "should_trigger": false, "reason": "Creating a User Story — routes to living-doc-create-user-story"},
   {"id": 13, "query": "Create a Feature entity for the account preferences screen", "should_trigger": false, "reason": "Creating a Feature — routes to living-doc-create-feature"},
-  {"id": 14, "query": "Generate a tutorial from the checkout .feature file", "should_trigger": false, "reason": "Tutorial generation — routes to living-doc-tutorial-creator"}
+  {"id": 14, "query": "Generate a tutorial from the checkout .feature file", "should_trigger": false, "reason": "Tutorial generation — routes to living-doc-tutorial-creator"},
+  {"id": 15, "query": "Do a documentation audit to check for missing tests before the go-live", "should_trigger": true, "reason": "'documentation audit' trigger phrase"}
 ]

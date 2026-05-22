@@ -5,17 +5,21 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
-      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 (critical ACs) have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Important — /account/preferences screen discovered in webapp with no Feature entity; Important — FEAT-orphan (Legacy Report Screen) has no User Stories and no Functionalities; Important — test_order_history.py and test_login_flow.feature have no linked ACs (orphan tests); Nit — FUNC-apply-discount has 5 ACs with no linked tests. Documentation coverage = 1/9 ACs covered = 11%.",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker — US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 covers Functionality ACs, not just User Story ACs); Important — /account/preferences screen discovered in webapp with no Feature entity; Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-orphan has no Functionalities (empty Feature). Documentation coverage reported for both US ACs and Functionality ACs separately.",
       "files": [
         "evals/files/catalog-snapshot.json"
       ],
       "expectations": [
-        "Identifies US-001-AC-2 and US-001-AC-3 as untested critical ACs (Blockers)",
+        "Identifies US-001-AC-2 and US-001-AC-3 as untested (Blockers)",
+        "Identifies US-002-AC-1 and US-002-AC-2 as untested (Blockers)",
         "Identifies all 4 US-007 ACs as untested (Blockers)",
+        "Identifies FUNC-apply-discount ACs as untested (Blocker, not Nit — Gap type 1 applies to Functionality ACs)",
         "Identifies /account/preferences as undocumented surface (Important)",
+        "Identifies FEAT-promo as orphan Feature (Important)",
         "Identifies FEAT-orphan as orphan Feature (Important)",
         "Identifies test_order_history.py and test_login_flow.feature as orphan tests (Important)",
-        "Identifies FUNC-apply-discount ACs as untested (Nit)",
+        "Identifies 'View paginated order history' BDD scenario as orphan test (Important)",
+        "Identifies FEAT-orphan as empty Feature (Nit — no Functionalities)",
         "Calculates documentation coverage percentage"
       ]
     },
@@ -35,10 +39,10 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "A test file exists with no linked AC. What gap type is this and what should I do?",
-      "expected_output": "This is an orphan test (Gap type 4 — Important). Resolution options: (1) find an existing AC in the living doc that this test covers and add the link; (2) if no AC exists, create a Functionality entity for the behavior being tested using living-doc-create-functionality, then link the test to the new Functionality's AC. Never delete a test to resolve an orphan — that would remove coverage.",
+      "expected_output": "This is an orphan test (Gap type 6 — Important). Resolution options: (1) find an existing AC in the living doc that this test covers and add the link; (2) if no AC exists, create a Functionality entity for the behavior being tested using living-doc-create-functionality, then link the test to the new Functionality's AC. Never delete a test to resolve an orphan — that would remove coverage.",
       "files": [],
       "expectations": [
-        "Classifies as Gap type 4: ORPHAN_TEST",
+        "Classifies as Gap type 6: ORPHAN_TEST",
         "Provides two resolution options: link to existing AC, or create new Functionality",
         "Explicitly warns against deleting the test"
       ]
@@ -97,13 +101,14 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Run a gap analysis and show me exactly what format the output report uses.",
-      "expected_output": "The gap report has two clearly labelled sections: 'Missing Scenarios' (ACs with no linked Gherkin scenario) and 'Missing ACs' (scenarios with no corresponding AC). Each missing item is a bulleted entry with the AC or scenario ID and its description. The report ends with a count summary line: 'X ACs missing scenarios, Y scenarios missing ACs'. No implementation changes are suggested — the report is diagnostic only.",
+      "expected_output": "The gap report is emitted as structured JSON (or a formatted rendering of it) with a top-level `documentation_coverage` section (coverage_percentage, user_stories_with_full_coverage, user_stories_with_gaps) and a `gaps[]` array. Each gap item includes: id (GAP-NNN), type (one of UNTESTED_AC, UNDOCUMENTED_SURFACE, ORPHAN_FEATURE, ORPHAN_USER_STORY, ORPHAN_FUNCTIONALITY, ORPHAN_TEST, STALE_REFERENCE, UNDOCUMENTED_FUNCTIONALITY, EMPTY_FEATURE), severity (Blocker/Important/Nit), entity (the affected entity ID or path), description, and proposed_action. Gaps are ordered by severity (Blocker first, then Important, then Nit). The report is diagnostic only — no entity creation or modification is made.",
       "files": [],
       "expectations": [
-        "Two sections: Missing Scenarios and Missing ACs",
-        "Each item is a bulleted entry with ID and description",
-        "Count summary line at the end",
-        "Diagnostic only — no implementation suggestions"
+        "Report includes top-level documentation_coverage section with coverage_percentage",
+        "gaps[] array present; each item has id, type, severity, entity, description, proposed_action",
+        "Gap type codes are canonical: UNTESTED_AC, ORPHAN_TEST, ORPHAN_FEATURE, etc.",
+        "Gaps ordered by severity (Blocker before Important before Nit)",
+        "Diagnostic only — no entity creation or modification"
       ]
     }
   ]

@@ -9,7 +9,7 @@
       "expected": {
         "skill_triggered": true,
         "key_guidance": [
-          "Map changed file to Feature via FEATURE_REGISTRY.md",
+          "Map changed file to Feature via the feature_registry section in catalog.json (or run trace_impact.py --catalog catalog.json)",
           "Trace Feature → Functionality → User Stories → ACs",
           "Classify impact level (High for changed business logic)",
           "Output structured impact map"
@@ -48,8 +48,8 @@
     {
       "id": 4,
       "type": "regression",
-      "description": "Changed module has no entry in FEATURE_REGISTRY.md — should flag the gap.",
-      "prompt": "The ShippingCalculator.java was changed in the PR but it doesn't appear in FEATURE_REGISTRY.md.",
+    "description": "Changed module has no entry in the feature_registry section of catalog.json — should flag the gap.",
+    "prompt": "The ShippingCalculator.java was changed in the PR but it has no entry in the feature_registry section of catalog.json.",
       "expected": {
         "skill_triggered": true,
         "key_guidance": [
@@ -101,7 +101,7 @@
       "expected": {
         "skill_triggered": true,
         "key_guidance": [
-          "Map changed code to Feature via FEATURE_REGISTRY.md",
+          "Map changed code to Feature via the feature_registry section in catalog.json",
           "Trace Feature → Functionality → User Stories → ACs",
           "List all linked Gherkin scenarios that need re-running",
           "Output structured re-test checklist"

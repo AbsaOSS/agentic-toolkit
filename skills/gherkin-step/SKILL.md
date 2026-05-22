@@ -4,7 +4,8 @@ description: >
   Implementing Gherkin step definitions that are clean, reusable, and maintainable. Activate when
   writing or reviewing step definition code, binding Gherkin text to automation, managing shared
   state between steps, configuring parameter types, parsing DataTable or DocString arguments, or
-  setting up Before/After hooks. Covers Python behave and Cucumber for TypeScript.
+  setting up Before/After hooks. Covers Python behave, Cucumber for Java and TypeScript, and
+  Cucumber-Scala idioms.
   Triggers on: "step definitions", "implement Gherkin steps", "Cucumber step", "behave step",
   "parameter type", "DataTable", "DocString", "Before hook", "After hook", "World object",
   "step context", "step state sharing", "how to share state between steps",

@@ -12,5 +12,7 @@
   {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story — routes to living-doc-create-user-story"},
   {"id": 12, "query": "Document the checkout page as a Feature", "should_trigger": false, "reason": "Feature entity — routes to living-doc-create-feature"},
   {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
-  {"id": 14, "query": "Run a gap analysis on the living documentation", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"}
+  {"id": 14, "query": "Run a gap analysis on the living documentation", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"},
+  {"id": 15, "query": "How should I define the component behavior for the payment validator?", "should_trigger": true, "reason": "'define component behavior' trigger phrase"},
+  {"id": 16, "query": "Write atomic acceptance criteria for the session expiry logic", "should_trigger": true, "reason": "'atomic acceptance criteria' trigger phrase"}
 ]

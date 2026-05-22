@@ -53,8 +53,7 @@
       "expected": {
         "skill_triggered": true,
         "key_guidance": [
-          "Update owners array in Feature JSON",
-          "Update FEATURE_REGISTRY.md row",
+          "Update owners array in Feature entity JSON",
           "Add owner_changed_at and owner_change_reason fields",
           "Notify new owner if open User Stories exist"
         ]

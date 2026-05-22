@@ -51,7 +51,7 @@
     "id": "t09-update-feature-registry",
     "query": "How do I update the Feature Registry after the team restructure?",
     "should_trigger": true,
-    "reason": "'update feature registry' is a listed trigger phrase."
+    "reason": "Updating Feature ownership is a core living-doc-update task covered by 'change feature owner'; Feature Registry updates are part of Feature ownership changes handled in the skill body."
   },
   {
     "id": "t10-not-create-us",

@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to create a new User Story for the password reset capability.",
-      "expected_output": "Agent asks three elicitation questions in sequence: (1) Who is the user? (2) What do they want to do? (3) Why / what business outcome? After answers, forms the As-a/I-can/so-that narrative. Then asks for domain context (which Feature). Then elicits ACs in Given-When-Then. Checks for error and alternative paths (unregistered email, expired token, already-used token). Assigns priorities. Outputs canonical User Story JSON with at least 3 ACs (happy path + at least 2 error/alternative).",
+      "expected_output": "Agent asks three elicitation questions in sequence: (1) Who is the user? (2) What do they want to do? (3) Why / what business outcome? After answers, forms the As-a/I-can/so-that narrative. Then asks for domain context (which Feature). Then elicits ACs in Given-When-Then. Checks for error and alternative paths (unregistered email, expired token, already-used token). Outputs canonical User Story JSON with at least 3 ACs (happy path + at least 2 error/alternative).",
       "files": [],
       "expectations": [
         "Asks actor, capability, and business value as distinct questions before writing narrative",
@@ -13,7 +13,6 @@
         "Asks which Feature(s) this story touches",
         "Elicits at least one error-path AC (e.g. unregistered email, expired token)",
         "Warns if only happy-path AC is provided",
-        "Assigns independent priority to each AC",
         "Outputs valid canonical UserStory JSON"
       ]
     },
