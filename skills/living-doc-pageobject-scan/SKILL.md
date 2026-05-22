@@ -75,9 +75,8 @@ One PageObject class per distinct screen. Naming: `<ScreenName>Page`.
 
 ```python
 # ✅ Generated skeleton — Python / Playwright
+# living-doc: FEAT-003 | /checkout
 class CheckoutPage:
-    """Checkout screen: /checkout — FEAT-003"""
-
     ORDER_SUMMARY  = '[data-testid="order-summary"]'
     CONFIRM_BUTTON = '[data-testid="confirm-order-btn"]'
     PROMO_INPUT    = '[data-testid="promo-code-input"]'
@@ -96,8 +95,40 @@ class CheckoutPage:
         expect(self.page.locator(self.ERROR_BANNER)).to_contain_text(message)
 ```
 
-Include the Feature ID (`FEAT-<nnn>`) in the class docstring to maintain traceability to the
-living doc catalog.
+```typescript
+// ✅ Generated skeleton — TypeScript / Playwright
+// living-doc: FEAT-003 | /checkout
+import { type Page, type Locator, expect } from '@playwright/test';
+
+export class CheckoutPage {
+    readonly orderSummary:  Locator;
+    readonly confirmButton: Locator;
+    readonly promoInput:    Locator;
+    readonly errorBanner:   Locator;
+
+    constructor(readonly page: Page) {
+        this.orderSummary  = page.getByTestId('order-summary');
+        this.confirmButton = page.getByTestId('confirm-order-btn');
+        this.promoInput    = page.getByTestId('promo-code-input');
+        this.errorBanner   = page.getByTestId('error-banner');
+    }
+
+    async enterPromoCode(code: string): Promise<void> {
+        await this.promoInput.fill(code);
+    }
+
+    async confirmOrder(): Promise<void> {
+        await this.confirmButton.click();
+    }
+
+    async assertErrorVisible(message: string): Promise<void> {
+        await expect(this.errorBanner).toContainText(message);
+    }
+}
+```
+
+The Living Doc Feature link (`FEAT-<nnn>`) is recorded in a file-level header comment (see
+examples above) — not in the class docstring.
 
 Flag fragile selectors:
 
@@ -108,7 +139,7 @@ Flag fragile selectors:
 
 One PageObject ≈ one `UI` Feature. For each generated PageObject:
 - If a matching Feature (`FEAT-<nnn>`) exists in the catalog: link them in the manifest
-- If no Feature exists: generate a draft Feature stub (JSON) for `living-doc-create-feature`
+- If no Feature exists: invoke `living-doc-create-feature` to produce a draft Feature entity in the project's Storage Profile format
 
 **5. Generate Functionality stubs from discovered elements**
 
@@ -119,7 +150,8 @@ the glossary pattern `<Feature name> – <behavior phrase>`:
 - Form → `"Login Page – Submit Credentials"`
 - Table → `"Order History Page – Display Order List"`
 
-Output as draft JSON for review — not auto-committed.
+Output as draft Functionality entities in the project's Storage Profile format for review — not
+auto-committed. Use `living-doc-create-functionality` to produce the canonical output.
 
 **Dynamic list elements:**
 
@@ -164,13 +196,15 @@ files before running a full rescan.
 
 ## Output artifacts
 
-| Artifact | Location |
+| Artifact | Example location |
 |---|---|
 | PageObject files | `tests/pages/<ScreenName>Page.py` |
-| Draft Feature stubs | `docs/living-doc/features/draft/FEAT-<name>.json` |
-| Draft Functionality stubs | `docs/living-doc/functionalities/draft/FUNC-<name>.json` |
+| Draft Feature entities | `docs/living-doc/features/draft/FEAT-<name>.<ext>` |
+| Draft Functionality entities | `docs/living-doc/functionalities/draft/FUNC-<name>.<ext>` |
 | Breaking change report | stdout / PR comment |
 | Exploration manifest | Path discovered by agent on session start (search for `manifest.json` with `pageobject_path` entries); created at `.copilot/bdd/manifest.json` only if no existing manifest is found |
+
+> **Note:** Locations above are illustrative defaults. Actual paths and file formats depend on the project's repository structure and Storage Profile configuration.
 
 ---
 

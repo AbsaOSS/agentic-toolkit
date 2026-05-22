@@ -26,7 +26,7 @@ description: >
 
 **AC traceability tag** (mandatory — placed above every `Scenario:` line):
 ```gherkin
-# AC: US-001-01 (v1.0.0 – Active) — Happy path: customer places an order
+# AC: US-001-01 (v1.0.0 – Active) — customer places an order
 Scenario: Customer successfully places an order
 ```
 
@@ -43,8 +43,8 @@ ACs with state `Planned` or `Deprecated` are excluded from generation; note them
 | Available PageObjects | `tests/pages/` directory | Recommended |
 | Existing step definitions | `tests/steps/` directory | Recommended |
 
-If PageObjects or step files are not available, generate scenarios with placeholder step text
-and flag all steps as `[STEP: MISSING — implement with PageObject method]`.
+If PageObjects or step files are not available, generate scenarios with stub step implementations
+(see Step 3 for the two-case protocol: PageObject method found vs. not found).
 
 ---
 
@@ -64,8 +64,7 @@ For each active AC, select the scenario pattern by AC type:
 - `error` → `Scenario: <US title> — <error condition>`
 - `alternative` → `Scenario: <US title> — <alternative path>`
 
-Generate a scenario for **every** active AC regardless of priority. Tag low-priority AC
-scenarios with `@low-priority` so they can be excluded from smoke runs without losing traceability.
+Generate a scenario for **every** active AC.
 
 Map Given-When-Then from the AC to existing step definitions — reuse exact step text where found.
 
@@ -79,20 +78,45 @@ Scenario: Customer successfully places an order
   And the cart is emptied
 ```
 
-### Step 3 — Identify missing steps
+### Step 3 — Implement missing step stubs
 
-For each step not found in existing step files:
+For each step not found in existing step files, generate a named stub function in the
+appropriate step file. Apply the following two-case protocol:
+
+**Case A — A PageObject method can implement the step:**
+
+Generate the full stub using the available method:
 
 ```
 MISSING STEP: "Given the customer has items in their cart and a saved payment method"
   → PageObject candidate: CheckoutPage (FEAT-003)
   → Suggested step file: tests/steps/checkout_steps.py
-  → Suggested implementation:
+  → Generated stub:
       @given('the customer has items in their cart and a saved payment method')
       def step_customer_has_cart_with_payment(context):
           context.checkout_page = CheckoutPage(context.browser)
           context.checkout_page.add_item_to_cart("SKU-100", quantity=1)
           context.checkout_page.set_saved_payment_method()
+```
+
+**Case B — No matching PageObject method exists for the step:**
+
+Generate a stub with a `NotImplementedError` failure guard and flag the gap to
+`living-doc-pageobject-scan` (Maintain mode) so it can extend the PageObject:
+
+```
+MISSING STEP + MISSING PAGEOBJECT METHOD:
+  "When the customer applies a promo code"
+  → No matching method found in CheckoutPage (FEAT-003)
+  → Generated stub (with failure guard):
+      @when('the customer applies a promo code')
+      def step_apply_promo_code(context):
+          raise NotImplementedError(
+              "Step not implemented: 'the customer applies a promo code'. "
+              "CheckoutPage (FEAT-003) is missing an 'apply_promo_code' method. "
+              "Run living-doc-pageobject-scan (Maintain mode) on FEAT-003 to add it."
+          )
+  → Action: invoke living-doc-pageobject-scan (Maintain mode) for the missing element
 ```
 
 ### Step 4 — Validate AC coverage
@@ -102,10 +126,10 @@ Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full cata
 
 ```
 AC COVERAGE REPORT — US-001
-  AC:US-001-01 (Active, critical): ✅ covered by "Customer successfully places an order"
-  AC:US-001-02 (Active, critical): ✅ covered by "Order rejected when payment card is declined"
-  AC:US-001-03 (Active, high):     ❌ NOT COVERED — added to gap list
-  AC:US-001-04 (Deprecated):       ⏭  skipped — deprecated AC
+  AC:US-001-01 (Active): ✅ covered by "Customer successfully places an order"
+  AC:US-001-02 (Active): ✅ covered by "Order rejected when payment card is declined"
+  AC:US-001-03 (Active): ❌ NOT COVERED — added to gap list
+  AC:US-001-04 (Deprecated): ⏭  skipped — deprecated AC
 ```
 
 Use `scripts/coverage_report.py` to generate this report across the full catalog.
@@ -120,7 +144,7 @@ Feature: Place an online order
   I can place an order for in-stock items
   So that the items are delivered to my address
 
-  # AC: US-001-01 (v1.0.0 – Active) — Happy path: customer places an order
+  # AC: US-001-01 (v1.0.0 – Active) — customer places an order
   Scenario: Customer successfully places an order
     ...
 
@@ -129,7 +153,7 @@ Feature: Place an online order
     ...
 ```
 
-**Missing step report** — list of step functions to implement, grouped by step file.
+**Missing step report** — generated stub implementations grouped by step file; Case B stubs include `NotImplementedError` failure guards and flag missing PageObject methods for extension (see Step 3).
 
 **Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`).
 
@@ -145,12 +169,14 @@ Feature: Place an online order
 
 ## File placement
 
-| Step domain | Step file |
+| Step domain | Example step file |
 |---|---|
 | Authentication | `tests/steps/auth_steps.py` |
 | Checkout / order | `tests/steps/checkout_steps.py` |
 | Common / shared | `tests/steps/common_steps.py` |
 | Domain-specific | `tests/steps/<domain>_steps.py` |
+
+> **Note:** Paths above are illustrative examples. Actual file locations depend on the project's repository structure.
 
 ---
 

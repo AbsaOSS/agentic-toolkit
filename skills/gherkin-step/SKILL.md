@@ -4,8 +4,7 @@ description: >
   Implementing Gherkin step definitions that are clean, reusable, and maintainable. Activate when
   writing or reviewing step definition code, binding Gherkin text to automation, managing shared
   state between steps, configuring parameter types, parsing DataTable or DocString arguments, or
-  setting up Before/After hooks. Covers Python behave, Cucumber for Java and TypeScript, and
-  Cucumber-Scala idioms.
+  setting up Before/After hooks. Covers Python behave and Cucumber for TypeScript.
   Triggers on: "step definitions", "implement Gherkin steps", "Cucumber step", "behave step",
   "parameter type", "DataTable", "DocString", "Before hook", "After hook", "World object",
   "step context", "step state sharing", "how to share state between steps",
@@ -71,8 +70,6 @@ Use the framework-provided context object, which is instantiated fresh for each 
 |-----------|-------------|---------|
 | behave (Python) | `context` | Attach attributes: `context.order = ...` |
 | Cucumber (TypeScript) | `World` class | Extend `World`; access via `this` |
-| Cucumber (Java) | Shared class via PicoContainer or Spring | Constructor injection |
-| Cucumber (Scala) | Shared class via DI | PicoContainer or manual injection |
 
 ```python
 # ✅ behave — context carries state across steps
@@ -83,27 +80,6 @@ def step_given_customer(context, tier):
 @then("the discount is {rate:d}%")
 def step_assert_discount(context, rate):
     assert context.customer.discount_rate() == rate
-```
-
-```java
-// ✅ Cucumber (Java) — shared state via PicoContainer constructor injection
-public class OrderSteps {
-    private final OrderWorld world;
-
-    public OrderSteps(OrderWorld world) {
-        this.world = world;
-    }
-
-    @Given("a customer with a {string} membership")
-    public void givenCustomer(String tier) {
-        world.customer = new Customer(tier);
-    }
-
-    @Then("the discount is {int}%")
-    public void thenDiscount(int rate) {
-        assertEquals(rate, world.customer.discountRate());
-    }
-}
 ```
 
 ---
@@ -152,26 +128,4 @@ Tag hooks to scope them to specific scenarios:
 def setup_database(context):
     if "database" in context.tags:
         context.db = create_test_db()
-```
-
----
-
-## Scala — Cucumber-Scala idioms
-
-```scala
-// ✅ — Shared state via constructor injection
-class OrderSteps(world: OrderWorld) extends StrictScalaDsl {
-
-  Given("""a customer with a {string} membership""") { (tier: String) =>
-    world.customer = Customer(tier = tier)
-  }
-
-  When("""the customer purchases {int} units of {string}""") { (qty: Int, sku: String) =>
-    world.order = world.customer.placeOrder(sku, qty)
-  }
-
-  Then("""the order total is £{double}""") { (expected: Double) =>
-    world.order.total shouldBe expected
-  }
-}
 ```
