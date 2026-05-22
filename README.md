@@ -82,7 +82,7 @@ its purpose, trigger phrases, and full instructions.
 | **[living-doc-create-functionality](./skills/living-doc-create-functionality/)** | Define an atomic, testable behaviour (Functionality) with AC designed for fast unit or integration tests. |
 | **[living-doc-update](./skills/living-doc-update/)** | Amend or deprecate existing User Story, Feature, or Functionality entities — add ACs, change status, update ownership. |
 | **[living-doc-impact-analysis](./skills/living-doc-impact-analysis/)** | Trace which Features, Functionalities, User Stories, and Gherkin scenarios are affected by a code change or PR. |
-| **[living-doc-gap-finder](./skills/living-doc-gap-finder/)** | Identify undocumented behaviours, orphan tests, and untested ACs. Shared by `@living-doc-copilot` and `@bdd-copilot`. |
+| **[living-doc-gap-finder](./skills/living-doc-gap-finder/)** | Identify undocumented behaviours, orphan tests, and untested ACs. Shared by `@living-doc-copilot` and `@living-doc-bdd-copilot`. |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Agent Roster

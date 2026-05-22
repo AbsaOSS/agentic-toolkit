@@ -68,9 +68,9 @@ Repairs catalog drift. Triggers when the living doc has fallen behind the codeba
 - Sets `DEPRECATED` state on entities whose code no longer exists
 - Fixes broken traceability links (US ↔ Feature ↔ Functionality)
 - Updates `version` fields and removes stale `pre-conditions`
-- Does **not** repair PageObject selectors or step definitions → `@bdd-copilot`
+- Does **not** repair PageObject selectors or step definitions → `@living-doc-bdd-copilot`
 
-> `@bdd-copilot` is the expected cooperating agent for automation-layer healing. It is deployed separately from this agent — if it is not yet available in your repo, record the automation-layer items as TODO notes for a future BDD session.
+> `@living-doc-bdd-copilot` is the expected cooperating agent for automation-layer healing. It is deployed separately from this agent — if it is not yet available in your repo, record the automation-layer items as TODO notes for a future BDD session.
 
 ### PLAN mode
 
@@ -102,7 +102,7 @@ Every AC created or updated by this agent carries:
 | `living-doc-create-functionality` | New atomic, testable behaviour |
 | `living-doc-update` | Amend or deprecate existing entities |
 | `living-doc-impact-analysis` | Trace entities affected by a code change |
-| `living-doc-gap-finder` | Find undocumented behaviours and orphan tests. **Shared skill** — used top-down here (missing doc entities) and bottom-up by `@bdd-copilot` (scenario coverage gaps against known ACs). |
+| `living-doc-gap-finder` | Find undocumented behaviours and orphan tests. **Shared skill** — used top-down here (missing doc entities) and bottom-up by `@living-doc-bdd-copilot` (scenario coverage gaps against known ACs). |
 
 ---
 

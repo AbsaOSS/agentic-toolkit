@@ -19,7 +19,7 @@ compatibility: GitHub Copilot
 
 # Living Doc — Create Feature
 
-> **Key concepts:** Feature, Functionality, User Story, AC — see `../references/living-doc-glossary.md`.
+> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
 
 ## Step 1 — Identify the system surface
 
@@ -34,7 +34,7 @@ Select the surface type:
 | `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) |
 | `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public API contract (e.g. Orders API, Payment Gateway API) |
 
-**One surface test abstraction ≈ one Feature** — a UI screen has a PageObject, an API endpoint group has an annotated endpoint method. See `../references/living-doc-glossary.md` for details.
+**One surface test abstraction ≈ one Feature** — a UI screen has a PageObject, an API endpoint group has an annotated endpoint method. See [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md) for details.
 
 ## Step 2 — Describe purpose and scope
 

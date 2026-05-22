@@ -18,7 +18,7 @@ compatibility: GitHub Copilot
 
 # Living Doc — Create Functionality
 
-> **Key concepts:** Feature, Functionality, User Story, AC — see `../references/living-doc-glossary.md`.
+> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
 
 ## Step 1 — Elicit the behavior
 
@@ -54,7 +54,7 @@ Functionality ACs describe atomic inputs → outputs. They are:
 - **Fast-testable**: designed for verification by unit or integration test. E2E tests *can* exercise the same behavior, but they are slow and expensive — they belong in a separate system-test tier, not the fast or regression suite.
 - **Unambiguous**: exact error codes, exact output values where relevant
 
-Use the canonical AC format (see `../references/living-doc-glossary.md`):
+Use the canonical AC format (see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)):
 
 ```
 AC:FUNC-<nnn>-<nn> (v<version> – Planned)
@@ -90,7 +90,7 @@ If contextually distinct despite similar names, create a new Functionality and n
 
 ## Step 5 — Output canonical Functionality entity
 
-Output using the project's Storage Profile format (defined per project — see `../../docs/living-doc-copilot.md`). Canonical fields (see `../references/living-doc-glossary.md` for AC format details):
+Output using the project's Storage Profile format (defined per project — see `../../docs/living-doc-copilot.md`). Canonical fields (see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md) for AC format details):
 
 | Field | Required | Value |
 |---|---|---|
@@ -99,7 +99,7 @@ Output using the project's Storage Profile format (defined per project — see `
 | `name` | Yes | `<parent Feature name> – <behavior phrase>` (e.g. "Login Page – Validate Password Strength") |
 | `parent_feature` | Yes | `FEAT-<nnn>` ID of the owning Feature |
 | `status` | Yes | `planned` \| `active` \| `deprecated` |
-| `acceptance_criteria` | Yes | List of ACs in the format defined in `../references/living-doc-glossary.md` |
+| `acceptance_criteria` | Yes | List of ACs in the format defined in [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md) |
 
 ## Distinguishing Functionality ACs from User Story ACs
 

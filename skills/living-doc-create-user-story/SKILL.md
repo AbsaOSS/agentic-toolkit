@@ -18,7 +18,7 @@ compatibility: GitHub Copilot
 
 # Living Doc — Create User Story
 
-> **Key concepts:** Feature, Functionality, User Story, AC — see `../references/living-doc-glossary.md`.
+> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
 
 ## Step 1 — Elicit the narrative
 
@@ -71,7 +71,7 @@ AC:US-<nnn>-<nn> (v<version> – Planned)
    – <Placeholder>: value1, value2, ...
 ```
 
-See full AC format and examples in `../references/living-doc-glossary.md`.
+See full AC format and examples in [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
 
 **Completeness check — always ask:**
 1. What happens on the happy path? (at least one AC required)
@@ -108,7 +108,7 @@ Output the User Story using the project's Storage Profile format. Canonical fiel
 | `i_can` | Yes | The capability |
 | `so_that` | Yes | Business outcome |
 | `features` | Yes | List of `FEAT-<nnn>` IDs |
-| `acceptance_criteria` | Yes | List of ACs in the format defined in `../references/living-doc-glossary.md` |
+| `acceptance_criteria` | Yes | List of ACs in the format defined in [living-doc-glossary](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md) |
 
 ## Anti-patterns to flag
 

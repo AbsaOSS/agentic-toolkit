@@ -1,7 +1,7 @@
 # Living Documentation — Shared Glossary
 
 > **This file has moved.**
-> The shared glossary is now at [`skills/references/living-doc-glossary.md`](../../references/living-doc-glossary.md).
+> The shared glossary is now at [skills/references/living-doc-glossary.md](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md).
 > Update any links pointing here to use the new path.
 
 

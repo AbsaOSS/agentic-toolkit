@@ -46,10 +46,10 @@ Never assume a format. If the answer is incomplete, ask one targeted follow-up b
 
 ## Does NOT
 
-- Write Gherkin scenarios or feature files → hand off to `@bdd-copilot`
-- Explore or crawl web apps → hand off to `@bdd-copilot`
+- Write Gherkin scenarios or feature files → hand off to `@living-doc-bdd-copilot`
+- Explore or crawl web apps → hand off to `@living-doc-bdd-copilot`
 - Write any test code → hand off to `@sdet-copilot`
-- Repair PageObject selectors or step definitions → hand off to `@bdd-copilot`
+- Repair PageObject selectors or step definitions → hand off to `@living-doc-bdd-copilot`
 
 ## AC Metadata
 
