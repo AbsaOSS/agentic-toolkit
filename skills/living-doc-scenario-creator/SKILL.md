@@ -1,0 +1,162 @@
+---
+name: living-doc-scenario-creator
+description: >
+  From User Stories and Acceptance Criteria, generate BDD Gherkin scenario skeletons in
+  .feature files and identify step implementations needed using available PageObjects.
+  Activate when generating Gherkin scenarios from a User Story, covering US AC with BDD
+  scenarios, mapping Given-When-Then to PageObject actions, identifying missing step
+  definitions, or auditing scenario-to-AC coverage.
+  Triggers on: "create BDD scenarios for user story", "generate scenarios for US",
+  "cover AC with scenarios", "generate feature file from user story", "BDD from requirements",
+  "scenario coverage for US", "map AC to scenarios", "gherkin from user story", "scenarios for US-",
+  "generate .feature file".
+  Does NOT trigger for: standalone Gherkin without a User Story (use gherkin-scenario),
+  implementing step definitions (use gherkin-step), writing unit tests (use test-unit-write),
+  doc gaps or undocumented behaviors (use living-doc-gap-finder).
+  Pairs with living-doc-create-user-story, gherkin-scenario, and living-doc-pageobject-scan.
+---
+
+# Living Doc — Scenario Creator
+
+> **Glossary:** User Story, AC, PageObject, step definitions — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+
+## Glossary alignment
+
+**AC ID format:** `AC:<parent-id>-<nn>` — e.g. `AC:US-001-01`, `AC:US-001-02`
+
+**AC traceability tag** (mandatory — placed above every `Scenario:` line):
+```gherkin
+# AC: US-001-01 (v1.0.0 – Active) — Happy path: customer places an order
+Scenario: Customer successfully places an order
+```
+
+Only ACs with state `Active` or `Implemented` drive scenario generation.
+ACs with state `Planned` or `Deprecated` are excluded from generation; note them in the coverage report.
+
+---
+
+## Inputs required
+
+| Input | Source | Required |
+|---|---|---|
+| User Story (with ACs) | Living doc catalog or inline JSON | Yes |
+| Available PageObjects | `tests/pages/` directory | Recommended |
+| Existing step definitions | `tests/steps/` directory | Recommended |
+
+If PageObjects or step files are not available, generate scenarios with placeholder step text
+and flag all steps as `[STEP: MISSING — implement with PageObject method]`.
+
+---
+
+## Workflow
+
+### Step 1 — Read the User Story
+
+Load the User Story. Confirm:
+- ID follows `US-<nnn>` format
+- At least one AC exists with state `Active` or `Implemented`
+- ACs are atomic — each has one input condition and one observable outcome
+
+### Step 2 — Map each AC to a scenario
+
+For each active AC, select the scenario pattern by AC type:
+- `happy_path` → `Scenario:` or `Scenario Outline:` (if data-driven)
+- `error` → `Scenario: <US title> — <error condition>`
+- `alternative` → `Scenario: <US title> — <alternative path>`
+
+Generate a scenario for **every** active AC regardless of priority. Tag low-priority AC
+scenarios with `@low-priority` so they can be excluded from smoke runs without losing traceability.
+
+Map Given-When-Then from the AC to existing step definitions — reuse exact step text where found.
+
+```gherkin
+# AC: US-001-01 (v1.0.0 – Active) — Customer places an order with a saved payment method
+Scenario: Customer successfully places an order
+  Given the customer has items in their cart and a saved payment method
+  When the customer confirms the order
+  Then the order is confirmed
+  And a confirmation email is sent to the customer
+  And the cart is emptied
+```
+
+### Step 3 — Identify missing steps
+
+For each step not found in existing step files:
+
+```
+MISSING STEP: "Given the customer has items in their cart and a saved payment method"
+  → PageObject candidate: CheckoutPage (FEAT-003)
+  → Suggested step file: tests/steps/checkout_steps.py
+  → Suggested implementation:
+      @given('the customer has items in their cart and a saved payment method')
+      def step_customer_has_cart_with_payment(context):
+          context.checkout_page = CheckoutPage(context.browser)
+          context.checkout_page.add_item_to_cart("SKU-100", quantity=1)
+          context.checkout_page.set_saved_payment_method()
+```
+
+### Step 4 — Validate AC coverage
+
+Every active AC must map to at least one scenario.
+Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full catalog report.
+
+```
+AC COVERAGE REPORT — US-001
+  AC:US-001-01 (Active, critical): ✅ covered by "Customer successfully places an order"
+  AC:US-001-02 (Active, critical): ✅ covered by "Order rejected when payment card is declined"
+  AC:US-001-03 (Active, high):     ❌ NOT COVERED — added to gap list
+  AC:US-001-04 (Deprecated):       ⏭  skipped — deprecated AC
+```
+
+Use `scripts/coverage_report.py` to generate this report across the full catalog.
+
+### Step 5 — Output artifacts
+
+**`.feature` file** — one per User Story, named `<us-id>-<kebab-title>.feature`:
+
+```gherkin
+Feature: Place an online order
+  As a registered customer
+  I can place an order for in-stock items
+  So that the items are delivered to my address
+
+  # AC: US-001-01 (v1.0.0 – Active) — Happy path: customer places an order
+  Scenario: Customer successfully places an order
+    ...
+
+  # AC: US-001-02 (v1.0.0 – Active) — Payment failure path
+  Scenario: Order rejected when payment card is declined
+    ...
+```
+
+**Missing step report** — list of step functions to implement, grouped by step file.
+
+**Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`).
+
+---
+
+## Step reuse rules
+
+1. **Narrow to page scope first** — identify which PageObject the scenario's steps interact with. Only look in step definition files that already import or reference that PageObject; those are the most likely reuse candidates.
+2. **Match by purpose, not just text** — read the step implementation body to confirm it performs the same business action. Two steps may have identical text but operate on different elements (e.g. a `fill` on `username-input` vs `search-input`). Only reuse if the purpose matches.
+3. If a purpose-matching step exists, reuse it as-is; note the file it lives in.
+4. Only if no match exists: write a new stub using the `gherkin-step` skill. If an existing step is close but not identical, suggest a parameter to generalise it rather than duplicating.
+5. Never create duplicate step definitions — search before creating.
+
+## File placement
+
+| Step domain | Step file |
+|---|---|
+| Authentication | `tests/steps/auth_steps.py` |
+| Checkout / order | `tests/steps/checkout_steps.py` |
+| Common / shared | `tests/steps/common_steps.py` |
+| Domain-specific | `tests/steps/<domain>_steps.py` |
+
+---
+
+## Out-of-scope redirects
+
+| Request | Correct skill |
+|---|---|
+| Standalone Gherkin without a User Story | `gherkin-scenario` |
+| Writing step definition code | `gherkin-step` |

@@ -68,4 +68,4 @@ To install only this skill:
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill token-saving
 ```
 
-See [Getting Started](./getting-started.md) for the full install guide.
+See [Getting Started](../getting-started.md) for the full install guide.

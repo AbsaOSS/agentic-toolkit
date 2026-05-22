@@ -122,4 +122,4 @@ Every AC created or updated by this agent carries:
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g
 ```
 
-See [Getting Started](./getting-started.md) for the full install guide.
+See [Getting Started](../getting-started.md) for the full install guide.

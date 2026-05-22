@@ -92,6 +92,7 @@ Agents are pre-configured AI personas that orchestrate multiple skills for a spe
 | Agent | Description |
 |---|---|
 | **[@living-doc-copilot](./.github/agents/living-doc-copilot.agent.md)** | Creates and maintains the living documentation catalog: User Stories, Features, Functionalities, AC updates, impact analysis, gap finding. |
+| **[@living-doc-bdd-copilot](./.github/agents/living-doc-bdd-copilot.agent.md)** | Automation layer: explores web apps via MCP Playwright, generates PageObjects and Gherkin scenarios, writes step definitions, and maintains the BDD suite across RE-SCAN, HEALING, and REMOVE phases. |
 
 ## Finding More Skills
 
@@ -108,7 +109,7 @@ Before building a new skill, check whether one already exists:
 ## Contributing
 
 See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for the skill authoring guide — folder layout, frontmatter schema, writing
-effective descriptions and bodies, [testing](./docs/skill-testing.md), and the PR checklist.
+effective descriptions and bodies, [testing](./docs/testing/skill-testing.md), and the PR checklist.
 
 To propose a new skill — or to propose expanding the repo into agents, MCP servers, or
 plugins — [open an issue](https://github.com/AbsaOSS/agentic-toolkit/issues/new).

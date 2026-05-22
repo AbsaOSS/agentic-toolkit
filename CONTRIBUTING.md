@@ -38,7 +38,7 @@ skills/
 | `scripts/`    | Deterministic or repetitive logic better run as code than described in prose (e.g. a validation script, a formatter, a data transformer) |
 | `references/` | Domain docs, API specs, decision tables, or anything too large to keep in `SKILL.md` without exceeding 500 lines                         |
 | `assets/`     | Template files, example inputs/outputs, icons — anything the skill produces or consumes                                                  |
-| `evals/`      | Test prompts and assertions to verify skill behavior and trigger accuracy. See [skill-testing.md](./docs/skill-testing.md)               |
+| `evals/`      | Test prompts and assertions to verify skill behavior and trigger accuracy. See [skill-testing.md](./docs/testing/skill-testing.md)               |
 
 ---
 
@@ -201,7 +201,7 @@ If every test run of your skill independently writes the same helper script (a f
 Before proposing a PR, verify that your skill activates correctly and produces good output. The full testing
 methodology — eval creation, fixture management, with/without comparisons, trigger testing, and description
 optimization using the Anthropic [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
-skill — is covered in **[docs/skill-testing.md](./docs/skill-testing.md)**.
+skill — is covered in **[docs/testing/skill-testing.md](./docs/testing/skill-testing.md)**.
 
 ---
 

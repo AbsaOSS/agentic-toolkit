@@ -95,7 +95,7 @@ If contextually distinct despite similar names, create a new Functionality and n
 > to get the next available ID and avoid collisions.
 > For AC IDs, use `--type AC --parent FUNC-<nnn>` to get the next sequential AC number.
 
-Output using the project's Storage Profile format (defined per project — see `../../docs/living-doc-copilot.md`). Canonical fields (see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)) for AC format details):
+Output using the project's Storage Profile format (defined per project — see `../../docs/guides/living-doc-copilot.md`). Canonical fields (see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)) for AC format details):
 
 | Field | Required | Value |
 |---|---|---|

@@ -11,7 +11,7 @@ description: >
   "find undocumented features", "orphan tests", "untested AC", "documentation coverage",
   "gap report", "what's not covered", "living doc audit", "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills),
-  generating tutorials (use living-doc-tutorial-creator).
+  generating tutorials (use @living-doc-bdd-tutorial-copilot — planned).
   Orchestrates: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
@@ -43,13 +43,26 @@ delegate the computation to the script rather than reproducing it through reason
 
 ---
 
+## Usage modes
+
+This skill is used in two directions depending on which agent calls it:
+
+| Mode | Caller | What it finds |
+|---|---|---|
+| **Full gap audit** (default) | `@living-doc-copilot` | All 9 gap types — missing documentation entities, orphan tests, stale references, empty Features |
+| **Bottom-up scenario coverage** | `@living-doc-bdd-copilot` | Gap type 1 only, scoped to Gherkin: ACs that exist in the catalog but have no linked `.feature` scenario carrying a `# AC: <id>` traceability tag |
+
+When called by `@living-doc-bdd-copilot`, skip Steps 1 and 2 of the Workflow. Go directly to Gap type 1 with the Gherkin-scoped definition below, then output only those results.
+
+---
+
 ## Gap taxonomy
 
 Nine types of gaps are detected, in order of risk:
 
 | Priority | Gap type | Description |
 |---|---|---|
-| 1 — Blocker | **Untested AC** | An Active or Implemented AC in a User Story or Functionality has no linked test |
+| 1 — Blocker | **Untested AC** | An Active or Implemented AC in a User Story or Functionality has no linked test. In bottom-up scenario coverage mode (called from `@living-doc-bdd-copilot`): no `.feature` file carries a `# AC: <id>` traceability tag for this AC. |
 | 2 — Important | **Undocumented UI surface** | A screen or API endpoint exists in the app with no Feature entity |
 | 3 — Important | **Orphan Feature** | A Feature entity exists with no linked User Story |
 | 4 — Important | **Orphan User Story** | A User Story exists with no linked Feature |

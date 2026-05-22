@@ -14,20 +14,22 @@ Navigation hub for all guides in this repository. Browse by category below.
 |-----------------------------------------|-------------------------------------------------------------------------------------|
 | [Getting Started](./getting-started.md) | What skills are, how to install them, Copilot CLI usage                             |
 | [Contributing](../CONTRIBUTING.md)  | Skill folder layout, frontmatter, description writing, body guidelines, PR process |
-| [Skill Testing](./skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization    |
+| [Skill Testing](./testing/skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization    |
+| [Agent Testing](./testing/agent-testing.md) | Eval creation, trigger accuracy tuning, and body quality testing for `.agent.md` files |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues                               |
 
 ## Skill Guides
 
 | Guide                               | Description                                                                        |
 |-------------------------------------|------------------------------------------------------------------------------------|
-| [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
+| [Token Saving](./guides/token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 ## Agent Guides
 
 | Guide                                         | Description                                                                              |
 |-----------------------------------------------|------------------------------------------------------------------------------------------|
-| [Living Doc Copilot](./living-doc-copilot.md) | How the living-doc-copilot agent works, its scope, modes, and how to trigger it          |
+| [Living Doc Copilot](./guides/living-doc-copilot.md) | How the living-doc-copilot agent works, its scope, modes, and how to trigger it          |
+| [Living Doc BDD Copilot](./guides/living-doc-bdd-copilot.md) | How the living-doc-bdd-copilot agent works: web app exploration, PageObjects, Gherkin generation, and BDD maintenance phases |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 
