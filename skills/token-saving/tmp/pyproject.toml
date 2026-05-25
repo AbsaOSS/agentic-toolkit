@@ -1,0 +1,148 @@
+[project]
+name = "TODO"
+version = "0.0.0"
+description = "TODO"
+requires-python = ">=3.14"
+
+# Workspace-wide dev tools (PEP 735) — declared once, available in the shared .venv
+# for every workspace member. Install with `uv sync --all-extras --all-packages`.
+[dependency-groups]
+dev = [
+    "mypy>=1.20",
+    "ruff>=0.15",
+    "pytest>=9.0",
+    "pytest-asyncio>=1.3",
+    "pytest-cov>=7.1",
+    "pip-audit>=2.10",
+    "yamllint>=1.38",
+]
+
+[tool.uv]
+# This is a virtual workspace root — it has no installable package of its own.
+# All real packages live in the member directories below.
+managed = true
+default-groups = ["dev"]
+
+[tool.uv.workspace]
+members = ["core", "business_catalog"]
+
+# ──────────────────────────────────────────────
+# Shared Ruff configuration for all workspace members.
+# Each project extends this file via `extend = "../pyproject.toml"`
+# and adds only project-specific overrides (e.g. known-first-party).
+# ──────────────────────────────────────────────
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes — unused imports, undefined names
+    "I",    # isort — import ordering
+    "N",    # pep8-naming
+    "UP",   # pyupgrade — modern syntax
+    "S",    # bandit — security
+    "B",    # bugbear — common Python gotchas
+    "A",    # flake8-builtins — don't shadow builtins
+    "C4",   # comprehensions — unnecessary/inefficient comprehensions
+    "C90",  # mccabe — cyclomatic complexity
+    "D",    # pydocstyle — docstring conventions
+    "ANN",  # flake8-annotations — enforce type annotations
+    "DTZ",  # flake8-datetimez — timezone-aware datetimes
+    "T20",  # flake8-print — no print() in production (ADR §5)
+    "SIM",  # flake8-simplify — simplifiable constructs
+    # "TCH" intentionally excluded — TYPE_CHECKING guards add complexity, https://pypi.org/project/flake8-type-checking/
+    #        with negligible benefit for service startup;
+    #        they also conflict with runtime annotation consumers (FastAPI, Pydantic).
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib — prefer pathlib
+    "ERA",  # eradicate — commented-out code
+    "PIE",  # flake8-pie — misc. lints
+    "PT",   # flake8-pytest-style
+    "RET",  # flake8-return — return/else simplifications
+    "RSE",  # flake8-raise — clean raise statements
+    "FLY",  # flynt — prefer f-strings
+    "PERF", # perflint — performance anti-patterns
+    "LOG",  # flake8-logging — logging best practices (ADR §5)
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "D100", # missing docstring in public module (too noisy early on)
+    "D104", # missing docstring in public package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.lint.pep8-naming]
+# Pydantic v2 validators behave like classmethods.
+classmethod-decorators = ["pydantic.field_validator", "pydantic.model_validator"]
+
+# ──────────────────────────────────────────────
+# Shared Mypy configuration.
+# Inherited by every workspace member because no member redefines [tool.mypy].
+# `mypy_path = ["core"]` is relative to this file, so members can import `core`
+# without needing per-project overrides.
+# ──────────────────────────────────────────────
+
+[tool.mypy]
+strict = true
+python_version = "3.14"
+plugins = ["pydantic.mypy"]
+mypy_path = ["$MYPY_CONFIG_FILE_DIR/core"]
+warn_unused_configs = true
+warn_unreachable = true
+show_error_codes = true             # required so ADR's "every # type: ignore needs a code" is enforceable
+enable_error_code = [
+    "ignore-without-code",          # ADR §1 — every `# type: ignore` must have a justification
+    "redundant-cast",
+    "truthy-bool",
+    "truthy-iterable",
+    "unused-awaitable",
+]
+
+# ──────────────────────────────────────────────
+# Shared Pytest configuration.
+# All markers are declared once here; individual projects use a subset.
+# ──────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",  # unknown markers fail the run
+    "--strict-config",   # bad config fails the run
+    "-ra",               # summary of all non-passing tests
+    "--tb=short",        # concise tracebacks
+]
+markers = [
+    "unit: Pure unit tests — no I/O, no AWS, no vendor calls",
+]
+
+# ──────────────────────────────────────────────
+# Shared Coverage configuration — workspace-wide default.
+# `fail_under` here is the safety-net default; projects override it
+# in their own pyproject.toml (e.g. core = 90%, services = 70%).
+# ──────────────────────────────────────────────
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "raise NotImplementedError",
+    "\\.\\.\\.",  # Protocol method stubs
+]
