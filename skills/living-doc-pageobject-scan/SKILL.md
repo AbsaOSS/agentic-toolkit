@@ -77,13 +77,23 @@ One PageObject class per distinct screen. Naming: `<ScreenName>Page`.
 # ✅ Generated skeleton — Python / Playwright
 # living-doc: FEAT-003 | /checkout
 class CheckoutPage:
+    ROUTE          = '/checkout'
     ORDER_SUMMARY  = '[data-testid="order-summary"]'
     CONFIRM_BUTTON = '[data-testid="confirm-order-btn"]'
     PROMO_INPUT    = '[data-testid="promo-code-input"]'
     ERROR_BANNER   = '[data-testid="error-banner"]'
 
-    def __init__(self, page):
+    def __init__(self, page: Page, base_url: str = '') -> None:
         self.page = page
+        self.base_url = base_url
+
+    def open(self) -> 'CheckoutPage':
+        self.page.goto(f'{self.base_url}{self.ROUTE}')
+        self.wait_until_loaded()
+        return self
+
+    def wait_until_loaded(self) -> None:
+        expect(self.page.locator(self.ORDER_SUMMARY)).to_be_visible()
 
     def enter_promo_code(self, code: str) -> None:
         self.page.fill(self.PROMO_INPUT, code)

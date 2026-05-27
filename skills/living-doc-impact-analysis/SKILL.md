@@ -49,6 +49,35 @@ to drive Steps 3–5 (impact classification, impact map narrative, and sign-off 
 
 ---
 
+## Fast path — infra/config-only and test-only PRs
+
+Before running the full workflow, check whether the PR scope is entirely out of living-doc reach.
+If **all** changed files fall into one or more of these categories, issue a concise no-impact
+verdict and stop — do not generate a full Impact Map:
+
+| Scope | Examples | Verdict |
+|---|---|---|
+| Pure infrastructure | Kubernetes manifests, Helm charts, Terraform, Docker resource limits | **No living doc impact** |
+| Build / CI config | `Dockerfile`, GitHub Actions, `pom.xml` dependency bumps | **No living doc impact** |
+| Test-only | `*Test.java`, `*Spec.ts`, mock/stub files, test fixtures | **No living doc impact** (unless a test references an AC that no longer exists — flag that separately) |
+| Documentation / comments | `*.md`, `*.adoc`, Javadoc-only changes | **No living doc impact** |
+
+**Concise no-impact verdict format:**
+
+```
+Impact level: None.
+
+<PR description> is a <category> change. It does not modify business logic, API contracts,
+event contracts, or UI behaviour, so no living doc entities require updating.
+
+Recommended action: note "no living doc update required" in the PR and proceed.
+```
+
+Skip Steps 2–5 for these PRs. Only escalate to the full workflow if at least one changed file
+touches domain logic, an API contract, an event contract, or a UI component.
+
+---
+
 ## Step 1 — Identify the changed surface area
 
 Start from the code change (PR diff, renamed module, deleted endpoint):

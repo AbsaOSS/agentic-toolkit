@@ -42,9 +42,10 @@ The Workflow section describes the logic the script encodes — read it for unde
 delegate the computation to the script rather than reproducing it through reasoning.
 
 Before presenting the final report, normalise the script output against the taxonomy in this skill:
-- Gap type 1 applies to **both User Story ACs and Functionality ACs**. If a Functionality has ACs and no linked tests, report those ACs as `UNTESTED_AC` **Blockers** (you may summarise as `FUNC-xyz has N ACs with no linked tests`) and do **not** leave the same root cause only as `UNDOCUMENTED_FUNCTIONALITY`.
+- The first gap type (`UNTESTED_AC`) applies to **both User Story ACs and Functionality ACs**. If a Functionality has ACs and no linked tests, report those ACs as `UNTESTED_AC` **Blockers** (you may summarise as `FUNC-xyz has N ACs with no linked tests`) and do **not** leave the same root cause only as `UNDOCUMENTED_FUNCTIONALITY`.
 - Report documentation coverage **separately** for User Story ACs and Functionality ACs, even if the raw script output gives a combined number.
-- For Gap type 2, treat a discovered screen/API as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning (for example `/account/orders` ↔ `Account Dashboard`, `/reports/legacy` ↔ `Legacy Report Screen`). Only raise `UNDOCUMENTED_SURFACE` when no plausible owning Feature exists.
+- For `UNDOCUMENTED_SURFACE`, treat a discovered screen/API as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning (for example `/account/orders` ↔ `Account Dashboard`, `/reports/legacy` ↔ `Legacy Report Screen`). Only raise `UNDOCUMENTED_SURFACE` when no plausible owning Feature exists.
+- **Always refer to gap types by their name** (e.g. `ORPHAN_TEST`, `UNTESTED_AC`) — never by an ordinal number (e.g. "Gap type 6"). The priority order below is for triage, not for labelling gaps in the report.
 
 ---
 
@@ -87,7 +88,7 @@ Traverse the entity graph top-down, starting from User Stories as roots:
 
 For each gap type:
 
-**Gap type 1 — Untested AC:**
+**UNTESTED_AC:**
 ```
 For each AC in (UserStory.ACs + Functionality.ACs)
   where status IN (Active, Implemented)
@@ -95,56 +96,56 @@ For each AC in (UserStory.ACs + Functionality.ACs)
     GAP: UNTESTED_AC
 ```
 
-**Gap type 2 — Undocumented UI surface:**
+**UNDOCUMENTED_SURFACE:**
 ```
 For each item in inventory (screens, API endpoints)
   where no Feature entity exists for this surface:
     GAP: UNDOCUMENTED_SURFACE
 ```
 
-**Gap type 3 — Orphan Feature:**
+**ORPHAN_FEATURE:**
 ```
 For each Feature reachable via entity relationships
   where user_stories == []:
     GAP: ORPHAN_FEATURE
 ```
 
-**Gap type 4 — Orphan User Story:**
+**ORPHAN_USER_STORY:**
 ```
 For each User Story in entity graph
   where user_story.features == []:
     GAP: ORPHAN_USER_STORY
 ```
 
-**Gap type 5 — Orphan Functionality:**
+**ORPHAN_FUNCTIONALITY:**
 ```
 For each Functionality in entity graph
   where functionality.parent_feature == null:
     GAP: ORPHAN_FUNCTIONALITY
 ```
 
-**Gap type 6 — Orphan test:**
+**ORPHAN_TEST:**
 ```
 For each test in inventory
   where no linked AC exists in any UserStory or Functionality:
     GAP: ORPHAN_TEST
 ```
 
-**Gap type 7 — Stale reference:**
+**STALE_REFERENCE:**
 ```
 For each test in inventory
   where linked_ac.status == Deprecated:
     GAP: STALE_REFERENCE
 ```
 
-**Gap type 8 — Undocumented Functionality:**
+**UNDOCUMENTED_FUNCTIONALITY:**
 ```
 For each Functionality reachable via Feature `functionalities` links
   where no test references this Functionality's ACs:
     GAP: UNDOCUMENTED_FUNCTIONALITY
 ```
 
-**Gap type 9 — Empty Feature:**
+**EMPTY_FEATURE:**
 ```
 For each Feature reachable via entity relationships
   where functionalities == []:

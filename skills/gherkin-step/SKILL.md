@@ -26,6 +26,36 @@ scenario here. Explain that this skill covers **step definition code** only, the
 
 ---
 
+## Context initialization — how PageObjects reach steps
+
+Step definitions receive a fresh `context` object each scenario. PageObjects must be attached to
+`context` in a `before_scenario` hook (or a preceding `Given` step), not inside the step itself.
+
+```python
+# ✅ — Before hook initialises the PageObject once per scenario
+@before_scenario
+def setup_pages(context):
+    context.checkout_page = CheckoutPage(context.browser.new_page())
+```
+
+The `When` step then delegates without creating or managing the PageObject:
+
+```python
+@when('the customer confirms the order')
+def step_confirm_order(context):
+    context.checkout_page.confirm_order()   # relies on before_scenario having run
+```
+
+---
+
+## Function naming convention
+
+Name step functions after the business action, not the full step text:
+- `step_confirm_order` ✅ — concise, action-based
+- `step_customer_confirms_the_order` ❌ — verbatim transcription of the step
+
+---
+
 ## Keep step definitions thin
 
 Step definitions are bindings — they translate Gherkin text into calls to PageObjects, domain
