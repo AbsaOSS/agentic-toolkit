@@ -2,11 +2,13 @@
 description: >
   Maintain the living documentation catalog — single source of truth for requirements,
   behaviours, and traceability. Use for: creating Feature / Functionality / User Story
-  entities, updating or deprecating entities, analysing code change impact on docs,
-  finding documentation gaps, and PO planning in PLANNED state.
-  Triggers: "create user story", "document feature", "update AC", "impact analysis",
-  "living doc gaps", "PLAN mode", "HEALING mode", "deprecate entity", "living doc copilot",
-  "add AC to user story", "trace affected features", "update feature registry".
+  entities, updating or deprecating entities, checking AC completeness and promoting
+  User Stories to active, analysing code change impact on docs, finding documentation
+  gaps, and PO planning in PLANNED state. Triggers: "create user story",
+  "document feature", "update AC", "impact analysis", "living doc gaps", "PLAN mode",
+  "HEALING mode", "deprecate entity", "living doc copilot", "add AC to user story",
+  "trace affected features", "update feature registry", "mark US ready",
+  "check AC completeness".
 tools:
   - read_file
   - replace_string_in_file

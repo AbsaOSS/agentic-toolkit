@@ -2,13 +2,13 @@
 description: >
   Bridge living documentation to executable tests. Explore web apps via MCP Playwright,
   generate and maintain PageObjects, Gherkin scenarios, and step definitions.
-  Covers webapp exploration with Business Seed assembly, iterative UI crawling, scenario
-  generation from User Story ACs, and BDD suite maintenance (RE-SCAN, HEALING, REMOVE).
-  Triggers: "scan webapp",
-  "generate pageobjects", "heal pageobjects", "generate scenarios", "sync gherkin",
-  "playwright crawl", "explore the app", "bdd copilot", "living doc bdd copilot",
-  "BDD pipeline", "crawl the UI", "create page objects", "generate feature file",
-  "scenario coverage", "step definitions", "gherkin from user story".
+  Covers webapp exploration with Business Seed assembly (seed.yaml, manifest.json),
+  iterative UI crawling with guided traversal support, scenario generation from User
+  Story ACs, and BDD suite maintenance (RE-SCAN, HEALING, REMOVE). Triggers: "scan
+  webapp", "generate pageobjects", "heal pageobjects", "generate scenarios", "sync
+  gherkin", "playwright crawl", "explore the app", "bdd copilot", "living doc bdd
+  copilot", "BDD pipeline", "crawl the UI", "create page objects", "generate feature
+  file", "scenario coverage", "step definitions", "gherkin from user story".
 tools:
   - read_file
   - replace_string_in_file
