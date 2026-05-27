@@ -171,6 +171,12 @@
         "Consolidates entities appearing more than once \u2014 higher risk",
         "Outputs a single consolidated impact map covering both changed files"
       ]
+    },
+    {
+      "id": 14,
+      "prompt": "PR #600 only updates README.md, adds inline code comments, and reformats a YAML config file with no value changes. What is the living doc impact?",
+      "expected_output": "No living doc impact. Docs-only and formatting-only PRs fall into the fast-path no-impact category. No entities to review or update.",
+      "files": []
     }
   ]
 }

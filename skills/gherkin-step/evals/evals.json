@@ -8,7 +8,7 @@
       "expected_output": "Outputs a thin step definition that delegates entirely to the PageObject: @when('the customer confirms the order') / def step_confirm_order(context): / context.checkout_page.confirm_order(). No CSS selectors, no business logic, and no assertions inside the step. The method call is the only line in the step body (plus any state retrieval from context).",
       "files": [],
       "expectations": [
-        "Step delegates to CheckoutPage.confirm_order() — no selector or business logic in step body",
+        "Step delegates to CheckoutPage.confirm_order() - no selector or business logic in step body",
         "Uses @when decorator",
         "Accesses checkout_page via context object",
         "No assertions in a When step"
@@ -18,7 +18,7 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "In behave, I have a Given step that creates a customer and a Then step that checks the discount. How do I pass the customer object between them without using global variables?",
-      "expected_output": "Use the context object — behave instantiates it fresh per scenario so there is no contamination. In the Given step, attach the object: context.customer = Customer(tier=tier). In the Then step, read it back: context.customer.discount_rate(). Never store state in module-level or global variables. Provides a code example showing both steps using context.customer.",
+      "expected_output": "Use the context object - behave instantiates it fresh per scenario so there is no contamination. In the Given step, attach the object: context.customer = Customer(tier=tier). In the Then step, read it back: context.customer.discount_rate(). Never store state in module-level or global variables. Provides a code example showing both steps using context.customer.",
       "files": [],
       "expectations": [
         "Uses context object to pass state between steps",
@@ -31,7 +31,7 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "I have a step 'When the customer adds the following items' that takes a DataTable with columns 'sku' and 'quantity'. How do I parse the table in behave?",
-      "expected_output": "Access the table via context.table and iterate with a for loop. Each row is a dict-like object: for row in context.table: context.cart.add_item(row['sku'], int(row['quantity'])). Notes that column values are strings by default — cast quantity to int explicitly. Provides a complete step definition example.",
+      "expected_output": "Access the table via context.table and iterate with a for loop. Each row is a dict-like object: for row in context.table: context.cart.add_item(row['sku'], int(row['quantity'])). Notes that column values are strings by default - cast quantity to int explicitly. Provides a complete step definition example.",
       "files": [],
       "expectations": [
         "Uses context.table to access the DataTable",
@@ -44,7 +44,7 @@
       "id": 4,
       "category": "regression",
       "prompt": "Review this step definition:\n\n@when('the customer confirms the order')\ndef step_confirm_order(context):\n    context.cart.total *= (1 - context.discount / 100)\n    context.order_status = 'placed'\n    context.db.save(context.order)",
-      "expected_output": "Flags the step as violating the 'keep step definitions thin' rule. Business logic (discount calculation, status assignment, DB write) must not live in step definitions — these belong in domain objects or PageObjects. The step should only call a method: context.checkout_page.confirm_order() or context.order_service.confirm_order(). Provides a corrected version that delegates to a domain object.",
+      "expected_output": "Flags the step as violating the 'keep step definitions thin' rule. Business logic (discount calculation, status assignment, DB write) must not live in step definitions - these belong in domain objects or PageObjects. The step should only call a method: context.checkout_page.confirm_order() or context.order_service.confirm_order(). Provides a corrected version that delegates to a domain object.",
       "files": [],
       "expectations": [
         "Identifies business logic in the step body as the violation",
@@ -57,7 +57,7 @@
       "id": 5,
       "category": "negative",
       "prompt": "Write a Gherkin scenario for when the promo code is expired.",
-      "expected_output": "Writing Gherkin scenarios is out of scope for this skill — routes to gherkin-scenario. gherkin-step handles step definition code; gherkin-scenario handles Gherkin text.",
+      "expected_output": "Writing Gherkin scenarios is out of scope for this skill - routes to gherkin-scenario. gherkin-step handles step definition code; gherkin-scenario handles Gherkin text.",
       "files": [],
       "expectations": [
         "Does not write a Gherkin scenario",
@@ -69,7 +69,7 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "How do I pass data between step files in behave? For example, I create an order in a Given step and need to check it in a Then step in a different file.",
-      "expected_output": "Use the context object — behave's built-in mechanism for sharing state across steps from different files. In the Given step (any file), assign context.order = .... In the Then step (another file), read context.order. The context is scoped to the scenario and reset between scenarios. Provides a concrete code example showing a Given in one file and Then in another, both using context.order.",
+      "expected_output": "Use the context object - behave's built-in mechanism for sharing state across steps from different files. In the Given step (any file), assign context.order = .... In the Then step (another file), read context.order. The context is scoped to the scenario and reset between scenarios. Provides a concrete code example showing a Given in one file and Then in another, both using context.order.",
       "files": [],
       "expectations": [
         "Recommends context object for cross-file state sharing",
@@ -82,7 +82,7 @@
       "id": 7,
       "category": "edge-case",
       "prompt": "I want a Before hook in behave that only runs for scenarios tagged @database. How do I scope it?",
-      "expected_output": "Use the context.tags check inside the before_scenario hook: @before_scenario / def setup_database(context): / if 'database' in context.tags: / context.db = create_test_db(). This scopes setup to only the tagged scenarios. Notes that before_scenario runs before every scenario by default — the tag check prevents unnecessary setup. Advises pairing with an after_scenario hook to clean up: if 'database' in context.tags: context.db.teardown().",
+      "expected_output": "Use the context.tags check inside the before_scenario hook: @before_scenario / def setup_database(context): / if 'database' in context.tags: / context.db = create_test_db(). This scopes setup to only the tagged scenarios. Notes that before_scenario runs before every scenario by default - the tag check prevents unnecessary setup. Advises pairing with an after_scenario hook to clean up: if 'database' in context.tags: context.db.teardown().",
       "files": [],
       "expectations": [
         "Uses context.tags check to scope the hook",
@@ -95,14 +95,26 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Show me the correct structure for a Cucumber TypeScript step definition that reads the order ID from the World object and submits the order using a PageObject.",
-      "expected_output": "Output is a TypeScript code block. The step uses the When decorator and accesses this (typed as OrderWorld). Calls this.checkoutPage.submitOrder(this.orderId). The World interface/class includes orderId and checkoutPage properties. No CSS selectors appear in the step body — they are encapsulated in CheckoutPage. Example follows the pattern: When('the customer submits the order', async function (this: OrderWorld) { await this.checkoutPage.submitOrder(); }).",
+      "expected_output": "Output is a TypeScript code block. The step uses the When decorator and accesses this (typed as OrderWorld). Calls this.checkoutPage.submitOrder(this.orderId). The World interface/class includes orderId and checkoutPage properties. No CSS selectors appear in the step body - they are encapsulated in CheckoutPage. Example follows the pattern: When('the customer submits the order', async function (this: OrderWorld) { await this.checkoutPage.submitOrder(); }).",
       "files": [],
       "expectations": [
         "Output is a TypeScript code block",
         "Step uses async function with this typed as a World class",
-        "Delegates to PageObject method — no selectors in step body",
+        "Delegates to PageObject method - no selectors in step body",
         "World object holds page and state properties"
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "My step is throwing AttributeError: \"Context\" object has no attribute \"checkout_page\". How do I fix this? The CheckoutPage class is in pages/checkout_page.py.",
+      "expected_output": "Explanation that context.checkout_page must be initialized before the step runs, using a before_scenario hook in environment.py; shows the correct before_scenario pattern attaching a CheckoutPage instance to context.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Should I name my behave step function step_when_the_customer_clicks_the_confirm_order_button or step_confirm_order?",
+      "expected_output": "Recommends step_confirm_order - concise action-based name. Explains why verbose full-phrase names are discouraged: they duplicate the Gherkin text and make step files harder to scan.",
+      "files": []
     }
   ]
 }

@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
-      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker — US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-account, /reports/legacy ↔ FEAT-orphan are already documented); Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker \u2014 US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker \u2014 US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker \u2014 all 4 ACs of US-007 have no linked tests; Blocker \u2014 FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs \u2014 report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important \u2014 /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders \u2194 FEAT-account, /reports/legacy \u2194 FEAT-orphan are already documented); Important \u2014 FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important \u2014 US-007 has no linked Feature (orphan User Story); Important \u2014 test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit \u2014 FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
       "files": [
         "evals/files/catalog-snapshot.json"
       ],
@@ -13,14 +13,14 @@
         "Identifies US-001-AC-2 and US-001-AC-3 as untested (Blockers)",
         "Identifies US-002-AC-1 and US-002-AC-2 as untested (Blockers)",
         "Identifies all 4 US-007 ACs as untested (Blockers)",
-        "Identifies FUNC-apply-discount ACs as untested (Blocker, not Nit — Gap type 1 applies to Functionality ACs)",
+        "Identifies FUNC-apply-discount ACs as untested (Blocker, not Nit \u2014 Gap type 1 applies to Functionality ACs)",
         "Identifies /account/preferences as undocumented surface (Important)",
         "Identifies FEAT-promo as orphan Feature (Important)",
         "Identifies FEAT-orphan as orphan Feature (Important)",
         "Identifies test_order_history.py and test_login_flow.feature as orphan tests (Important)",
         "Identifies 'View paginated order history' BDD scenario as orphan test (Important)",
-        "Identifies FEAT-account and FEAT-orphan as empty Features (Nit — no Functionalities)",
-        "Identifies US-007 as orphan User Story (Important — no linked Feature)",
+        "Identifies FEAT-account and FEAT-orphan as empty Features (Nit \u2014 no Functionalities)",
+        "Identifies US-007 as orphan User Story (Important \u2014 no linked Feature)",
         "Normalises undocumented surfaces: only /account/preferences is truly undocumented after matching existing Features",
         "Calculates documentation coverage percentage separately for US ACs and Functionality ACs"
       ]
@@ -29,10 +29,10 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "What is documentation coverage and how is it calculated?",
-      "expected_output": "Documentation coverage = (ACs with at least one linked test) / (total ACs) × 100%. Reported separately for User Story ACs (E2E coverage) and Functionality ACs (unit/integration coverage). A project with 100% documentation coverage has every AC backed by at least one test. The metric drives the gap-finder workflow toward zero gaps.",
+      "expected_output": "Documentation coverage = (ACs with at least one linked test) / (total ACs) * 100%. Reported separately for User Story ACs (E2E coverage) and Functionality ACs (unit/integration coverage). A project with 100% documentation coverage has every AC backed by at least one test. The metric drives the gap-finder workflow toward zero gaps.",
       "files": [],
       "expectations": [
-        "Correct formula: covered ACs / total ACs × 100",
+        "Correct formula: covered ACs / total ACs * 100",
         "Reported separately for US ACs and Functionality ACs",
         "Notes 100% means every AC has at least one test"
       ]
@@ -41,7 +41,7 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "A test file exists with no linked AC. What gap type is this and what should I do?",
-      "expected_output": "This is an orphan test (Gap type 6 — Important). Resolution options: (1) find an existing AC in the living doc that this test covers and add the link; (2) if no AC exists, create a Functionality entity for the behavior being tested using living-doc-create-functionality, then link the test to the new Functionality's AC. Never delete a test to resolve an orphan — that would remove coverage.",
+      "expected_output": "This is an orphan test (Gap type 6 \u2014 Important). Resolution options: (1) find an existing AC in the living doc that this test covers and add the link; (2) if no AC exists, create a Functionality entity for the behavior being tested using living-doc-create-functionality, then link the test to the new Functionality's AC. Never delete a test to resolve an orphan \u2014 that would remove coverage.",
       "files": [],
       "expectations": [
         "Classifies as Gap type 6: ORPHAN_TEST",
@@ -53,7 +53,7 @@
       "id": 4,
       "category": "regression",
       "prompt": "We have 200 orphan tests from a legacy codebase. Should I run gap-finder on all of them at once?",
-      "expected_output": "Batch the gap-finder run by domain or Feature area rather than running across the entire codebase at once. Process the highest-risk areas first (payment, auth, security). For each batch: identify which Functionalities or User Stories the tests correspond to, create missing living doc entities, and link tests. Processing all 200 at once produces an unmanageable gap report — prioritise by business risk.",
+      "expected_output": "Batch the gap-finder run by domain or Feature area rather than running across the entire codebase at once. Process the highest-risk areas first (payment, auth, security). For each batch: identify which Functionalities or User Stories the tests correspond to, create missing living doc entities, and link tests. Processing all 200 at once produces an unmanageable gap report \u2014 prioritise by business risk.",
       "files": [],
       "expectations": [
         "Recommends batching by domain or Feature area",
@@ -65,7 +65,7 @@
       "id": 5,
       "category": "negative",
       "prompt": "Create a new User Story for the account preferences screen.",
-      "expected_output": "Creating a User Story is not a gap-finder action — routes to living-doc-create-user-story. living-doc-gap-finder identifies and proposes new entities; the creation itself is delegated to the appropriate create-* skill.",
+      "expected_output": "Creating a User Story is not a gap-finder action \u2014 routes to living-doc-create-user-story. living-doc-gap-finder identifies and proposes new entities; the creation itself is delegated to the appropriate create-* skill.",
       "files": [],
       "expectations": [
         "Does not create the User Story",
@@ -103,21 +103,21 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Run a gap analysis and show me exactly what format the output report uses.",
-      "expected_output": "The gap report is emitted as structured JSON (or a formatted rendering of it) with a top-level `documentation_coverage` section (coverage_percentage, user_stories_with_full_coverage, user_stories_with_gaps) and a `gaps[]` array. Each gap item includes: id (GAP-NNN), type (one of UNTESTED_AC, UNDOCUMENTED_SURFACE, ORPHAN_FEATURE, ORPHAN_USER_STORY, ORPHAN_FUNCTIONALITY, ORPHAN_TEST, STALE_REFERENCE, UNDOCUMENTED_FUNCTIONALITY, EMPTY_FEATURE), severity (Blocker/Important/Nit), entity (the affected entity ID or path), description, and proposed_action. Gaps are ordered by severity (Blocker first, then Important, then Nit). The report is diagnostic only — no entity creation or modification is made.",
+      "expected_output": "The gap report is emitted as structured JSON (or a formatted rendering of it) with a top-level `documentation_coverage` section (coverage_percentage, user_stories_with_full_coverage, user_stories_with_gaps) and a `gaps[]` array. Each gap item includes: id (GAP-NNN), type (one of UNTESTED_AC, UNDOCUMENTED_SURFACE, ORPHAN_FEATURE, ORPHAN_USER_STORY, ORPHAN_FUNCTIONALITY, ORPHAN_TEST, STALE_REFERENCE, UNDOCUMENTED_FUNCTIONALITY, EMPTY_FEATURE), severity (Blocker/Important/Nit), entity (the affected entity ID or path), description, and proposed_action. Gaps are ordered by severity (Blocker first, then Important, then Nit). The report is diagnostic only \u2014 no entity creation or modification is made.",
       "files": [],
       "expectations": [
         "Report includes top-level documentation_coverage section with coverage_percentage",
         "gaps[] array present; each item has id, type, severity, entity, description, proposed_action",
         "Gap type codes are canonical: UNTESTED_AC, ORPHAN_TEST, ORPHAN_FEATURE, etc.",
         "Gaps ordered by severity (Blocker before Important before Nit)",
-        "Diagnostic only — no entity creation or modification"
+        "Diagnostic only \u2014 no entity creation or modification"
       ]
     },
     {
       "id": 9,
       "category": "regression",
       "prompt": "A test references AC:US-042-01 but that AC was deprecated last sprint. What gap type is this and how do I resolve it?",
-      "expected_output": "This is a stale reference (Gap type 7 — Important). The active test references a Deprecated AC. Resolution options: (1) update the test's link to the active replacement AC if the behavior was superseded; (2) reinstate the AC using living-doc-update if it was deprecated in error; (3) if the behavior was intentionally removed, delete the test after product owner confirmation. The test must not be deleted without product owner confirmation.",
+      "expected_output": "This is a stale reference (Gap type 7 \u2014 Important). The active test references a Deprecated AC. Resolution options: (1) update the test's link to the active replacement AC if the behavior was superseded; (2) reinstate the AC using living-doc-update if it was deprecated in error; (3) if the behavior was intentionally removed, delete the test after product owner confirmation. The test must not be deleted without product owner confirmation.",
       "files": [],
       "expectations": [
         "Classifies as Gap type 7: STALE_REFERENCE",
@@ -131,7 +131,7 @@
       "id": 10,
       "category": "edge-case",
       "prompt": "We have 50 orphan tests and 30 untested ACs across the entire platform. Should I run a single all-domain gap report and work through everything at once?",
-      "expected_output": "No — use the two-phase strategy. Phase 1: ensure every User Story has at least one covered AC. List all User Stories with zero covered ACs, cover the first AC of each before moving on. This establishes a minimum traceability baseline. Phase 2: once every US has at least one covered AC, rank gap clusters by count, prioritise the highest-risk domains first (payment, auth, security), batch by Feature or domain, and iterate. Processing all 80 gaps at once produces an unmanageable report and obscures progress.",
+      "expected_output": "No \u2014 use the two-phase strategy. Phase 1: ensure every User Story has at least one covered AC. List all User Stories with zero covered ACs, cover the first AC of each before moving on. This establishes a minimum traceability baseline. Phase 2: once every US has at least one covered AC, rank gap clusters by count, prioritise the highest-risk domains first (payment, auth, security), batch by Feature or domain, and iterate. Processing all 80 gaps at once produces an unmanageable report and obscures progress.",
       "files": [],
       "expectations": [
         "Recommends two-phase strategy over single full-pass",
@@ -144,7 +144,7 @@
       "id": 11,
       "category": "happy-path",
       "prompt": "A Functionality entity FUNC-promo-validate exists in the catalog but has no parent Feature linked. What gap type is this and what should I do?",
-      "expected_output": "This is an orphan Functionality (Gap type 5 — Important). A Functionality with no parent Feature is untraceable — it cannot be reached via the entity hierarchy and is missed in impact analyses. Resolution: identify or create the owning Feature and add FUNC-promo-validate to its functionalities list. If tests reference this Functionality's ACs, resolve those first (ORPHAN_TEST takes priority) before removing the Functionality.",
+      "expected_output": "This is an orphan Functionality (Gap type 5 \u2014 Important). A Functionality with no parent Feature is untraceable \u2014 it cannot be reached via the entity hierarchy and is missed in impact analyses. Resolution: identify or create the owning Feature and add FUNC-promo-validate to its functionalities list. If tests reference this Functionality's ACs, resolve those first (ORPHAN_TEST takes priority) before removing the Functionality.",
       "files": [],
       "expectations": [
         "Classifies as Gap type 5: ORPHAN_FUNCTIONALITY",
@@ -157,7 +157,7 @@
       "id": 12,
       "category": "regression",
       "prompt": "The gap-finder script reports /reports/legacy as an UNDOCUMENTED_SURFACE but there is already a Feature entity 'Legacy Report Screen' (FEAT-orphan) in the catalog. Should this be reported as a gap?",
-      "expected_output": "No. After normalisation, /reports/legacy is already documented — FEAT-orphan (Legacy Report Screen) clearly owns that surface by name and domain meaning. The skill instructs to treat a discovered screen as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning. Remove this item from the gap report. FEAT-orphan still has other gaps (orphan Feature, empty Feature) but UNDOCUMENTED_SURFACE is not one of them.",
+      "expected_output": "No. After normalisation, /reports/legacy is already documented \u2014 FEAT-orphan (Legacy Report Screen) clearly owns that surface by name and domain meaning. The skill instructs to treat a discovered screen as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning. Remove this item from the gap report. FEAT-orphan still has other gaps (orphan Feature, empty Feature) but UNDOCUMENTED_SURFACE is not one of them.",
       "files": [],
       "expectations": [
         "Removes /reports/legacy from UNDOCUMENTED_SURFACE gaps after normalisation",
@@ -165,6 +165,18 @@
         "Notes FEAT-orphan still has ORPHAN_FEATURE and EMPTY_FEATURE gaps",
         "Distinguishes raw script output from normalised report"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "A Feature entity FEAT-checkout exists in the living doc but its functionalities list is empty \u2014 no Functionality entities are linked to it. What gap type is this and what is the priority?",
+      "expected_output": "Gap type EMPTY_FEATURE (not \"Gap type 9\"). Priority: Nit. Guidance: define Functionality entities for the behaviors this Feature owns using living-doc-create-functionality.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "prompt": "FEAT-checkout is linked to no User Stories at all. What gap type is this?",
+      "expected_output": "Gap type ORPHAN_FEATURE (not \"Gap type 3\"). Priority: Important. Guidance: link at least one User Story to give the Feature traceable business value.",
+      "files": []
     }
   ]
 }
