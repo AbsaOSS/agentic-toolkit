@@ -12,5 +12,9 @@
   {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story creation — routes to living-doc-create-user-story"},
   {"id": 12, "query": "Document the atomic behavior: validate cart before checkout", "should_trigger": false, "reason": "Atomic behavior — routes to living-doc-create-functionality"},
   {"id": 13, "query": "Scan the checkout page for PageObjects", "should_trigger": false, "reason": "UI scan — routes to living-doc-pageobject-scan"},
-  {"id": 14, "query": "Generate scenarios for the checkout User Story", "should_trigger": false, "reason": "Scenario creation — routes to living-doc-scenario-creator"}
+  {"id": 14, "query": "Generate Gherkin scenarios for the checkout User Story", "should_trigger": false, "reason": "Scenario creation — routes to living-doc-scenario-creator"},
+  {"id": 15, "query": "Register the notification background worker in the living doc as a system surface", "should_trigger": true, "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=Worker)"},
+  {"id": 16, "query": "Deprecate the checkout feature in the living doc", "should_trigger": false, "reason": "Deprecating an existing entity — routes to living-doc-update"},
+  {"id": 17, "query": "Document the Orders Service — it exposes a REST API to place and cancel orders", "should_trigger": true, "reason": "Documenting a backend service surface — Feature creation (surface_type=Service or API)"},
+  {"id": 18, "query": "Two Features have the same name 'Payment Page' — how do I resolve this?", "should_trigger": true, "reason": "Duplicate Feature name resolution is part of the Feature creation workflow"}
 ]

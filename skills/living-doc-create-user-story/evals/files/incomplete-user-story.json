@@ -11,7 +11,7 @@
   "features": ["FEAT-login"],
   "acceptance_criteria": [
     {
-      "id": "US-042-AC-1",
+      "id": "AC:US-042-01",
       "description": "Happy path: password reset email is sent",
       "given": "the customer is on the forgot password page",
       "when": "the customer enters their registered email address and submits",

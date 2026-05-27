@@ -3,16 +3,15 @@ name: living-doc-scenario-creator
 description: >
   From User Stories and Acceptance Criteria, generate BDD Gherkin scenario skeletons in
   .feature files and identify step implementations needed using available PageObjects.
-  Activate when generating Gherkin scenarios from a User Story, covering US AC with BDD
-  scenarios, mapping Given-When-Then to PageObject actions, identifying missing step
-  definitions, or auditing scenario-to-AC coverage.
+  Use when generating Gherkin scenarios from a User Story (e.g. US-007), covering US ACs with
+  BDD scenarios, mapping Given-When-Then to PageObject actions, auditing scenario-to-AC coverage,
+  or tagging partial AC coverage with aspect notation.
   Triggers on: "create BDD scenarios for user story", "generate scenarios for US",
   "cover AC with scenarios", "generate feature file from user story", "BDD from requirements",
   "scenario coverage for US", "map AC to scenarios", "gherkin from user story", "scenarios for US-",
-  "generate .feature file".
+  "generate .feature file", "AC coverage for US", "partial AC coverage".
   Does NOT trigger for: standalone Gherkin without a User Story (use gherkin-scenario),
-  implementing step definitions (use gherkin-step), writing unit tests (use test-unit-write),
-  doc gaps or undocumented behaviors (use living-doc-gap-finder).
+  implementing step definitions (use gherkin-step), doc gaps (use living-doc-gap-finder).
   Pairs with living-doc-create-user-story, gherkin-scenario, and living-doc-pageobject-scan.
 ---
 

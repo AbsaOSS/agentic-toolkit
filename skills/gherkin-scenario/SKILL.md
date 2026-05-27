@@ -1,15 +1,15 @@
 ---
 name: gherkin-scenario
 description: >
-  Writing BDD Gherkin scenarios in plain business language. Activate when writing or reviewing
+  Writing BDD Gherkin scenarios in plain business language. Use when writing or reviewing
   feature files, Given/When/Then steps, Scenario Outlines, Background blocks, or acceptance
-  criteria expressed as Gherkin. Covers business-language principles, one-behaviour-per-scenario
-  rule, anti-patterns (implementation leakage, multiple When actions, UI-speak in domain
-  scenarios), and data-driven scenario design.
+  criteria expressed as Gherkin — including `# AC:` comment annotations for traceability and
+  how to tag exploratory scenarios with no User Story. Covers one-behaviour-per-scenario rule
+  and anti-patterns (implementation leakage, multiple When actions, UI-speak).
   Triggers on: "write a Gherkin scenario", "BDD scenario", "feature file", "Given When Then",
   "Scenario Outline", "Cucumber scenario", "behave scenario", "acceptance test in Gherkin",
   "should I use Background", "BDD anti-patterns", "review my feature file", "BDD scenarios for",
-  "convert acceptance criteria to Gherkin".
+  "convert acceptance criteria to Gherkin", "# AC: comment", "exploratory scenario".
   Does NOT trigger for: implementing step definitions (use gherkin-step), writing unit tests
   (use test-unit-write), designing a test case table (use test-case-design).
   Pairs with gherkin-step for step definition implementation.

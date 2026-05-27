@@ -9,7 +9,8 @@ description: >
   changes need living doc coverage traced.
   Triggers on: "living doc impact", "what does this change affect", "impact of PR on living doc",
   "trace affected user stories", "affected features", "impact analysis", "living doc sign-off",
-  "what user stories are affected", "PR impact on docs".
+  "what user stories are affected", "which scenarios need re-running", "what needs re-testing",
+  "PR impact on docs".
   Does NOT trigger for: updating living doc (use living-doc-update), finding coverage gaps
   (use living-doc-gap-finder), creating new entities (use living-doc-create-* skills).
 

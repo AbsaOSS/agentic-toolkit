@@ -2,16 +2,17 @@
 name: living-doc-create-feature
 description: >
   Define a system surface (UI screen, API endpoint, service, or module) as a Feature entity,
-  enabling impact analysis and change-management traceability in the living documentation.
-  Activate when documenting a new screen, API endpoint, service, or module; maintaining a
-  Feature Registry; mapping system surfaces to User Stories; enumerating which Functionalities
-  a surface owns; or bootstrapping the structural layer between User Stories and atomic behaviors.
+  enabling impact analysis and traceability in the living documentation. Use when documenting
+  a new screen, API endpoint, service, or module; maintaining a Feature Registry; mapping
+  system surfaces to User Stories; resolving Feature naming conflicts or duplicate entries;
+  or bootstrapping the structural layer between User Stories and atomic behaviors.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
-  feature", "create feature entity", "system surface documentation", "feature owners",
-  "feature dependencies".
-  Does NOT trigger for: creating User Stories (use living-doc-create-user-story), defining atomic
-  behaviors (use living-doc-create-functionality).
+  feature", "system surface documentation", "feature owners", "feature dependencies",
+  "duplicate feature name", "resolve feature naming".
+  Does NOT trigger for: creating User Stories (use living-doc-create-user-story), defining
+  atomic behaviors (use living-doc-create-functionality), scanning PageObjects (use
+  living-doc-pageobject-scan), deprecating entities (use living-doc-update).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

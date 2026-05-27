@@ -101,15 +101,67 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a user story: 'A customer service agent needs to view the full order history for any customer to resolve disputes.'",
-      "expected_output": "The output contains a fenced ```json code block with a UserStory entity. Required fields: type ('UserStory'), id (US-<nnn>), title, as_a, i_want, so_that, acceptance_criteria (array of objects with id and description). The as_a/i_want/so_that fields follow the standard user story template. Each AC has a unique id in the format US-<nnn>-AC-<n>. No Gherkin syntax appears inside the JSON values.",
+      "expected_output": "The output contains a fenced ```json code block with a UserStory entity. Required fields: type ('UserStory'), id (US-<nnn>), title, as_a, i_want, so_that, acceptance_criteria (array of objects with id and description). The as_a/i_want/so_that fields follow the standard user story template. Each AC has a unique id in the format AC:US-<nnn>-<nn>. No Gherkin syntax appears inside the JSON values.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
         "type field is 'UserStory'",
         "id follows US-<nnn> convention",
         "as_a/i_want/so_that follow standard template",
-        "Each AC has id in US-<nnn>-AC-<n> format",
+        "Each AC has id in AC:US-<nnn>-<nn> format",
         "No Gherkin syntax in JSON values"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "Here is my User Story: 'As a customer, I want to browse products and add items to my cart so that I can purchase what I want.' Is this well-formed?",
+      "expected_output": "No. The 'I want' clause contains 'and' — it bundles two distinct capabilities: browsing products and adding items to cart. These should be two separate User Stories. Each has its own failure paths: browsing may fail due to search/filter issues; adding to cart may fail due to stock availability or login state. Split the story at each 'and'. Shared Functionalities (e.g. stock availability check) can be linked to both User Stories.",
+      "files": [],
+      "expectations": [
+        "Detects the 'and' in the 'I want' clause",
+        "Recommends splitting into two separate User Stories",
+        "Explains that each capability has distinct failure paths",
+        "Notes shared Functionalities can be linked to both stories"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "Is this AC correct? 'When the customer submits an invalid {error type}: inline validation message is shown.'",
+      "expected_output": "No. The {placeholder} syntax is only justified when two or more values vary independently. Here only one concrete feedback type applies — the placeholder is unnecessary. Rewrite without the placeholder: 'When the customer submits invalid data, an inline validation message is shown.' If multiple distinct error types each require different handling, write a separate AC per error type rather than bundling them with a placeholder.",
+      "files": [],
+      "expectations": [
+        "Flags single-value placeholder as an anti-pattern",
+        "Provides a rewritten AC without placeholder",
+        "Explains: placeholder only for independently varying values",
+        "Notes: write separate ACs for distinct error types"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "Is this AC valid for a User Story? 'When the customer places an order, a background job processes the payment record asynchronously.'",
+      "expected_output": "No. This AC describes a non-observable outcome — the customer cannot observe a background job. User Story ACs must be observable from the user's perspective. Restate as an observable signal: e.g. 'When the customer places an order, they see an order confirmation and receive a confirmation email.' If the behavior is purely technical, it belongs in a Functionality entity — redirect to living-doc-create-functionality.",
+      "files": [],
+      "expectations": [
+        "Flags the AC as a non-observable outcome",
+        "Provides a rewritten AC with an observable user signal",
+        "Notes that purely technical behaviors belong in Functionality entities",
+        "Routes to living-doc-create-functionality for technical AC"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "The same AC appears in both US-007 and US-011: 'A verification email is sent to the customer within 30 seconds.' Should I duplicate it?",
+      "expected_output": "No. Duplicating ACs across User Stories creates a maintenance burden — any change must be applied in every copy, and they can drift. Extract the shared behavior into a Functionality entity (e.g. 'Send verification email within SLA') and link both US-007 and US-011 to it via the Functionality's user_stories field. Use living-doc-create-functionality to create the shared Functionality.",
+      "files": [],
+      "expectations": [
+        "Flags duplicate AC as a maintenance burden anti-pattern",
+        "Recommends creating a shared Functionality entity",
+        "Both User Stories link to the shared Functionality",
+        "Points to living-doc-create-functionality for the extraction"
       ]
     }
   ]

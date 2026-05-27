@@ -1,15 +1,15 @@
 ---
 name: gherkin-living-doc-sync
 description: >
-  Synchronise Gherkin feature files and BDD scenarios with the living documentation.
-  Activate when scenarios diverge from User Story ACs, when step text drifts after a UI
-  refactor, when `@AC:` tag annotations are missing or stale, or when propagating AC
-  changes from the living documentation back to feature files. Distinct from gap-finder
-  (which detects missing coverage) — corrects existing links.
+  Synchronise Gherkin feature files and BDD scenarios with the living documentation catalog.
+  Activate when scenarios diverge from User Story ACs, step text drifts after a refactor,
+  `@AC:` tag or `# AC:` comment annotations are missing or stale, descoped ACs need their
+  linked scenarios updated, or AC changes must propagate from the living doc back to feature
+  files. Run scan_ac_links.py to audit AC link health before a sync pass.
+  Distinct from gap-finder (which detects missing coverage) — corrects existing links.
   Triggers on: "sync gherkin to living doc", "feature file out of sync", "scenario not linked
-  to AC", "step text changed", "gherkin drift", "update living doc after BDD change",
-  "BDD sync", "AC link missing in feature file", "sync scenarios",
-  "gherkin out of sync with living doc", "traceability broken", "propagate AC changes".
+  to AC", "step text changed", "gherkin drift", "BDD sync", "AC link missing in feature file",
+  "sync scenarios", "traceability broken", "propagate AC changes", "AC was descoped".
   Does NOT trigger for: writing new scenarios (use gherkin-scenario), implementing step
   definitions (use gherkin-step), finding living doc gaps (use living-doc-gap-finder),
   creating new US/Feature entities (use living-doc-create-user-story).
@@ -109,6 +109,7 @@ Apply the minimum necessary change per action:
 - **Update scenario to match revised AC**: update step text; keep the `@AC:` tag unchanged
 - **Fix broken step text**: prefer updating the `.feature` file to match the existing step definition and PageObject method; only update the step definition regex when the business wording genuinely changed
 - **Mark deprecated scenarios**: add `@deprecated` and `@review-needed`, plus a comment with the date and reason. Emit one action per affected scenario with file and line number.
+- **Mark descoped scenarios**: add `@wip` or `@pending` and `@review-needed`, plus a comment with the descope reason and target-release reference. Preserve the scenario — never delete it — so it can be reinstated when the AC is promoted back to Active. Emit one SYNC ACTION per affected scenario.
 - **Broken AC reference**: never silently remove the `@AC:` tag. Either relink it to the correct AC ID, or create the missing living doc entity with `living-doc-create-user-story` / `living-doc-create-functionality`, then update the tag.
 - **AC split into multiple ACs**: update the existing scenario's `@AC:` tag to the primary AC; create new scenarios for additional ACs
 

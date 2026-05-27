@@ -18,7 +18,7 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "Create a User Story for the promo code feature. ACs: (1) Valid promo reduces cart total by 10%. (2) Expired promo shows an error message.",
-      "expected_output": "Agent creates a User Story entity with the As-a/I-can/so-that narrative. Each AC carries all required metadata: state (ACTIVE or PLANNED), version, pre-conditions, and not_in_scope. ACs are atomic — one input condition and one observable outcome each. AC IDs follow the AC:<parent-id>-<nn> format. The entity is written in the project's confirmed Storage Profile format.",
+      "expected_output": "Agent creates a User Story entity with the As-a/I-can/so-that narrative. Each AC carries all required metadata: state (PLANNED / ACTIVE / DEPRECATED / IN_REVIEW), version, pre-conditions, and not_in_scope. ACs are atomic — one input condition and one observable outcome each. AC IDs follow the AC:<parent-id>-<nn> format. The entity is written in the project's confirmed Storage Profile format.",
       "files": [],
       "expectations": [
         "User Story has an As-a/I-can/so-that narrative",
@@ -107,6 +107,71 @@
         "Does not change the AC ID",
         "Flags linked Gherkin scenarios as potentially stale — defers to @living-doc-bdd-copilot",
         "Shows old and new AC side by side for confirmation before writing"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "We confirmed the storage profile 5 messages ago — the living doc uses YAML files in docs/living-doc/. Now create a Feature entity for the Payment API without asking about storage again.",
+      "expected_output": "Agent does NOT re-ask for the storage profile — the confirmed format from earlier in the session is reused. Creates the Feature entity in the already-confirmed YAML format without prompting for storage details. Proceeds directly to eliciting the Feature metadata (surface type, purpose, owners, dependencies).",
+      "files": [],
+      "expectations": [
+        "Does not re-ask for the storage profile within the same session",
+        "Reuses the confirmed Storage Profile from earlier in the session",
+        "Creates the entity in the correct confirmed format",
+        "Proceeds directly to eliciting the missing Feature metadata"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "I'm creating AC:US-007-02 for the promo code user story. It just says: 'Expired promo codes are rejected.' Is that enough?",
+      "expected_output": "No. The AC is missing required metadata fields. Every AC must include: state (PLANNED / ACTIVE / DEPRECATED / IN_REVIEW), version (e.g. v1.0.0), pre-conditions (what must hold before this AC can be tested), and not_in_scope (explicit exclusions). Also, the AC text is incomplete — it does not specify the observable outcome (e.g. what error message the customer sees). Complete the AC before creating: state=PLANNED, version=v1.0.0, pre-conditions (customer is on checkout page with items in cart), not_in_scope (does not cover code-reuse attacks).",
+      "files": [],
+      "expectations": [
+        "Flags missing required AC metadata: state, version, pre-conditions, not_in_scope",
+        "Flags the AC text as incomplete — no observable outcome specified",
+        "Provides a complete AC example with all required fields",
+        "Does not create the entity until all required fields are present"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "negative",
+      "prompt": "Scan the checkout page to discover its UI elements and generate a PageObject.",
+      "expected_output": "UI exploration and PageObject generation is out of scope for this agent — hands off to @living-doc-bdd-copilot. @living-doc-copilot owns the catalog layer; @living-doc-bdd-copilot uses MCP Playwright to crawl, discover elements, and generate PageObjects.",
+      "files": [],
+      "expectations": [
+        "Does not scan the webapp or generate PageObjects",
+        "Routes to @living-doc-bdd-copilot",
+        "Explains the catalog vs automation layer boundary"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "HEALING mode — I ran a gap analysis and found FUNC-promo-validate has no parent Feature. What should this agent do?",
+      "expected_output": "Agent in HEALING mode identifies FUNC-promo-validate as an ORPHAN_FUNCTIONALITY. It searches the catalog for the most plausible owning Feature (e.g. FEAT-promotions) based on the Functionality name and description. Presents the proposed Feature link to the user for confirmation. After confirmation, updates the Functionality entity to set the parent Feature. Does NOT create a new Feature entity without user confirmation.",
+      "files": [],
+      "expectations": [
+        "Identifies ORPHAN_FUNCTIONALITY in HEALING mode",
+        "Searches for the most plausible owning Feature",
+        "Presents proposed Feature link for user confirmation",
+        "Updates the Functionality entity only after confirmation",
+        "Does not auto-create a new Feature entity"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "@living-doc-bdd-copilot just completed a Phase 1 scan and found 3 new surfaces: /checkout, /account/profile, and /reports. None of them have Feature entities in the catalog. What should this agent do?",
+      "expected_output": "Agent loads the surface list from the inbound handoff. For each surface it invokes living-doc-create-feature, identifies surface_type as UI for all three, and drafts a candidate Feature entity (FEAT-checkout, FEAT-account-profile, FEAT-reports) for confirmation before persisting. Does not re-ask for the storage profile if it is already confirmed in the session. After confirmation sends the completion handoff: 'Feature entities are ready. Call @living-doc-bdd-copilot to generate scenarios.'",
+      "files": [],
+      "expectations": [
+        "Processes all three surfaces from the inbound handoff",
+        "Creates a Feature entity draft per surface using living-doc-create-feature",
+        "Does not re-ask for storage profile if already confirmed in session",
+        "Sends completion handoff message back to @living-doc-bdd-copilot"
       ]
     }
   ]

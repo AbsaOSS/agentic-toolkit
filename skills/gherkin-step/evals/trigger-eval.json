@@ -15,5 +15,5 @@
   {"id": 14, "query": "How do I register a step definition pattern for a new step text?", "should_trigger": true, "reason": "'register step definition' trigger phrase"},
   {"id": 15, "query": "How do I set up hooks for my Cucumber test suite?", "should_trigger": true, "reason": "'hook setup' trigger phrase"},
   {"id": 16, "query": "Write a Gherkin scenario for the promo code feature", "should_trigger": false, "reason": "Writing Gherkin scenarios — routes to gherkin-scenario"},
-  {"id": 17, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test request — routes to test-unit-write"}
+  {"id": 17, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"}
 ]

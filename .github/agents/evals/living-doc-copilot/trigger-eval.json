@@ -13,6 +13,10 @@
   {"id": 12, "query": "Update the feature registry to include the new reporting module", "should_trigger": true, "reason": "'update feature registry' trigger phrase"},
   {"id": 13, "query": "Scan the webapp and generate PageObjects for the checkout screen", "should_trigger": false, "reason": "UI crawl and PageObject generation — routes to @living-doc-bdd-copilot"},
   {"id": 14, "query": "Generate Gherkin scenarios for US-007", "should_trigger": false, "reason": "Scenario generation — routes to @living-doc-bdd-copilot"},
-  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Test code authoring — routes to @sdet-copilot"},
-  {"id": 16, "query": "Fix the failing BDD tests after the UI redesign", "should_trigger": false, "reason": "PageObject and step definition repair — routes to @living-doc-bdd-copilot"}
+  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test authoring — out of scope for this toolkit (no @sdet-copilot agent defined)"},
+  {"id": 16, "query": "Fix the failing BDD tests after the UI redesign", "should_trigger": false, "reason": "PageObject and step definition repair — routes to @living-doc-bdd-copilot"},
+  {"id": 17, "query": "My AC is missing the pre-conditions field — can you add it?", "should_trigger": true, "reason": "Updating AC metadata is a living-doc-update / catalog layer task — routes to this agent"},
+  {"id": 18, "query": "Enter HEALING mode and fix the stale Functionality entities", "should_trigger": true, "reason": "HEALING mode catalog layer — explicit trigger phrase"},
+  {"id": 19, "query": "Check whether US-007 has all required AC fields before we mark it active", "should_trigger": true, "reason": "Reviewing AC completeness and US promotion readiness is a catalog layer task"},
+  {"id": 20, "query": "Crawl the app and create PageObjects for all screens", "should_trigger": false, "reason": "Webapp crawl and PageObject generation — routes to @living-doc-bdd-copilot"}
 ]

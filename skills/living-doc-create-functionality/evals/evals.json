@@ -105,7 +105,61 @@
         "type field is 'Functionality'",
         "id follows FUNC-<kebab> convention",
         "acceptance_criteria is an array of business-language strings",
+        "test_coverage array covers every AC with unit or integration classification",
         "No implementation details in JSON values"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "I want to document a Functionality called 'Password Validation'. Is that a good name?",
+      "expected_output": "'Password Validation' is a noun phrase — Functionality names must be verb phrases expressing what the behavior does. Rename it to 'Validate Password Strength' or 'Validate Password Against Policy'. The noun phrase 'Password Validation' names a module or component, which would be a Feature, not a Functionality. Correct format: verb + object, describing the single atomic action the Functionality performs.",
+      "files": [],
+      "expectations": [
+        "Flags 'Password Validation' as a noun phrase anti-pattern",
+        "Provides a correct verb-phrase rename (e.g. 'Validate Password Strength')",
+        "Explains: Functionality names must be verb phrases",
+        "Notes noun phrases describe modules/components (Features), not behaviors"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
+      "expected_output": "Agent infers a provisional feature_id of FEAT-checkout from the 'checkout domain' context. Forms the verb-phrase name: 'Reject order when all items are out of stock'. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that FEAT-checkout must be created via living-doc-create-feature if it does not yet exist. Outputs canonical Functionality JSON with feature_id: 'FEAT-checkout'.",
+      "files": [],
+      "expectations": [
+        "Infers feature_id as FEAT-checkout from 'checkout domain' context",
+        "Forms a verb-phrase name",
+        "Runs completeness checklist: all out of stock vs. partial",
+        "Notes that FEAT-checkout must be created if it doesn't exist",
+        "Outputs valid Functionality JSON with feature_id populated"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "A Functionality has no parent Feature — I forgot to link it. Is that a problem?",
+      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set feature_id in the Functionality entity. Do not leave feature_id empty or null in a finalized entity.",
+      "files": [],
+      "expectations": [
+        "Flags missing feature_id as a traceability problem",
+        "Names the gap type: ORPHAN_FUNCTIONALITY",
+        "Notes it will be missed in impact analyses",
+        "Directs to living-doc-create-feature to create the parent Feature first"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "I have a Functionality AC that says: 'The system validates the discount code'. Is this AC well-formed?",
+      "expected_output": "No. This AC is vague — it does not specify an observable outcome or error code. 'validates' without a result is non-testable. Rewrite using When/Then form with explicit outcomes: e.g. 'When a valid discount code is applied, the discount is deducted from the basket total' and 'When an invalid or expired discount code is submitted, validation returns INVALID_CODE error'. Every AC must state an exact output or side effect; error cases must include the explicit error code.",
+      "files": [],
+      "expectations": [
+        "Flags 'validates' without a result as non-testable vague AC",
+        "Provides a rewritten AC with explicit When/Then outcome",
+        "Includes an error-case AC with an explicit error code",
+        "Explains: every AC must state an exact outcome"
       ]
     }
   ]

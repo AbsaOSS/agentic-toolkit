@@ -15,10 +15,17 @@
 | 3 | happy-path | _(none)_ | unit vs integration decision for a DB uniqueness check |
 | 4 | regression | _(none)_ | Reuse candidate detection: same AC in two User Stories |
 | 5 | negative | _(none)_ | Routing: User Story creation → living-doc-create-user-story |
+| 6 | paraphrase | _(none)_ | Gold member discount business rule — Functionality elicitation |
+| 7 | edge-case | _(none)_ | 12 ACs → non-atomic scope signal; recommend split |
+| 8 | output-format | _(none)_ | Canonical Functionality JSON: all required fields, test_coverage array |
+| 9 | regression | _(none)_ | Anti-pattern: noun name ('Password Validation') → verb phrase required |
+| 10 | happy-path | _(none)_ | Feature inference from context ('checkout domain') |
+| 11 | regression | _(none)_ | Missing parent Feature: ORPHAN_FUNCTIONALITY anti-pattern |
+| 12 | edge-case | _(none)_ | Vague AC ('validates') — non-testable; rewrite with explicit When/Then + error code |
 
 ## Trigger eval summary
 
-14 entries: 10 `should_trigger=true`, 4 `should_trigger=false`
+22 entries: 16 `should_trigger=true`, 6 `should_trigger=false`
 
 | Routes to | Query count |
 |---|---|
@@ -26,3 +33,5 @@
 | living-doc-create-feature | 1 |
 | living-doc-scenario-creator | 1 |
 | living-doc-gap-finder | 1 |
+| living-doc-update | 1 |
+| living-doc-pageobject-scan | 1 |

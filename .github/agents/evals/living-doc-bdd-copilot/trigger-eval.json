@@ -16,7 +16,11 @@
   {"id": 15, "query": "Write the step definitions for the checkout scenarios", "should_trigger": true, "reason": "'step definitions' trigger phrase"},
   {"id": 16, "query": "Generate Gherkin from user story US-003", "should_trigger": true, "reason": "'gherkin from user story' trigger phrase"},
   {"id": 17, "query": "Create a User Story for the loyalty points redemption feature", "should_trigger": false, "reason": "Living doc catalog entity creation — routes to @living-doc-copilot"},
-  {"id": 18, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test authoring — routes to @sdet-copilot"},
+  {"id": 18, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test authoring — out of scope for this toolkit (no @sdet-copilot agent defined)"},
   {"id": 19, "query": "Update the AC state on US-007-02 to DEPRECATED", "should_trigger": false, "reason": "Catalog entity state update — routes to @living-doc-copilot"},
-  {"id": 20, "query": "Run the TypeScript quality gate for the frontend", "should_trigger": false, "reason": "Quality gate execution — routes to @quality-gate-copilot"}
+  {"id": 20, "query": "Run the TypeScript quality gate for the frontend", "should_trigger": false, "reason": "Quality gate execution — out of scope for this agent"},
+  {"id": 21, "query": "The manifest.json is missing — start a first exploration run from the seed file", "should_trigger": true, "reason": "Partial state: seed present, manifest absent → first exploration run — 'scan webapp' pattern"},
+  {"id": 22, "query": "The seed.yaml has literal credentials — is that correct?", "should_trigger": true, "reason": "Credential safety rule enforcement during seed assembly — BDD session setup task"},
+  {"id": 23, "query": "I've hit a guided traversal point — the checkout wizard needs a delivery zone code", "should_trigger": true, "reason": "Source E guided traversal protocol — blocked crawl point during exploration"},
+  {"id": 24, "query": "Update the AC on US-007 to change the payment timeout to 30 seconds", "should_trigger": false, "reason": "AC update is a catalog layer operation — routes to @living-doc-copilot"}
 ]

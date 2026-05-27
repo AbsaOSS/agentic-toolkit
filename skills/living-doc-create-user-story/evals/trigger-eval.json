@@ -12,5 +12,9 @@
   {"id": 11, "query": "Document the checkout page as a Feature entity", "should_trigger": false, "reason": "Feature entity creation — routes to living-doc-create-feature"},
   {"id": 12, "query": "Document the atomic behavior: validate cart is not empty", "should_trigger": false, "reason": "Atomic behavior is a Functionality — routes to living-doc-create-functionality"},
   {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
-  {"id": 14, "query": "What test gaps exist in our living documentation?", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"}
+  {"id": 14, "query": "What test gaps exist in our living documentation?", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"},
+  {"id": 15, "query": "I want to write requirements for the loyalty points feature", "should_trigger": true, "reason": "'document a business requirement' pattern — User Story elicitation"},
+  {"id": 16, "query": "Is my user story well-formed? Here it is: 'As a system, process the payment'", "should_trigger": true, "reason": "Validating a User Story narrative is a core skill task"},
+  {"id": 17, "query": "My I-want clause contains 'and' — is that OK for a User Story?", "should_trigger": true, "reason": "Reviewing User Story narrative correctness is a core task of this skill"},
+  {"id": 18, "query": "Create a BDD scenario for the checkout User Story", "should_trigger": false, "reason": "Scenario creation from a User Story — routes to living-doc-scenario-creator"}
 ]

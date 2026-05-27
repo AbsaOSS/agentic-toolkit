@@ -3,14 +3,16 @@ name: living-doc-gap-finder
 description: >
   Identify gaps in the living documentation by combining bottom-up UI/code exploration with
   top-down requirement checking. Activate when auditing living doc completeness, finding
-  undocumented behaviors, discovering orphan tests with no AC link, detecting untested ACs,
-  producing a documentation coverage gap report, or proposing new living doc entities to fill
-  identified gaps. Orchestrates living-doc-create-* skills.
+  undocumented behaviors, discovering orphan tests with no AC link, orphan Functionalities with
+  no parent Feature, detecting untested ACs, producing a documentation coverage gap report
+  (including batch runs for large suites), or proposing new living doc entities to fill
+  identified gaps. Orchestrates living-doc-pageobject-scan and living-doc-create-* skills.
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
-  "find undocumented features", "orphan tests", "untested AC", "documentation coverage",
-  "gap report", "what's not covered", "living doc audit", "documentation audit".
+  "find undocumented features", "orphan tests", "orphan functionalities", "untested AC",
+  "documentation coverage", "gap report", "what's not covered", "living doc audit",
+  "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Orchestrates: all create-* skills.
+  Orchestrates: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

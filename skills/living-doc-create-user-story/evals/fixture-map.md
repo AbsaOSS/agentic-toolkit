@@ -15,14 +15,21 @@
 | 3 | happy-path | _(none)_ | Anti-pattern: invalid actor ("the system") |
 | 4 | regression | _(none)_ | Anti-pattern: technical AC (DB implementation detail) |
 | 5 | negative | _(none)_ | Routing: atomic behavior → living-doc-create-functionality |
+| 6 | paraphrase | _(none)_ | SMS password reset — full elicitation with happy path + error paths |
+| 7 | edge-case | _(none)_ | Two actors for same capability → two separate User Stories |
+| 8 | output-format | _(none)_ | Canonical UserStory JSON: as_a/i_want/so_that, US-<nnn>-AC-<n> format |
+| 9 | regression | _(none)_ | Anti-pattern: 'I want' clause with 'and' — two capabilities bundled |
+| 10 | regression | _(none)_ | Anti-pattern: single-value placeholder {error type} |
+| 11 | regression | _(none)_ | Anti-pattern: non-observable outcome (background job) |
+| 12 | edge-case | _(none)_ | Duplicate AC across two User Stories → shared Functionality |
 
 ## Trigger eval summary
 
-14 entries: 10 `should_trigger=true`, 4 `should_trigger=false`
+18 entries: 13 `should_trigger=true`, 5 `should_trigger=false`
 
 | Routes to | Query count |
 |---|---|
 | living-doc-create-feature | 1 |
 | living-doc-create-functionality | 1 |
-| living-doc-scenario-creator | 1 |
+| living-doc-scenario-creator | 2 |
 | living-doc-gap-finder | 1 |

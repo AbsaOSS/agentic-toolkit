@@ -70,5 +70,29 @@
     "query": "Generate Gherkin scenarios for US-042.",
     "should_trigger": false,
     "reason": "Generating scenarios is handled by living-doc-scenario-creator."
+  },
+  {
+    "id": "t13-change-status",
+    "query": "Change the status of User Story US-089 to active.",
+    "should_trigger": true,
+    "reason": "'change status of user story' is a listed trigger phrase."
+  },
+  {
+    "id": "t14-not-impact-analysis",
+    "query": "What does this PR affect in the living doc?",
+    "should_trigger": false,
+    "reason": "PR impact analysis is handled by living-doc-impact-analysis, not living-doc-update."
+  },
+  {
+    "id": "t15-descope-ac",
+    "query": "Descope AC-3 on US-042 — it's moving to the next sprint.",
+    "should_trigger": true,
+    "reason": "Descoping an AC mid-sprint is an update operation covered by the 'update AC' / 'change status of user story' trigger patterns."
+  },
+  {
+    "id": "t16-superseded-by",
+    "query": "Mark FEAT-legacy-payment-widget as deprecated and point to FEAT-payment-page as the replacement.",
+    "should_trigger": true,
+    "reason": "'mark feature deprecated' and 'deprecate feature' trigger phrases; superseded_by field is set as part of deprecation."
   }
 ]

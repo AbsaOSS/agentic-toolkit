@@ -100,7 +100,7 @@
         "Single fenced ```json code block",
         "All required fields present: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies",
         "id follows FEAT-<kebab-name> convention",
-        "surface_type is one of UI/API/Service/Module",
+        "surface_type is one of UI/API/Service/Worker/Module/Library",
         "No prose inside the code block"
       ]
     },
@@ -118,6 +118,72 @@
         "id follows FEAT-<kebab> from the notes",
         "surface_type, owners, external_dependencies populated from file",
         "user_stories and functionalities are empty arrays with a linking warning"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "I want to document a Feature called 'Spring Payment Controller'. Is that a good Feature name?",
+      "expected_output": "No. Feature names should describe the business surface, not the technology stack. 'Spring Payment Controller' encodes an implementation detail (Spring framework) that changes without the business surface changing. Use 'Payment API' (surface_type=API) instead. The test: if the tech stack changed to Node.js, would the Feature name still be accurate? 'Payment API' would be — 'Spring Payment Controller' would not.",
+      "files": [],
+      "expectations": [
+        "Flags technology-encoded name as an anti-pattern",
+        "Recommends the technology-agnostic business surface name (e.g. Payment API)",
+        "Explains the rule: Feature names describe surfaces, not stack",
+        "Notes that technology detail changes without the surface changing"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "edge-case",
+      "prompt": "I'm documenting our OrdersController — a Spring REST controller that handles GET /orders and POST /orders. Should surface_type be 'UI'?",
+      "expected_output": "No. A REST controller is an API surface, not a UI surface. surface_type should be 'API'. UI is reserved for screens that a human interacts with directly (e.g. a web page or modal). Misclassifying a REST endpoint as UI breaks impact analysis routing between frontend and backend changes. Use surface_type='API' with a name like 'Orders API'.",
+      "files": [],
+      "expectations": [
+        "Corrects surface_type from UI to API",
+        "Explains: UI is for screens humans interact with directly",
+        "Notes that misclassification breaks impact analysis routing",
+        "Recommends the correct name: Orders API"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "Document a Feature for our PaymentEventProcessor — an asynchronous worker that listens on a Kafka topic and processes payment events in the background.",
+      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Outputs Feature JSON with id=FEAT-payment-event-processor, surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",
+      "files": [],
+      "expectations": [
+        "Identifies surface_type as Worker",
+        "Feature name is a noun phrase: 'Payment Event Processor'",
+        "Purpose describes the business contract, not the technology",
+        "external_dependencies includes the Kafka topic or downstream services",
+        "Outputs valid canonical Feature JSON"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "I have these candidate behaviors for FEAT-checkout: 'validate cart', 'apply promo', 'confirm order'. Should I add them to the functionalities field right now?",
+      "expected_output": "No. Candidate Functionalities that have not yet been formally defined as FUNC-<nnn> entities must not be listed in the functionalities array. The functionalities field only accepts formally registered FUNC-<nnn> IDs. While these are still informal notes, leave functionalities as [] and note the candidates externally. Use living-doc-create-functionality to formally define each one before linking it here.",
+      "files": [],
+      "expectations": [
+        "Instructs to leave functionalities as [] for unregistered candidates",
+        "Explains: functionalities field only accepts formal FUNC-<nnn> IDs",
+        "Does not list the candidates inside the JSON functionalities array",
+        "Points to living-doc-create-functionality as the next step"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Two teams both want to create a Feature called 'Payment Page'. How should I handle the naming conflict?",
+      "expected_output": "Identical Feature names indicate a merge candidate or a scope overlap — always check for duplicates before creating. If both teams are documenting the same screen/surface, consolidate into a single Feature with both teams as co-owners. If the surfaces are genuinely different (e.g. a customer-facing payment form vs an admin reconciliation screen), disambiguate the names (e.g. 'Customer Payment Page' vs 'Admin Payment Reconciliation Screen') and clarify the boundary. Creating two Features with identical names breaks impact analysis and makes traceability ambiguous.",
+      "files": [],
+      "expectations": [
+        "Identifies duplicate name as a naming conflict anti-pattern",
+        "Offers two paths: merge if same surface, disambiguate if different surfaces",
+        "Warns that identical names break impact analysis and traceability",
+        "Notes that FEAT ID must also be unique"
       ]
     }
   ]

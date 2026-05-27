@@ -13,6 +13,7 @@
   {"id": 12, "query": "Can you write BDD scenarios for the checkout flow?", "should_trigger": true, "reason": "'BDD scenarios for' trigger phrase"},
   {"id": 13, "query": "Convert these acceptance criteria to Gherkin", "should_trigger": true, "reason": "'convert acceptance criteria to Gherkin' trigger phrase"},
   {"id": 14, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
-  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test request — routes to test-unit-write"},
-  {"id": 16, "query": "Design a test case table for the promo code feature", "should_trigger": false, "reason": "Test case table design — routes to test-case-design"}
+  {"id": 15, "query": "Write a unit test for the discount calculation function", "should_trigger": false, "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"},
+  {"id": 16, "query": "Design a test case table for the promo code feature", "should_trigger": false, "reason": "Test case table design \u2014 out of scope for this toolkit (no test-case-design skill defined)"},
+  {"id": 17, "query": "What # AC: comment should I use for an exploratory scenario that has no User Story?", "should_trigger": true, "reason": "Standalone # AC: STANDALONE placeholder guidance \u2014 part of gherkin-scenario skill (edge-case: exploratory scenario without a User Story)"}
 ]

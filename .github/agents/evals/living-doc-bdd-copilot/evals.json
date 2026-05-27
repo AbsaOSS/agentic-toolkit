@@ -114,6 +114,74 @@
         "Updates manifest.json to remove deprecated entries",
         "Flags catalog entities for deprecation and hands off to @living-doc-copilot"
       ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "The seed.yaml is present at .copilot/bdd/seed.yaml but manifest.json is missing. What should the agent do?",
+      "expected_output": "This is a first exploration run — partial state rule applies. seed.yaml present but manifest.json absent means the session starts fresh: treat this as the first run with a clean slate. Begin the crawl from base_url in seed.yaml; do not assume any surfaces have been discovered. Create manifest.json as crawl progresses. Do not attempt to 'resume' from a non-existent manifest.",
+      "files": [],
+      "expectations": [
+        "Identifies partial state: seed.yaml present, manifest.json absent",
+        "Treats this as a first exploration run — clean slate",
+        "Starts crawl from base_url in seed.yaml",
+        "Creates manifest.json during crawl — does not assume prior discovery",
+        "Does not attempt to resume from a non-existent manifest"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "The seed.yaml contains: 'credentials: {username: admin, password: secret123}'. Is this correct?",
+      "expected_output": "No — literal credentials must never be stored in seed.yaml. This is a security violation. Replace the literal values with environment variable references: 'credentials: {username: env:BDD_USERNAME, password: env:BDD_PASSWORD}'. Literal credentials in a file committed to source control are exposed to anyone with repository access. The agent must flag this immediately and refuse to proceed with the current seed.yaml until the credentials are replaced with env:VAR_NAME references.",
+      "files": [],
+      "expectations": [
+        "Flags literal credentials as a security violation",
+        "Refuses to proceed with literal credentials in seed.yaml",
+        "Provides the corrected env:VAR_NAME format",
+        "Explains the risk: credentials exposed to anyone with repository access"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "edge-case",
+      "prompt": "During crawling, the agent reaches a multi-step checkout wizard (/checkout/step-2) but doesn't know what values to enter in the required 'Delivery Zone Code' field. How should this be handled?",
+      "expected_output": "The agent enters the Source E guided traversal protocol. It takes a screenshot and shows the user what it sees. It asks: 'I've reached a decision point at /checkout/step-2. What should I do next? Please provide the valid Delivery Zone Code value (or another way to progress past this step).' After the user provides the value, the agent executes the action via MCP Playwright and immediately appends the action to guided_steps in seed.yaml so the route can be re-navigated in future sessions without prompting.",
+      "files": [],
+      "expectations": [
+        "Takes a screenshot and shows the user the current state",
+        "Asks the user for the missing business-specific input value",
+        "Executes the guided action via MCP Playwright after receiving the answer",
+        "Appends the action to guided_steps in seed.yaml for future sessions",
+        "Does not invent or guess business-specific field values"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "output-format",
+      "prompt": "After scanning /login and generating a LoginPage, show me what the manifest.json entry for /login looks like.",
+      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements with data_cy and tag), coverage_gaps (empty list initially), and navigation_context with prerequisites, navigation_steps, data_requirements, auth_role, and notes. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and hand off to @living-doc-copilot.",
+      "files": [],
+      "expectations": [
+        "manifest.json entry has: pageobject_path, feature_id, last_scanned, elements, coverage_gaps, navigation_context",
+        "feature_id is FEAT-UNKNOWN if no matching Feature entity exists",
+        "last_scanned is an ISO timestamp",
+        "navigation_context includes prerequisites, navigation_steps, auth_role",
+        "Missing Feature entity is flagged for @living-doc-copilot handoff"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "During seed assembly, the living doc catalog at docs/living-doc/ has FEAT-checkout mapped to route /checkout and FEAT-account mapped to route /account/orders. No sitemap.xml exists. How should known_routes in seed.yaml be populated?",
+      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-checkout \u2192 /checkout and FEAT-account \u2192 /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent \u2014 no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
+      "files": [],
+      "expectations": [
+        "Source A: Feature-to-route mappings extracted from the living doc catalog",
+        "Both routes added to known_routes in seed.yaml",
+        "Source B (sitemap) noted as absent \u2014 no error raised",
+        "Notes that unlisted routes will be discovered dynamically during crawl"
+      ]
     }
   ]
 }

@@ -12,6 +12,10 @@
   {"id": 11, "query": "Find what's not documented in our test suite", "should_trigger": true, "reason": "'find what's not documented' trigger phrase"},
   {"id": 12, "query": "Create a user story for the preferences screen gap", "should_trigger": false, "reason": "Creating a User Story — routes to living-doc-create-user-story"},
   {"id": 13, "query": "Create a Feature entity for the account preferences screen", "should_trigger": false, "reason": "Creating a Feature — routes to living-doc-create-feature"},
-  {"id": 14, "query": "Generate a tutorial from the checkout .feature file", "should_trigger": false, "reason": "Tutorial generation — routes to living-doc-tutorial-creator"},
-  {"id": 15, "query": "Do a documentation audit to check for missing tests before the go-live", "should_trigger": true, "reason": "'documentation audit' trigger phrase"}
+  {"id": 14, "query": "Implement step definitions for the gap report scenario", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
+  {"id": 15, "query": "Do a documentation audit to check for missing tests before the go-live", "should_trigger": true, "reason": "'documentation audit' trigger phrase"},
+  {"id": 16, "query": "Which Functionalities in our living doc have no parent Feature?", "should_trigger": true, "reason": "Detecting ORPHAN_FUNCTIONALITY gaps — core gap-finder task"},
+  {"id": 17, "query": "A test is pointing to a deprecated AC — what kind of gap is that?", "should_trigger": true, "reason": "Stale reference detection (Gap type 7) — core gap-finder task"},
+  {"id": 18, "query": "We have 100 orphan tests — how should we batch the gap-finder run?", "should_trigger": true, "reason": "Batching strategy for large-scale gap analysis — gap-finder guidance task"},
+  {"id": 19, "query": "Update US-042 to add a new AC", "should_trigger": false, "reason": "Updating an existing entity — routes to living-doc-update"}
 ]

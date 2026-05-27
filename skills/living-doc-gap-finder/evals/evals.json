@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
-      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker — US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 covers Functionality ACs, not just User Story ACs); Important — /account/preferences screen discovered in webapp with no Feature entity; Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-orphan has no Functionalities (empty Feature). Documentation coverage reported for both US ACs and Functionality ACs separately.",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker — US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-account, /reports/legacy ↔ FEAT-orphan are already documented); Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
       "files": [
         "evals/files/catalog-snapshot.json"
       ],
@@ -19,8 +19,10 @@
         "Identifies FEAT-orphan as orphan Feature (Important)",
         "Identifies test_order_history.py and test_login_flow.feature as orphan tests (Important)",
         "Identifies 'View paginated order history' BDD scenario as orphan test (Important)",
-        "Identifies FEAT-orphan as empty Feature (Nit — no Functionalities)",
-        "Calculates documentation coverage percentage"
+        "Identifies FEAT-account and FEAT-orphan as empty Features (Nit — no Functionalities)",
+        "Identifies US-007 as orphan User Story (Important — no linked Feature)",
+        "Normalises undocumented surfaces: only /account/preferences is truly undocumented after matching existing Features",
+        "Calculates documentation coverage percentage separately for US ACs and Functionality ACs"
       ]
     },
     {
@@ -88,7 +90,7 @@
       "id": 7,
       "category": "edge-case",
       "prompt": "A test is linked to an AC, but the AC was deleted from the living doc. How is this classified and what should I do?",
-      "expected_output": "This is a broken-link gap (variant of Gap type 4: ORPHAN_TEST). The test references an AC ID that no longer exists. Resolution options: (1) If the behavior the test covers is still required, recreate the Functionality/AC entity and relink. (2) If the behavior has been removed, the test should be deleted after confirming with the product owner. (3) If the AC was merged into another entity, update the test's link comment to the new AC ID. Never delete a test without product owner confirmation.",
+      "expected_output": "This is a broken-link gap (variant of Gap type 6: ORPHAN_TEST). The test references an AC ID that no longer exists. Resolution options: (1) If the behavior the test covers is still required, recreate the Functionality/AC entity and relink. (2) If the behavior has been removed, the test should be deleted after confirming with the product owner. (3) If the AC was merged into another entity, update the test's link comment to the new AC ID. Never delete a test without product owner confirmation.",
       "files": [],
       "expectations": [
         "Classifies as broken-link orphan test",
@@ -109,6 +111,59 @@
         "Gap type codes are canonical: UNTESTED_AC, ORPHAN_TEST, ORPHAN_FEATURE, etc.",
         "Gaps ordered by severity (Blocker before Important before Nit)",
         "Diagnostic only — no entity creation or modification"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "A test references AC:US-042-01 but that AC was deprecated last sprint. What gap type is this and how do I resolve it?",
+      "expected_output": "This is a stale reference (Gap type 7 — Important). The active test references a Deprecated AC. Resolution options: (1) update the test's link to the active replacement AC if the behavior was superseded; (2) reinstate the AC using living-doc-update if it was deprecated in error; (3) if the behavior was intentionally removed, delete the test after product owner confirmation. The test must not be deleted without product owner confirmation.",
+      "files": [],
+      "expectations": [
+        "Classifies as Gap type 7: STALE_REFERENCE",
+        "Classifies severity as Important",
+        "Provides three resolution options: relink to new AC, reinstate AC, or delete after PO confirmation",
+        "Warns against deleting test without product owner confirmation",
+        "Notes reinstatement path via living-doc-update"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "edge-case",
+      "prompt": "We have 50 orphan tests and 30 untested ACs across the entire platform. Should I run a single all-domain gap report and work through everything at once?",
+      "expected_output": "No — use the two-phase strategy. Phase 1: ensure every User Story has at least one covered AC. List all User Stories with zero covered ACs, cover the first AC of each before moving on. This establishes a minimum traceability baseline. Phase 2: once every US has at least one covered AC, rank gap clusters by count, prioritise the highest-risk domains first (payment, auth, security), batch by Feature or domain, and iterate. Processing all 80 gaps at once produces an unmanageable report and obscures progress.",
+      "files": [],
+      "expectations": [
+        "Recommends two-phase strategy over single full-pass",
+        "Phase 1: ensure every US has at least one covered AC before proceeding",
+        "Phase 2: rank by count, prioritise high-risk domains, batch by domain",
+        "Explains why a single full-platform pass is discouraged"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "happy-path",
+      "prompt": "A Functionality entity FUNC-promo-validate exists in the catalog but has no parent Feature linked. What gap type is this and what should I do?",
+      "expected_output": "This is an orphan Functionality (Gap type 5 — Important). A Functionality with no parent Feature is untraceable — it cannot be reached via the entity hierarchy and is missed in impact analyses. Resolution: identify or create the owning Feature and add FUNC-promo-validate to its functionalities list. If tests reference this Functionality's ACs, resolve those first (ORPHAN_TEST takes priority) before removing the Functionality.",
+      "files": [],
+      "expectations": [
+        "Classifies as Gap type 5: ORPHAN_FUNCTIONALITY",
+        "Classifies severity as Important",
+        "Advises linking to an existing Feature or creating one",
+        "Warns: do not remove if tests reference this Functionality's ACs"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "regression",
+      "prompt": "The gap-finder script reports /reports/legacy as an UNDOCUMENTED_SURFACE but there is already a Feature entity 'Legacy Report Screen' (FEAT-orphan) in the catalog. Should this be reported as a gap?",
+      "expected_output": "No. After normalisation, /reports/legacy is already documented — FEAT-orphan (Legacy Report Screen) clearly owns that surface by name and domain meaning. The skill instructs to treat a discovered screen as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning. Remove this item from the gap report. FEAT-orphan still has other gaps (orphan Feature, empty Feature) but UNDOCUMENTED_SURFACE is not one of them.",
+      "files": [],
+      "expectations": [
+        "Removes /reports/legacy from UNDOCUMENTED_SURFACE gaps after normalisation",
+        "Explains normalisation rule: surface matches by name/domain meaning",
+        "Notes FEAT-orphan still has ORPHAN_FEATURE and EMPTY_FEATURE gaps",
+        "Distinguishes raw script output from normalised report"
       ]
     }
   ]

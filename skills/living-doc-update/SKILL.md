@@ -2,16 +2,16 @@
 name: living-doc-update
 description: >
   Update, amend, or deprecate existing living documentation entities (User Stories, Features,
-  Functionalities). Activate when adding new ACs to an existing User Story, changing a Feature's
-  ownership or status, deprecating a Functionality whose code has been deleted, or promoting a
-  User Story from draft to ready.
-  Triggers on: "update user story", "add AC to user story", "deprecate feature", "mark US ready",
-  "change feature owner", "update functionality", "deprecate functionality",
+  Functionalities). Use when adding new ACs to an existing User Story, descoping or removing
+  an AC, changing a Feature's ownership or status, updating the Feature Registry after a team
+  restructure, deprecating a Functionality whose code has been deleted, or promoting a User
+  Story from draft to ready.
+  Triggers on: "update user story", "add AC to user story", "descope AC", "deprecate feature",
+  "mark US ready", "change feature owner", "update functionality", "deprecate functionality",
   "living doc update", "update living doc entity", "mark feature deprecated", "update AC",
-  "change status of user story".
-  Does NOT trigger for: creating new entities from scratch (use living-doc-create-user-story,
-  living-doc-create-feature, or living-doc-create-functionality), finding gaps
-  (use living-doc-gap-finder).
+  "change status of user story", "update feature registry".
+  Does NOT trigger for: creating new entities (use living-doc-create-*), finding gaps
+  (use living-doc-gap-finder), generating scenarios (use living-doc-scenario-creator).
 
 license: Apache-2.0
 compatibility: GitHub Copilot

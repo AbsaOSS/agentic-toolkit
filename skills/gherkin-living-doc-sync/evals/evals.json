@@ -107,6 +107,72 @@
         "Summary line with counts at the end",
         "Asks for confirmation before applying"
       ]
+    },
+    {
+      "id": 9,
+      "category": "happy-path",
+      "prompt": "What is the difference between the '@AC:US-001-01' Cucumber tag and the '# AC:US-001-01 ...' comment above a scenario? Do I need both?",
+      "expected_output": "Yes — both serve distinct purposes. The '# AC: ...' comment provides human-readable context: the AC version, state, description, and optional aspect annotation, all visible at a glance in the feature file. The '@AC:' Cucumber tag provides machine-readable traceability: coverage scripts, gap finders, and CI tools use it to link scenarios to ACs programmatically. Both must be present on every scenario for full traceability. The sync skill ensures both are aligned — if only one is present, a SYNC ACTION is raised.",
+      "files": [],
+      "expectations": [
+        "Explains # AC: comment as human-readable context with version, state, and description",
+        "Explains @AC: tag as machine-readable traceability for scripts and CI",
+        "States both are required on every scenario",
+        "Notes sync skill raises a SYNC ACTION when only one is present"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "I want to run a full audit of all AC link headers across all feature files before starting a sync. How do I use scan_ac_links.py?",
+      "expected_output": "Run: 'python scripts/scan_ac_links.py features/ --catalog catalog.json'. The script scans all .feature files for '# AC:' comments and '@AC:' tags, validates each AC ID against the living doc catalog, and outputs a report listing: (1) missing # AC: comments (scenarios with no link header), (2) stale AC IDs (IDs not found in catalog), (3) mismatched comment/tag pairs (one present but not the other). Use this report as input to the sync workflow — address broken links first, then missing links, then mismatches.",
+      "files": [],
+      "expectations": [
+        "Names the correct command: python scripts/scan_ac_links.py features/ --catalog catalog.json",
+        "Explains what the script reports: missing headers, stale IDs, mismatched pairs",
+        "Recommends repair order: broken links → missing links → mismatches",
+        "Notes the script output drives the subsequent sync workflow"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "A scenario has '@AC:US-001-01/aspect:username-input' but the # AC: comment above it just reads '# AC:US-001-01 (v1.0.0 – Active) — displays login form fields'. Is this a sync issue?",
+      "expected_output": "Yes — this is a SYNC ACTION. The @AC: tag encodes an aspect param (/aspect:username-input) but the # AC: comment does not mirror it. Per the skill spec, the comment must include '| aspect: username input' to match the tag. Apply: change the comment to '# AC:US-001-01 (v1.0.0 – Active) — displays login form fields | aspect: username input'. The comment mirrors the human-readable form of the tag's /aspect: param. Confirm before applying.",
+      "files": [],
+      "expectations": [
+        "Identifies mismatch between @AC: tag aspect param and # AC: comment as a SYNC ACTION",
+        "Provides the corrected # AC: comment with | aspect: annotation",
+        "Comment mirrors the /aspect:value in human-readable form",
+        "Asks for confirmation before applying"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "I have a scenario linked to AC:US-042-03 which has just been descoped in the living doc (status: descoped). What should the sync skill do?",
+      "expected_output": "Sync direction: living doc → feature file. When an AC is descoped, the linked scenario should be tagged with @wip or @pending to indicate it is not active. Add a comment above the scenario explaining the descope: '# Descoped: AC:US-042-03 descoped on 2026-05-15 — reason: promo stacking deferred to sprint-52'. Never delete the scenario — it preserves the intent for when the AC is reinstated. Flag the scenario for @pending or @wip tagging in the CI pipeline.",
+      "files": [],
+      "expectations": [
+        "Sync direction: living doc → feature file",
+        "Tags scenario with @wip or @pending — does not delete it",
+        "Adds a comment with the descope reason and date",
+        "Preserves the scenario for when the AC is reinstated",
+        "Flags for @pending tagging in CI"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "edge-case",
+      "prompt": "AC:US-001-02 was split into two separate ACs: AC:US-001-02 (happy path) and AC:US-001-04 (alt path: guest checkout). The feature file still has one scenario linked to AC:US-001-02. What does the sync output look like?",
+      "expected_output": "Two SYNC ACTIONs are emitted. (1) Existing scenario: the '@AC:US-001-02' tag is updated to the primary (happy path) AC — it stays unchanged since it was always the primary AC. (2) A SYNC ACTION proposes creating a new scenario for AC:US-001-04 with the required '# AC: US-001-04' header and '@AC:US-001-04' tag. The existing scenario is never modified or deleted. Developer confirms both actions before any change is applied.",
+      "files": [],
+      "expectations": [
+        "Existing scenario's @AC: tag is updated to point to the primary AC (US-001-02)",
+        "A SYNC ACTION is raised proposing a new scenario for AC:US-001-04",
+        "The existing scenario is not deleted or modified beyond the tag update",
+        "Developer confirmation is required before any file is edited"
+      ]
     }
   ]
 }

@@ -64,5 +64,29 @@
     "query": "Create a new User Story for the stacked discount feature.",
     "should_trigger": false,
     "reason": "Creating new entities is handled by living-doc-create-user-story."
+  },
+  {
+    "id": "t12-what-needs-retesting",
+    "query": "What do we need to re-test after this refactor?",
+    "should_trigger": true,
+    "reason": "'which scenarios need re-running' pattern — living doc impact re-test checklist."
+  },
+  {
+    "id": "t13-shared-utility-impact",
+    "query": "MoneyUtils was changed — how far does the impact spread in the living doc?",
+    "should_trigger": true,
+    "reason": "Shared utility impact fan-out analysis — 'impact of PR on living doc' trigger."
+  },
+  {
+    "id": "t14-test-only-change",
+    "query": "PR #501 only changes test files. Does it need a living doc update?",
+    "should_trigger": true,
+    "reason": "Still an impact analysis request — expected answer is 'None' impact level; skill should confirm no update needed."
+  },
+  {
+    "id": "t15-not-gap-finder-orphan",
+    "query": "Find all Functionalities with no linked User Stories.",
+    "should_trigger": false,
+    "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
   }
 ]

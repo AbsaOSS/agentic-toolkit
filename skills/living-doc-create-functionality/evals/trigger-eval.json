@@ -16,5 +16,9 @@
   {"id": 15, "query": "How should I define the component behavior for the payment validator?", "should_trigger": true, "reason": "'define component behavior' trigger phrase"},
   {"id": 16, "query": "Write atomic acceptance criteria for the session expiry logic", "should_trigger": true, "reason": "'atomic acceptance criteria' trigger phrase"},
   {"id": 17, "query": "Should this behavior be tested with a unit test or an integration test?", "should_trigger": true, "reason": "'unit vs integration test' trigger phrase"},
-  {"id": 18, "query": "Help me choose test type for the loyalty points calculation — it calls no external services", "should_trigger": true, "reason": "'choose test type' trigger phrase"}
+  {"id": 18, "query": "Help me choose test type for the loyalty points calculation — it calls no external services", "should_trigger": true, "reason": "'choose test type' trigger phrase"},
+  {"id": 19, "query": "Help me document the null-check rule for user IDs in the registration service", "should_trigger": true, "reason": "Documenting an atomic validation rule is a Functionality — 'document a business rule' / 'atomic acceptance criteria' pattern"},
+  {"id": 20, "query": "A Functionality I wrote has no parent Feature — how do I link it?", "should_trigger": true, "reason": "Resolving ORPHAN_FUNCTIONALITY — identifying and linking the parent Feature is a Functionality skill task"},
+  {"id": 21, "query": "Update the living doc entity for the discount validation Functionality", "should_trigger": false, "reason": "Updating an existing entity — routes to living-doc-update"},
+  {"id": 22, "query": "Scan the checkout page for UI elements", "should_trigger": false, "reason": "UI scan — routes to living-doc-pageobject-scan"}
 ]

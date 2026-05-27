@@ -2,14 +2,14 @@
 name: living-doc-pageobject-scan
 description: >
   Explore an existing web application or test codebase to discover, create, and maintain PageObject
-  classes — the bottom-up entry point for BDD-driven UI testing. Activate when generating
-  PageObjects from a live webapp URL or test directory, updating PageObjects after UI changes,
-  bootstrapping a test suite for a new screen, linking discovered UI surfaces to Feature entities
-  in the living doc, or detecting PageObject drift after a UI refactor.
+  classes — the bottom-up entry point for BDD-driven UI testing. Use when generating PageObjects
+  from a live webapp URL or test directory, updating PageObjects after UI changes, bootstrapping
+  a test suite for a new screen, generating Functionality stubs from discovered UI elements,
+  updating the PageObject manifest after a redesign, or detecting PageObject drift.
   Triggers on: "scan this webapp", "generate pageobjects", "update pageobjects",
   "pageobject for this screen", "crawl the UI", "discover UI elements", "create page objects",
   "scan test suite for pageobjects", "living doc bottom-up", "bootstrap page objects",
-  "pageobject drift", "sync pageobjects".
+  "pageobject drift", "sync pageobjects", "update manifest", "functionality stubs from UI".
   Does NOT trigger for: creating User Stories (use living-doc-create-user-story), writing BDD
   scenarios (use living-doc-scenario-creator). Pairs with living-doc-create-functionality
   and living-doc-gap-finder.

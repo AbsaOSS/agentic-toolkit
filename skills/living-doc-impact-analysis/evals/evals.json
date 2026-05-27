@@ -3,125 +3,117 @@
   "evals": [
     {
       "id": 1,
-      "type": "happy-path",
-      "description": "Developer opens a PR modifying a domain service and wants to know what living doc entities are affected.",
+      "category": "happy-path",
       "prompt": "PR #217 modifies PromoService.java to support stacked discounts. What living doc entities does this change affect?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Map changed file to Feature via the feature_registry section in catalog.json (or run trace_impact.py --catalog catalog.json)",
-          "Trace Feature → Functionality → User Stories → ACs",
-          "Classify impact level (High for changed business logic)",
-          "Output structured impact map"
-        ]
-      }
+      "expected_output": "Agent maps PromoService.java to its Feature via the feature_registry in catalog.json (or runs trace_impact.py). Traces Feature \u2192 Functionality \u2192 User Stories \u2192 ACs. Classifies impact as High (changed business logic). Outputs a structured impact map listing affected Features, Functionalities, User Stories, and ACs that require review.",
+      "files": [],
+      "expectations": [
+        "Maps changed file to Feature via the feature_registry section in catalog.json (or runs trace_impact.py --catalog catalog.json)",
+        "Traces Feature \u2192 Functionality \u2192 User Stories \u2192 ACs",
+        "Classifies impact level as High for changed business logic",
+        "Outputs a structured impact map"
+      ]
     },
     {
       "id": 2,
-      "type": "regression",
-      "description": "Developer asks which scenarios need re-running after an API contract change.",
+      "category": "regression",
       "prompt": "We changed the /v2/orders endpoint to add a required 'currency' field. Which Gherkin scenarios need to be re-run?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Identify changed API contract surface area",
-          "Map endpoint to Feature and Functionalities",
-          "List linked User Stories and ACs",
-          "List linked Gherkin scenarios requiring re-run"
-        ]
-      }
+      "expected_output": "Agent identifies the changed API contract surface area (/v2/orders endpoint). Maps the endpoint to its Feature and Functionalities. Lists the linked User Stories and ACs. Lists the linked Gherkin scenarios that reference this endpoint's behavior and must be re-run.",
+      "files": [],
+      "expectations": [
+        "Identifies changed API contract surface area",
+        "Maps endpoint to Feature and Functionalities",
+        "Lists linked User Stories and ACs",
+        "Lists linked Gherkin scenarios requiring re-run"
+      ]
     },
     {
       "id": 3,
-      "type": "regression",
-      "description": "Developer needs a living doc impact sign-off for a release.",
+      "category": "regression",
       "prompt": "We're about to release the checkout refactor. Can you produce a living doc impact sign-off checklist for the release?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Identify all High-impact entities",
-          "Produce release sign-off checklist",
-          "Include: ACs reviewed, scenarios re-run, living-doc-update applied, gherkin-living-doc-sync run"
-        ]
-      }
+      "expected_output": "Agent identifies all High-impact entities in the checkout release scope. Produces a release sign-off checklist covering: ACs reviewed, linked scenarios re-run, living-doc-update applied for changed business rules, and gherkin-living-doc-sync run for affected feature files.",
+      "files": [],
+      "expectations": [
+        "Identifies all High-impact entities",
+        "Produces a release sign-off checklist",
+        "Checklist includes: ACs reviewed, scenarios re-run, living-doc-update applied, gherkin-living-doc-sync run"
+      ]
     },
     {
       "id": 4,
-      "type": "regression",
-    "description": "Changed module has no entry in the feature_registry section of catalog.json — should flag the gap.",
-    "prompt": "The ShippingCalculator.java was changed in the PR but it has no entry in the feature_registry section of catalog.json.",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Flag missing living doc coverage",
-          "Recommend invoking living-doc-create-functionality for the missing module",
-          "Note this as a High-impact gap"
-        ]
-      }
+      "category": "regression",
+      "prompt": "The ShippingCalculator.java was changed in the PR but it has no entry in the feature_registry section of catalog.json.",
+      "expected_output": "Agent flags missing living doc coverage as a High-impact gap. The changed module has no feature_registry entry and cannot be traced to a Feature. Recommends invoking living-doc-create-functionality to document the missing behavior, and notes that the feature_registry mapping must be added.",
+      "files": [],
+      "expectations": [
+        "Flags missing living doc coverage as a High-impact gap",
+        "Notes the module has no feature_registry entry",
+        "Recommends invoking living-doc-create-functionality for the missing module",
+        "Notes that the feature_registry mapping must be added"
+      ]
     },
     {
       "id": 5,
-      "type": "regression",
-      "description": "Infra-only change with no business logic — should return 'None' impact level.",
+      "category": "regression",
       "prompt": "PR #300 updates the Kubernetes resource limits for the order-service deployment. What is the living doc impact?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Classify as None impact level",
-          "Config/infra changes do not require living doc updates",
-          "Note in PR that no living doc update is needed"
-        ]
-      }
+      "expected_output": "Agent classifies this as a None impact level. Config and infrastructure changes that do not affect any business flow do not require living doc updates. Notes in the PR that no living doc update is needed.",
+      "files": [],
+      "expectations": [
+        "Classifies as None impact level",
+        "Config/infra changes do not require living doc updates",
+        "Notes in PR that no living doc update is needed"
+      ]
     },
     {
       "id": 6,
-      "type": "negative",
-      "description": "Developer asks to update the living doc — should trigger living-doc-update, not living-doc-impact-analysis.",
+      "category": "negative",
       "prompt": "Update US-042 to add a new AC for the expired promo path.",
-      "expected": {
-        "skill_triggered": false,
-        "reason": "Updating entities is handled by living-doc-update, not living-doc-impact-analysis"
-      }
+      "expected_output": "Updating living doc entities is out of scope for this skill \u2014 routes to living-doc-update. living-doc-impact-analysis traces which entities are affected by a code change; it does not create or modify entity content.",
+      "files": [],
+      "expectations": [
+        "Does not update the User Story",
+        "Routes to living-doc-update",
+        "Explains the distinction: impact tracing vs. entity modification"
+      ]
     },
     {
       "id": 7,
-      "type": "negative",
-      "description": "Developer asks to find living doc gaps — should trigger living-doc-gap-finder.",
+      "category": "negative",
       "prompt": "Which Functionalities don't have any User Stories?",
-      "expected": {
-        "skill_triggered": false,
-        "reason": "Finding coverage gaps is handled by living-doc-gap-finder, not living-doc-impact-analysis"
-      }
+      "expected_output": "Finding coverage gaps is out of scope for this skill \u2014 routes to living-doc-gap-finder. living-doc-impact-analysis traces the impact of code changes; coverage gap detection is handled by living-doc-gap-finder.",
+      "files": [],
+      "expectations": [
+        "Does not search for orphan Functionalities",
+        "Routes to living-doc-gap-finder",
+        "Explains the distinction: impact analysis vs. gap detection"
+      ]
     },
     {
       "id": 8,
-      "type": "paraphrase",
-      "description": "Same impact analysis intent — phrased as 'what needs re-testing' rather than 'what is affected'.",
+      "category": "paraphrase",
       "prompt": "We're about to merge a PR that changes the cart validation logic. What do we need to re-test in the living doc?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Map changed code to Feature via the feature_registry section in catalog.json",
-          "Trace Feature → Functionality → User Stories → ACs",
-          "List all linked Gherkin scenarios that need re-running",
-          "Output structured re-test checklist"
-        ]
-      }
+      "expected_output": "Agent identifies this as an impact analysis request despite 're-test' phrasing. Maps the changed cart validation code to its Feature via the feature_registry in catalog.json. Traces Feature \u2192 Functionality \u2192 User Stories \u2192 ACs. Lists all linked Gherkin scenarios that need re-running. Outputs a structured re-test checklist.",
+      "files": [],
+      "expectations": [
+        "Identifies this as an impact analysis request despite 're-test' phrasing",
+        "Maps changed code to Feature via the feature_registry section in catalog.json",
+        "Traces Feature \u2192 Functionality \u2192 User Stories \u2192 ACs",
+        "Lists all linked Gherkin scenarios that need re-running",
+        "Outputs a structured re-test checklist"
+      ]
     },
     {
       "id": 9,
-      "type": "edge-case",
-      "description": "PR touches a shared utility class used by multiple Features — impact should fan out to all.",
+      "category": "edge-case",
       "prompt": "PR #410 modifies MoneyUtils.java, a shared utility class used by checkout, refunds, and the promotions engine. What is the living doc impact?",
-      "expected": {
-        "skill_triggered": true,
-        "key_guidance": [
-          "Fan out the impact analysis to all Features that reference MoneyUtils",
-          "List all Functionalities in each Feature that call MoneyUtils",
-          "Classify all as High impact — shared utility changes affect all consumers",
-          "Produce a consolidated impact map across all three Feature areas"
-        ]
-      }
+      "expected_output": "Agent fans out the impact analysis to all Features that import or reference MoneyUtils. Lists all Functionalities within each Feature area that call MoneyUtils. Classifies all as High impact \u2014 shared utility changes propagate to all consumers. Produces a consolidated impact map across all three Feature areas (checkout, refunds, promotions).",
+      "files": [],
+      "expectations": [
+        "Fans out impact analysis to all Features that reference MoneyUtils",
+        "Lists all Functionalities in each Feature that call MoneyUtils",
+        "Classifies all as High impact \u2014 shared utility changes affect all consumers",
+        "Produces a consolidated impact map across all three Feature areas"
+      ]
     },
     {
       "id": 10,
@@ -150,6 +142,34 @@
         "Required changes section lists specific call site updates",
         "Test coverage section lists tests to add or update",
         "Old and new signatures in fenced code blocks"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "PR #501 modifies only OrderServiceTest.java and adds a new mock in MockNotificationClient.java. What is the living doc impact?",
+      "expected_output": "Agent classifies all changed files as test files and mocks \u2014 not domain logic or API contract. Impact level is None. Test-only changes do not affect business logic or living doc entities. Notes in the PR that no living doc update is needed.",
+      "files": [],
+      "expectations": [
+        "Classifies all changed files as test files and mocks \u2014 not domain logic or API contract",
+        "Impact level: None \u2014 test-only changes do not affect living doc",
+        "No living doc update required",
+        "Notes in PR that no living doc update is needed"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "PR #222 modifies both DiscountService.java (domain logic) and DiscountController.java (REST controller). What living doc entities are affected?",
+      "expected_output": "Agent classifies DiscountService.java as domain logic (High impact) and DiscountController.java as API contract (High impact). Traces both files to the owning Feature via the feature_registry in catalog.json. Traces Feature \u2192 Functionalities \u2192 User Stories \u2192 ACs for each changed file. Consolidates entities appearing more than once as higher-risk. Outputs a single consolidated impact map covering both changed files.",
+      "files": [],
+      "expectations": [
+        "Classifies DiscountService.java as domain logic \u2014 High impact",
+        "Classifies DiscountController.java as API contract \u2014 High impact",
+        "Traces both files to the owning Feature (e.g. FEAT-promotions) via feature_registry",
+        "Traces Feature \u2192 Functionalities \u2192 User Stories \u2192 ACs for both changed files",
+        "Consolidates entities appearing more than once \u2014 higher risk",
+        "Outputs a single consolidated impact map covering both changed files"
       ]
     }
   ]

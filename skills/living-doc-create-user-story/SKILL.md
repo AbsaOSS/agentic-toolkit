@@ -2,16 +2,17 @@
 name: living-doc-create-user-story
 description: >
   Guide the creation of a well-formed User Story (US) with business-level Acceptance Criteria
-  that are traceable, testable, and E2E-ready. Activate when creating a new User Story for a
+  that are traceable, testable, and E2E-ready. Use when creating a new User Story for a
   business capability, eliciting As-a/I-can/so-that narratives, defining US-level Acceptance
-  Criteria, or validating User Story completeness before handing off to scenario creation.
+  Criteria, validating User Story narrative structure (checking As-a role, I-want clause, or
+  AC wording quality), or reviewing US completeness before scenario creation.
   Triggers on: "create a user story", "new user story for", "write acceptance criteria for",
   "document a business requirement", "define US AC", "user story template", "as a user I want",
   "elicit requirements", "AC for user story", "US acceptance criteria",
-  "review this user story", "is my narrative well-formed".
+  "review this user story", "is my narrative well-formed", "I-want clause".
   Does NOT trigger for: atomic component behaviors (use living-doc-create-functionality),
-  documenting system surfaces (use living-doc-create-feature).
-  Pairs with living-doc-create-functionality.
+  documenting system surfaces (use living-doc-create-feature), generating BDD scenarios
+  (use living-doc-scenario-creator). Pairs with living-doc-create-functionality.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -110,15 +111,15 @@ When creating a new User Story, output **one fenced `json` code block** using th
   "features": ["FEAT-login"],
   "acceptance_criteria": [
     {
-      "id": "US-001-AC-1",
+      "id": "AC:US-001-01",
       "description": "A registered customer with a phone number on file can request a password reset code by SMS and sees confirmation that the code was sent."
     },
     {
-      "id": "US-001-AC-2",
+      "id": "AC:US-001-02",
       "description": "A customer who enters an unregistered phone number is told that the reset request cannot be completed."
     },
     {
-      "id": "US-001-AC-3",
+      "id": "AC:US-001-03",
       "description": "A customer who submits an expired or already-used reset code is told to request a new code."
     }
   ]
@@ -128,7 +129,7 @@ When creating a new User Story, output **one fenced `json` code block** using th
 Rules:
 - Use `title` rather than `name`
 - Use `as_a`, `i_want`, and `so_that`
-- Every AC object must have `id` in `US-<nnn>-AC-<n>` format and a plain-language `description`
+- Every AC object must have `id` in `AC:US-<nnn>-<nn>` format and a plain-language `description`
 - Write AC descriptions in plain language — no structured language keywords in JSON values
 
 ## Anti-patterns to flag
@@ -142,5 +143,5 @@ Rules:
 | User Story "I want" clause contains "and" | Multiple capabilities in one User Story — split at each “and”. Each capability has its own failure paths and may touch different Features; bundling them makes ACs ambiguous and traceability impossible. |
 | AC uses `{placeholder}` for a single value | Placeholder syntax is only justified when two or more values vary. If only one value applies, write it inline. Example: instead of `{error type}: inline validation message`, write `an inline validation message is shown`. |
 | AC describes a non-observable outcome | e.g. “a background job processes the record” — the user cannot observe this. Restate as the observable signal (e.g. “the confirmation email arrives within 60 seconds”), or redirect the behavior to a Functionality entity if it is purely technical. |
-| AC identifier does not follow `US-<nnn>-AC-<n>` | Every acceptance criterion in the JSON output needs a stable `US-<nnn>-AC-<n>` id so it can be referenced unambiguously. |
+| AC identifier does not follow `AC:US-<nnn>-<nn>` | Every acceptance criterion in the JSON output needs a stable `AC:US-<nnn>-<nn>` id so it can be referenced unambiguously. |
 | AC behavior already documented in another User Story | Duplicate ACs create a maintenance burden — any change must be applied in every copy. Extract the shared behavior into a Functionality entity and link both User Stories to it. |

@@ -110,6 +110,51 @@
         "Methods reference class-level selector constants — no inline selectors",
         "At least one action method and one assertion method"
       ]
+    },
+    {
+      "id": 9,
+      "category": "happy-path",
+      "prompt": "During a Create mode scan of the checkout page, the agent discovers a 'Confirm Order' button and an 'Apply Promo Code' form input. What Functionality stubs should be generated?",
+      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page – Confirm Order' (for the button) and (2) 'Checkout Page – Apply Promo Code' (for the form input). Both are output to features/functionalities/feat-checkout/ with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
+      "files": [],
+      "expectations": [
+        "Generates one Functionality stub per distinct behavior (button → action, form input → action)",
+        "Stub names follow: '<Feature name> – <behavior phrase>'",
+        "Stubs output to features/functionalities/<feat-kebab>/ directory",
+        "Stubs use @FUNC_ID:FUNC-UNKNOWN placeholder tags",
+        "Notes formal definition via living-doc-create-functionality is the next step"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "output-format",
+      "prompt": "Show me the expected structure of a generated CheckoutPage PageObject in TypeScript for a screen at /checkout linked to FEAT-003.",
+      "expected_output": "Output is a TypeScript code block. First line: '// living-doc: FEAT-003 | /checkout'. Import line: 'import { type Page, type Locator, expect } from \"@playwright/test\"'. Class is declared 'export class CheckoutPage'. Locator fields are declared as 'readonly'. The constructor takes 'readonly page: Page' and initialises each Locator via page.getByTestId(). Methods are async, named in camelCase, each wrapping a single interaction or assertion. No inline selectors in method bodies — only the class Locator fields are used.",
+      "files": [],
+      "expectations": [
+        "Output is a TypeScript code block",
+        "File-level comment: // living-doc: FEAT-003 | /checkout",
+        "Import from @playwright/test (Page, Locator, expect)",
+        "Class exported: export class CheckoutPage",
+        "Locator fields declared as readonly",
+        "Constructor takes readonly page: Page",
+        "Methods are async camelCase",
+        "No inline selectors — Locators used from class fields"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "edge-case",
+      "prompt": "During a Maintain mode rescan, a route /admin/orders requires a multi-step authentication flow to reach. How should this be handled?",
+      "expected_output": "Check the manifest entry for /admin/orders for a navigation_context.navigation_steps field. If navigation steps are recorded (e.g. log in, navigate to admin panel, open orders tab), follow those steps instead of rediscovering the route from scratch. If no navigation context exists, prompt the team to add it to the manifest so future rescans can navigate to authenticated/multi-step routes reliably. Never skip a route just because it requires authentication — use the authentication strategy appropriate to the auth type (cookie/session, OAuth token injection, or TOTP).",
+      "files": [],
+      "expectations": [
+        "Checks manifest for navigation_context.navigation_steps",
+        "Uses recorded navigation steps if available",
+        "Prompts to add navigation context if missing",
+        "Does not skip the route due to authentication requirement",
+        "Names appropriate auth strategy for the auth type"
+      ]
     }
   ]
 }

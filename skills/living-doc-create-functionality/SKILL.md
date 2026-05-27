@@ -4,12 +4,13 @@ description: >
   Define an atomic, testable behavior (Functionality) with Functionality-level Acceptance Criteria
   designed to be validated by fast unit or integration tests. Activate when documenting an atomic
   behavior, component function, or business rule; writing Functionality-level AC; creating the
-  granular test anchor for a Feature; identifying reuse candidates across User Stories; or
-  reviewing a Functionality for completeness.
+  granular test anchor for a Feature; choosing test_type (unit vs integration); identifying reuse
+  candidates across User Stories; linking a Functionality to its parent Feature; or reviewing a
+  Functionality for completeness.
   Triggers on: "create a functionality", "document an atomic behavior", "functionality AC",
   "unit-testable behavior", "define component behavior", "atomic acceptance criteria",
   "document a business rule", "create a functionality entity", "functionality acceptance criteria",
-  "test_type", "unit vs integration test", "choose test type".
+  "test_type", "unit vs integration test", "choose test type", "link functionality to feature".
   Does NOT trigger for: end-to-end User Stories (use living-doc-create-user-story), system
   surface documentation (use living-doc-create-feature).
 license: Apache-2.0

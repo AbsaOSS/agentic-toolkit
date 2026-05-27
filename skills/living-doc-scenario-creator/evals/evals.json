@@ -33,7 +33,7 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "Generating scenarios for US-007-01 — 'Customer confirms the order'. The CheckoutPage PageObject has a confirm_order() method. Generate the step stub for 'When the customer confirms the order'.",
-      "expected_output": "Case A — PageObject method exists. Generates a full step stub using the available method. Output includes: the missing step text, the PageObject candidate (CheckoutPage, FEAT-003), the suggested step file (tests/steps/checkout_steps.py), and the generated stub: @when('the customer confirms the order') / def step_confirm_order(context): / context.checkout_page = CheckoutPage(context.browser) or context.checkout_page.confirm_order(). No NotImplementedError — the PageObject method exists.",
+      "expected_output": "Case A — PageObject method exists. Generates a full step stub using the available method. Output includes: the missing step text, the PageObject candidate (CheckoutPage, FEAT-003), the suggested step file (tests/steps/checkout_steps.py), and the generated stub: @when('the customer confirms the order') / def step_confirm_order(context): / context.checkout_page.confirm_order(). No NotImplementedError — the PageObject method exists. PageObject setup belongs in before_scenario, not in the step body.",
       "files": [],
       "expectations": [
         "Identifies as Case A (PageObject method exists)",
@@ -106,6 +106,47 @@
         "# AC: comment immediately precedes each Scenario:",
         "Error scenario title follows convention: '<US title> — <error condition>'",
         "Coverage table appended after the feature file"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "edge-case",
+      "prompt": "AC:US-010-01 is: 'The login form displays the username input field and the password input field.' I need to write two scenarios — one for each field. How should the @AC: tags look?",
+      "expected_output": "Since each scenario covers only one aspect of the multi-aspect AC, encode the aspect using the /aspect:value param on the tag: first scenario uses '@AC:US-010-01/aspect:username-input' with comment '# AC:US-010-01 (v1.0.0 - Active) — ... | aspect: username input'. Second scenario uses '@AC:US-010-01/aspect:password-input' with comment mirroring the aspect. The /aspect:value format allows coverage scripts to map each scenario to its specific aspect while the base AC ID keeps overall traceability intact.",
+      "files": [],
+      "expectations": [
+        "Uses @AC:US-010-01/aspect:username-input for the first scenario",
+        "Uses @AC:US-010-01/aspect:password-input for the second scenario",
+        "# AC: comment includes '| aspect: <value>' annotation",
+        "Comment annotation mirrors the /aspect: tag value",
+        "Both scenarios map back to AC:US-010-01 via the base AC ID"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "output-format",
+      "prompt": "What tags and header blocks should appear at the Feature level (not the Scenario level) in a generated .feature file for US-007?",
+      "expected_output": "The feature file starts with: (1) a file-level comment block showing the source URL, business value statement, and the full AC list with versions and states; (2) a '@US_ID:US-007' tag immediately before the 'Feature:' keyword; (3) the 'Feature: <title>' block with the As-a/I-can/so-that narrative. The @US_ID: tag provides machine-readable file-level traceability distinct from the per-scenario @AC: tags. The # AC: scenario-level comments appear only immediately above each individual Scenario: block.",
+      "files": [],
+      "expectations": [
+        "File-level comment block with source URL, business value, and AC list",
+        "@US_ID:US-007 tag immediately before Feature: keyword",
+        "Feature: block with As-a/I-can/so-that narrative",
+        "@US_ID: tag is distinct from per-scenario @AC: tags",
+        "Per-scenario @AC: and # AC: appear only directly above individual Scenario: blocks"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "I ran coverage_report.py and it shows AC:US-007-03 is not covered. But I have a scenario for that AC. What might be wrong?",
+      "expected_output": "The most likely causes: (1) the @AC:US-007-03 Cucumber tag is missing or misspelled on the scenario — the script matches on the machine-readable @AC: tag, not the # AC: comment; (2) the tag uses the wrong ID format (e.g. @AC:US-7-03 instead of @AC:US-007-03); (3) the feature file is not in the directory the script was pointed at. Check the @AC: tag on the scenario exactly matches the AC ID in the living doc catalog. Run: scripts/coverage_report.py <living_doc_dir> <features_dir>.",
+      "files": [],
+      "expectations": [
+        "Identifies @AC: tag mismatch/missing as the most likely cause",
+        "Distinguishes machine-readable @AC: tag from human-readable # AC: comment",
+        "Notes ID format must match exactly (zero-padded)",
+        "Provides the coverage_report.py command for diagnosis"
       ]
     }
   ]
