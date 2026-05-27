@@ -11,7 +11,7 @@ description: >
   "change status of user story".
   Does NOT trigger for: creating new entities from scratch (use living-doc-create-user-story,
   living-doc-create-feature, or living-doc-create-functionality), finding gaps
-  (use living-doc-gap-finder), generating scenarios (use living-doc-scenario-creator).
+  (use living-doc-gap-finder).
 
 license: Apache-2.0
 compatibility: GitHub Copilot
@@ -47,13 +47,12 @@ When adding a new AC to an existing User Story:
    - Happy path covered?
    - Error paths covered?
    - Alternative flows covered?
-4. Check whether the new AC affects any existing Gherkin scenarios — flag for
-   `gherkin-living-doc-sync` if so
+4. Confirm whether the new AC requires new or updated tests — flag for the appropriate testing
+   workflow if so
 
 When modifying an existing AC **keep the AC ID stable** — changing the ID breaks traceability
-to linked tests and Gherkin scenarios. Only update the `description`, `given`, `when`, `then`, or
-state fields. If the changed AC text affects the wording of linked Gherkin steps, flag the linked
-scenarios for `gherkin-living-doc-sync`.
+to linked tests. Only update the `description`, `given`, `when`, `then`, or
+state fields. If the changed AC text affects linked tests, flag them for update.
 
 ## Promote a User Story from planned to active
 
@@ -87,7 +86,7 @@ Rules:
 - Always deprecate — never delete entities (preserves audit trail)
 - Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
-- Flag any Gherkin scenarios linked to the deprecated entity for `gherkin-living-doc-sync`
+- Flag any tests linked to the deprecated entity for update or removal
 
 ## Update Feature ownership or dependencies
 
@@ -100,7 +99,7 @@ When an AC is moved out of the current sprint but not permanently removed:
 
 - Set `status: descoped` and add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
 - Add `future_release` field if the work is planned for a later sprint
-- Flag any linked Gherkin scenarios for `@wip` or `@pending` tagging via `gherkin-living-doc-sync`
+- Flag any linked tests for `@skip` or `@pending` tagging
 
 ```
 AC:US-042-03 (v1.2.0 – descoped)
@@ -118,7 +117,6 @@ AC:US-042-03 (v1.2.0 – descoped)
 | Create a new Feature | `living-doc-create-feature` |
 | Create a new Functionality | `living-doc-create-functionality` |
 | Find gaps in living documentation | `living-doc-gap-finder` |
-| Generate Gherkin scenarios from a User Story | `living-doc-scenario-creator` |
 
 ## Script — `scripts/validate_entity.py`
 
@@ -145,7 +143,7 @@ an ID format is wrong, or a status value is invalid.
 ## Output change summary
 
 After every update, emit a structured change record. For **modified AC text**, show the old and
-new values clearly labelled, and list any linked Gherkin scenarios that need re-syncing:
+new values clearly labelled, and list any linked tests that need updating:
 
 ```
 LIVING DOC UPDATE — 2026-05-15
@@ -155,9 +153,8 @@ LIVING DOC UPDATE — 2026-05-15
     ~ Modified AC AC:US-042-01:
         OLD: "Payment must complete within 3 seconds under normal load (p99 SLA)"
         NEW: "Payment must complete within 2 seconds under normal load (p99 SLA)"
-      Linked Gherkin scenarios requiring re-sync:
-        → checkout.feature:41 — Scenario: Payment completes within SLA
+      Linked tests requiring update:
+        checkout.feature:41 — Scenario: Payment completes within SLA
   Downstream flags:
-    → Run gherkin-living-doc-sync: changed AC text affects linked scenario wording
-    → Run living-doc-gap-finder to confirm coverage after update
+    Run living-doc-gap-finder to confirm coverage after update
 ```

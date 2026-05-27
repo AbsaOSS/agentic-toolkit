@@ -2,14 +2,14 @@
 name: living-doc-impact-analysis
 description: >
   Analyse the impact of a code change on the living documentation. Given a PR diff,
-  modified module, or changed API contract, trace which Features, Functionalities, User Stories,
-  and Gherkin scenarios are affected. Output an impact map that identifies what must be reviewed,
+  modified module, or changed API contract, trace which Features, Functionalities, and User Stories
+  are affected. Output an impact map that identifies what must be reviewed,
   updated, or re-tested. Activate when a PR touches business logic and you need to know what
   living doc entities are affected, when a service module is refactored, or when breaking API
   changes need living doc coverage traced.
   Triggers on: "living doc impact", "what does this change affect", "impact of PR on living doc",
   "trace affected user stories", "affected features", "impact analysis", "living doc sign-off",
-  "what user stories are affected", "which scenarios need re-running", "PR impact on docs".
+  "what user stories are affected", "PR impact on docs".
   Does NOT trigger for: updating living doc (use living-doc-update), finding coverage gaps
   (use living-doc-gap-finder), creating new entities (use living-doc-create-* skills).
 
@@ -68,15 +68,14 @@ Start from the code change (PR diff, renamed module, deleted endpoint):
 
 ## Step 2 — Trace to living doc entities
 
-Walk the entity hierarchy from Feature → Functionality → User Story:
+Walk the entity hierarchy from Feature, Functionality, to User Story:
 
 ```
 Changed module: src/payments/checkout/PromoService.java
-  → Feature:          FEAT-promotions
-  → Functionalities:  FUNC-promo-validate, FUNC-promo-apply
-  → User Stories:     US-042 (apply promo), US-067 (expired promo error)
-  → ACs affected:     AC:US-042-01, AC:US-042-03, AC:US-067-02
-  → Linked scenarios: checkout/promo_apply.feature (Scenarios 1, 3), checkout/promo_error.feature (Scenario 2)
+  Feature:          FEAT-promotions
+  Functionalities:  FUNC-promo-validate, FUNC-promo-apply
+  User Stories:     US-042 (apply promo), US-067 (expired promo error)
+  ACs affected:     AC:US-042-01, AC:US-042-03, AC:US-067-02
 ```
 
 Repeat for every changed module. Consolidate entities that appear more than once — they are
@@ -92,8 +91,8 @@ that covers all affected Feature areas.
 
 | Impact level | Criteria | Action required |
 |---|---|---|
-| **High** | AC or business rule directly changed or deleted | Must update living doc and re-run linked scenarios |
-| **Medium** | Module changed but business rule unchanged (refactor/rename) | Update living doc if method names referenced; confirm scenarios still pass |
+| **High** | AC or business rule directly changed or deleted | Must update living doc and re-run linked tests |
+| **Medium** | Module changed but business rule unchanged (refactor/rename) | Update living doc if method names referenced; confirm tests still pass |
 | **Low** | Config / infra change that alters a business flow | Update living doc if the flow change is documented; note in PR |
 | **None** | Pure infrastructure change (resource limits, scaling, deployment config) with no business flow impact; or test files, mocks, build scripts only | No living doc update needed |
 
@@ -116,20 +115,14 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
     AC:US-042-03  — Stacked promos applied in priority order  ← NEW BEHAVIOUR
     AC:US-067-02  — Expired promo returns 422
 
-  Scenarios requiring re-run:
-    checkout/promo_apply.feature  — Scenarios: 1, 3
-    checkout/promo_error.feature  — Scenario: 2
-
   Recommended actions:
     1. Update living-doc: add AC for stacked discount priority order (AC:US-042-03 is new)
-       → Invoke living-doc-update
-    2. Sync Gherkin: promo_apply.feature Scenario 3 needs updating for stacked discount
-       → Invoke gherkin-living-doc-sync
-    3. Re-run E2E journeys: US-042 and US-067 critical path scenarios
-       → Invoke test-e2e-standards
+       Invoke living-doc-update
+    2. Re-run E2E journeys: US-042 and US-067 critical path scenarios
+       Invoke test-e2e-standards
 ```
 
-If the request is framed as **"what needs re-testing"**, present Step 4 as a compact **re-test checklist**: group by Feature / Functionality / User Story, list the affected ACs, and then list every linked Gherkin scenario that must be re-run.
+If the request is framed as **"what needs re-testing"**, present Step 4 as a compact **re-test checklist**: group by Feature / Functionality / User Story and list the affected ACs.
 
 ## Step 5 — Release sign-off checklist
 
@@ -138,9 +131,7 @@ Before a release, confirm that all High-impact entities have been addressed:
 | Check | Status |
 |---|---|
 | All High-impact ACs reviewed and updated if needed | ☐ |
-| All linked Gherkin scenarios re-run and passing | ☐ |
 | living-doc-update applied for any changed business rules | ☐ |
-| gherkin-living-doc-sync run for any drifted step text | ☐ |
 
 Produce this checklist as a PR comment or documentation artefact if requested.
 
@@ -167,7 +158,6 @@ Do not include speculative changes beyond the described scope.
 | Anti-pattern | Flag |
 |---|---|
 | Changed domain logic with no Feature entity defined in the living doc | Missing living doc coverage — flag as a **High-impact gap** and recommend creating documentation with `living-doc-create-functionality` |
-| AC not linked to any Gherkin scenario after a High-impact change | Coverage gap — flag for gherkin-living-doc-sync |
 | Impact analysis only covers unit/integration tests, not E2E scenarios | Incomplete impact — flag for test-e2e-standards review |
 
 ## Out-of-scope redirects

@@ -40,7 +40,7 @@ Sources A–E — collect from whichever are available:
 
 | Source | Behaviour |
 |---|---|
-| **A — Living doc catalog** | Extract Feature names, US titles, and AC texts. Map each Feature to its primary URL/route if known. |
+| **A — Living documentation** | Extract Feature names, US titles, and AC texts. Map each Feature to its primary URL/route if known. |
 | **B — Sitemap or route config** | Parse route definitions (Angular router, React Router, `sitemap.xml`) to enumerate URL paths. |
 | **C — OpenAPI / Swagger spec** | Extract endpoint paths; map REST resources to UI screens where obvious. |
 | **D — Existing PageObjects** | Load current `.copilot/bdd/manifest.json` if present — treat known surfaces as already discovered. |
@@ -59,7 +59,7 @@ credentials:
 1. Search for `seed.yaml` containing a `base_url:` key.
 2. Search for `manifest.json` containing an array with `pageobject_path` entries.
 3. If found, load both files and record their paths for this session.
-4. If NOT found, create them at a sensible location (e.g. alongside the existing living doc catalog directory if one exists, otherwise `.copilot/bdd/`).
+4. If NOT found, create them at a sensible location (e.g. alongside the existing living documentation directory if one exists, otherwise `.copilot/bdd/`).
 5. **On first discovery:** propose adding their locations to `.github/copilot-instructions.md` so every future agent session can load them without searching:
 
 ```markdown
@@ -102,19 +102,36 @@ guided_steps: []  # populated during Source E traversal
 5. Repeat until coverage plateau — no new surfaces found in the last full iteration.
 6. Report any unreachable areas — auth walls, dead links, CAPTCHA gates, or forms that cannot be progressed due to missing business knowledge (unknown valid input values, business-specific field formats, required lookup codes, conditional field logic). Offer to enrich `seed.yaml` with missing routes, credentials, or form values, then loop.
 
-**PageObject generation rule:** For every new or changed UI surface, load `living-doc-pageobject-scan` — `Create` mode for first-time generation and `Maintain` mode for selector drift. Generated PageObjects must use a file-level `living-doc: FEAT-<nnn> | /route` header comment, prefer `data-testid` selectors, keep selector constants in `ALL_CAPS`, accept `page` in `__init__` / `constructor`, and expose method stubs for each interactive element. Flag any positional CSS selector as `FRAGILE`. If no matching Feature exists in the catalog, hand the surface to `@living-doc-copilot`; do not create catalog entities here.
+**PageObject generation rule:** For every new or changed UI surface, load `living-doc-pageobject-scan` — `Create` mode for first-time generation and `Maintain` mode for selector drift. Generated PageObjects must use a file-level `living-doc: FEAT-<nnn> | /route` header comment, prefer `data-testid` selectors, keep selector constants in `ALL_CAPS`, accept `page` in `__init__` / `constructor`, and expose method stubs for each interactive element. Flag any positional CSS selector as `FRAGILE`. If no matching Feature exists in the living documentation, hand the surface to `@living-doc-copilot`; do not create entities here.
 
 **Output artifact:** `.copilot/bdd/manifest.json`
 
+The manifest records per-route exploration state. Schema matches the `living-doc-pageobject-scan` skill definition:
+
 ```json
-[
-  {
-    "feature": "Authentication",
-    "url": "/login",
-    "component_ids": ["login-form", "username-input", "password-input", "submit-btn"],
-    "pageobject_path": "tests/pageobjects/LoginPage.ts"
+{
+  "version": "1.0",
+  "routes": {
+    "/login": {
+      "pageobject_path": "aul-ui/playwright/pages/LoginPage.ts",
+      "feature_id": "FEAT-001",
+      "last_scanned": "2026-05-26T10:30:00Z",
+      "elements": [
+        { "data_cy": "username-input", "tag": "input" },
+        { "data_cy": "password-input", "tag": "input" },
+        { "data_cy": "login-btn", "tag": "cps-button" }
+      ],
+      "coverage_gaps": [],
+      "navigation_context": {
+        "prerequisites": null,
+        "navigation_steps": "Navigate directly to /login.",
+        "data_requirements": null,
+        "auth_role": "unauthenticated",
+        "notes": null
+      }
+    }
   }
-]
+}
 ```
 
 ---
@@ -150,8 +167,8 @@ guided_steps:
 After exploration completes (manifest is up to date):
 
 1. Use the `living-doc-gap-finder` skill (bottom-up mode) to identify User Stories with `ACTIVE` ACs that have no linked Gherkin scenario.
-2. For each gap: load the `living-doc-scenario-creator` skill and generate Gherkin scenario skeletons — one scenario per `Active` or `Implemented` AC, with the mandatory `# AC:` traceability tag. Skip `Planned` and `Deprecated` ACs.
-3. Write `.feature` files under the project's feature directory using `<us-id>-<kebab-title>.feature` naming, e.g. `us-007-place-an-online-order.feature`.
+2. For each gap: load the `living-doc-scenario-creator` skill and generate Gherkin scenario skeletons — one scenario per `Active` or `Implemented` AC, with the mandatory `@AC:` traceability tag. Skip `Planned` and `Deprecated` ACs.
+3. Write `.feature` files under `features/us/` using `us-<nnn>-<kebab-title>.feature` naming, e.g. `features/us/us-007-place-an-online-order.feature`.
 4. The `Feature:` header must restate the User Story narrative in `As a / I can / so that` form.
 5. Scenario step text must stay in business/domain language only — never mention selectors, HTTP calls, DOM details, or database operations.
 6. For each generated scenario, resolve step definitions:
@@ -162,7 +179,7 @@ After exploration completes (manifest is up to date):
    e. If neither the step nor the PageObject method exists, generate a stub that raises `NotImplementedError` (or the language-equivalent pending marker) and explicitly flag that the PageObject must be extended with the missing interaction.
 7. Update `manifest.json` to record any new PageObject paths created.
 
-**Gap detection logic:** An AC is considered uncovered if no scenario in any `.feature` file carries the AC's traceability tag (`# AC: <id>`).
+**Gap detection logic:** An AC is considered uncovered if no scenario in any `.feature` file carries the `@AC:<id>` traceability tag.
 
 ---
 
@@ -205,11 +222,11 @@ After exploration completes (manifest is up to date):
 **Scope:** Only files linked to the removed entity — do not touch other Features, PageObjects, or step definitions.
 
 1. Identify the specific Feature/US/AC being removed.
-2. Find all `.feature` files whose scenarios carry a `# AC:` tag matching the removed entity's IDs.
+2. Find all `.feature` files whose scenarios carry an `@AC:` tag matching the removed entity's IDs.
 3. Find PageObjects referenced only by those scenarios; find step definitions used only by those scenarios.
 4. Confirm the full deletion list with the user before touching any file.
 5. Remove confirmed files; update `manifest.json` to remove the deprecated entry.
-6. Flag linked US/AC entities in the living doc catalog as candidates for deprecation — hand off to `@living-doc-copilot`.
+6. Flag linked US/AC entities in the living documentation as candidates for deprecation — hand off to `@living-doc-copilot`.
 
 ---
 
@@ -218,7 +235,7 @@ After exploration completes (manifest is up to date):
 - Load Business Seed (`seed.yaml`) and Exploration Manifest (`manifest.json`) before crawling
 - Crawl web app via MCP Playwright using manifest-guided navigation
 - Fill forms and traverse wizards using business-supplied test values from `seed.yaml`
-- Identify Features from discovered UI surfaces and map them to the living doc catalog
+- Identify Features from discovered UI surfaces and map them to the living documentation
 - Detect scenario gaps — existing Gherkin scenarios vs User Story ACs
 - Generate Gherkin scenarios from User Story ACs
 - Write and extend step definitions
@@ -230,10 +247,10 @@ After exploration completes (manifest is up to date):
 
 ## Does NOT
 
-- Create living doc catalog entities (User Stories, Features, Functionalities) → `@living-doc-copilot`
-- Write unit or integration tests → `@sdet-copilot`
-- Run language-specific quality gates → `@quality-gate-copilot`
-- Heal the catalog layer (AC states, traceability links, entity deprecation) → `@living-doc-copilot`
+- Create living documentation entities (User Stories, Features, Functionalities): `@living-doc-copilot`
+- Write unit or integration tests: `@sdet-copilot`
+- Run language-specific quality gates: `@quality-gate-copilot`
+- Heal the catalog layer (AC states, traceability links, entity deprecation): `@living-doc-copilot`
 
 ---
 
@@ -273,14 +290,44 @@ State values: `Planned | Implemented | Active | Deprecated`
 
 ### Gherkin traceability tag
 
-Every `Scenario:` or `Scenario Outline:` must carry a link comment on the line immediately above it:
+Every `Scenario:` or `Scenario Outline:` in a **living-doc feature file** (`features/us/` and
+`features/functionalities/`) must carry two complementary annotations:
+
+1. A `# AC:` comment — human-readable context (ID, version, state, description, optional aspect).
+2. An `@AC:` Cucumber tag — machine-readable link: `@AC:<id>[/param:value...]`.
 
 ```gherkin
-# AC: US-001-01 (v1.0.0 – Active) — Customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+@AC:US-1-01
 Scenario: Customer successfully places an order
 ```
 
-The AC link is the single source of traceability between a scenario and the living doc catalog. Never delete or rewrite the `# AC:` comment without updating the catalog entity.
+When the scenario covers only **one aspect** of a multi-aspect AC, encode it as a `/param:value`
+segment on the tag and mirror it in the comment:
+
+```gherkin
+# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
+@AC:US-1-01/aspect:username-input
+Scenario: Login form shows the username input field
+```
+
+Multiple ACs — one comment + tag pair per AC:
+
+```gherkin
+# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
+@AC:US-1-01
+@AC:US-1-02
+@Regression
+Scenario: User is locked out after repeated failed logins
+```
+
+The `/param:value` format is extensible — additional params can be added as needed.
+The `@AC:` tag is the single source of machine traceability. Never delete or rename an `@AC:` tag
+without updating the corresponding entity.
+
+Feature files outside `features/us/` and `features/functionalities/` (smoke tests, regression
+suites, exploratory probes) do not require these annotations.
 
 ### Feature surface types
 
@@ -314,7 +361,7 @@ This agent generates PageObjects only for `UI` Features. API Feature coverage be
 | `living-doc-gap-finder` | Find ACs with no linked Gherkin scenario (bottom-up usage) | `skills/living-doc-gap-finder/SKILL.md` |
 | `gherkin-scenario` | Write BDD Gherkin scenarios in plain business language | `skills/gherkin-scenario/SKILL.md` |
 | `gherkin-step` | Implement Gherkin step definitions — clean, reusable, maintainable | `skills/gherkin-step/SKILL.md` |
-| `gherkin-living-doc-sync` | Synchronise feature files and scenarios with the living doc catalog | `skills/gherkin-living-doc-sync/SKILL.md` |
+| `gherkin-living-doc-sync` | Synchronise feature files and scenarios with the living documentation | `skills/gherkin-living-doc-sync/SKILL.md` |
 
 ---
 

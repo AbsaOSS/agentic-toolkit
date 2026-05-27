@@ -10,9 +10,8 @@ description: >
   "elicit requirements", "AC for user story", "US acceptance criteria",
   "review this user story", "is my narrative well-formed".
   Does NOT trigger for: atomic component behaviors (use living-doc-create-functionality),
-  documenting system surfaces (use living-doc-create-feature), generating BDD scenarios
-  (use living-doc-scenario-creator).
-  Pairs with living-doc-create-functionality and living-doc-scenario-creator.
+  documenting system surfaces (use living-doc-create-feature).
+  Pairs with living-doc-create-functionality.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -64,7 +63,7 @@ Each AC must be:
 - **Binary** — clear pass/fail; no "should usually" or "typically"
 - **Single placeholder** — at most ONE `{placeholder}` per AC statement. If two aspects vary independently, write a separate AC for each.
 
-Use `{placeholder}` syntax when a value varies, and list the concrete values immediately below. During elicitation, capture ACs in **Given / When / Then** language; in the final JSON, convert each accepted AC into a plain-language description with no Gherkin keywords.
+Use `{placeholder}` syntax when a value varies, and list the concrete values immediately below. During elicitation, capture ACs using structured condition / action / outcome language; in the final JSON, convert each accepted AC into a plain-language description.
 
 When reviewing an existing User Story, classify **only happy-path ACs present** as an **Important** gap. Name the missing cases in domain language and propose 2-3 extra Given / When / Then ACs. For password-reset stories, explicitly check for: unregistered email or phone, expired token or code, already-used token or code, wrong code, and retry limits.
 
@@ -130,7 +129,7 @@ Rules:
 - Use `title` rather than `name`
 - Use `as_a`, `i_want`, and `so_that`
 - Every AC object must have `id` in `US-<nnn>-AC-<n>` format and a plain-language `description`
-- Keep Gherkin keywords out of JSON values
+- Write AC descriptions in plain language — no structured language keywords in JSON values
 
 ## Anti-patterns to flag
 

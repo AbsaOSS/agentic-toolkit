@@ -5,20 +5,19 @@ description: >
   top-down requirement checking. Activate when auditing living doc completeness, finding
   undocumented behaviors, discovering orphan tests with no AC link, detecting untested ACs,
   producing a documentation coverage gap report, or proposing new living doc entities to fill
-  identified gaps. Orchestrates living-doc-pageobject-scan, living-doc-scenario-creator (read-only),
-  and living-doc-create-* skills.
+  identified gaps. Orchestrates living-doc-create-* skills.
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "untested AC", "documentation coverage",
   "gap report", "what's not covered", "living doc audit", "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Orchestrates: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
+  Orchestrates: all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
 
 # Living Doc — Gap Finder
 
-> **Key concepts:** Feature, Functionality, User Story, AC, PageObject — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 
 ## Script — `scripts/compute_gaps.py`
 
@@ -47,43 +46,29 @@ Before presenting the final report, normalise the script output against the taxo
 
 ---
 
-## Usage modes
-
-This skill is used in two directions depending on which agent calls it:
-
-| Mode | Caller | What it finds |
-|---|---|---|
-| **Full gap audit** (default) | `@living-doc-copilot` | All 9 gap types — missing documentation entities, orphan tests, stale references, empty Features |
-| **Bottom-up scenario coverage** | `@living-doc-bdd-copilot` | Gap type 1 only, scoped to Gherkin: ACs that exist in the catalog but have no linked `.feature` scenario carrying a `# AC: <id>` traceability tag |
-
-When called by `@living-doc-bdd-copilot`, skip Steps 1 and 2 of the Workflow. Go directly to Gap type 1 with the Gherkin-scoped definition below, then output only those results.
-
----
-
 ## Gap taxonomy
 
 Nine types of gaps are detected, in order of risk:
 
 | Priority | Gap type | Description |
 |---|---|---|
-| 1 — Blocker | **Untested AC** | An Active or Implemented AC in a User Story or Functionality has no linked test. In bottom-up scenario coverage mode (called from `@living-doc-bdd-copilot`): no `.feature` file carries a `# AC: <id>` traceability tag for this AC. |
+| 1 — Blocker | **Untested AC** | An Active or Implemented AC in a User Story or Functionality has no linked test. |
 | 2 — Important | **Undocumented UI surface** | A screen or API endpoint exists in the app with no Feature entity |
 | 3 — Important | **Orphan Feature** | A Feature entity exists with no linked User Story |
 | 4 — Important | **Orphan User Story** | A User Story exists with no linked Feature |
 | 5 — Important | **Orphan Functionality** | A Functionality exists with no parent Feature |
-| 6 — Important | **Orphan test** | A test or BDD scenario exists with no linked AC |
-| 7 — Important | **Stale reference** | An active test or BDD scenario references a Deprecated AC |
+| 6 — Important | **Orphan test** | A test exists with no linked AC |
+| 7 — Important | **Stale reference** | An active test references a Deprecated AC |
 | 8 — Nit | **Undocumented Functionality** | A Functionality entity exists with no associated tests |
 | 9 — Nit | **Empty Feature** | A Feature entity exists with no Functionalities defined |
 
 ## Workflow
 
-### Step 1 — Bottom-up scan (apply living-doc-pageobject-scan)
+### Step 1 — Bottom-up scan
 
-Load and follow the `living-doc-pageobject-scan` skill to build an **inventory** of:
+Build an **inventory** of:
 - All discoverable UI screens and API endpoints
-- All existing test files and BDD scenarios
-- All existing PageObjects and their method coverage
+- All existing test files
 
 Output: `inventory.json` — a flat list of discovered artifacts.
 
@@ -94,7 +79,7 @@ Traverse the entity graph top-down, starting from User Stories as roots:
 - **User Stories** (root) — load all entities with their ACs and status
 - **Features** — for each User Story, follow its `features` list to reach linked Features
 - **Functionalities** — for each Feature, follow its `functionalities` list to reach owned Functionalities
-- **Test links** — collect all test file → AC mappings for cross-referencing in Step 3
+- **Test links** — collect all test file to AC mappings for cross-referencing in Step 3
 
 ### Step 3 — Compute gaps
 
@@ -105,63 +90,63 @@ For each gap type:
 For each AC in (UserStory.ACs + Functionality.ACs)
   where status IN (Active, Implemented)
   where no linked test exists:
-    → GAP: UNTESTED_AC
+    GAP: UNTESTED_AC
 ```
 
 **Gap type 2 — Undocumented UI surface:**
 ```
 For each item in inventory (screens, API endpoints)
   where no Feature entity exists for this surface:
-    → GAP: UNDOCUMENTED_SURFACE
+    GAP: UNDOCUMENTED_SURFACE
 ```
 
 **Gap type 3 — Orphan Feature:**
 ```
 For each Feature reachable via entity relationships
   where user_stories == []:
-    → GAP: ORPHAN_FEATURE
+    GAP: ORPHAN_FEATURE
 ```
 
 **Gap type 4 — Orphan User Story:**
 ```
 For each User Story in entity graph
   where user_story.features == []:
-    → GAP: ORPHAN_USER_STORY
+    GAP: ORPHAN_USER_STORY
 ```
 
 **Gap type 5 — Orphan Functionality:**
 ```
 For each Functionality in entity graph
   where functionality.parent_feature == null:
-    → GAP: ORPHAN_FUNCTIONALITY
+    GAP: ORPHAN_FUNCTIONALITY
 ```
 
 **Gap type 6 — Orphan test:**
 ```
 For each test in inventory
   where no linked AC exists in any UserStory or Functionality:
-    → GAP: ORPHAN_TEST
+    GAP: ORPHAN_TEST
 ```
 
 **Gap type 7 — Stale reference:**
 ```
 For each test in inventory
   where linked_ac.status == Deprecated:
-    → GAP: STALE_REFERENCE
+    GAP: STALE_REFERENCE
 ```
 
 **Gap type 8 — Undocumented Functionality:**
 ```
 For each Functionality reachable via Feature `functionalities` links
   where no test references this Functionality's ACs:
-    → GAP: UNDOCUMENTED_FUNCTIONALITY
+    GAP: UNDOCUMENTED_FUNCTIONALITY
 ```
 
 **Gap type 9 — Empty Feature:**
 ```
 For each Feature reachable via entity relationships
   where functionalities == []:
-    → GAP: EMPTY_FEATURE
+    GAP: EMPTY_FEATURE
 ```
 
 ### Step 4 — Prioritise by risk
@@ -177,15 +162,15 @@ For each gap, propose the living doc action:
 
 | Gap type | Proposed action |
 |---|---|
-| UNTESTED_AC | Create BDD scenario → `living-doc-scenario-creator` |
-| UNDOCUMENTED_SURFACE | Create Feature entity → `living-doc-create-feature` |
+| UNTESTED_AC | Create a test for the uncovered AC — use `living-doc-create-functionality` to define the behavior if not yet documented |
+| UNDOCUMENTED_SURFACE | Create Feature entity — `living-doc-create-feature` |
 | ORPHAN_FEATURE | (1) Confirm the Feature entity actually exists in the storage profile — a broken reference may mean the Feature was renamed or deleted without updating the link. (2) If the Feature exists: link it to an existing User Story or propose creating one. (3) If deletion is the right action: **always confirm with the user before deleting** — state the Feature ID, name, and any Functionalities it owns, and ask explicitly: *"No User Story references FEAT-nnn. Delete this Feature and its N Functionalities?"* |
-| ORPHAN_USER_STORY | Link to an existing Feature, or create the missing Feature → `living-doc-create-feature` |
+| ORPHAN_USER_STORY | Link to an existing Feature, or create the missing Feature — `living-doc-create-feature` |
 | ORPHAN_FUNCTIONALITY | Link to an existing Feature, or delete if the behavior has no owning surface. Do not delete if tests reference this Functionality's ACs — resolve those first (see ORPHAN_TEST). |
-| ORPHAN_TEST | Link test to an existing AC, or create a Functionality → `living-doc-create-functionality`. **Never delete a test to resolve an orphan — that would silently remove coverage.** If the linked AC ID no longer exists (broken link), choose from: (1) recreate the AC/Functionality if the behavior is still required; (2) update the link to the merged AC ID if the entity was merged; (3) delete the test only after product owner confirmation that the behavior has been intentionally removed. |
+| ORPHAN_TEST | Link test to an existing AC, or create a Functionality — `living-doc-create-functionality`. **Never delete a test to resolve an orphan — that would silently remove coverage.** If the linked AC ID no longer exists (broken link), choose from: (1) recreate the AC/Functionality if the behavior is still required; (2) update the link to the merged AC ID if the entity was merged; (3) delete the test only after product owner confirmation that the behavior has been intentionally removed. |
 | STALE_REFERENCE | Update the test to reference the active replacement AC. If the deprecated behavior was intentionally removed, delete the test after product owner confirmation. If removed in error, reinstate the AC using `living-doc-update`. |
 | UNDOCUMENTED_FUNCTIONALITY | Create unit/integration tests for the Functionality's ACs |
-| EMPTY_FEATURE | Create Functionalities for the Feature's known behaviors → `living-doc-create-functionality` |
+| EMPTY_FEATURE | Create Functionalities for the Feature's known behaviors — `living-doc-create-functionality` |
 
 > **Out-of-scope actions:** living-doc-gap-finder identifies and proposes new entities — it does
 > not create them. Direct creation requests (e.g. "create a User Story", "create a Feature") must
@@ -209,7 +194,7 @@ For each gap, propose the living doc action:
       "severity": "Blocker",
       "entity": "AC:US-007-02",
       "description": "Active AC 'Payment declined' has no linked E2E test",
-      "proposed_action": "Generate BDD scenario using living-doc-scenario-creator for US-007"
+      "proposed_action": "Create a test to cover AC:US-007-02 for US-007"
     },
     {
       "id": "GAP-002",
@@ -247,7 +232,7 @@ Before addressing any other gap type, guarantee minimum traceability across all 
 
 1. List all User Stories where **zero ACs** have a linked test.
 2. For each, identify the highest-priority AC (first Active AC, or the first AC if none is Active).
-3. Create one test or BDD scenario for that AC → `living-doc-scenario-creator`.
+3. Create one test for that AC using the appropriate testing workflow.
 4. Repeat until every User Story has at least one covered AC.
 
 This phase establishes a baseline coverage floor. Do not skip to Phase 2 until all User Stories
@@ -265,18 +250,18 @@ Once the baseline is met, continue by tackling the biggest remaining gaps first:
 Processing everything at once is discouraged because the resulting gap list is too large to action
 without clear prioritisation.
 
-## Lightweight scenario-coverage report format
+## Lightweight coverage report format
 
-When the focus is specifically on scenario-to-AC coverage (rather than the full gap taxonomy),
+When the focus is specifically on test-to-AC coverage (rather than the full gap taxonomy),
 or when asked to demonstrate or describe the gap report output format,
 use this simplified two-section format:
 
-**Missing Scenarios** (ACs with no linked Gherkin scenario):
+**Missing Tests** (ACs with no linked test):
 - `<AC-ID>` — <description>
 
-**Missing ACs** (Gherkin scenarios with no corresponding AC):
-- `<scenario title>` — <feature file>
+**Orphan Tests** (tests with no corresponding AC):
+- `<test name>` — <file>
 
-End with a summary line: `X ACs missing scenarios, Y scenarios missing ACs.`
+End with a summary line: `X ACs missing tests, Y tests missing ACs.`
 
 This format is diagnostic only — it does not suggest implementation changes.

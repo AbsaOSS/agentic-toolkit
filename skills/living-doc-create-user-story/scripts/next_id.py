@@ -2,7 +2,7 @@
 """
 next_id.py — Living Doc ID Auto-Assigner
 
-Scans a living doc catalog and returns the next available ID for a given entity type.
+Scans the living documentation and returns the next available ID for a given entity type.
 Use this before creating a new entity to avoid ID collisions.
 
 Usage:

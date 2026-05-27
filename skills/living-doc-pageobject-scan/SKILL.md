@@ -128,7 +128,8 @@ export class CheckoutPage {
 ```
 
 The Living Doc Feature link (`FEAT-<nnn>`) is recorded in a file-level header comment (see
-examples above) — not in the class docstring.
+examples above) — not in the class docstring. The exact multi-field header format for
+PageObject files is TBD and will follow similar conventions to the US/FUNC feature file header.
 
 Flag fragile selectors:
 
@@ -141,21 +142,28 @@ change report.
 
 **4. Map PageObjects to Feature entities**
 
-One PageObject ≈ one `UI` Feature. For each generated PageObject:
-- If a matching Feature (`FEAT-<nnn>`) exists in the catalog: link them in the manifest
-- If no Feature exists: invoke `living-doc-create-feature` to produce a draft Feature entity in the project's Storage Profile format
+One PageObject ≈ one `UI` Feature. Write the Feature ID as a header comment in the generated PageObject file (the `// living-doc: FEAT-<nnn> | <route>` line shown in the templates above). Also record `feature_id` in the manifest entry for the route.
 
-**5. Generate Functionality stubs from discovered elements**
+- If a matching Feature (`FEAT-<nnn>`) exists in the living documentation: add the header comment and manifest entry.
+- If no Feature exists: write `// living-doc: FEAT-UNKNOWN | <route>` as a placeholder and flag the route in the scan report as **"needs Feature entity"**. Do not auto-create a Feature file — raise it for the team to create via `living-doc-create-feature`.
 
-For each interactive element, propose a Functionality stub (`FUNC-<nnn>`) with a name following
+**5. Generate Functionality stubs from discovered behaviors**
+
+For each **behavior** identified on the screen — an interaction pattern, business operation, or
+component capability — propose a Functionality stub (`FUNC-<nnn>`) with a name following
 the glossary pattern `<Feature name> – <behavior phrase>`:
 
-- Button → `"Checkout Page – Confirm Order"`
-- Form → `"Login Page – Submit Credentials"`
-- Table → `"Order History Page – Display Order List"`
+- Button: `"Checkout Page – Confirm Order"`
+- Form: `"Login Page – Submit Credentials"`
+- Table: `"Order History Page – Display Order List"`
 
-Output as draft Functionality entities in the project's Storage Profile format for review — not
-auto-committed. Use `living-doc-create-functionality` to produce the canonical output.
+Note: a Functionality represents a business behavior, not an individual UI element. One interactive
+element may map to one Functionality, or a group of elements may represent a single behavior.
+The team decides the appropriate granularity when promoting stubs.
+
+Output Functionality feature file stubs to `features/functionalities/<feat-kebab>/func-<kebab>.feature`
+with `@FUNC_ID:FUNC-UNKNOWN` placeholder tags for team review. When the Functionality is confirmed
+and an ID is assigned, use `living-doc-create-functionality` to populate the canonical entity file.
 
 **Dynamic list elements:**
 
@@ -172,29 +180,55 @@ def get_cart_item_by_sku(self, sku: str):
 
 ## Maintain mode — rescan and update
 
+**0. Load manifest and prioritise routes**
+
+Read `.copilot/bdd/manifest.json`. Sort routes by `last_scanned` ascending (oldest first). For focused healing (triggered by failing tests or a PR), filter to the routes linked to the failing test files or the changed UI paths provided by the caller.
+
 **1. Diff existing PageObjects against current DOM**
 
-For each selector in the existing PageObject, check if it still resolves:
+For each route to scan, navigate using `navigation_context.navigation_steps` if present — this avoids rediscovering hard-to-reach routes. For each selector in the existing PageObject, check if it still resolves:
 - **Present and unchanged**: no action
 - **Present but changed**: update selector; log as `UPDATED`; if the replacement selector is evident
   (for example a renamed `data-testid`), report the exact new selector in the action required line
 - **Missing**: flag as `BREAKING CHANGE` — linked test steps may fail
 
-**2. Detect new elements** → propose additions.
+**2. Detect new elements**: propose additions.
 
 **3. Update PageObject files** — modify selector constants only. Preserve existing action and
 assertion method logic. Never auto-delete methods — flag removals for developer review. For missing
 selectors, keep the selector constant and annotate it with a `BREAKING` comment so developers can
 review whether the element was removed or renamed.
 
-**4. Breaking change report:**
+**4. Breaking change report**
 
+Write results to `.copilot/bdd/breaking-changes.md`. The file has a fixed structure and is overwritten on each scan:
+
+```markdown
+# Breaking Changes Report
+
+Generated: <ISO timestamp>  
+Scan scope: <full | healing | scoped>
+
+## <route-path>
+
+| Selector | Status | Linked test | Action |
+|---|---|---|---|
+| `PageObject.locatorName` | REMOVED | `feature-file.feature:<line>` | Verify if element was removed or renamed |
+| `PageObject.otherLocator` | CHANGED | — | Update selector constant |
+
+## Routes needing a Feature entity
+
+| Route | PageObject | Reason |
+|---|---|---|
+| `/auth/settings` | `SettingsPage.ts` | No matching FEAT-xxx found in the living documentation |
 ```
-BREAKING CHANGES DETECTED:
-  CheckoutPage.CONFIRM_BUTTON: '[data-testid="confirm-order-btn"]' not found in DOM
-    → Linked step: "When the customer confirms the order" (checkout.feature:14)
-    → Action required: verify selector and update, or remove step if element is gone
-```
+
+**5. Update manifest**
+
+After confirmation of all changes, update the manifest entry for each scanned route:
+- Set `last_scanned` to the current ISO 8601 timestamp.
+- Update `elements` and `coverage_gaps` to reflect the current DOM state.
+- Populate or update `navigation_context` if new information was gathered about how to reach the route.
 
 Use `scripts/manifest_diff.py` to detect stale manifest entries and undocumented PageObject
 files before running a full rescan.
@@ -203,15 +237,62 @@ files before running a full rescan.
 
 ## Output artifacts
 
-| Artifact | Example location |
+| Artifact | Location |
 |---|---|
-| PageObject files | `tests/pages/<ScreenName>Page.py` |
-| Draft Feature entities | `docs/living-doc/features/draft/FEAT-<name>.<ext>` |
-| Draft Functionality entities | `docs/living-doc/functionalities/draft/FUNC-<name>.<ext>` |
-| Breaking change report | stdout / PR comment |
-| Exploration manifest | Path discovered by agent on session start (search for `manifest.json` with `pageobject_path` entries); created at `.copilot/bdd/manifest.json` only if no existing manifest is found |
+| PageObject files | `tests/pages/<ScreenName>Page.py` (or `.ts`) |
+| Feature link | `// living-doc: FEAT-<nnn> \| <route>` header comment in the PageObject file. If no Feature exists: `FEAT-UNKNOWN` placeholder and a note in the scan report. Header format TBD — will follow similar conventions to the US/FUNC feature file header. |
+| Functionality feature file stubs | `features/functionalities/<feature-kebab>/func-<kebab>.feature` — one file per discovered Functionality behavior, `@FUNC_ID:FUNC-UNKNOWN` tag until ID is assigned |
+| Breaking change report | `.copilot/bdd/breaking-changes.md` |
+| Exploration manifest | `.copilot/bdd/manifest.json` |
 
-> **Note:** Locations above are illustrative defaults. Actual paths and file formats depend on the project's repository structure and Storage Profile configuration.
+> **Note:** Locations above are illustrative defaults. Actual paths depend on the project's repository structure and Storage Profile configuration.
+
+---
+
+## Manifest schema
+
+The manifest records per-route exploration state. Agents and tools read it to drive healing sessions without re-discovering routes.
+
+```json
+{
+  "version": "1.0",
+  "routes": {
+    "/auth/all-domains": {
+      "pageobject_path": "aul-ui/playwright/pages/AllDomainsPage.ts",
+      "feature_id": "FEAT-001",
+      "last_scanned": "2026-05-26T10:30:00Z",
+      "elements": [
+        { "data_cy": "create-domain-btn", "tag": "cps-button" },
+        { "data_cy": "domains-table",     "tag": "table" }
+      ],
+      "coverage_gaps": [
+        { "tag": "input", "placeholder": "Search domains", "suggested_data_cy": "domains-search-input" }
+      ],
+      "navigation_context": {
+        "prerequisites": "User must be logged in.",
+        "navigation_steps": "Click sidebar item \u2018All Domains\u2019.",
+        "data_requirements": null,
+        "auth_role": "standard user",
+        "notes": null
+      }
+    }
+  }
+}
+```
+
+| Field | Type | Purpose |
+|---|---|---|
+| `last_scanned` | ISO 8601 string | Timestamp of the last successful scan for this route. Used during healing to surface stale entries and prioritise rescans. |
+| `elements` | array | All `data-cy` elements found on the route at last scan. |
+| `coverage_gaps` | array | Interactive elements lacking `data-cy` at time of scan, with suggested names. |
+| `pageobject_path` | string | Relative path to the linked PageObject file. |
+| `feature_id` | string | Living doc Feature entity ID linked to this route. |
+| `navigation_context` | object | **How to reach hard-to-access routes.** Populated on first discovery; reused in all subsequent healing sessions so the agent can navigate directly without re-discovering the path. |
+| `navigation_context.prerequisites` | string | State that must exist before navigating (e.g. "a domain must have been visited at least once"). |
+| `navigation_context.navigation_steps` | string | Step-by-step path to the route from the app root or login page. |
+| `navigation_context.data_requirements` | string/null | Test data that must exist (e.g. "at least one published domain"). |
+| `navigation_context.auth_role` | string | Minimum role required to reach this route. |
+| `navigation_context.notes` | string/null | Any additional context for the agent (e.g. quirks, timing, overlay triggers). |
 
 ---
 

@@ -5,9 +5,9 @@ coverage_report.py — AC coverage report: which User Story ACs have linked Gher
 Usage:
     python coverage_report.py <living_doc_dir> <features_dir>
 
-Scans <features_dir> recursively for '# AC: US-<nnn>-<nn>' traceability comments above
-Scenario lines. Loads User Story JSON files from <living_doc_dir> and produces a coverage
-table showing which ACs are covered and which are gaps.
+Scans <features_dir> recursively for '@AC:<id>' Cucumber traceability tags on tag lines
+above Scenario lines. Loads User Story JSON files from <living_doc_dir> and produces a
+coverage table showing which ACs are covered and which are gaps.
 
 Expected User Story JSON structure:
     {
@@ -23,8 +23,8 @@ Expected User Story JSON structure:
       ]
     }
 
-AC link comment format (written by living-doc-scenario-creator):
-    # AC: US-001-01 (v1.0.0 – Active) — description
+@AC: tag format (written by living-doc-scenario-creator):
+    @AC:US-001-01
     Scenario: ...
 
 Only ACs with state Active or Implemented are included in the coverage check.
@@ -40,26 +40,40 @@ import re
 import sys
 from pathlib import Path
 
-# Matches the AC ID in a traceability comment: # AC: US-001-01 ...
-AC_TAG = re.compile(r"#\s*AC:\s*((?:US|FEAT|FUNC)-\d{3}-\d{2})", re.IGNORECASE)
+# Matches an @AC: Cucumber tag with optional /param:value segments:
+#   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input
+# Group 1 captures the AC ID only (params are ignored for coverage purposes).
+AC_TAG = re.compile(
+    r"@AC:((?:US|FEAT|FUNC)-\d+-\d{2})(?:/[a-z][\w-]*:[^\s/@]+)*",
+    re.IGNORECASE,
+)
+TAG_LINE = re.compile(r"^\s*@\S+")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*", re.IGNORECASE)
 
 ACTIVE_STATES = {"active", "implemented"}
 SKIP_STATES = {"deprecated", "planned"}
 
 
+def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
+    """Return all @AC: tag values from consecutive tag lines immediately above a scenario."""
+    ac_ids: list[str] = []
+    i = scenario_index - 1
+    while i >= 0 and TAG_LINE.match(lines[i]):
+        for m in AC_TAG.finditer(lines[i]):
+            ac_ids.append(m.group(1).upper())
+        i -= 1
+    return ac_ids
+
+
 def collect_covered_ac_ids(features_dir: Path) -> dict[str, list[str]]:
-    """Return {ac_id_upper: [feature_filename, ...]} for every AC tag above a Scenario."""
+    """Return {ac_id_upper: [feature_filename, ...]} for every @AC: tag above a Scenario."""
     covered: dict[str, list[str]] = {}
     for feature_file in sorted(features_dir.rglob("*.feature")):
         lines = feature_file.read_text(encoding="utf-8").splitlines()
         for i, line in enumerate(lines):
             if not SCENARIO_LINE.match(line):
                 continue
-            prev = lines[i - 1].strip() if i > 0 else ""
-            m = AC_TAG.search(prev)
-            if m:
-                ac_id = m.group(1).upper()
+            for ac_id in get_ac_tags_above(lines, i):
                 covered.setdefault(ac_id, []).append(feature_file.name)
     return covered
 
@@ -86,9 +100,9 @@ def load_user_stories(living_doc_dir: Path) -> list[dict]:
 
 
 def normalise_ac_id(us_id: str, raw_id: str) -> str:
-    """Normalise AC IDs that may be stored as '01' or 'US-001-01'."""
+    """Normalise AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01'."""
     raw = raw_id.strip().upper()
-    if re.match(r"^(US|FEAT|FUNC)-\d{3}-\d{2}$", raw):
+    if re.match(r"^(US|FEAT|FUNC)-\d+-\d{2}$", raw):
         return raw
     # Stored as just the suffix: '01' → 'US-001-01'
     if re.match(r"^\d{2}$", raw):

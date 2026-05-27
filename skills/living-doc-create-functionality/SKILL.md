@@ -11,8 +11,7 @@ description: >
   "document a business rule", "create a functionality entity", "functionality acceptance criteria",
   "test_type", "unit vs integration test", "choose test type".
   Does NOT trigger for: end-to-end User Stories (use living-doc-create-user-story), system
-  surface documentation (use living-doc-create-feature), BDD scenario generation
-  (use living-doc-scenario-creator).
+  surface documentation (use living-doc-create-feature).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -46,7 +45,7 @@ A Functionality must belong to at least one Feature. If the user clearly names t
 
 ## Step 3 — Elicit Functionality-level Acceptance Criteria
 
-Functionality ACs describe atomic inputs → outputs. They are:
+Functionality ACs describe atomic inputs to outputs. They are:
 - **Atomic**: one input condition, one output or side effect per AC
 - **Fast-testable**: designed for verification by unit or integration test
 - **Unambiguous**: exact error codes, exact output values, exact rule outcomes where relevant
@@ -95,6 +94,10 @@ If contextually distinct despite similar names, create a new Functionality and n
 
 When creating a Functionality, output **one fenced `json` code block** and no extra prose inside the block.
 
+> **ID assignment:** before assigning a `FUNC-nnn` ID, run
+> `python scripts/next_id.py --type FUNC --catalog catalog.json`
+> to get the next available ID and avoid collisions.
+
 Use this canonical shape:
 
 ```json
@@ -142,7 +145,7 @@ redirect to `living-doc-create-user-story`.
 |---|---|
 | Functionality name is a noun (e.g. "Password Validation") | Names must be verb phrases expressing the atomic behavior — e.g. "Validate Password Strength". |
 | Functionality name is broad (e.g. "Handle checkout") | That is not atomic. Split it into smaller behaviors such as validation, pricing, payment authorization, or order submission. |
-| Functionality AC describes a full user journey (e.g. "User logs in and sees their dashboard") | That is a User Story AC — redirect to **living-doc-create-user-story**. Functionality ACs describe a single behavior's input → output or side effect. |
+| Functionality AC describes a full user journey (e.g. "User logs in and sees their dashboard") | That is a User Story AC — redirect to **living-doc-create-user-story**. Functionality ACs describe a single behavior's input to output or side effect. |
 | Functionality has only happy-path ACs | Edge cases (null input, boundary values, partial validity, error codes) are missing. Run through the completeness checklist in Step 3 before confirming. |
 | AC says "returns error" without specifying the type or code | Specify the exact error code. Without a named code, the AC is not testable. |
 | AC wording is vague (e.g. "works correctly", "handles it appropriately") | Rewrite with exact `When` / `Then` behavior and explicit outputs or error codes. |
@@ -156,4 +159,3 @@ redirect to `living-doc-create-user-story`.
 |---|---|
 | "Create a User Story" | `living-doc-create-user-story` — this skill documents atomic behaviors, not end-to-end User Stories |
 | "Create a Feature entity" | `living-doc-create-feature` — a Feature is a system surface, not an atomic behavior |
-| "Generate BDD scenarios" | `living-doc-scenario-creator` — scenario generation requires a User Story with ACs |

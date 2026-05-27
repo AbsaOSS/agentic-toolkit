@@ -21,28 +21,65 @@ description: >
 
 ## Traceability requirement
 
-Every `Scenario:` or `Scenario Outline:` generated or reviewed by this skill must carry an
-AC link comment on the line immediately above it, following the glossary AC ID format:
+Living-doc feature files (`features/us/` and `features/functionalities/`) require two
+complementary annotations above each `Scenario:` or `Scenario Outline:`:
+
+1. **`# AC:` comment** — human-readable context: AC ID, version, state, description, and
+   optionally the specific aspect this scenario covers.
+2. **`@AC:` tag** — machine-readable Cucumber tag consumed by scripts and coverage reports.
 
 ```gherkin
-# AC: US-001-01 (v1.0.0 – Active) — Happy path: customer places order
+# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+@AC:US-1-01
 Scenario: Customer successfully places an order
   ...
 ```
 
-If the prompt already gives an AC ID and AC wording, copy that ID and wording into the comment;
-when no lifecycle marker is supplied, use `(v1.0.0 – Active)` as the default status text.
+When a scenario covers only **one aspect** of a multi-aspect AC, encode the aspect as a
+`/param:value` segment on the tag and mirror it in the comment:
 
-If writing standalone scenarios (no User Story context), use `# AC: STANDALONE` as a placeholder.
-When asked what comment to use for exploratory work, answer with the placeholder, say that tutorial
-walkthroughs, exploratory probes, and other developer-authored scenarios without a User Story AC
-all qualify, and note that `gherkin-living-doc-sync` will report `STANDALONE` scenarios without
-flagging them as traceability gaps.
-Standalone scenarios are permitted when they live outside the project's dedicated living doc
-feature directory. Tutorial walkthroughs, exploratory probes, and any other developer-authored
-scenarios that don't map to a User Story AC all qualify — the decision is the developer's.
-`gherkin-living-doc-sync` will note `STANDALONE`-tagged scenarios in its sync report but will
-not flag them as traceability gaps.
+```gherkin
+# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
+@AC:US-1-01/aspect:username-input
+Scenario: Login form shows the username input field
+  ...
+```
+
+The `/param:value` format is extensible — future params (e.g. `/coverage:partial`) can be
+appended. Multiple ACs — one comment + tag pair per AC:
+
+```gherkin
+# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
+@AC:US-1-01
+@AC:US-1-02
+@Regression
+Scenario: User is locked out after repeated failed logins
+  ...
+```
+
+The AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story scenarios,
+`@AC:FUNC-<nnn>-<nn>` for Functionality scenarios.
+
+**Scope:** These annotations are only required in living-doc feature files. Other feature files
+(smoke tests, regression suites, exploratory probes) do not require `@AC:` tags and may use
+`@AC:STANDALONE` as an optional placeholder to signal intent. `gherkin-living-doc-sync` reports
+`STANDALONE`-tagged scenarios but does not flag them as traceability gaps.
+
+---
+
+## Feature file types
+
+Two categories of `.feature` files exist — they have different locations, headers, and scopes:
+
+| Type | Location | File header | Feature block | Scope |
+|---|---|---|---|---|
+| User Story (E2E) | `features/us/us-<nnn>-<kebab>.feature` | `# Source:`, `# Business Value:`, `# Acceptance Criteria:` block + `@US_ID:US-<n>` feature tag | `Feature: <US title>` with As-a/I-can/so-that narrative | End-to-end, user perspective |
+| Functionality (system test) | `features/functionalities/<feat-kebab>/func-<nnn>-<kebab>.feature` | Similar to US — format TBD; `@FUNC_ID:FUNC-<nnn>` feature tag | `Feature: <Feature name> — <Functionality name>` | One atomic behavior, input to output |
+
+Both types use the `@AC:` + `# AC:` traceability annotations described above. Both must be written in business domain language — no implementation details, selectors, or code references.
+
+For non-living-doc scenarios (exploratory probes, tutorial walkthroughs, regression suites not tied to a User Story AC), `@AC:` annotations are not required. Use `@AC:STANDALONE` as an optional placeholder when explicitly signalling that a scenario is intentionally unlinked — `gherkin-living-doc-sync` will note it but not flag it as a traceability gap.
 
 ---
 
@@ -140,7 +177,7 @@ subset of scenarios needs them. Keep `Background` to shared `Given` precondition
 | Assertions in Given/When | Violates keyword semantics | Move all assertions to `Then` |
 | Scenario depends on a previous scenario's state | Hidden ordering dependency | Each scenario must be fully self-contained |
 
-When reviewing an existing scenario, explicitly check for a missing `# AC:` comment immediately
+When reviewing an existing scenario, explicitly check for a missing `@AC:` tag immediately
 above each `Scenario:` or `Scenario Outline:` and call that out as a traceability defect.
 
 ---

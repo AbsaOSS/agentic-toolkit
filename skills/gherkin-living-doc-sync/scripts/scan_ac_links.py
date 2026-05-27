@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
-scan_ac_links.py — scan .feature files for missing or malformed AC link headers.
+scan_ac_links.py — scan living-doc .feature files for missing or malformed @AC: traceability.
 
 Usage:
     python scan_ac_links.py <features_dir>
 
-For every Scenario: / Scenario Outline: line found in .feature files, checks that:
-  - A '# AC: <id>' comment appears on the line immediately above it
+Only scans files under 'features/us/' and 'features/functionalities/' — living-doc paths.
+Other feature files (smoke tests, regression suites, exploratory probes) are skipped.
+
+For every Scenario: / Scenario Outline: line found in living-doc files, checks that:
+  - At least one '@AC:<id>' Cucumber tag appears on a tag line immediately above it (error)
+  - A matching '# AC:<id>' human-readable comment is also present (warning)
   - The AC ID follows the canonical format: AC:<parent-id>-<nn>
-    e.g. AC:US-001-01, AC:FEAT-003-02, AC:FUNC-001-03
+    e.g. AC:US-001-01, AC:US-1-01, AC:FEAT-003-02, AC:FUNC-001-03
   - No two scenarios in the same file reference the same AC ID (duplicate check)
 
-Exit code: 0 if all checks pass, 1 if any issues are found.
+Exit code: 0 if all checks pass, 1 if any errors are found (warnings do not fail).
 
 Glossary reference: skills/references/living-doc-glossary.md
 """
@@ -20,12 +24,50 @@ import re
 import sys
 from pathlib import Path
 
-# Matches: # AC: US-001-01 (v1.0.0 – Active) — description
-# or simpler: # AC: US-001-01
-AC_COMMENT = re.compile(r"^\s*#\s*AC:\s*(\S+)", re.IGNORECASE)
-# Canonical AC ID: AC:<parent>-<nn> where parent is US-nnn, FEAT-nnn, or FUNC-nnn
-AC_ID_FORMAT = re.compile(r"^AC:(US|FEAT|FUNC)-\d{3}-\d{2}$", re.IGNORECASE)
+# Matches a @AC: Cucumber tag with optional /param:value segments:
+#   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
+AC_TAG = re.compile(
+    r"@AC:((?:US|FEAT|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
+    re.IGNORECASE,
+)
+# Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:US-1-01 (...)
+AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FEAT|FUNC)-\d+-\d{2})", re.IGNORECASE)
+# Canonical AC ID only (no params): AC:<parent>-<nn>
+AC_ID_FORMAT = re.compile(r"^AC:(US|FEAT|FUNC)-\d+-\d{2}$", re.IGNORECASE)
+TAG_LINE = re.compile(r"^\s*@\S+")
+COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)
+
+# Living-doc path components — only files under these directories are scanned
+LIVING_DOC_PATHS = ("features/us/", "features/functionalities/")
+
+
+def is_living_doc_file(path: Path) -> bool:
+    """Return True if the file is in a living-doc feature directory."""
+    normalised = str(path).replace("\\", "/")
+    return any(segment in normalised for segment in LIVING_DOC_PATHS)
+
+
+def get_tags_above(lines: list[str], scenario_index: int) -> list[str]:
+    """Return all Cucumber tag tokens from consecutive tag lines immediately above a scenario."""
+    tags: list[str] = []
+    i = scenario_index - 1
+    while i >= 0 and TAG_LINE.match(lines[i]):
+        tags.extend(re.findall(r"@\S+", lines[i]))
+        i -= 1
+    return tags
+
+
+def get_ac_comments_above(lines: list[str], scenario_index: int) -> set[str]:
+    """Return AC IDs mentioned in # AC: comments in the tag/comment block above a scenario."""
+    ac_ids: set[str] = set()
+    i = scenario_index - 1
+    while i >= 0 and (TAG_LINE.match(lines[i]) or COMMENT_LINE.match(lines[i])):
+        m = AC_COMMENT_LINE.match(lines[i])
+        if m:
+            ac_ids.add(m.group(1).upper())
+        i -= 1
+    return ac_ids
 
 
 def scan_file(path: Path) -> list[dict]:
@@ -39,35 +81,67 @@ def scan_file(path: Path) -> list[dict]:
 
         lineno = i + 1
         scenario_title = SCENARIO_LINE.match(line).group(2).strip()
-        prev = lines[i - 1].strip() if i > 0 else ""
-        ac_match = AC_COMMENT.match(prev)
+        tags_above = get_tags_above(lines, i)
+        ac_tags = [t for t in tags_above if t.upper().startswith("@AC:")]
 
-        if not ac_match:
+        if not ac_tags:
             issues.append({
                 "file": str(path),
                 "line": lineno,
                 "scenario": scenario_title,
-                "issue": "missing_ac_link",
-                "detail": "No '# AC: <id>' comment on the line immediately above this scenario.",
+                "issue": "missing_ac_tag",
+                "severity": "error",
+                "detail": "No '@AC:<id>' tag on the tag line(s) immediately above this scenario.",
             })
             continue
 
-        ac_ref = ac_match.group(1).rstrip(",;")
+        ac_comments = get_ac_comments_above(lines, i)
 
-        if not AC_ID_FORMAT.match(ac_ref):
-            issues.append({
-                "file": str(path),
-                "line": lineno,
-                "scenario": scenario_title,
-                "issue": "malformed_ac_id",
-                "detail": (
-                    f"'{ac_ref}' does not match AC:<parent>-<nn> format "
-                    "(e.g. AC:US-001-01, AC:FEAT-003-02)."
-                ),
-            })
-            continue
-
-        seen.setdefault(ac_ref.upper(), []).append(lineno)
+        for tag in ac_tags:
+            # Extract AC ID and optional /param:value segments
+            m = AC_TAG.match(tag.lstrip("@"))
+            if not m:
+                issues.append({
+                    "file": str(path),
+                    "line": lineno,
+                    "scenario": scenario_title,
+                    "issue": "malformed_ac_id",
+                    "severity": "error",
+                    "detail": (
+                        f"'{tag}' does not match @AC:<parent>-<nn>[/param:value] format "
+                        "(e.g. @AC:US-1-01, @AC:US-001-01/aspect:username-input)."
+                    ),
+                })
+                continue
+            ac_id_raw = "AC:" + m.group(1)  # reconstruct full AC ID
+            if not AC_ID_FORMAT.match(ac_id_raw):
+                issues.append({
+                    "file": str(path),
+                    "line": lineno,
+                    "scenario": scenario_title,
+                    "issue": "malformed_ac_id",
+                    "severity": "error",
+                    "detail": (
+                        f"'{ac_id_raw}' does not match AC:<parent>-<nn> format "
+                        "(e.g. AC:US-001-01, AC:US-1-01)."
+                    ),
+                })
+                continue
+            plain_id = m.group(1).upper()  # e.g. US-1-01
+            seen.setdefault(ac_id_raw.upper(), []).append(lineno)
+            # Warn if the human-readable # AC: comment is missing for this tag
+            if plain_id not in {c.upper() for c in ac_comments}:
+                issues.append({
+                    "file": str(path),
+                    "line": lineno,
+                    "scenario": scenario_title,
+                    "issue": "missing_ac_comment",
+                    "severity": "warning",
+                    "detail": (
+                        f"@AC:{plain_id} tag is present but no matching '# AC:{plain_id} ...' "
+                        "human-readable comment was found above the scenario."
+                    ),
+                })
 
     for ac_id, lines_found in seen.items():
         if len(lines_found) > 1:
@@ -91,9 +165,16 @@ def main(features_dir: str) -> None:
         print(f"Error: directory not found: {features_dir}")
         sys.exit(1)
 
-    feature_files = sorted(root.rglob("*.feature"))
+    all_files = sorted(root.rglob("*.feature"))
+    feature_files = [f for f in all_files if is_living_doc_file(f)]
+    skipped = len(all_files) - len(feature_files)
+
+    if skipped:
+        print(f"Skipped {skipped} non-living-doc feature file(s) (smoke, regression, exploratory).")
+
     if not feature_files:
-        print(f"No .feature files found under {features_dir}")
+        print(f"No living-doc .feature files found under {features_dir}")
+        print(f"Expected files under 'features/us/' or 'features/functionalities/'")
         return
 
     all_issues: list[dict] = []
@@ -101,19 +182,23 @@ def main(features_dir: str) -> None:
         all_issues.extend(scan_file(f))
 
     if not all_issues:
-        print(f"✅  All {len(feature_files)} feature file(s) pass AC link checks.")
+        print(f"\u2705  All {len(feature_files)} living-doc feature file(s) pass AC link checks.")
         return
+
+    errors = [i for i in all_issues if i.get("severity") == "error"]
+    warnings = [i for i in all_issues if i.get("severity") == "warning"]
 
     by_type: dict[str, list] = {}
     for issue in all_issues:
         by_type.setdefault(issue["issue"], []).append(issue)
 
-    print(f"Found {len(all_issues)} issue(s) in {len(feature_files)} feature file(s):\n")
+    print(f"Found {len(errors)} error(s) and {len(warnings)} warning(s) in {len(feature_files)} living-doc feature file(s):\n")
 
     labels = {
-        "missing_ac_link": "MISSING AC LINK",
-        "malformed_ac_id": "MALFORMED AC ID",
-        "duplicate_ac_link": "DUPLICATE AC LINK",
+        "missing_ac_tag": "[ERROR] MISSING @AC: TAG",
+        "malformed_ac_id": "[ERROR] MALFORMED AC ID",
+        "duplicate_ac_link": "[ERROR] DUPLICATE AC LINK",
+        "missing_ac_comment": "[WARN]  MISSING # AC: COMMENT",
     }
 
     for issue_type, items in sorted(by_type.items()):
@@ -125,10 +210,10 @@ def main(features_dir: str) -> None:
             print(f"  {item['file']}:{loc}")
             if item.get("scenario"):
                 print(f"    Scenario: {item['scenario']}")
-            print(f"    → {item['detail']}")
+            print(f"    {item['detail']}")
             print()
 
-    sys.exit(1)
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

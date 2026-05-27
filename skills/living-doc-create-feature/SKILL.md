@@ -11,8 +11,7 @@ description: >
   feature", "create feature entity", "system surface documentation", "feature owners",
   "feature dependencies".
   Does NOT trigger for: creating User Stories (use living-doc-create-user-story), defining atomic
-  behaviors (use living-doc-create-functionality), scanning a webapp for PageObjects
-  (use living-doc-pageobject-scan), generating scenarios (use living-doc-scenario-creator).
+  behaviors (use living-doc-create-functionality).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -120,4 +119,3 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 |---|---|
 | Creating a User Story | **living-doc-create-user-story** |
 | Defining an atomic behavior (Functionality) | **living-doc-create-functionality** |
-| Scanning a webapp for PageObjects | **living-doc-pageobject-scan** |
