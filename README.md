@@ -88,8 +88,6 @@ Before building a new skill, check whether one already exists:
 | [github/awesome-copilot](https://github.com/github/awesome-copilot/tree/main/skills) | 200+ community skills: cloud, languages, security, DevOps, productivity |
 | [skills.sh](https://skills.sh)                                                       | Open registry — install with `npx skills add <owner/repo>`              |
 | [anthropics/skills](https://github.com/anthropics/skills)                            | Anthropic reference skills including `skill-creator`                    |
-| [absa-group/agent-skills](https://github.com/absa-group/agent-skills)                | Broader ABSA-owned skill collection                                     |
-| [absa-group/cps-agentic-toolkit](https://github.com/absa-group/cps-agentic-toolkit)  | CPS team's extended skill set (ABSA-internal)                           |
 
 ## Contributing
 
