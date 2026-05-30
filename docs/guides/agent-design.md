@@ -245,7 +245,7 @@ One `# AC:` + `@AC:` pair per AC. The `@AC:` tag is the machine-readable traceab
 
 | Layer | Owner |
 |---|---|
-| Catalog (entities, ACs, traceability links) | `@living-doc-copilot` |
+| Catalog (entities, ACs, traceability links) | `@living-doc-bdd-copilot` |
 | Automation (PageObjects, step definitions, feature files) | `@living-doc-bdd-copilot` |
 
 Never cross this boundary. When a task belongs to the other agent, hand off using the structured payload — do not attempt the task yourself.

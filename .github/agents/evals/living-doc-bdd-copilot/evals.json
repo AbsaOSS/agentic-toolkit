@@ -19,14 +19,14 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "Crawl the webapp and generate a PageObject for the checkout screen at /checkout.",
-      "expected_output": "Agent navigates to /checkout via MCP Playwright. Takes a snapshot and identifies interactive elements: promo code input, confirm order button, error banner. Generates CheckoutPage with: file-level living-doc: FEAT-<nnn> | /checkout comment, ALL_CAPS selector constants using data-testid preference, __init__ or constructor taking a page parameter, and method stubs for each interactive element. Adds the surface to manifest.json. If no matching Feature entity exists, hands off to @living-doc-copilot to create FEAT-<nnn>. Flags any element using positional CSS selectors as fragile.",
+      "expected_output": "Agent navigates to /checkout via MCP Playwright. Takes a snapshot and identifies interactive elements: promo code input, confirm order button, error banner. Generates CheckoutPage with: file-level living-doc: FEAT-<nnn> | /checkout comment, ALL_CAPS selector constants using data-testid preference, __init__ or constructor taking a page parameter, and method stubs for each interactive element. Adds the surface to manifest.json. If no matching Feature entity exists, loads `living-doc-create-feature` skill to create FEAT-<nnn> before continuing. Flags any element using positional CSS selectors as fragile.",
       "files": [],
       "expectations": [
         "Uses MCP Playwright to navigate and snapshot the page",
         "Generates CheckoutPage with data-testid selector preference",
         "File-level living-doc: FEAT-nnn | /checkout comment",
         "Adds entry to manifest.json",
-        "Hands off to @living-doc-copilot for missing Feature entities",
+        "Loads living-doc-create-feature for missing Feature entities",
         "Flags positional CSS selectors as fragile"
       ]
     },
@@ -78,12 +78,12 @@
       "id": 6,
       "category": "negative",
       "prompt": "Create a User Story for the guest checkout capability.",
-      "expected_output": "Creating living doc catalog entities is out of scope for this agent — hands off to @living-doc-copilot. @living-doc-bdd-copilot owns the automation layer (PageObjects, scenarios, step definitions); @living-doc-copilot owns the catalog layer (User Stories, Features, Functionalities).",
+      "expected_output": "Agent switches to catalog-operations mode and loads `living-doc-create-user-story` skill to create a User Story for guest checkout. This agent handles both catalog management and BDD automation.",
       "files": [],
       "expectations": [
-        "Does not create a User Story",
-        "Routes to @living-doc-copilot",
-        "Explains the catalog vs automation layer boundary"
+        "Loads living-doc-create-user-story skill",
+        "Creates User Story in catalog-operations mode",
+        "Does not hand off to another agent"
       ]
     },
     {
@@ -104,7 +104,7 @@
       "id": 8,
       "category": "edge-case",
       "prompt": "REMOVE mode — the legacy promo code feature has been removed from the product. Clean up the BDD artifacts.",
-      "expected_output": "Agent enters REMOVE mode. Identifies all .feature files whose scenarios carry # AC: tags matching the removed promo code Feature/US IDs. Finds PageObjects referenced only by those scenarios. Finds step definitions used only by those scenarios. Presents the complete deletion list to the user for confirmation before touching any file. After confirmation: removes confirmed files, updates manifest.json to remove the deprecated entries. Flags the linked US/AC entities in the catalog as deprecation candidates and hands off to @living-doc-copilot.",
+      "expected_output": "Agent enters REMOVE mode. Identifies all .feature files whose scenarios carry # AC: tags matching the removed promo code Feature/US IDs. Finds PageObjects referenced only by those scenarios. Finds step definitions used only by those scenarios. Presents the complete deletion list to the user for confirmation before touching any file. After confirmation: removes confirmed files, updates manifest.json to remove the deprecated entries. Loads `living-doc-update` skill to deprecate the linked US/AC entities in the catalog.",
       "files": [],
       "expectations": [
         "Identifies all .feature file scenarios linked to the removed Feature via # AC: tags",
@@ -112,7 +112,7 @@
         "Presents the full deletion list for user confirmation before any file is touched",
         "Removes only confirmed files — does not auto-delete",
         "Updates manifest.json to remove deprecated entries",
-        "Flags catalog entities for deprecation and hands off to @living-doc-copilot"
+        "Loads living-doc-update skill to deprecate catalog entities"
       ]
     },
     {
@@ -160,14 +160,14 @@
       "id": 12,
       "category": "output-format",
       "prompt": "After scanning /login and generating a LoginPage, show me what the manifest.json entry for /login looks like.",
-      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements with data_cy and tag), coverage_gaps (empty list initially), and navigation_context with prerequisites, navigation_steps, data_requirements, auth_role, and notes. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and hand off to @living-doc-copilot.",
+      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements with data_cy and tag), coverage_gaps (empty list initially), and navigation_context with prerequisites, navigation_steps, data_requirements, auth_role, and notes. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and load `living-doc-create-feature` skill to create it.",
       "files": [],
       "expectations": [
         "manifest.json entry has: pageobject_path, feature_id, last_scanned, elements, coverage_gaps, navigation_context",
         "feature_id is FEAT-UNKNOWN if no matching Feature entity exists",
         "last_scanned is an ISO timestamp",
         "navigation_context includes prerequisites, navigation_steps, auth_role",
-        "Missing Feature entity is flagged for @living-doc-copilot handoff"
+        "Missing Feature entity triggers living-doc-create-feature skill load"
       ]
     },
     {

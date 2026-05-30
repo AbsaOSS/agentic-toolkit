@@ -28,9 +28,8 @@ Navigation hub for all guides in this repository. Browse by category below.
 ## Agent Guides
 
 | Guide                                         | Description                                                                              |
-|-----------------------------------------------|------------------------------------------------------------------------------------------|
-| [Living Doc Copilot](./guides/living-doc-copilot.md) | How the living-doc-copilot agent works, its scope, modes, and how to trigger it          |
-| [Living Doc BDD Copilot](./guides/living-doc-bdd-copilot.md) | How the living-doc-bdd-copilot agent works: web app exploration, PageObjects, Gherkin generation, and BDD maintenance phases |
+|-----------------------------------------------|-------------------------------------------------------------------------|
+| [Living Doc BDD Copilot](./guides/living-doc-bdd-copilot.md) | The unified living documentation agent: catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) plus BDD automation (webapp exploration, PageObjects, Gherkin, step definitions, maintenance) |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 

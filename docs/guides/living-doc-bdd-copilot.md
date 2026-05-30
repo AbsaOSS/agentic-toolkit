@@ -118,20 +118,18 @@ After exploration:
 |---|---|---|
 | **RE-SCAN** | New feature shipped or UI refactored | Full re-crawl of every manifest path plus active discovery of new routes (links, buttons, tabs, wizard steps); updates manifest; generates new scenarios for new ACs |
 | **HEALING** | Tests failing due to selector drift | Scoped to failing tests only — navigates affected pages; identifies updated selectors; repairs PageObjects and step bindings; re-runs only the previously failing tests to confirm |
-| **REMOVE** | Feature deprecated or deleted | Identifies linked `.feature` files, steps, and PageObjects; confirms before deleting; hands catalog deprecation to `@living-doc-copilot` |
+| **REMOVE** | Feature deprecated or deleted | Identifies linked `.feature` files, steps, and PageObjects; confirms before deleting; loads `living-doc-update` to complete catalog deprecation |
 
 ---
 
 ## Shared skill — `living-doc-gap-finder`
 
-`living-doc-gap-finder` is shared between two agents but used in opposite directions:
+`living-doc-gap-finder` is used in two directions within the same agent:
 
-| Agent | Direction | What it finds |
-|---|---|---|
-| `@living-doc-copilot` | **Top-down** | Missing documentation entities (Features, User Stories, Functionalities not yet in the catalog) |
-| `@living-doc-bdd-copilot` | **Bottom-up** | ACs that exist in the catalog but have no linked Gherkin scenario |
-
-When this agent loads `living-doc-gap-finder`, it uses the **bottom-up** (scenario coverage) mode.
+| Direction | What it finds |
+|---|---|
+| **Top-down** (catalog operations) | Missing documentation entities (Features, User Stories, Functionalities not yet in the catalog) |
+| **Bottom-up** (automation operations) | ACs that exist in the catalog but have no linked Gherkin scenario |
 
 ---
 
@@ -139,37 +137,24 @@ When this agent loads `living-doc-gap-finder`, it uses the **bottom-up** (scenar
 
 | Skill | Purpose |
 |---|---|
-| `living-doc-pageobject-scan` | Discover, create, and maintain PageObject classes |
-| `living-doc-scenario-creator` | Generate Gherkin scenario skeletons from User Story ACs |
-| `living-doc-gap-finder` | Find ACs with no linked scenario (bottom-up, scenario coverage) |
-| `bdd-scenario-gen` | Write BDD Gherkin scenarios, detect coverage gaps, resolve step stubs |
-| `gherkin-step` | Implement step definitions — clean, reusable, maintainable |
+| `living-doc-pageobject-scan` | Discover, create, and maintain PageObject classes; Business Seed assembly and webapp crawl |
+| `living-doc-scenario-creator` | Generate full Gherkin feature files (header + scenarios + step bodies) from ACs |
+| `living-doc-gap-finder` | Find catalog gaps (top-down) and ACs with no linked scenario (bottom-up) |
+| `gherkin-step` | Implement step definitions |
 | `gherkin-living-doc-sync` | Sync feature files and scenarios with living doc traceability links |
+| `data-cy-instrument` | Resolve missing `data-cy` attributes end-to-end |
+| `bdd-maintain` | RE-SCAN, HEALING, REMOVE modes |
 
 ---
 
 ## Handoff
 
-**Inbound — from `@living-doc-copilot`:**  
-Receives confirmed User Stories with `ACTIVE` ACs. Generates scenarios and steps.
+No cross-agent handoffs needed. This agent owns both catalog and automation layers.
 
-**Outbound — after exploration (surfaces mapped):**
-
-> "Surfaces mapped. Call @living-doc-copilot to document them."
-
-**Outbound — after scenario generation (feature files generated):**
-
-> "Feature files and steps generated. Call @sdet-copilot for unit tests."
-
----
-
-## Agent boundaries
+For concerns outside this agent's scope:
 
 | Concern | Owner |
 |---|---|
-| Living doc catalog entities (US, Feature, Functionality) | `@living-doc-copilot` |
-| AC states, traceability links, entity deprecation | `@living-doc-copilot` |
-| Web app exploration, PageObjects, Gherkin, step definitions | `@living-doc-bdd-copilot` (this agent) |
 | Unit and integration tests | `@sdet-copilot` |
 | CI quality gates and linting | `@quality-gate-copilot` |
 

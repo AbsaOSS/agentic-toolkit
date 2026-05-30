@@ -9,7 +9,7 @@
 | 3 | happy-path | Scenario generation from US ACs | — |
 | 4 | regression | RE-SCAN mode — selector drift detection and repair | — |
 | 5 | regression | HEALING mode — broken step definitions | — |
-| 6 | negative | User Story creation request → route to @living-doc-copilot | — |
+| 6 | negative | Unit test request → @sdet-copilot | — |
 | 7 | paraphrase | "fix failing tests" → HEALING mode trigger | — |
 | 8 | regression | REMOVE mode — full feature removal with pre-deletion checklist | — |
 | 9 | regression | Partial state rule: seed.yaml present, manifest.json absent → first run | — |
@@ -24,10 +24,7 @@
 | 24 total | 20 true | 4 false |
 
 False cases:
-- `create a User Story` → @living-doc-copilot
 - `write a unit test` → @sdet-copilot
-- `update AC state` → @living-doc-copilot
 - `TypeScript quality gate` → @quality-gate-copilot (out of scope)
-- `update AC on US-007` → @living-doc-copilot
 
 > No fixture files — all evals use inline prompt/expected_output; agent behavior is assessed against the agent.md operating rules and skill definitions.

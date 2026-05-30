@@ -10,7 +10,7 @@ description: >
   Triggers on: "sync gherkin to living doc", "feature file out of sync", "scenario not linked
   to AC", "step text changed", "gherkin drift", "BDD sync", "AC link missing in feature file",
   "sync scenarios", "traceability broken", "propagate AC changes", "AC was descoped".
-  Does NOT trigger for: writing new scenarios (use bdd-scenario-gen), implementing step
+  Does NOT trigger for: writing new scenarios (use living-doc-scenario-creator), implementing step
   definitions (use gherkin-step), finding living doc gaps (use living-doc-gap-finder),
   creating new US/Feature entities (use living-doc-create-user-story).
 license: Apache-2.0
@@ -33,7 +33,7 @@ and `features/functionalities/`) — other feature files are skipped.
 
 ## Step 1 — Detect the sync direction
 
-**Upstream dependencies:** Directions that flow from the living documentation into feature files are initiated by catalog-layer operations from `@living-doc-copilot`:
+**Upstream dependencies:** Directions that flow from the living documentation into feature files are initiated by catalog-layer operations from `@living-doc-bdd-copilot`:
 - `living-doc-update` modified, added, or deprecated an AC → triggers directions 2 and 4 below
 - `living-doc-impact-analysis` identified High-impact AC changes that require resync → may trigger directions 2 and 3
 
@@ -168,7 +168,7 @@ Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n 
 | Scenario with no `@AC:` tag | Missing traceability — add tag or create AC |
 | Two scenarios linked to the same AC | Usually a duplicate — review |
 | AC linked from a scenario in a different User Story's feature file | Passive cross-US coverage — permitted but note it in the sync report. Only flag if the scenario's primary intent belongs to a different User Story (misplaced scenario) |
-| Step text describes implementation (selector, endpoint) | Gherkin business-language violation — refer to `bdd-scenario-gen` |
+| Step text describes implementation (selector, endpoint) | Gherkin business-language violation — refer to `living-doc-scenario-creator` |
 
 ---
 
@@ -176,7 +176,7 @@ Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n 
 
 | Request | Use instead |
 |---|---|
-| Writing new Gherkin scenarios from scratch | `bdd-scenario-gen` |
+| Writing new Gherkin scenarios from scratch | `living-doc-scenario-creator` |
 | Implementing step definition code | `gherkin-step` |
 | Finding ACs with no scenario coverage | `living-doc-gap-finder` |
 | Creating new User Story, Feature, or Functionality entities | `living-doc-create-user-story` / `living-doc-create-functionality` |

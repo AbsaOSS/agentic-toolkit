@@ -60,11 +60,11 @@
       "id": 5,
       "category": "negative",
       "prompt": "Write a standalone Gherkin scenario for testing login without a specific User Story.",
-      "expected_output": "Standalone Gherkin without a User Story is out of scope — routes to bdd-scenario-gen. This skill generates scenarios from User Story ACs; bdd-scenario-gen handles standalone or exploratory scenarios.",
+      "expected_output": "Standalone Gherkin without a User Story uses living-doc-scenario-creator Standalone mode. Use @AC:STANDALONE tag; scenario is not tied to a catalog entity.",
       "files": [],
       "expectations": [
         "Does not generate a standalone scenario",
-        "Routes to bdd-scenario-gen",
+        "Uses Standalone mode with @AC:STANDALONE tag",
         "Explains the distinction: US-driven vs. standalone Gherkin"
       ]
     },

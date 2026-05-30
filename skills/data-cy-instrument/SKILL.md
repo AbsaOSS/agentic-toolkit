@@ -6,15 +6,14 @@ description: >
   whenever coverage gaps exist in `manifest.json`, when PageObject stubs carry
   "⚠️ PROPOSED" locator comments, when Functionality entities have `status: planned`
   due to missing test IDs, or when a dev explicitly asks to instrument templates.
-  Activate at the end of a `living-doc-pageobject-scan`, `bdd-explore`, or `bdd-maintain`
-  RE-SCAN session when `coverage_gaps` arrays are non-empty;
+  Activate at the end of a `living-doc-pageobject-scan` session (Create or RE-SCAN scope)
+  when `coverage_gaps` arrays are non-empty;
   Triggers on: "add missing data-cy", "instrument templates", "fix data-cy gaps",
   "add testids", "data-cy audit", "instrument angular templates", "fix locators",
   "add data-cy attributes", "add test ids to templates", "fix playwright selectors",
   "data-cy-instrument".
-  Does NOT trigger for: adding or fixing Gherkin scenarios (use bdd-scenario-gen); generating
-  or healing PageObjects without instrumentation gaps (use living-doc-pageobject-scan); initial
-  webapp crawl (use bdd-explore).
+  Does NOT trigger for: adding or fixing Gherkin scenarios (use living-doc-scenario-creator); generating
+  or healing PageObjects without instrumentation gaps (use living-doc-pageobject-scan).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -242,13 +241,13 @@ Report the following at the end of the run:
 
 | Skill | Relationship |
 |---|---|
-| `bdd-explore` | Upstream — produces `manifest.json` with `coverage_gaps`. This skill consumes that output. |
-| `bdd-maintain` RE-SCAN | Upstream — re-generates `coverage_gaps` after a UI change. Trigger this skill after RE-SCAN if new gaps appear. |
-| `bdd-scenario-gen` | Downstream — after Functionalities are promoted from `planned` to `active`, generate Gherkin scenarios for them. |
+| `living-doc-pageobject-scan` | Upstream — produces `manifest.json` with `coverage_gaps`. This skill consumes that output. |
+| `living-doc-pageobject-scan` RE-SCAN scope | Upstream — re-generates `coverage_gaps` after a UI change. Trigger this skill after RE-SCAN if new gaps appear. |
+| `living-doc-scenario-creator` | Downstream — after Functionalities are promoted from `planned` to `active`, generate Gherkin scenarios for them. |
 | `living-doc-update` | Downstream — if PageObject header `status` changes, the corresponding Feature entity in the living doc may also need a status update. |
 
 **Pipeline position:**
 ```
-bdd-explore (scan)  →  data-cy-instrument  →  bdd-scenario-gen
-bdd-maintain RE-SCAN →  data-cy-instrument  →  bdd-scenario-gen
+living-doc-pageobject-scan          →  data-cy-instrument  →  living-doc-scenario-creator
+living-doc-pageobject-scan (RE-SCAN) →  data-cy-instrument  →  living-doc-scenario-creator
 ```

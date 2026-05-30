@@ -13,7 +13,7 @@ description: >
   "test_type", "unit vs integration test", "choose test type", "link functionality to feature".
   Does NOT trigger for: end-to-end User Stories (use living-doc-create-user-story), system
   surface documentation (use living-doc-create-feature), generating BDD scenarios for a
-  Functionality (use bdd-scenario-gen).
+  Functionality (use living-doc-scenario-creator).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -163,4 +163,4 @@ redirect to `living-doc-create-user-story`.
 | "Create a User Story" | `living-doc-create-user-story` — this skill documents atomic behaviors, not end-to-end User Stories |
 | "Create a Feature entity" | `living-doc-create-feature` — a Feature is a system surface, not an atomic behavior |
 | "Write unit tests for this Functionality" | No skill in this toolkit covers unit test authoring — use your project's test framework directly. This skill defines the _what_ (ACs); writing the test code is outside scope. |
-| "Generate BDD scenarios for this Functionality" | `bdd-scenario-gen` (step bodies) via `living-doc-scenario-creator` (feature file skeleton) |
+| "Generate BDD scenarios for this Functionality" | `living-doc-scenario-creator` |

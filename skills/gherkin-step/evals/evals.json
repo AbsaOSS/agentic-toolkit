@@ -57,11 +57,11 @@
       "id": 5,
       "category": "negative",
       "prompt": "Write a Gherkin scenario for when the promo code is expired.",
-      "expected_output": "Writing Gherkin scenarios is out of scope for this skill - routes to bdd-scenario-gen. gherkin-step handles step definition code; bdd-scenario-gen handles Gherkin text.",
+      "expected_output": "Writing Gherkin scenarios is out of scope for this skill - routes to living-doc-scenario-creator. gherkin-step handles step definition code; living-doc-scenario-creator handles Gherkin text.",
       "files": [],
       "expectations": [
         "Does not write a Gherkin scenario",
-        "Routes to bdd-scenario-gen",
+        "Routes to living-doc-scenario-creator",
         "Explains the distinction: step binding code vs. Gherkin text"
       ]
     },

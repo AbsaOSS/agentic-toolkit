@@ -162,8 +162,8 @@ Copy the agent file into your project's `.github/agents/` directory:
 # One-time setup
 mkdir -p .github/agents
 
-# Copy a specific agent
-cp path/to/agentic-toolkit/.github/agents/living-doc-copilot.agent.md .github/agents/
+# Copy the agent
+cp path/to/agentic-toolkit/.github/agents/living-doc-bdd-copilot.agent.md .github/agents/
 ```
 
 Or clone the toolkit and copy all agents:
@@ -180,9 +180,9 @@ Commit the `.github/agents/` directory to share the agents with your team.
 Open Copilot Chat in VS Code and type `@` followed by the agent name:
 
 ```
-@living-doc-copilot create user story for the login feature
-@living-doc-copilot living doc gaps
-@living-doc-copilot HEALING mode
+@living-doc-bdd-copilot create user story for the login feature
+@living-doc-bdd-copilot living doc gaps
+@living-doc-bdd-copilot HEALING mode
 ```
 
 The agent loads its skills on demand and follows its defined scope. See the [Agent Roster](../README.md#agent-roster) for the full list of available agents and their guides.

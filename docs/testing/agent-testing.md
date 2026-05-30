@@ -66,7 +66,7 @@ Mirrors the skill trigger-eval format exactly. Store at `.github/agents/evals/<a
       "id": "should-not-trigger-1",
       "prompt": "create a user story for the login feature",
       "should_trigger": false,
-      "expected_agent": "living-doc-copilot"
+      "expected_agent": "living-doc-bdd-copilot"
     },
     {
       "id": "should-not-trigger-2",

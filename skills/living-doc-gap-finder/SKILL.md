@@ -12,8 +12,7 @@ description: >
   "documentation coverage", "gap report", "what's not covered", "living doc audit",
   "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Delegates to: living-doc-pageobject-scan, living-doc-scenario-creator, bdd-scenario-gen,
-  and all create-* skills.
+  Delegates to: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

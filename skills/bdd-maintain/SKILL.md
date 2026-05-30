@@ -1,19 +1,19 @@
 ---
 name: bdd-maintain
 description: >
-  Maintenance modes for the @living-doc-bdd-copilot agent: RE-SCAN (full manifest refresh
-  after UI changes), HEALING (fix selector drift in failing tests only), REMOVE
-  (delete files linked to a deprecated feature), and DEAD CODE AUDIT (find unused step
-  definitions, PageObject methods, and PO components). Activate when the UI has changed and
-  the manifest needs refreshing, when tests are failing due to selector drift, when a feature
-  has been removed from the product, or when dead BDD code needs to be identified.
-  Triggers on: "re-scan", "refresh manifest", "heal pageobjects", "fix failing tests",
-  "selector drift", "tests are failing", "remove feature", "deprecate bdd", "bdd maintain",
-  "update selectors", "pageobject broken", "scenario failing", "unused steps",
-  "dead pageobject methods", "find unused steps", "dead code audit", "unused po methods".
-  Does NOT trigger for: first-time webapp exploration and seed assembly (use bdd-explore);
-  standalone (non-agent) PageObject maintenance outside @living-doc-bdd-copilot
-  (use living-doc-pageobject-scan).
+  Lifecycle cleanup for BDD automation artifacts: REMOVE (delete feature files, step
+  definitions, and PageObjects linked to a deprecated entity) and DEAD CODE AUDIT (find
+  unused step definitions, PageObject methods, and PO components via three Python scripts).
+  Activate when a feature has been removed from the product and its linked BDD files must be
+  deleted, or when dead BDD code needs to be identified. Third step in the entity-deprecation
+  chain — runs after living-doc-update deprecates the entity and gherkin-living-doc-sync
+  marks linked scenarios.
+  Triggers on: "remove feature", "deprecate bdd", "delete feature files", "bdd cleanup",
+  "remove pageobject", "unused steps", "dead pageobject methods", "find unused steps",
+  "dead code audit", "unused po methods", "dead po components", "bdd-maintain".
+  Does NOT trigger for: re-scanning the manifest after UI changes (use living-doc-pageobject-scan
+  RE-SCAN scope); healing failing tests after selector drift (use living-doc-pageobject-scan
+  HEALING scope); syncing @AC: traceability tags (use gherkin-living-doc-sync).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -23,41 +23,7 @@ compatibility: GitHub Copilot
 > **Glossary:** Feature, Functionality, User Story — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 > **BDD schemas:** manifest.json schema (routes, elements, coverage_gaps, navigation_context) — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
-Three modes — activate the one that matches the trigger.
-
----
-
-## RE-SCAN mode
-
-**Trigger:** New feature shipped, UI refactored, or significant route changes.
-
-**Scope:** Full re-run of every path recorded in `manifest.json`, plus active discovery of new routes not yet in the manifest.
-
-1. Reload `seed.yaml` and `manifest.json`.
-2. For every existing manifest entry: navigate to its URL, snapshot the DOM, and validate that every recorded `component_id` locator still resolves. Flag any locator that no longer matches as `BREAKING CHANGE`, including the linked step definition / scenario details that may fail.
-3. **Actively discover new routes from each visited page** — do not limit discovery to routes already in `seed.yaml`. On each page snapshot:
-   - Find all `<a href>` links that resolve to new paths not yet in the manifest.
-   - Find all buttons and interactive components whose purpose suggests navigation to a new screen (e.g. "Create order", "View details", "Go to settings") — click them and record the resulting URL.
-   - Find tab panels, side-nav items, and wizard steps that expose sub-routes.
-   - Any new URL discovered this way is a candidate manifest entry; add it and crawl it recursively.
-4. Add new surfaces to `manifest.json`; mark removed surfaces as `deprecated`.
-5. Update stale selector constants in PageObjects for any locators flagged in step 2.
-6. Generate new scenarios for newly discovered ACs (load `bdd-scenario-gen` skill).
-
----
-
-## HEALING mode
-
-**Trigger:** Test suite failures due to selector drift, broken step definitions, or PageObject mismatches.
-
-**Scope:** Failing tests only — do not touch passing tests or unrelated PageObjects.
-
-1. Receive or discover the list of failing test names / scenario titles. If the request only says tests are failing but does not include the failing list, ask for it before making changes so scope stays limited to the failing scenarios.
-2. Trace each failure back to its PageObject and step definition.
-3. Navigate to the affected page via MCP Playwright; snapshot the current DOM.
-4. Find updated element IDs or selectors; update only the affected PageObject(s) accordingly.
-5. Verify the step definition binding still resolves; fix if broken.
-6. Re-run only the previously failing tests to confirm healing. Do not re-run the full suite.
+Two modes — activate the one that matches the trigger.
 
 ---
 
@@ -72,7 +38,7 @@ Three modes — activate the one that matches the trigger.
 3. Find PageObjects referenced only by those scenarios; find step definitions used only by those scenarios.
 4. Confirm the full deletion list with the user before touching any file.
 5. Remove confirmed files; update `manifest.json` to remove the deprecated entry.
-6. Flag linked US/AC entities in the living documentation as candidates for deprecation — hand off to `@living-doc-copilot`.
+6. Flag linked US/AC entities in the living documentation as candidates for deprecation — load `living-doc-update` skill.
 
 ---
 

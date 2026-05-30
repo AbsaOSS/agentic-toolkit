@@ -1,136 +1,115 @@
 ---
 name: living-doc-scenario-creator
 description: >
-  Generate the living-doc feature file header block (@US_ID:/@FUNC_ID: tag, Feature narrative,
-  # Acceptance Criteria: block) and scenario skeletons (one @AC:-tagged Scenario: title with
-  ... placeholder per ACTIVE AC). Produces an AC coverage report. Step bodies (Given/When/Then)
-  are authored by bdd-scenario-gen.
-  Use when bootstrapping a feature file for a US or Functionality, auditing AC coverage, or
-  tagging partial coverage with aspect notation.
-  Triggers on: "feature file header for user story", "living-doc feature file",
-  "bootstrap feature file for US", "US feature file structure", "cover AC with scenarios",
-  "scenario coverage for US", "map AC to scenarios", "AC coverage for US",
-  "partial AC coverage", "scenario creator", "generate feature file for US",
-  "bootstrap living-doc scenarios".
-  Does NOT trigger for: writing scenario step bodies (use bdd-scenario-gen), standalone
-  Gherkin (use bdd-scenario-gen), step definitions (use gherkin-step),
-  doc gaps (use living-doc-gap-finder).
-  Pairs with living-doc-create-user-story, bdd-scenario-gen, and living-doc-pageobject-scan.
+  Generate Gherkin scenarios and living-doc feature files from User Story and Functionality ACs.
+  Covers: full feature file output (header block, @AC:-tagged scenarios, complete Given/When/Then
+  bodies), standalone Gherkin without an entity, GWT correctness, ubiquitous language rules,
+  one-behaviour-per-scenario, Scenario Outline, Background, anti-patterns, @AC: traceability
+  annotations (authoritative format), AC coverage report, gap detection via living-doc-gap-finder,
+  and step definition resolution against PageObjects.
+  Triggers on: "write a Gherkin scenario", "BDD scenario", "standalone feature file",
+  "Given When Then", "Scenario Outline", "BDD anti-patterns", "review my feature file",
+  "BDD scenarios for", "convert acceptance criteria to Gherkin", "exploratory scenario",
+  "feature file header for user story", "living-doc feature file", "bootstrap feature file for US",
+  "cover AC with scenarios", "scenario coverage for US", "map AC to scenarios", "scenario creator".
+  Does NOT trigger for: implementing step definitions (use gherkin-step), writing unit tests.
+  Pairs with living-doc-create-user-story and living-doc-pageobject-scan.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
 
 # Living Doc — Scenario Creator
 
-> **Glossary:** User Story, AC, PageObject, step definitions — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **Glossary:** User Story, AC, Feature, PageObject — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
 > **BDD schemas:** US and Functionality feature file templates — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
-## AC state vocabulary
-
-**AC states used in this skill:** `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED`
-
-Only `ACTIVE` ACs drive scenario generation. `PLANNED` and `DEPRECATED` ACs are skipped.
-
-**AC traceability format** — for the authoritative `# AC:` and `@AC:` annotation format, load `bdd-scenario-gen`.
+**AC states:** `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED`. Only `ACTIVE` ACs drive scenario generation.
 
 ---
 
-## Inputs required
+## Two modes
 
-| Input | Source | Required |
-|---|---|---|
-| User Story (with ACs) | User Story entity file (or inline JSON) | Yes |
-| Available PageObjects | `tests/pages/` directory | Recommended |
-| Existing step definitions | `tests/steps/` directory | Recommended |
-
-If PageObjects or step files are not available, generate scenarios with stub step implementations
-(see Step 3 for the two-case protocol: PageObject method found vs. not found).
+| Mode | When to use |
+|---|---|
+| **Entity mode** | A User Story or Functionality entity exists — generate full feature file with header, `@AC:` tags, and step bodies. |
+| **Standalone mode** | No US/FUNC entity — write Gherkin directly from business descriptions. Use `@AC:STANDALONE` as tag; `gherkin-living-doc-sync` will note it but not flag a traceability gap. |
 
 ---
 
-## Workflow
+## Entity mode workflow
 
-### Step 1 — Read the User Story
+### Step 1 — Read the entity
 
-Load the User Story. Confirm:
-- ID follows `US-<nnn>` format
-- Which ACs are eligible for generation (`ACTIVE`)
-- ACs are atomic — each has one input condition and one observable outcome
+Load the User Story or Functionality. Confirm:
+- ID follows `US-<nnn>` or `FUNC-<nnn>` format.
+- Which ACs are `ACTIVE` (eligible for generation).
+- ACs are atomic — one input condition, one observable outcome.
 
-Treat requests such as "write feature tests for US-007" as requests to generate BDD scenarios plus a coverage table for that User Story.
+If no ACs are `ACTIVE`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`PLANNED`: `skipped — not yet active`, `DEPRECATED`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `ACTIVE`.
 
-If no ACs are `ACTIVE`, do **not** generate empty or stub scenarios. Instead,
-output a coverage report that lists every AC with its state-specific skip reason (`PLANNED`:
-`skipped — not yet active`, `DEPRECATED`: `skipped — deprecated AC`) and advise the user to
-re-run the scenario creator when an AC becomes `ACTIVE`.
+### Step 2 — Gap detection
 
-### Step 2 — Generate scenario skeletons
+An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `ACTIVE` ACs with no linked scenario before writing new files.
 
-For each `ACTIVE` AC, generate the `# AC:` comment, `@AC:` tag, and `Scenario:` title with `...` as the step placeholder. Step bodies (Given/When/Then) are authored by `bdd-scenario-gen`.
+### Step 3 — Generate feature file
 
-Select the title by AC type:
-- `happy_path`: `Scenario: <positive outcome>`
-- `error`: `Scenario: <US title> — <error condition>` (prefer the crisp business-facing failure title from the AC if available)
-- `alternative`: `Scenario: <US title> — <alternative path>`
+For each `ACTIVE` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and full Given/When/Then step bodies.
+
+**Scenario title by AC type:**
+- `happy_path` → `Scenario: <positive outcome>`
+- `error` → `Scenario: <US title> — <error condition>`
+- `alternative` → `Scenario: <US title> — <alternative path>`
+
+**Traceability format** (authoritative):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - ACTIVE) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
-  ...
+  Given the customer has items in their cart
+  When they confirm the order with their saved payment method
+  Then the order confirmation is displayed
+```
 
-# AC:US-1-02 (v1.0.0 - Active) — order is rejected when the payment card is declined
+Aspect variant (when one scenario covers only one aspect of a multi-aspect AC):
+
+```gherkin
+# AC:US-1-01 (v1.0.0 - ACTIVE) — displays {required field} on login screen | aspect: username input
+@AC:US-1-01/aspect:username-input
+Scenario: Login form shows the username input field
+```
+
+Multiple ACs per scenario — one comment + tag pair per AC:
+
+```gherkin
+# AC:US-1-01 (v1.0.0 - ACTIVE) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - ACTIVE) — account lockout after 3 failed attempts
+@AC:US-1-01
 @AC:US-1-02
-Scenario: Order rejected when payment card is declined
-  ...
+@Regression
+Scenario: User is locked out after repeated failed logins
 ```
 
-### Step 3 — Hand off step bodies to bdd-scenario-gen
+AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:FUNC-<nnn>-<nn>` for Functionality.
 
-The skeletons from Step 2 use `...` placeholders. To produce full Given/When/Then implementations, pass the generated feature file to `bdd-scenario-gen`. For step definition code, load `gherkin-step`.
+**Feature file types:**
 
-Do not author step bodies in this skill.
+| Type | Location | Feature block |
+|---|---|---|
+| User Story (E2E) | `features/us/us-<nnn>-<kebab>.feature` | `Feature: <US title>` with As-a/I-can/so-that + `@US_ID:US-<n>` |
+| Functionality | `features/functionalities/<feat-kebab>/func-<nnn>-<kebab>.feature` | `Feature: <Feature name> — <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
 
-### Step 4 — Validate AC coverage
-
-Every `ACTIVE` AC must map to at least one scenario.
-The coverage report must list **every** AC on the User Story, including skipped ones.
-Use these skip reasons verbatim so the output is predictable and auditable:
-- `PLANNED`: `skipped — not yet active`
-- `DEPRECATED`: `skipped — deprecated AC`
-
-Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full coverage report.
-
-```
-AC COVERAGE REPORT — US-001
-  AC:US-001-01 (ACTIVE): ✅ covered by "Customer successfully places an order"
-  AC:US-001-02 (ACTIVE): ✅ covered by "Order rejected when payment card is declined"
-  AC:US-001-03 (ACTIVE): ❌ NOT COVERED — added to gap list
-  AC:US-001-04 (PLANNED): ⏭  skipped — not yet active
-  AC:US-001-05 (DEPRECATED): ⏭  skipped — deprecated AC
-```
-
-Use `scripts/coverage_report.py` to generate this report across all entities.
-
-### Step 5 — Output artifacts
-
-**`.feature` file** — one per User Story, named `us-<nnn>-<kebab-title>.feature` in lowercase. The file starts with a header block (matching the project's US feature file convention) and uses `@AC:` traceability tags above each scenario. When showing the generated output, include the filename as a comment:
+**US feature file example:**
 
 ```gherkin
 # us-001-place-an-online-order.feature
 
-# Source: https://github.com/<org>/<repo>/issues/<n>
-
 # Business Value:
-#   - <concise value statement>
+#   - Customers can complete an order without calling support.
 
 # Acceptance Criteria:
-#
-#   AC:US-001-01 (v1.0.0 - Active)
-#     - Customer places an order with a saved payment method.
-#
-#   AC:US-001-02 (v1.0.0 - Active)
-#     - Order is rejected when the payment card is declined.
+#   AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method.
+#   AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined.
 
 @US_ID:US-001
 Feature: Place an online order
@@ -141,68 +120,133 @@ Feature: Place an online order
   # AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method
   @AC:US-001-01
   Scenario: Customer successfully places an order
-    ...
+    Given the customer has items in their cart
+    When they confirm the order with their saved payment method
+    Then the order confirmation is displayed
 
   # AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined
   @AC:US-001-02
   Scenario: Order rejected when payment card is declined
-    ...
+    Given the customer has items in their cart
+    When they attempt to pay with a declined card
+    Then an error message is shown and the order is not placed
 ```
-
-**Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`). Append it immediately after the `.feature` code block in the response.
-
----
-
-## Functionality scenarios
-
-When the source is a Functionality (`FUNC-<nnn>`) rather than a User Story, apply the same workflow but with these differences:
-
-| Aspect | User Story (E2E) | Functionality (system test) |
-|---|---|---|
-| AC ID format | `AC:US-<nnn>-<nn>` | `AC:FUNC-<nnn>-<nn>` |
-| File location | `features/us/us-<nnn>-<kebab>.feature` | `features/functionalities/<feat-kebab>/func-<nnn>-<kebab>.feature` |
-| File header | `# Source:` (optional), `# Business Value:`, `# Acceptance Criteria:` block + `@US_ID:US-<n>` tag | `# Source:` (optional), `# Rationale:` (optional), `# Acceptance Criteria:` block + `@FUNC_ID:FUNC-<nnn>` tag |
-| Feature block | `Feature: <US title>` with As-a/I-can/so-that | `Feature: <Feature name> — <Functionality name>` (no narrative) |
-| Scope | End-to-end, from user's perspective | One atomic behavior, input to output contract |
-| Language | Business domain language | Business domain language — same rule; no code calls, no selector references |
 
 **Functionality feature file example:**
 
 ```gherkin
-# func-001-validate-password-strength.feature
-
-# Source: https://github.com/<org>/<repo>/issues/<n>      ← optional
-
-# Rationale:
-#   - <why this atomic behavior exists>                    ← optional
-
-# Acceptance Criteria:
-#
-#   AC:FUNC-001-01 (v1.0.0 - Active)
-#     - Returns valid=true when the password satisfies all complexity rules.
-#
-#   AC:FUNC-001-02 (v1.0.0 - Active)
-#     - Raises INVALID_PASSWORD when the password is shorter than 8 characters.
-
 @FUNC_ID:FUNC-001
 Feature: Login Page — Validate Password Strength
 
-  # AC:FUNC-001-01 (v1.0.0 - Active) — returns valid=true when password satisfies all complexity rules
+  # AC:FUNC-001-01 (v1.0.0 - Active) — returns valid=true when password satisfies all rules
   @AC:FUNC-001-01
   Scenario: Password meets all complexity rules
     Given a password with at least 8 characters, one uppercase, one lowercase, and one number
     When password strength is validated
     Then the result is valid
-
-  # AC:FUNC-001-02 (v1.0.0 - Active) — raises INVALID_PASSWORD when password is shorter than 8 characters
-  @AC:FUNC-001-02
-  Scenario: Password too short
-    Given a password with 7 or fewer characters
-    When password strength is validated
-    Then the result is invalid with code INVALID_PASSWORD
 ```
 
-Functionality scenarios are **not** unit tests written in Gherkin. Steps must still describe observable business-facing input/output — never internal method calls, DB queries, or selector names.
+### Step 4 — AC coverage report
+
+Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full report. Append after the `.feature` code block:
+
+```
+AC COVERAGE REPORT — US-001
+  AC:US-001-01 (ACTIVE): ✅ covered
+  AC:US-001-02 (ACTIVE): ✅ covered
+  AC:US-001-03 (ACTIVE): ❌ NOT COVERED
+  AC:US-001-04 (PLANNED): ⏭  skipped — not yet active
+```
+
+### Step 5 — Step definition resolution
+
+For each generated scenario step:
+
+1. Narrow scope to the relevant PageObject first — check step files that import it for reuse candidates.
+2. Match by purpose, not just pattern — confirm the implementation performs the same business action.
+3. If purpose-matching step exists, reuse it; note the source file.
+4. If no reuse candidate but the PageObject method exists, generate a thin step stub via `gherkin-step`.
+5. If neither exists, generate a stub that raises `NotImplementedError` and flag the PageObject extension needed.
+
+---
+
+## Gherkin quality rules
+
+### Write in the ubiquitous language
+
+Scenarios must use business domain language. Anyone on the product team must be able to read and verify them without implementation knowledge.
+
+```gherkin
+# ✅
+Given a customer with a gold membership
+When they place an order for 2 units of "SKU-100"
+Then the order is confirmed and the total is £160.00
+
+# ❌ — implementation details
+Given the database contains a row in users with tier="gold"
+When a POST request is sent to /api/orders
+Then the response status is 201
+```
+
+### GWT keyword rules
+
+| Keyword | Purpose | Rule |
+|---|---|---|
+| **Given** | System state before the action | Preconditions only — no actions, no assertions |
+| **When** | The action the actor takes | Exactly one meaningful action per scenario |
+| **Then** | Observable outcome | Assertions only — no actions |
+| **And / But** | Continuation | Never as the first step in a block |
+
+One behaviour per scenario. If the scenario name contains "and", it likely tests two behaviours — split it.
+
+### Scenario Outline
+
+Use for data-driven variations. Show concrete outcome values in `Examples:`, not raw percentages:
+
+```gherkin
+Scenario Outline: Discount applied correctly for each membership tier
+  Given a customer with a <tier> membership
+  When they purchase an item costing £100.00
+  Then the total is £<total>
+
+  Examples:
+    | tier   | total |
+    | gold   | 80.00 |
+    | silver | 90.00 |
+```
+
+### Background
+
+Use only when every scenario in the file shares the precondition. Keep to 3 steps or fewer. If only 2–3 scenarios share a precondition, duplicate the `Given` step — prefer clarity over abstraction. `Background` must use only `Given` steps.
+
+### Anti-patterns
+
+| Anti-pattern | Fix |
+|---|---|
+| UI selectors in steps (`I click the "Submit" button`) | Domain action (`the customer submits the order`) |
+| Imperative style (`I enter "alice@example.com" in Email field`) | Declarative (`the customer logs in as Alice`) |
+| Multiple `When` per scenario | Split into separate scenarios |
+| Assertions in Given/When | Move all assertions to `Then` |
+| Scenario depends on prior scenario state | Make every scenario fully self-contained |
+
+When reviewing an existing scenario, check for a missing `@AC:` tag above each `Scenario:` — call that out as a traceability defect.
+
+---
+
+## Standalone mode
+
+When no User Story or Functionality entity exists, generate scenarios directly from business descriptions:
+
+- Apply all GWT rules and ubiquitous language rules above.
+- Use `@AC:STANDALONE` as an optional tag to signal intentionally unlinked scenarios.
+- Omit the header block (`# Business Value:`, `# Acceptance Criteria:`, `@US_ID:`) — start directly with `Feature:`.
+- File location is at the user's discretion; `gherkin-living-doc-sync` will note `@AC:STANDALONE` but not flag a traceability gap.
+
+---
+
+## Output format
+
+Output all generated Gherkin in a single fenced `gherkin` code block starting with `Feature:`. Use only `Scenario:`, `Scenario Outline:`, `Background:`, `Given`, `When`, `Then`, `And`, `But`, `Examples:` inside the block.
 
 ---
 
@@ -210,9 +254,7 @@ Functionality scenarios are **not** unit tests written in Gherkin. Steps must st
 
 | Request | Correct skill |
 |---|---|
-| Standalone Gherkin without a User Story | `bdd-scenario-gen` |
-| Writing step definition code | `gherkin-step` |
+| Implementing step definition code | `gherkin-step` |
+| Writing unit tests | Use your project's test framework directly |
 
-**Ambiguous request — "create scenarios for US-007":** If the user does not specify whether they want skeleton structure or full step bodies, ask:
-> "Do you want the living-doc feature file header and skeleton scenario titles (continue here in `living-doc-scenario-creator`), or full Given/When/Then scenario bodies (use `bdd-scenario-gen`)?"
-This skill produces the reusable structural skeleton (header block + AC-tagged scenario titles); `bdd-scenario-gen` fills in the step bodies.
+
