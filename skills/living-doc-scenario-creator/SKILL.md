@@ -2,18 +2,16 @@
 name: living-doc-scenario-creator
 description: >
   Generate Gherkin scenarios and living-doc feature files from User Story and Functionality ACs.
-  Covers: full feature file output (header block, @AC:-tagged scenarios, complete Given/When/Then
-  bodies), standalone Gherkin without an entity, GWT correctness, ubiquitous language rules,
-  one-behaviour-per-scenario, Scenario Outline, Background, anti-patterns, @AC: traceability
-  annotations (authoritative format), AC coverage report, gap detection via living-doc-gap-finder,
-  and step definition resolution against PageObjects.
+  Covers full feature file output (@AC:-tagged scenarios, GWT bodies), Scenario Outline,
+  Background, AC coverage report, anti-pattern detection, and step definition resolution.
+  Two modes: entity (from US/FUNC) and standalone.
   Triggers on: "write a Gherkin scenario", "BDD scenario", "standalone feature file",
   "Given When Then", "Scenario Outline", "BDD anti-patterns", "review my feature file",
   "BDD scenarios for", "convert acceptance criteria to Gherkin", "exploratory scenario",
   "feature file header for user story", "living-doc feature file", "bootstrap feature file for US",
   "cover AC with scenarios", "scenario coverage for US", "map AC to scenarios", "scenario creator".
-  Does NOT trigger for: implementing step definitions (use gherkin-step), writing unit tests.
-  Pairs with living-doc-create-user-story and living-doc-pageobject-scan.
+  Does NOT trigger for: implementing step definitions (use gherkin-step); writing unit tests.
+  Pairs with living-doc-create-user-story, living-doc-pageobject-scan, and gherkin-step.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -47,9 +45,18 @@ Load the User Story or Functionality. Confirm:
 
 If no ACs are `ACTIVE`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`PLANNED`: `skipped — not yet active`, `DEPRECATED`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `ACTIVE`.
 
-### Step 2 — Gap detection
+### Step 2 — Gap detection and merge policy
 
 An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `ACTIVE` ACs with no linked scenario before writing new files.
+
+**If a scenario already exists for an AC**, apply this policy:
+
+| Existing scenario state | Action |
+|---|---|
+| Matches AC intent; GWT correct | **Skip** — record `already covered` in the coverage report |
+| Step text stale or AC description changed | **Update** — rewrite GWT in-place; keep `@AC:` tag and title stable |
+| Tagged `@deprecated` or `@review-needed` | **Propose replacement** — draft new scenario; confirm with user before overwriting |
+| Multiple scenarios for the same AC | **Flag** — list them; ask user: valid aspect split or consolidate? |
 
 ### Step 3 — Generate feature file
 
@@ -60,7 +67,7 @@ For each `ACTIVE` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and
 - `error` → `Scenario: <US title> — <error condition>`
 - `alternative` → `Scenario: <US title> — <alternative path>`
 
-**Traceability format** (authoritative):
+**Traceability format** (authoritative — `gherkin-living-doc-sync` validates against this definition):
 
 ```gherkin
 # AC:US-1-01 (v1.0.0 - ACTIVE) — customer places an order with a saved payment method
@@ -250,11 +257,12 @@ Output all generated Gherkin in a single fenced `gherkin` code block starting wi
 
 ---
 
-## Out-of-scope redirects
+## Out-of-scope routing
 
 | Request | Correct skill |
 |---|---|
 | Implementing step definition code | `gherkin-step` |
 | Writing unit tests | Use your project's test framework directly |
+| Syncing `@AC:` tags and traceability in existing feature files | `gherkin-living-doc-sync` |
 
 

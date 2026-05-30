@@ -2,17 +2,17 @@
 name: gherkin-living-doc-sync
 description: >
   Synchronise Gherkin feature files and BDD scenarios with the living documentation catalog.
-  Activate when scenarios diverge from User Story ACs, step text drifts after a refactor,
-  `@AC:` tag or `# AC:` comment annotations are missing or stale, descoped ACs need their
-  linked scenarios updated, or AC changes must propagate from the living doc back to feature
-  files. Run scan_ac_links.py to audit AC link health before a sync pass.
-  Distinct from gap-finder (which detects missing coverage) — corrects existing links.
+  Corrects existing links — distinct from living-doc-gap-finder (which detects missing coverage).
+  Activate when `@AC:` tags or `# AC:` comments are missing or stale, step text drifts after
+  a refactor, ACs are descoped, or AC changes must propagate from the living doc to feature files.
+  Run scan_ac_links.py to audit AC link health before a sync pass.
   Triggers on: "sync gherkin to living doc", "feature file out of sync", "scenario not linked
   to AC", "step text changed", "gherkin drift", "BDD sync", "AC link missing in feature file",
   "sync scenarios", "traceability broken", "propagate AC changes", "AC was descoped".
-  Does NOT trigger for: writing new scenarios (use living-doc-scenario-creator), implementing step
-  definitions (use gherkin-step), finding living doc gaps (use living-doc-gap-finder),
-  creating new US/Feature entities (use living-doc-create-user-story).
+  Does NOT trigger for: writing new scenarios (use living-doc-scenario-creator); implementing
+  step definitions (use gherkin-step); finding gaps (use living-doc-gap-finder);
+  creating entities (use living-doc-create-*).
+  Pairs with living-doc-update (upstream) and gherkin-step (downstream).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -41,13 +41,15 @@ and `features/functionalities/`) — other feature files are skipped.
 |---|---|---|
 | New `.feature` file added | Feature file to living doc | Link each scenario to an AC; create AC if missing |
 | User Story AC modified or added | Living doc to feature file | Update or add the corresponding scenario |
-| UI refactored (selector / method renamed) | Step text to PageObject | Update step text; re-link to PageObject method |
+| UI refactored (selector / method renamed) | Step text to PageObject | Update step text and `@AC:` tag if scenario intent changed; for the PageObject side of the rename (method signature or locator), load `living-doc-pageobject-scan` HEALING scope — this skill owns only the Gherkin step text, not the PageObject code |
 | US deprecated | Living doc to feature file | Emit one sync action per linked scenario; add `@deprecated`, record the reason, and flag `@review-needed` |
 | Scenario added without an `@AC:` tag | Feature file to living doc | Propose an AC and add the `@AC:` tag |
 
 ---
 
 ## Step 2 — Audit `@AC:` traceability tags
+
+> **Authoritative source:** The `@AC:` format is defined in `living-doc-scenario-creator`. The spec below is a reference copy for sync validation — load `living-doc-scenario-creator` for the canonical definition.
 
 **Required traceability format** for living-doc feature files (from the glossary):
 
@@ -110,6 +112,10 @@ DRIFT DETECTED: checkout.feature:17
   Suggested fix: update step text to "When the customer confirms the order"
     OR update the step definition regex to match the new wording
 ```
+
+> **Scope boundary with `living-doc-pageobject-scan` HEALING:** This step corrects step text in `.feature` files and step definition pattern strings. If the underlying PageObject selector or method signature drifted (renamed in the DOM or PageObject class), use `living-doc-pageobject-scan` HEALING mode to fix the PageObject class first, then re-run this sync to align feature files.
+>
+> **Step definition code changes:** When a step definition regex pattern must be updated (not just the feature file wording), load `gherkin-step` to apply the code change correctly.
 
 ---
 

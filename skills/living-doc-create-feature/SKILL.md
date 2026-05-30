@@ -3,16 +3,17 @@ name: living-doc-create-feature
 description: >
   Define a system surface (UI screen, API endpoint, service, or module) as a Feature entity,
   enabling impact analysis and traceability in the living documentation. Use when documenting
-  a new screen, API endpoint, service, or module; maintaining a Feature Registry; mapping
-  system surfaces to User Stories; resolving Feature naming conflicts or duplicate entries;
-  or bootstrapping the structural layer between User Stories and atomic behaviors.
+  a new screen, API, service, or module; mapping surfaces to User Stories; or resolving
+  Feature naming conflicts.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
   feature", "system surface documentation", "feature owners", "feature dependencies",
   "duplicate feature name", "resolve feature naming".
-  Does NOT trigger for: creating User Stories (use living-doc-create-user-story), defining
-  atomic behaviors (use living-doc-create-functionality), scanning PageObjects (use
-  living-doc-pageobject-scan), deprecating entities (use living-doc-update).
+  Does NOT trigger for: creating User Stories (use living-doc-create-user-story); defining
+  behaviors (use living-doc-create-functionality); scanning PageObjects (use
+  living-doc-pageobject-scan); deprecating (use living-doc-update).
+  Pairs with living-doc-create-functionality and living-doc-create-user-story.
+  After creating, add a feature_registry entry for living-doc-impact-analysis.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -128,3 +129,14 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 |---|---|
 | Creating a User Story | **living-doc-create-user-story** |
 | Defining an atomic behavior (Functionality) | **living-doc-create-functionality** |
+
+## Next steps after creation
+
+| Action | Skill |
+|---|---|
+| Define atomic behaviors for this Feature | **living-doc-create-functionality** |
+| Link to an existing User Story | **living-doc-update** (add Feature to the User Story's `features` list) |
+| Generate BDD PageObjects for a UI Feature | **living-doc-pageobject-scan** |
+| Update feature_registry for impact traceability | **living-doc-impact-analysis** (see Feature registry format in that skill) |
+
+> **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there, which covers: Functionality `feature_id` fields, `feature_registry` entry, `manifest.json`, `seed.yaml`, PageObject file headers, and Gherkin feature file `# Feature:` headers.

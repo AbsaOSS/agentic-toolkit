@@ -1,19 +1,19 @@
 ---
 name: living-doc-create-functionality
 description: >
-  Define an atomic, testable behavior (Functionality) with Functionality-level Acceptance Criteria
-  designed to be validated by fast unit or integration tests. Activate when documenting an atomic
-  behavior, component function, or business rule; writing Functionality-level AC; creating the
-  granular test anchor for a Feature; choosing test_type (unit vs integration); identifying reuse
-  candidates across User Stories; linking a Functionality to its parent Feature; or reviewing a
-  Functionality for completeness.
+  Define an atomic, testable behavior (Functionality) with Acceptance Criteria for unit or
+  integration tests. Use when documenting an atomic behavior, writing Functionality-level ACs,
+  choosing test_type, identifying reuse candidates, or reviewing a Functionality.
   Triggers on: "create a functionality", "document an atomic behavior", "functionality AC",
   "unit-testable behavior", "define component behavior", "atomic acceptance criteria",
   "document a business rule", "create a functionality entity", "functionality acceptance criteria",
   "test_type", "unit vs integration test", "choose test type", "link functionality to feature".
-  Does NOT trigger for: end-to-end User Stories (use living-doc-create-user-story), system
-  surface documentation (use living-doc-create-feature), generating BDD scenarios for a
-  Functionality (use living-doc-scenario-creator).
+  Does NOT trigger for: E2E User Stories (use living-doc-create-user-story); system
+  surfaces (use living-doc-create-feature); generating BDD scenarios (use
+  living-doc-scenario-creator).
+  Pairs with living-doc-create-feature (parent surface first) and living-doc-scenario-creator
+  (BDD after). After creating, update the parent Feature's functionalities[] array
+  (else ORPHAN_FUNCTIONALITY gap).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -87,6 +87,8 @@ For Blocker or Important findings, propose a split into smaller Functionalities 
 
 Before creating, check whether an identical behavior already exists under any Feature. **Compare ACs, not names** — the same verb phrase in a different Feature context often produces a legitimately different contract.
 
+> **Scope note:** This step is a lightweight in-session check during creation. For a full cross-catalog duplicate and coverage audit across all existing Functionalities, use `living-doc-gap-finder` instead.
+
 If the ACs are identical or near-identical across Features or User Stories, prefer **one shared Functionality**. Link every consuming User Story in the `user_stories` array instead of duplicating the ACs.
 
 > "This is a reuse candidate. If the contract is truly identical, keep one Functionality and link both User Stories to it. Duplicating the same AC in multiple places creates maintenance burden and raises the risk of divergence when the behavior changes."
@@ -131,6 +133,10 @@ Rules:
 - Every acceptance criterion must state an exact outcome; error cases must include the explicit error code.
 - `test_coverage` must cover every AC and record `unit` or `integration` consistently with Step 3.
 
+> **Promoting `planned` → `active`:** A Functionality is created with `status: "planned"`. Once the tests backing all its ACs are written and passing, use `living-doc-update` to change the status to `active`. Do not mark a Functionality `active` until its test coverage is in place.
+
+> **Parent Feature sync:** After saving this entity, load `living-doc-update` and append this `FUNC-<id>` to the parent Feature's `"functionalities"` array. An unlinked Functionality will be flagged as `ORPHAN_FUNCTIONALITY` by `living-doc-gap-finder`.
+
 ## Distinguishing Functionality ACs from User Story ACs
 
 | Dimension | User Story AC | Functionality AC |
@@ -156,7 +162,7 @@ redirect to `living-doc-create-user-story`.
 | Two Functionalities have identical or near-identical ACs | Duplicate ACs create a maintenance burden. Consolidate into one shared Functionality and link all related `user_stories`. |
 | Functionality has no parent Feature | A Functionality without a parent Feature is untraceable — create or identify the parent Feature first. |
 
-## Out-of-scope redirects
+## Out-of-scope routing
 
 | Request type | Correct skill |
 |---|---|

@@ -1,20 +1,19 @@
 ---
 name: living-doc-pageobject-scan
 description: >
-  Discover, create, and maintain PageObject classes — entry point for all webapp exploration
-  and BDD-driven UI testing. Covers seed.yaml assembly (Sources A–E), iterative MCP Playwright
-  crawl, entity harvesting, ExplorationFixture sourcing, PageObject generation, Functionality
-  stubs, and manifest.json output. Two Maintain scopes: RE-SCAN (full manifest refresh after
-  UI changes, with active new-route discovery) and HEALING (fix selector drift in failing
-  tests only). Use for first-time scans, re-scanning after UI changes, or healing failing tests.
-  Triggers on: "scan this webapp", "generate pageobjects", "update pageobjects", "crawl the UI",
-  "explore the app", "discover routes", "seed.yaml", "manifest.json", "first scan",
-  "create page objects", "pageobject drift", "bootstrap page objects", "re-scan",
-  "refresh manifest", "heal pageobjects", "fix failing tests", "selector drift",
-  "tests are failing".
+  Discover, create, and maintain PageObject classes for webapp exploration.
+  Covers seed.yaml assembly, MCP Playwright crawl, entity harvesting, PageObject generation,
+  Functionality stubs, and manifest.json output.
+  Three scopes: CREATE (first scan), RE-SCAN (full manifest refresh after UI changes),
+  HEALING (fix selector drift in failing tests only).
+  Triggers on: "scan this webapp", "generate pageobjects", "crawl the UI", "explore the app",
+  "discover routes", "seed.yaml", "manifest.json", "first scan", "create page objects",
+  "pageobject drift", "re-scan", "refresh manifest", "heal pageobjects", "fix failing tests",
+  "selector drift", "tests are failing".
   Does NOT trigger for: adding/fixing Gherkin (use living-doc-scenario-creator); resolving
-  missing data-cy attributes (use data-cy-instrument); deleting deprecated BDD files
-  (use bdd-maintain).
+  missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain).
+  Pairs with data-cy-instrument, living-doc-create-feature, living-doc-scenario-creator,
+  and gherkin-living-doc-sync.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -193,6 +192,12 @@ For each discovered behavior, propose a stub named `<Feature name> – <behavior
 
 Output to `features/functionalities/<feat-kebab>/func-<kebab>.feature` with `@FUNC_ID:FUNC-UNKNOWN`. Promote via `living-doc-create-functionality` when IDs are assigned.
 
+**Post-Create pipeline:**
+- Non-empty `coverage_gaps` in the manifest → trigger `data-cy-instrument` to add missing `data-cy` attributes.
+- PageObjects with `FEAT-UNKNOWN` placeholders → create Feature entities using `living-doc-create-feature`.
+- Functionality stubs with `FUNC-UNKNOWN` → register Functionalities using `living-doc-create-functionality`.
+- New surfaces with no Gherkin coverage → use `living-doc-scenario-creator` to generate scenarios.
+
 ---
 
 ## Guided Traversal Protocol (Source E)
@@ -277,6 +282,11 @@ Generated: <ISO> | Scope: <full|healing|scoped>
 
 After confirming changes: set `last_scanned`, update `elements` and `coverage_gaps`, update `navigation_context`. Add new surfaces; mark removed surfaces as `deprecated`. Generate new scenarios for newly discovered ACs (load `living-doc-scenario-creator`).
 
+**Post-RE-SCAN pipeline:**
+- Non-empty `coverage_gaps` → trigger `data-cy-instrument` to add missing `data-cy` attributes.
+- New routes without PageObjects → continue in Create mode for those surfaces.
+- Deprecated surfaces → trigger `bdd-maintain` REMOVE mode to clean up associated automation files.
+
 ---
 
 ### HEALING scope
@@ -288,6 +298,8 @@ After confirming changes: set `last_scanned`, update `elements` and `coverage_ga
 3. Find updated element IDs or selectors; update only the affected PageObject(s).
 4. Verify the step definition binding still resolves; fix if broken.
 5. Re-run only the previously failing tests to confirm healing. Do not re-run the full suite.
+
+> **Scope boundary with `gherkin-living-doc-sync`:** HEALING mode fixes selector drift in PageObject classes and step definition bindings. It does not resync `@AC:` traceability tags or correct scenario wording in `.feature` files. If healing reveals that feature file step text also drifted, trigger `gherkin-living-doc-sync` to realign the feature files.
 
 ---
 
@@ -342,7 +354,7 @@ After confirming changes: set `last_scanned`, update `elements` and `coverage_ga
 
 ---
 
-## Out-of-scope redirects
+## Out-of-scope routing
 
 | Request | Correct skill |
 |---|---|

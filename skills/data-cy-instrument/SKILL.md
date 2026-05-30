@@ -1,19 +1,17 @@
 ---
 name: data-cy-instrument
 description: >
-  Automatically resolve missing `data-cy` attributes in component templates (Angular-first)
-  and sync the corresponding Playwright PageObjects to use `getByTestId()`. Activate
-  whenever coverage gaps exist in `manifest.json`, when PageObject stubs carry
-  "⚠️ PROPOSED" locator comments, when Functionality entities have `status: planned`
-  due to missing test IDs, or when a dev explicitly asks to instrument templates.
-  Activate at the end of a `living-doc-pageobject-scan` session (Create or RE-SCAN scope)
-  when `coverage_gaps` arrays are non-empty;
-  Triggers on: "add missing data-cy", "instrument templates", "fix data-cy gaps",
-  "add testids", "data-cy audit", "instrument angular templates", "fix locators",
-  "add data-cy attributes", "add test ids to templates", "fix playwright selectors",
-  "data-cy-instrument".
-  Does NOT trigger for: adding or fixing Gherkin scenarios (use living-doc-scenario-creator); generating
-  or healing PageObjects without instrumentation gaps (use living-doc-pageobject-scan).
+  Automatically resolve missing `data-cy` attributes in Angular templates and sync PageObjects
+  to use `getByTestId()`. Angular-first but phases 1, 3, and 5 are framework-agnostic. Activates
+  when coverage_gaps are non-empty, PageObjects carry "⚠️ PROPOSED" locator comments, or
+  Functionalities have `status: planned` due to missing test IDs.
+  Triggers on: "add missing data-cy", "instrument templates", "fix data-cy gaps", "add testids",
+  "data-cy audit", "instrument angular templates", "fix locators", "add data-cy attributes",
+  "add test ids to templates", "fix playwright selectors due to missing data-cy", "data-cy-instrument".
+  Does NOT trigger for: adding Gherkin (use living-doc-scenario-creator); PageObject
+  healing without data-cy gaps (use living-doc-pageobject-scan HEALING).
+  Pairs with living-doc-pageobject-scan (upstream) and living-doc-scenario-creator (downstream);
+  invokes living-doc-update for Functionality promotion.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -65,7 +63,7 @@ Build a prioritised gap list before touching any file.
 5. Sort by priority P1 → P3. Process in that order.
 
 **Skip list — do not attempt to instrument these:**
-- Elements inside third-party library internals where the host attribute is confirmed not to be propagated (e.g. `cps-table` inner paginator buttons, `cps-tab` inner `<li role="tab">` when the lib does not forward host attributes). Mark these ⚠️ "needs lib support" and surface them as a library issue to the dev team, not a template change.
+- Elements inside third-party library internals where the host attribute is confirmed not to be propagated (e.g. `cps-table` inner paginator buttons, `cps-tab` inner `<li role="tab">` when the lib does not forward host attributes). Mark these ⚠️ "needs lib support" — add a WORK_LOG.md §4 row with status ⚠️, element description, library name and version, and a link to the library's issue tracker if one exists. Do not leave these as silent skips.
 - Elements that require authenticated roles to render — flag as needing an integration test fixture, not a data-cy change.
 
 ---
@@ -195,6 +193,8 @@ For each Functionality whose `status: planned` was solely due to missing `data-c
 
 Only promote if the data-cy attributes required by that Functionality's ACs have all been added in Phase 4. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
 
+After updating the BDD feature file header, also invoke `living-doc-update` to change the matching catalog entity's `status` from `planned` to `active`. The BDD file header and the catalog entity must stay in sync.
+
 ---
 
 ## Phase 7 · WORK_LOG Update
@@ -248,6 +248,18 @@ Report the following at the end of the run:
 
 **Pipeline position:**
 ```
-living-doc-pageobject-scan          →  data-cy-instrument  →  living-doc-scenario-creator
-living-doc-pageobject-scan (RE-SCAN) →  data-cy-instrument  →  living-doc-scenario-creator
+living-doc-pageobject-scan (or RE-SCAN)  →  data-cy-instrument
+  →  living-doc-update  (promote Functionalities: planned → active)
+  →  living-doc-scenario-creator
 ```
+
+---
+
+## Out-of-scope routing
+
+| Request | Correct skill |
+|---|---|
+| Add or fix Gherkin scenarios | `living-doc-scenario-creator` |
+| Generate or heal PageObjects (no missing data-cy) | `living-doc-pageobject-scan` |
+| Fix selector drift from DOM structure changes (no missing data-cy) | `living-doc-pageobject-scan` HEALING scope |
+| Deprecate a Functionality entity | `living-doc-update` |

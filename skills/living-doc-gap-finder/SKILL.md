@@ -1,18 +1,17 @@
 ---
 name: living-doc-gap-finder
 description: >
-  Identify gaps in the living documentation by combining bottom-up UI/code exploration with
-  top-down requirement checking. Activate when auditing living doc completeness, finding
-  undocumented behaviors, discovering orphan tests with no AC link, orphan Functionalities with
-  no parent Feature, detecting untested ACs, producing a documentation coverage gap report
-  (including batch runs for large suites), or proposing new living doc entities to fill
-  identified gaps.
+  Identify gaps in the living documentation by combining bottom-up and top-down analysis.
+  Use when auditing living doc completeness, finding undocumented behaviors, orphan tests,
+  orphan Functionalities, untested ACs, or producing a documentation coverage gap report.
+  Proposes actions executed by living-doc-create-*, living-doc-scenario-creator, and
+  living-doc-update. Re-run after entity creation or status changes to confirm gaps are closed.
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "orphan functionalities", "untested AC",
   "documentation coverage", "gap report", "what's not covered", "living doc audit",
   "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Delegates to: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
+  Pairs with living-doc-update (stale references) and living-doc-create-* skills (gap resolution).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -49,6 +48,17 @@ Before presenting the final report, normalise the script output against the taxo
 
 ---
 
+## Mode names
+
+| Mode | When to use |
+|---|---|
+| **AUDIT mode** | Full catalog audit — runs the 9-type taxonomy top-down across all entities. Use after a sprint with entity changes or when the living doc hasn’t been reviewed recently. |
+| **PLAN mode** | Bootstrap new coverage — draft ACs from PageObject descriptions or discovered UI surfaces (bottom-up). Produces `PLANNED`-state AC drafts for user confirmation before creating entities. |
+
+Both modes use `compute_gaps.py` and the same gap taxonomy. AUDIT mode spans the full catalog; PLAN mode is scoped to the surfaces being bootstrapped.
+
+---
+
 ## Gap taxonomy
 
 Nine types of gaps are detected, in order of risk:
@@ -64,6 +74,8 @@ Nine types of gaps are detected, in order of risk:
 | 7 — Important | **Stale reference** | An active test references a Deprecated AC |
 | 8 — Nit | **Undocumented Functionality** | A Functionality entity exists with no associated tests |
 | 9 — Nit | **Empty Feature** | A Feature entity exists with no Functionalities defined |
+
+> **Resolution routing:** `UNTESTED_AC` → `living-doc-scenario-creator`; `UNDOCUMENTED_SURFACE` / `ORPHAN_FUNCTIONALITY` / `EMPTY_FEATURE` → `living-doc-create-*`; `ORPHAN_FEATURE` / `ORPHAN_USER_STORY` → `living-doc-update` (add missing link); `ORPHAN_TEST` → `gherkin-living-doc-sync`; **`STALE_REFERENCE`** → `living-doc-update` (deprecate the AC or update the test `@AC:` tag); `UNDOCUMENTED_FUNCTIONALITY` → `living-doc-scenario-creator`.
 
 ## Workflow
 
@@ -171,14 +183,21 @@ For each gap, propose the living doc action:
 | ORPHAN_USER_STORY | Link to an existing Feature, or create the missing Feature — `living-doc-create-feature` |
 | ORPHAN_FUNCTIONALITY | Link to an existing Feature, or delete if the behavior has no owning surface. Do not delete if tests reference this Functionality's ACs — resolve those first (see ORPHAN_TEST). |
 | ORPHAN_TEST | Link test to an existing AC, or create a Functionality — `living-doc-create-functionality`. **Never delete a test to resolve an orphan — that would silently remove coverage.** If the linked AC ID no longer exists (broken link), choose from: (1) recreate the AC/Functionality if the behavior is still required; (2) update the link to the merged AC ID if the entity was merged; (3) delete the test only after product owner confirmation that the behavior has been intentionally removed. |
-| STALE_REFERENCE | Update the test to reference the active replacement AC. If the deprecated behavior was intentionally removed, delete the test after product owner confirmation. If removed in error, reinstate the AC using `living-doc-update`. |
+| STALE_REFERENCE | Use `living-doc-update` to manage the AC state first: reinstate the AC if the deprecation was in error, or confirm the deprecation is intentional. Then update the test to reference the active replacement AC, or delete the test after product owner confirmation if the behavior has been intentionally retired. |
 | UNDOCUMENTED_FUNCTIONALITY | Create unit/integration tests for the Functionality's ACs |
 | EMPTY_FEATURE | Create Functionalities for the Feature's known behaviors — `living-doc-create-functionality` |
 
-> **Out-of-scope actions:** living-doc-gap-finder identifies and proposes new entities — it does
-> not create them. Direct creation requests (e.g. "create a User Story", "create a Feature") must
-> be delegated to the appropriate skill: `living-doc-create-user-story`, `living-doc-create-feature`,
-> or `living-doc-create-functionality`.
+## Out-of-scope routing
+
+| Request | Correct skill |
+|---|---|
+| Create a User Story | `living-doc-create-user-story` |
+| Create a Feature | `living-doc-create-feature` |
+| Create a Functionality | `living-doc-create-functionality` |
+| Update or deprecate an entity / AC | `living-doc-update` |
+| Generate BDD scenarios | `living-doc-scenario-creator` |
+
+Living-doc-gap-finder identifies and proposes — it does not create or edit entities.
 
 ### Step 6 — Output gap report
 

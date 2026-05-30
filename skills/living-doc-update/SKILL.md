@@ -12,6 +12,7 @@ description: >
   "change status of user story", "update feature registry".
   Does NOT trigger for: creating new entities (use living-doc-create-*), finding gaps
   (use living-doc-gap-finder), generating scenarios (use living-doc-scenario-creator).
+  Pairs with gherkin-living-doc-sync (propagate AC changes) and bdd-maintain (cleanup after deprecation).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -53,6 +54,18 @@ When modifying an existing AC **keep the AC ID stable** — changing the ID brea
 to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
+## Promote a Functionality from planned to active
+
+A Functionality is ready to move from `planned` to `active` when all its ACs have passing tests.
+
+| Check | Requirement |
+|---|---|
+| `test_coverage` entries present | Every AC has a `test_type` and `justification` |
+| Tests passing | All referenced unit/integration tests pass in CI |
+| No `FUNC-UNKNOWN` placeholder | Functionality has a stable registered ID |
+
+After promoting a Functionality to `active`, run `living-doc-gap-finder` to confirm no `UNDOCUMENTED_FUNCTIONALITY` gaps remain.
+
 ## Promote a User Story from planned to active
 
 Invariants that must hold before setting `status: active`:
@@ -67,6 +80,8 @@ Invariants that must hold before setting `status: active`:
 Warn if any invariant fails:
 > "User Story US-042 cannot be promoted from 'planned' to 'active': no error-path AC exists. Add at least one
 > AC for a failure or edge case before promoting."
+
+After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC if they do not yet exist.
 
 ## Deprecate a Feature or Functionality
 
@@ -88,6 +103,20 @@ Rules:
 - Flag any tests linked to the deprecated entity for update or removal
 - If the deprecated entity has `ACTIVE` ACs with linked Gherkin scenarios, trigger
   `gherkin-living-doc-sync` to propagate `@deprecated` and `@review-needed` tags to those scenarios
+- After `gherkin-living-doc-sync` has tagged the deprecated scenarios, trigger `bdd-maintain`
+  REMOVE mode if the automation files for this entity should be deleted from the repository
+
+## Rename a Feature
+
+Changing a Feature's `id` or `name` requires these cascading updates:
+
+1. Update the Feature entity (`id`, `name`, and any self-referencing fields).
+2. Update `feature_id` in every Functionality linked to this Feature.
+3. Update the `feature_registry` entry in `catalog.json` (change the `feature_id` key and any path comments).
+4. Search `manifest.json` and `seed.yaml` for the old name or ID and update.
+5. Search PageObject file headers for the old Feature reference and update.
+6. If Gherkin feature files have a `# Feature:` header with the old name, update those headers.
+7. Run `living-doc-gap-finder` to confirm no `ORPHAN_FUNCTIONALITY` gaps remain after the rename.
 
 ## Update Feature ownership or dependencies
 
@@ -111,7 +140,7 @@ AC:US-042-03 (v1.2.0 – PLANNED)
    – future_release: sprint-52
 ```
 
-## Routing
+## Out-of-scope routing
 
 | Request | Correct skill |
 |---|---|
@@ -120,6 +149,7 @@ AC:US-042-03 (v1.2.0 – PLANNED)
 | Create a new Functionality | `living-doc-create-functionality` |
 | Find gaps in living documentation | `living-doc-gap-finder` |
 | AC modified, deprecated, or descoped — sync linked scenarios | `gherkin-living-doc-sync` |
+| Deprecated entity — remove associated automation files | `bdd-maintain` |
 | Assess impact of an AC change on Features and User Stories | `living-doc-impact-analysis` |
 
 ## Script — `scripts/validate_entity.py`

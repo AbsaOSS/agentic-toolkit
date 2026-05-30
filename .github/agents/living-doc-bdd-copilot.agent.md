@@ -2,11 +2,11 @@
 description: >
   Single agent for living documentation and BDD automation — catalog management plus
   executable test generation. Catalog: create/update/deprecate User Stories, Features,
-  Functionalities and ACs; impact analysis; gap finding (HEALING/PLAN modes).
+  Functionalities and ACs; impact analysis; gap finding (AUDIT/PLAN modes).
   Automation: explore webapps, generate PageObjects, produce Gherkin scenarios and step
   definitions, maintain BDD suites, sync traceability. Triggers: "create user story",
   "document feature", "update AC", "impact analysis", "living doc gaps", "PLAN mode",
-  "HEALING mode", "deprecate entity", "mark US ready", "scan webapp", "generate pageobjects",
+  "AUDIT mode", "deprecate entity", "mark US ready", "scan webapp", "generate pageobjects",
   "heal pageobjects", "generate scenarios", "sync gherkin", "playwright crawl",
   "explore the app", "BDD pipeline", "crawl the UI", "create page objects",
   "generate feature file", "step definitions", "add missing data-cy", "fix playwright selectors",
@@ -83,7 +83,7 @@ Load **one** skill per session. Do not pre-load skills for modes not yet trigger
 | Update / deprecate entity or AC | `living-doc-update` |
 | Promote entity to ACTIVE | `living-doc-update` |
 | PR impact analysis / trace affected entities | `living-doc-impact-analysis` |
-| Catalog gaps / HEALING mode / PLAN mode | `living-doc-gap-finder` |
+| Catalog gaps / AUDIT mode / PLAN mode | `living-doc-gap-finder` |
 
 `living-doc-gap-finder` is used **top-down** in catalog operations — finding missing documentation entities. Bottom-up (uncovered ACs) is used in automation operations (see below).
 

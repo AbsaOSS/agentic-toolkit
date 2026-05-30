@@ -1,19 +1,18 @@
 ---
 name: bdd-maintain
 description: >
-  Lifecycle cleanup for BDD automation artifacts: REMOVE (delete feature files, step
-  definitions, and PageObjects linked to a deprecated entity) and DEAD CODE AUDIT (find
-  unused step definitions, PageObject methods, and PO components via three Python scripts).
-  Activate when a feature has been removed from the product and its linked BDD files must be
-  deleted, or when dead BDD code needs to be identified. Third step in the entity-deprecation
-  chain — runs after living-doc-update deprecates the entity and gherkin-living-doc-sync
-  marks linked scenarios.
+  Lifecycle cleanup for BDD automation artifacts. REMOVE: delete feature files, step
+  definitions, and PageObjects linked to a deprecated entity. DEAD CODE AUDIT: find
+  unused step definitions, PageObject methods, and PO components via three Python scripts.
+  Third step in the entity-deprecation chain — after living-doc-update and gherkin-living-doc-sync.
   Triggers on: "remove feature", "deprecate bdd", "delete feature files", "bdd cleanup",
   "remove pageobject", "unused steps", "dead pageobject methods", "find unused steps",
   "dead code audit", "unused po methods", "dead po components", "bdd-maintain".
-  Does NOT trigger for: re-scanning the manifest after UI changes (use living-doc-pageobject-scan
-  RE-SCAN scope); healing failing tests after selector drift (use living-doc-pageobject-scan
-  HEALING scope); syncing @AC: traceability tags (use gherkin-living-doc-sync).
+  Does NOT trigger for: re-scanning manifest after UI changes (use living-doc-pageobject-scan
+  RE-SCAN); healing selector drift (use living-doc-pageobject-scan HEALING); syncing @AC:
+  traceability tags (use gherkin-living-doc-sync).
+  Pairs with living-doc-update (upstream — deprecate entity first) and
+  gherkin-living-doc-sync (upstream — tag scenarios first).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -31,14 +30,16 @@ Two modes — activate the one that matches the trigger.
 
 **Trigger:** Feature deprecated or deleted from the product.
 
+**Prerequisite:** `living-doc-update` must have already deprecated the entity and `gherkin-living-doc-sync` must have already tagged linked scenarios with `@deprecated` and `@review-needed`. Run those two skills first if they have not yet run — removing files before scenarios are tagged silently breaks traceability.
+
 **Scope:** Only files linked to the removed entity — do not touch other Features, PageObjects, or step definitions.
 
 1. Identify the specific Feature/US/AC being removed.
 2. Find all `.feature` files whose scenarios carry an `@AC:` tag matching the removed entity's IDs.
-3. Find PageObjects referenced only by those scenarios; find step definitions used only by those scenarios.
+3. Find PageObjects referenced only by those scenarios; find step definitions used only by those scenarios. Also check `playwright/fixtures.ts` (or the project's fixture file) for fixture registrations that import the PageObjects being removed — those imports and constructor parameters must be removed too.
 4. Confirm the full deletion list with the user before touching any file.
-5. Remove confirmed files; update `manifest.json` to remove the deprecated entry.
-6. Flag linked US/AC entities in the living documentation as candidates for deprecation — load `living-doc-update` skill.
+5. Remove confirmed files; remove the deprecated entry from `manifest.json`. Do not restructure or regenerate the manifest — `living-doc-pageobject-scan` owns the manifest for all active entries.
+6. If any child entities (linked User Stories, Functionalities) were not yet deprecated in the catalog, flag them and load `living-doc-update` to deprecate them now.
 
 ---
 
@@ -98,3 +99,15 @@ python playwright/scripts/find_unused_po_components.py \
 - **Unused PO class**: either add an import and fixture entry, or remove the `.ts` file — after confirming nothing references it outside the test suite.
 
 All three scripts exit `0` on clean, `1` on findings, `2` on bad arguments — safe for CI gating.
+
+---
+
+## Out-of-scope routing
+
+| Request | Correct skill |
+|---|---|
+| Re-scan manifest after UI changes | `living-doc-pageobject-scan` RE-SCAN scope |
+| Fix failing tests due to selector drift | `living-doc-pageobject-scan` HEALING scope |
+| Sync `@AC:` traceability tags | `gherkin-living-doc-sync` |
+| Deprecate an entity in the catalog | `living-doc-update` |
+| Tag deprecated scenarios before deletion | `gherkin-living-doc-sync` |

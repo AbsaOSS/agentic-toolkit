@@ -1,20 +1,19 @@
 ---
 name: living-doc-impact-analysis
 description: >
-  Analyse the impact of a code change on the living documentation. Given a PR diff,
-  modified module, or changed API contract, trace which Features, Functionalities, and User Stories
-  are affected. Output an impact map that identifies what must be reviewed,
-  updated, or re-tested. Activate when a PR touches business logic and you need to know what
-  living doc entities are affected, when a service module is refactored, or when breaking API
-  changes need living doc coverage traced.
+  Analyse the impact of a code change on the living documentation. Given a PR diff, modified
+  module, or changed API contract, trace affected Features, Functionalities, and User Stories.
+  Output an impact map identifying what must be reviewed, updated, or re-tested. Activate when
+  a PR touches business logic, a service module is refactored, or breaking API changes need
+  living doc coverage traced.
   Triggers on: "living doc impact", "what does this change affect", "impact of PR on living doc",
   "trace affected user stories", "affected features", "impact analysis", "living doc sign-off",
   "what user stories are affected", "which scenarios need re-running", "what needs re-testing",
   "PR impact on docs".
-  Does NOT trigger for: updating living doc (use living-doc-update), finding coverage gaps
-  (use living-doc-gap-finder), creating new entities (use living-doc-create-* skills).
-  Pairs with gherkin-living-doc-sync — high-impact AC changes identified here cascade to
-  gherkin-living-doc-sync for feature file propagation.
+  Does NOT trigger for: updating living doc (use living-doc-update); finding coverage gaps
+  (use living-doc-gap-finder); creating new entities (use living-doc-create-*).
+  Pairs with living-doc-update (apply changes), gherkin-living-doc-sync (propagate AC changes),
+  and bdd-maintain (cleanup for deprecated entities).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -44,6 +43,16 @@ Feature registry format (add to your catalog JSON):
   ]
 }
 ```
+
+**Bootstrapping `feature_registry`:** If no registry exists, follow these steps:
+1. Run `living-doc-gap-finder` to list all Feature entities and their IDs.
+2. For each Feature, manually map its canonical source directory to its ID:
+   - Angular: `"paths": ["src/app/pages/checkout/**"]` mirrors the module directory under `src/app/`.
+   - Java/Spring: `"paths": ["src/main/java/com/example/checkout/**"]` uses the package path.
+3. Add each mapping as `{ "feature_id": "FEAT-<id>", "paths": ["<glob>"] }` under `"feature_registry"` in `catalog.json`.
+4. Re-run `trace_impact.py` to verify mappings resolve correctly against a known changed file.
+
+Maintain the registry whenever a Feature is created, renamed, or its source directory moves. The `living-doc-create-feature` and `living-doc-update` "Rename a Feature" workflows include a reminder for this step.
 
 The script handles Steps 1–2 (file classification and entity traversal). Use its output JSON
 to drive Steps 3–5 (impact classification, impact map narrative, and sign-off checklist).
@@ -170,7 +179,9 @@ Produce this checklist as a PR comment or documentation artefact if requested.
 > must change, hand off to `living-doc-update` immediately. Pass the exact entity ID(s) and the
 > recommended change from Step 4's recommended actions list. This skill analyses — it does not
 > edit entities. If any High-impact ACs were subsequently modified or deprecated, also invoke
-> `gherkin-living-doc-sync` to propagate the changes to linked feature files.
+> `gherkin-living-doc-sync` to propagate the changes to linked feature files. If the change
+> revealed that a Feature or Functionality has been fully deprecated with active BDD coverage,
+> also invoke `bdd-maintain` REMOVE mode to clean up the associated automation files.
 
 ## Code-level impact report format
 
@@ -197,9 +208,10 @@ Do not include speculative changes beyond the described scope.
 | Changed domain logic with no Feature entity defined in the living doc | Missing living doc coverage — flag as a **High-impact gap** and recommend creating documentation with `living-doc-create-functionality` |
 | Impact analysis only covers unit/integration tests, not E2E scenarios | Incomplete impact — flag for test-e2e-standards review |
 
-## Out-of-scope redirects
+## Out-of-scope routing
 
 | Request type | Correct skill |
 |---|---|
 | "Update a living doc entity / add a new AC" | `living-doc-update` — this skill analyses impact, it does not edit entities |
 | "Which Functionalities have no User Stories / find coverage gaps" | `living-doc-gap-finder` — gap discovery is a separate concern |
+| "Clean up BDD files for a deprecated feature" | `bdd-maintain` — deletes automation artifacts for removed entities |

@@ -2,18 +2,17 @@
 name: living-doc-create-user-story
 description: >
   Guide the creation of a well-formed User Story (US) with business-level Acceptance Criteria
-  that are traceable, testable, and E2E-ready. Use when creating a new User Story for a
-  business capability, eliciting As-a/I-can/so-that narratives, defining US-level Acceptance
-  Criteria, validating User Story narrative structure (checking As-a role, I-want clause, or
-  AC wording quality), or reviewing US completeness before scenario creation.
+  that are traceable, testable, and E2E-ready. Use when creating a new User Story, eliciting
+  As-a/I-can/so-that narratives, defining US-level ACs, validating US narrative structure,
+  or reviewing US completeness before scenario creation.
   Triggers on: "create a user story", "new user story for", "write acceptance criteria for",
   "document a business requirement", "define US AC", "user story template", "as a user I want",
   "elicit requirements", "AC for user story", "US acceptance criteria",
   "review this user story", "is my narrative well-formed", "I-want clause".
-  Does NOT trigger for: atomic component behaviors (use living-doc-create-functionality),
-  documenting system surfaces (use living-doc-create-feature), generating BDD scenarios
-  (use living-doc-scenario-creator). Pairs with living-doc-create-functionality and
-  living-doc-scenario-creator.
+  Does NOT trigger for: atomic behaviors (use living-doc-create-functionality); system surfaces
+  (use living-doc-create-feature); generating BDD scenarios (use living-doc-scenario-creator).
+  Pairs with living-doc-create-feature, living-doc-create-functionality, and
+  living-doc-scenario-creator (generate scenarios after the US is active).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -56,6 +55,8 @@ Ask: *Which Feature(s) does this User Story touch?*
 A Feature is a named system surface (UI screen or API endpoint group). If the Feature
 has not yet been created as a living doc entity, note it as `[NEW: <name>]` and suggest creating it
 with `living-doc-create-feature` after completing the User Story.
+
+Also ask: *Are there existing Functionalities this User Story relies on?* If yes, link them in the `functionalities` array. This prevents `ORPHAN_FUNCTIONALITY` gaps and makes the entity graph traversable from US down to test coverage.
 
 ## Step 3 — Elicit Acceptance Criteria
 
@@ -133,6 +134,8 @@ Rules:
 - Every AC object must have `id` in `AC:US-<nnn>-<nn>` format and a plain-language `description`
 - Write AC descriptions in plain language — no structured language keywords in JSON values
 
+> **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC.
+
 ## Anti-patterns to flag
 
 | Anti-pattern | Warning |
@@ -146,3 +149,14 @@ Rules:
 | AC describes a non-observable outcome | e.g. “a background job processes the record” — the user cannot observe this. Restate as the observable signal (e.g. “the confirmation email arrives within 60 seconds”), or redirect the behavior to a Functionality entity if it is purely technical. |
 | AC identifier does not follow `AC:US-<nnn>-<nn>` | Every acceptance criterion in the JSON output needs a stable `AC:US-<nnn>-<nn>` id so it can be referenced unambiguously. |
 | AC behavior already documented in another User Story | Duplicate ACs create a maintenance burden — any change must be applied in every copy. Extract the shared behavior into a Functionality entity and link both User Stories to it. |
+
+---
+
+## Out-of-scope routing
+
+| Request | Correct skill |
+|---|---|
+| Document an atomic behavior or business rule | `living-doc-create-functionality` |
+| Document a system surface (screen, API) | `living-doc-create-feature` |
+| Generate BDD scenarios for User Story ACs | `living-doc-scenario-creator` |
+| Update or deprecate an existing User Story | `living-doc-update` |
