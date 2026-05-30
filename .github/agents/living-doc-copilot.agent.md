@@ -9,13 +9,7 @@ description: >
   "HEALING mode", "deprecate entity", "living doc copilot", "add AC to user story",
   "trace affected features", "update feature registry", "mark US ready",
   "check AC completeness".
-tools:
-  - read_file
-  - replace_string_in_file
-  - create_file
-  - grep_search
-  - file_search
-  - semantic_search
+tools: [vscode/extensions, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, vscode/askQuestions, vscode/toolSearch, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/runTask, execute/createAndRunTask, execute/runNotebookCell, execute/runTests, execute/testFailure, execute/runInTerminal, read/terminalSelection, read/terminalLastCommand, read/getTaskOutput, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, agent/runSubagent, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web/fetch, web/githubRepo, web/githubTextSearch, todo]
 ---
 
 # @living-doc-copilot
@@ -109,6 +103,34 @@ Do not cross this boundary.
 - Impact analysis: produce an explicit impact map covering affected and unaffected Features, Functionalities, User Stories, ACs, and linked scenarios; recommend version bumps on changed entities and deprecation for removed behaviours, but do not change state without user confirmation.
 - Updating an `ACTIVE` AC: show OLD vs NEW side by side before writing, keep the AC ID unchanged, and bump the semantic version for business-rule changes (for example `v1.0.0` to `v1.1.0` for a threshold change). Flag any linked `@AC:` tag annotations in feature files as potentially stale for `@living-doc-bdd-copilot`.
 - For Functionality requests, use a verb-phrase name, draft ACs and present them for confirmation before creating, and run a completeness checklist for thresholds, below/exactly/above-boundary behaviour, invalid or missing input, and interactions with other rules.
+
+## File editing protocol (CLI context)
+
+When this agent runs via the GitHub Copilot CLI task tool, only `view` (read) and `create` (new files) are available — `str_replace`/`edit` tools are not provisioned regardless of the `tools:` frontmatter. This is a CLI constraint, not a configuration problem.
+
+**When a task requires modifying an existing file:**
+
+1. Read the file with `view`.
+2. Produce a structured edit specification — do NOT generate shell commands or workarounds. Use this exact format for each file change:
+
+```
+FILE: <relative/path/to/file>
+FIND (exact, unique string):
+<<<
+<old content>
+>>>
+REPLACE WITH:
+<<<
+<new content>
+>>>
+```
+
+3. After all edit specs, add:
+   > ⚙️ **Caller action required:** Apply the edit specs above using the `edit` tool, then confirm completion.
+
+The calling agent (GitHub Copilot CLI main session) will apply the edits using its own `edit` tool and report back.
+
+**When a task requires creating a new file:** use `create` directly — this works without restriction.
 
 ## Handoff
 

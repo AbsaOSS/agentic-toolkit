@@ -69,7 +69,43 @@ For each distinct screen/route, extract:
 - Display elements: tables, lists, notifications, modals
 - Page-level: title, heading (h1), primary URL pattern
 
-**3. Generate PageObject skeleton**
+**3. Form traversal (deep exploration)**
+
+For each form, wizard, or dialog discovered on the route, attempt to fill and progress:
+
+a. **Resolve field values** using the sourcing cascade (see `ExplorationFixture` in the glossary):
+   1. Check `seed.yaml form_fixtures` for a pre-declared value for this route + field.
+   2. If absent: navigate to the entity list for this surface type; read an actual field value
+      from an existing entity. Replay it as `copyable`, or append a suffix (e.g. `-copy`) to
+      name fields to avoid duplicate rejection (`derived`).
+   3. If no existing entities: infer a `fake` value from label + placeholder + tooltip +
+      adjacent validation hint text.
+4. If a `real-world` field has no resolvable value: user-assist pause → ask user → record
+      to `form_fixtures` with `source: user_provided`, then continue.
+
+b. **Fill and progress** — fill all resolved fields; click Submit or Next. Scan the resulting
+   page or confirmation state. Record the fill sequence as `navigation_steps` and the required
+   values as `data_requirements` in the manifest `navigation_context`.
+
+c. **Probe validation behaviour** — after a successful fill-and-submit, return to the form and
+   probe each text input:
+   - **Special characters** (`<>'"&\`) — observe inline error, silent strip, or truncation.
+   - **Oversized input** (200+ random characters) — observe character counter, truncation at
+     max length, or rejection message.
+   - **Wrong type** (alphabetic text in a numeric or date field) — observe inline validation
+     message.
+   - **Duplicate detection** (value identical to a known existing entity name) — observe
+     duplicate-rejection error and capture its `data-cy`.
+
+d. **Scan validation state** — after each probe, run the core scan and elements-without-data-cy
+   scripts to capture `data-cy` error messages, character counters, and validation banners that
+   are only visible during invalid input. These become source material for `field_validation`
+   Functionality stubs.
+
+e. **Record findings** in the manifest `navigation_context.field_constraints` for this route:
+   `{ field_data_cy, max_length, special_chars, duplicate, duplicate_error_data_cy, real_world_required }`
+
+**4. Generate PageObject skeleton**
 
 One PageObject class per distinct screen. Naming: `<ScreenName>Page`.
 
@@ -150,14 +186,14 @@ Still include the current selector in the generated PageObject so test authoring
 annotate that selector constant with a `FRAGILE` comment and repeat the warning in the scan / breaking
 change report.
 
-**4. Map PageObjects to Feature entities**
+**5. Map PageObjects to Feature entities**
 
 One PageObject ≈ one `UI` Feature. Write the Feature ID as a header comment in the generated PageObject file (the `// living-doc: FEAT-<nnn> | <route>` line shown in the templates above). Also record `feature_id` in the manifest entry for the route.
 
 - If a matching Feature (`FEAT-<nnn>`) exists in the living documentation: add the header comment and manifest entry.
 - If no Feature exists: write `// living-doc: FEAT-UNKNOWN | <route>` as a placeholder and flag the route in the scan report as **"needs Feature entity"**. Do not auto-create a Feature file — raise it for the team to create via `living-doc-create-feature`.
 
-**5. Generate Functionality stubs from discovered behaviors**
+**6. Generate Functionality stubs from discovered behaviors**
 
 For each **behavior** identified on the screen — an interaction pattern, business operation, or
 component capability — propose a Functionality stub (`FUNC-<nnn>`) with a name following
@@ -253,6 +289,8 @@ files before running a full rescan.
 | Feature link | `// living-doc: FEAT-<nnn> \| <route>` header comment in the PageObject file. If no Feature exists: `FEAT-UNKNOWN` placeholder and a note in the scan report. Header format TBD — will follow similar conventions to the US/FUNC feature file header. |
 | Functionality feature file stubs | `features/functionalities/<feature-kebab>/func-<kebab>.feature` — one file per discovered Functionality behavior, `@FUNC_ID:FUNC-UNKNOWN` tag until ID is assigned |
 | Breaking change report | `.copilot/bdd/breaking-changes.md` |
+| Inaccessible routes (PHASE 5) | `.copilot/bdd/scan-phase5-inaccessible.md` |
+| Final scan report (PHASE 6) | `.copilot/bdd/scan-phase6-report.md` |
 | Exploration manifest | `.copilot/bdd/manifest.json` |
 
 > **Note:** Locations above are illustrative defaults. Actual paths depend on the project's repository structure and Storage Profile configuration.
@@ -283,7 +321,8 @@ The manifest records per-route exploration state. Agents and tools read it to dr
         "navigation_steps": "Click sidebar item \u2018All Domains\u2019.",
         "data_requirements": null,
         "auth_role": "standard user",
-        "notes": null
+        "notes": null,
+        "field_constraints": []
       }
     }
   }
@@ -301,6 +340,7 @@ The manifest records per-route exploration state. Agents and tools read it to dr
 | `navigation_context.prerequisites` | string | State that must exist before navigating (e.g. "a domain must have been visited at least once"). |
 | `navigation_context.navigation_steps` | string | Step-by-step path to the route from the app root or login page. |
 | `navigation_context.data_requirements` | string/null | Test data that must exist (e.g. "at least one published domain"). |
+| `navigation_context.field_constraints` | array | Per-field validation findings from form traversal probing. Schema: `{ field_data_cy, max_length, special_chars, duplicate, duplicate_error_data_cy, real_world_required }`. Empty array until probed. |
 | `navigation_context.auth_role` | string | Minimum role required to reach this route. |
 | `navigation_context.notes` | string/null | Any additional context for the agent (e.g. quirks, timing, overlay triggers). |
 
