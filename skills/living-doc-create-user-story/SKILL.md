@@ -12,7 +12,8 @@ description: >
   "review this user story", "is my narrative well-formed", "I-want clause".
   Does NOT trigger for: atomic component behaviors (use living-doc-create-functionality),
   documenting system surfaces (use living-doc-create-feature), generating BDD scenarios
-  (use living-doc-scenario-creator). Pairs with living-doc-create-functionality.
+  (use living-doc-scenario-creator). Pairs with living-doc-create-functionality and
+  living-doc-scenario-creator.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

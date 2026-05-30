@@ -9,9 +9,17 @@ description: >
   Triggers on: "scan webapp", "crawl UI", "explore the app", "discover routes",
   "business seed", "seed.yaml", "manifest.json", "build pageobjects", "first scan",
   "assemble seed", "guided traversal", "explore routes", "bdd explore".
+  Does NOT trigger for: standalone PageObject generation from a pre-built manifest without a
+  live webapp crawl (use living-doc-pageobject-scan); BDD maintenance after UI changes or
+  test failures (use bdd-maintain).
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # BDD Explore — Business Seed Assembly & Iterative Crawl
+
+> **Glossary:** Feature, Functionality, User Story — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** ExplorationFixture taxonomy, seed.yaml schema, manifest field_constraints — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 ---
 
@@ -85,7 +93,7 @@ form_fixtures: {}   # keyed by route path; populated during form traversal (Expl
 4. For each new surface discovered: add an entry to `manifest.json` (Feature name, URL, component IDs, PageObject path).
 5. Repeat until coverage plateau — no new surfaces found in the last full iteration.
 5a. **Entity harvesting** — whenever a domain ID, version, feed ID, or other parameterised entity is read from the DOM (URLs, card text, table rows), record it under `known_entities` in `seed.yaml` if not already present. Fields: `id`, `version`, `name`, `status`, `owner`, `note`. These values feed the sourcing cascade for parameterised routes in subsequent sessions.
-6. For each form, wizard, or dialog on a visited page, attempt to fill and progress using the **ExplorationFixture sourcing cascade** (see glossary): (1) pre-declared values in `seed.yaml form_fixtures` — use the `default`-labelled value for the happy path and explore alternate `values[]` branches to reach different form sections or sub-routes; (2) values read from an existing entity in the app — copy verbatim (`copyable`) or append a suffix to avoid duplicate rejection (`derived`); (3) inferred `fake` values from label + placeholder + tooltip text; (4) user-assist pause for `real-world` fields with no resolvable value. Skip `condition`-gated fields until the controlling field holds the required value. After a successful submission, probe each text input for: special characters (`<>'"&\`), oversized input (200+ chars), wrong type, and duplicate values — run the core scan after each probe to capture `data-cy` validation elements visible only in error state. Record findings as `field_constraints` in the manifest `navigation_context`. Report any still-unreachable flows (auth walls, CAPTCHA, deep data dependencies) and offer to enrich `seed.yaml`. **Dismiss rule — after scanning any modal dialog or overlay, always close it (Cancel button → × close button → Escape key, in that order) before navigating to the next route or triggering the next action. Never leave a dialog open while scanning a subsequent page.**
+6. For each form, wizard, or dialog on a visited page, attempt to fill and progress using the **ExplorationFixture sourcing cascade** (see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md#explorationfixture)): (1) pre-declared values in `seed.yaml form_fixtures` — use the `default`-labelled value for the happy path and explore alternate `values[]` branches to reach different form sections or sub-routes; (2) values read from an existing entity in the app — copy verbatim (`copyable`) or append a suffix to avoid duplicate rejection (`derived`); (3) inferred `fake` values from label + placeholder + tooltip text; (4) user-assist pause for `real-world` fields with no resolvable value. Skip `condition`-gated fields until the controlling field holds the required value. After a successful submission, probe each text input for: special characters (`<>'"&\`), oversized input (200+ chars), wrong type, and duplicate values — run the core scan after each probe to capture `data-cy` validation elements visible only in error state. Record findings as `field_constraints` in the manifest `navigation_context`. Report any still-unreachable flows (auth walls, CAPTCHA, deep data dependencies) and offer to enrich `seed.yaml`. **Dismiss rule — after scanning any modal dialog or overlay, always close it (Cancel button → × close button → Escape key, in that order) before navigating to the next route or triggering the next action. Never leave a dialog open while scanning a subsequent page.**
 
 **Component interaction rules — use these instead of `fill()` for custom components:**
 

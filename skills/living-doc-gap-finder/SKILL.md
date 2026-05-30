@@ -6,13 +6,14 @@ description: >
   undocumented behaviors, discovering orphan tests with no AC link, orphan Functionalities with
   no parent Feature, detecting untested ACs, producing a documentation coverage gap report
   (including batch runs for large suites), or proposing new living doc entities to fill
-  identified gaps. Orchestrates living-doc-pageobject-scan and living-doc-create-* skills.
+  identified gaps.
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "orphan functionalities", "untested AC",
   "documentation coverage", "gap report", "what's not covered", "living doc audit",
   "documentation audit".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Orchestrates: living-doc-pageobject-scan, living-doc-scenario-creator, and all create-* skills.
+  Delegates to: living-doc-pageobject-scan, living-doc-scenario-creator, bdd-scenario-gen,
+  and all create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -55,7 +56,7 @@ Nine types of gaps are detected, in order of risk:
 
 | Priority | Gap type | Description |
 |---|---|---|
-| 1 — Blocker | **Untested AC** | An Active or Implemented AC in a User Story or Functionality has no linked test. |
+| 1 — Blocker | **Untested AC** | An `ACTIVE` AC in a User Story or Functionality has no linked test. |
 | 2 — Important | **Undocumented UI surface** | A screen or API endpoint exists in the app with no Feature entity |
 | 3 — Important | **Orphan Feature** | A Feature entity exists with no linked User Story |
 | 4 — Important | **Orphan User Story** | A User Story exists with no linked Feature |
@@ -91,7 +92,7 @@ For each gap type:
 **UNTESTED_AC:**
 ```
 For each AC in (UserStory.ACs + Functionality.ACs)
-  where status IN (Active, Implemented)
+  where status == ACTIVE
   where no linked test exists:
     GAP: UNTESTED_AC
 ```

@@ -13,7 +13,8 @@ description: >
   "PR impact on docs".
   Does NOT trigger for: updating living doc (use living-doc-update), finding coverage gaps
   (use living-doc-gap-finder), creating new entities (use living-doc-create-* skills).
-
+  Pairs with gherkin-living-doc-sync — high-impact AC changes identified here cascade to
+  gherkin-living-doc-sync for feature file propagation.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -164,6 +165,12 @@ Before a release, confirm that all High-impact entities have been addressed:
 | living-doc-update applied for any changed business rules | ☐ |
 
 Produce this checklist as a PR comment or documentation artefact if requested.
+
+> **After completing the impact map:** if the analysis identified ACs or entity descriptions that
+> must change, hand off to `living-doc-update` immediately. Pass the exact entity ID(s) and the
+> recommended change from Step 4's recommended actions list. This skill analyses — it does not
+> edit entities. If any High-impact ACs were subsequently modified or deprecated, also invoke
+> `gherkin-living-doc-sync` to propagate the changes to linked feature files.
 
 ## Code-level impact report format
 

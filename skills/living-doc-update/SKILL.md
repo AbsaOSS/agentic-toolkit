@@ -12,7 +12,6 @@ description: >
   "change status of user story", "update feature registry".
   Does NOT trigger for: creating new entities (use living-doc-create-*), finding gaps
   (use living-doc-gap-finder), generating scenarios (use living-doc-scenario-creator).
-
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
@@ -87,6 +86,8 @@ Rules:
 - Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
 - Flag any tests linked to the deprecated entity for update or removal
+- If the deprecated entity has `ACTIVE` ACs with linked Gherkin scenarios, trigger
+  `gherkin-living-doc-sync` to propagate `@deprecated` and `@review-needed` tags to those scenarios
 
 ## Update Feature ownership or dependencies
 
@@ -97,12 +98,13 @@ When a team changes ownership of a Feature, update the `owners` field and set `o
 
 When an AC is moved out of the current sprint but not permanently removed:
 
-- Set `status: descoped` and add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
+- Keep `status: PLANNED` — state does not change for a deferral
+- Add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
 - Add `future_release` field if the work is planned for a later sprint
 - Flag any linked tests for `@skip` or `@pending` tagging
 
 ```
-AC:US-042-03 (v1.2.0 – descoped)
+AC:US-042-03 (v1.2.0 – PLANNED)
    – Promo codes can be stacked and applied in defined priority order.
    – descoped_at: 2026-05-15
    – descoped_reason: Promo stacking rule deferred — too complex for current sprint
@@ -117,6 +119,8 @@ AC:US-042-03 (v1.2.0 – descoped)
 | Create a new Feature | `living-doc-create-feature` |
 | Create a new Functionality | `living-doc-create-functionality` |
 | Find gaps in living documentation | `living-doc-gap-finder` |
+| AC modified, deprecated, or descoped — sync linked scenarios | `gherkin-living-doc-sync` |
+| Assess impact of an AC change on Features and User Stories | `living-doc-impact-analysis` |
 
 ## Script — `scripts/validate_entity.py`
 

@@ -10,8 +10,12 @@ description: >
   "parameter type", "DataTable", "DocString", "Before hook", "After hook", "World object",
   "step context", "step state sharing", "how to share state between steps",
   "register step definition", "hook setup".
-  Does NOT trigger for: writing Gherkin scenarios (use gherkin-scenario), writing unit tests
-  (use test-unit-write). Pairs with gherkin-scenario.
+  Does NOT trigger for: writing Gherkin scenarios (use bdd-scenario-gen), writing unit tests
+  (no skill in this toolkit covers unit test authoring — use your project's test framework
+  directly).
+  Pairs with bdd-scenario-gen.
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # Gherkin Step Definition Standards
@@ -22,7 +26,7 @@ description: >
 
 If the user asks to write or review a **Gherkin scenario / feature file**, do not draft the
 scenario here. Explain that this skill covers **step definition code** only, then route the user to
-`gherkin-scenario` for the Gherkin text itself.
+`bdd-scenario-gen` for the Gherkin text itself.
 
 ---
 

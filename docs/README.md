@@ -14,6 +14,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 |-----------------------------------------|-------------------------------------------------------------------------------------|
 | [Getting Started](./getting-started.md) | What skills are, how to install them, Copilot CLI usage                             |
 | [Contributing](../CONTRIBUTING.md)  | Skill folder layout, frontmatter, description writing, body guidelines, PR process |
+| [Agent Design Best Practices](./guides/agent-design.md) | Core principles, file structure, context management, tool guidance, examples, and stopping conditions for `.agent.md` files |
 | [Skill Testing](./testing/skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization    |
 | [Agent Testing](./testing/agent-testing.md) | Eval creation, trigger accuracy tuning, and body quality testing for `.agent.md` files |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues                               |

@@ -10,14 +10,17 @@ description: >
   Triggers on: "sync gherkin to living doc", "feature file out of sync", "scenario not linked
   to AC", "step text changed", "gherkin drift", "BDD sync", "AC link missing in feature file",
   "sync scenarios", "traceability broken", "propagate AC changes", "AC was descoped".
-  Does NOT trigger for: writing new scenarios (use gherkin-scenario), implementing step
+  Does NOT trigger for: writing new scenarios (use bdd-scenario-gen), implementing step
   definitions (use gherkin-step), finding living doc gaps (use living-doc-gap-finder),
   creating new US/Feature entities (use living-doc-create-user-story).
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # Gherkin ↔ Living Doc Sync
 
 > **Glossary:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** US and Functionality feature file headers, `# Acceptance Criteria:` block format — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 Sync runs in three directions: (1) feature file to living doc, (2) living doc AC to feature file,
 (3) step text to PageObject method signature.
@@ -67,11 +70,21 @@ Scenario: Login form shows the username input field
 - The `@AC:` tag(s) must appear on the lines immediately above `Scenario:` or `Scenario Outline:`. Additional tags (e.g. `@Regression`, `@skip`) may appear in the same block.
 - Full AC details (version, state, description) live in the file's `# Acceptance Criteria:` header block.
 
+**Deprecated US detection (Direction 4):** When the trigger is a deprecated User Story, first
+build the list of affected scenarios before running the standard checklist:
+
+1. Collect all AC IDs owned by the deprecated US (from the US entity or its feature file header).
+2. Search all `.feature` files under `features/us/` and `features/functionalities/` for
+   `@AC:` tags matching those IDs.
+3. For each matching scenario, emit a SYNC ACTION to add `@deprecated` and `@review-needed`,
+   with a comment recording the deprecation date and reason from the US entity.
+4. After tagging, continue with the standard checklist below to catch any remaining link issues.
+
 **Audit checklist:**
 1. Does every `Scenario:` / `Scenario Outline:` in living-doc files have at least one `@AC:` tag?
 2. Is the corresponding `# AC:` comment present and matching the tag's AC ID?
 3. Does the referenced AC ID exist in the living documentation?
-4. Does the AC state match (`Active` or `Implemented` — not `Deprecated` or `Planned`)?
+4. Does the AC state match (`ACTIVE` — not `DEPRECATED`, `PLANNED`, or `IN_REVIEW`)?
 5. Does the AC description (in the file header) match the scenario intent?
 
 For each missing or mismatched tag:
@@ -155,7 +168,7 @@ Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n 
 | Scenario with no `@AC:` tag | Missing traceability — add tag or create AC |
 | Two scenarios linked to the same AC | Usually a duplicate — review |
 | AC linked from a scenario in a different User Story's feature file | Passive cross-US coverage — permitted but note it in the sync report. Only flag if the scenario's primary intent belongs to a different User Story (misplaced scenario) |
-| Step text describes implementation (selector, endpoint) | Gherkin business-language violation — refer to `gherkin-scenario` |
+| Step text describes implementation (selector, endpoint) | Gherkin business-language violation — refer to `bdd-scenario-gen` |
 
 ---
 
@@ -163,7 +176,7 @@ Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n 
 
 | Request | Use instead |
 |---|---|
-| Writing new Gherkin scenarios from scratch | `gherkin-scenario` |
+| Writing new Gherkin scenarios from scratch | `bdd-scenario-gen` |
 | Implementing step definition code | `gherkin-step` |
 | Finding ACs with no scenario coverage | `living-doc-gap-finder` |
 | Creating new User Story, Feature, or Functionality entities | `living-doc-create-user-story` / `living-doc-create-functionality` |

@@ -1,50 +1,37 @@
 ---
 name: living-doc-scenario-creator
 description: >
-  From User Stories and Acceptance Criteria, generate BDD Gherkin scenario skeletons in
-  .feature files and identify step implementations needed using available PageObjects.
-  Use when generating Gherkin scenarios from a User Story (e.g. US-007), covering US ACs with
-  BDD scenarios, mapping Given-When-Then to PageObject actions, auditing scenario-to-AC coverage,
-  or tagging partial AC coverage with aspect notation.
-  Triggers on: "create BDD scenarios for user story", "generate scenarios for US",
-  "cover AC with scenarios", "generate feature file from user story", "BDD from requirements",
-  "scenario coverage for US", "map AC to scenarios", "gherkin from user story", "scenarios for US-",
-  "generate .feature file", "AC coverage for US", "partial AC coverage".
-  Does NOT trigger for: standalone Gherkin without a User Story (use gherkin-scenario),
-  implementing step definitions (use gherkin-step), doc gaps (use living-doc-gap-finder).
-  Pairs with living-doc-create-user-story, gherkin-scenario, and living-doc-pageobject-scan.
+  Generate the living-doc feature file header block (@US_ID:/@FUNC_ID: tag, Feature narrative,
+  # Acceptance Criteria: block) and scenario skeletons (one @AC:-tagged Scenario: title with
+  ... placeholder per ACTIVE AC). Produces an AC coverage report. Step bodies (Given/When/Then)
+  are authored by bdd-scenario-gen.
+  Use when bootstrapping a feature file for a US or Functionality, auditing AC coverage, or
+  tagging partial coverage with aspect notation.
+  Triggers on: "feature file header for user story", "living-doc feature file",
+  "bootstrap feature file for US", "US feature file structure", "cover AC with scenarios",
+  "scenario coverage for US", "map AC to scenarios", "AC coverage for US",
+  "partial AC coverage", "scenario creator", "generate feature file for US",
+  "bootstrap living-doc scenarios".
+  Does NOT trigger for: writing scenario step bodies (use bdd-scenario-gen), standalone
+  Gherkin (use bdd-scenario-gen), step definitions (use gherkin-step),
+  doc gaps (use living-doc-gap-finder).
+  Pairs with living-doc-create-user-story, bdd-scenario-gen, and living-doc-pageobject-scan.
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # Living Doc — Scenario Creator
 
 > **Glossary:** User Story, AC, PageObject, step definitions — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** US and Functionality feature file templates — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
-## Glossary alignment
+## AC state vocabulary
 
-**AC ID format:** `AC:<parent-id>-<nn>` — e.g. `AC:US-001-01`, `AC:US-001-02`
+**AC states used in this skill:** `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED`
 
-**AC traceability** (required for living-doc feature files — placed above every `Scenario:` in `features/us/` and `features/functionalities/`):
+Only `ACTIVE` ACs drive scenario generation. `PLANNED` and `DEPRECATED` ACs are skipped.
 
-```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
-@AC:US-1-01
-Scenario: Customer successfully places an order
-```
-
-When a scenario covers only **one aspect** of a multi-aspect AC, encode it as a `/aspect:value`
-param on the tag and mirror it in the comment:
-
-```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
-@AC:US-1-01/aspect:username-input
-Scenario: Login form shows the username input field
-```
-
-The `/param:value` format is extensible — additional params can be added after `/aspect:value`.
-The `# AC:` comment provides human context (version, state, description, aspect). The `@AC:` Cucumber tag provides machine traceability for scripts and coverage reports.
-
-Only ACs with state `Active` or `Implemented` drive scenario generation.
-ACs with state `Planned` or `Deprecated` are excluded from generation; note them in the coverage report.
+**AC traceability format** — for the authoritative `# AC:` and `@AC:` annotation format, load `bdd-scenario-gen`.
 
 ---
 
@@ -67,96 +54,60 @@ If PageObjects or step files are not available, generate scenarios with stub ste
 
 Load the User Story. Confirm:
 - ID follows `US-<nnn>` format
-- Which ACs are eligible for generation (`Active` or `Implemented`)
+- Which ACs are eligible for generation (`ACTIVE`)
 - ACs are atomic — each has one input condition and one observable outcome
 
-Treat requests such as “write feature tests for US-007” as requests to generate BDD scenarios plus a coverage table for that User Story.
+Treat requests such as "write feature tests for US-007" as requests to generate BDD scenarios plus a coverage table for that User Story.
 
-If no ACs are `Active` or `Implemented`, do **not** generate empty or stub scenarios. Instead,
-output a coverage report that lists every AC with its state-specific skip reason (`Planned`:
-`skipped — not yet active`, `Deprecated`: `skipped — deprecated AC`) and advise the user to
-re-run the scenario creator when an AC becomes `Active` or `Implemented`.
+If no ACs are `ACTIVE`, do **not** generate empty or stub scenarios. Instead,
+output a coverage report that lists every AC with its state-specific skip reason (`PLANNED`:
+`skipped — not yet active`, `DEPRECATED`: `skipped — deprecated AC`) and advise the user to
+re-run the scenario creator when an AC becomes `ACTIVE`.
 
-### Step 2 — Map each AC to a scenario
+### Step 2 — Generate scenario skeletons
 
-For each active AC, select the scenario pattern by AC type:
-- `happy_path`: `Scenario:` or `Scenario Outline:` (if data-driven)
-- `error`: `Scenario: <US title> — <error condition>`. If the AC text already gives a crisp business-facing failure title (for example, `Order rejected when payment card is declined`), prefer that exact title instead of mechanically prefixing the User Story title.
+For each `ACTIVE` AC, generate the `# AC:` comment, `@AC:` tag, and `Scenario:` title with `...` as the step placeholder. Step bodies (Given/When/Then) are authored by `bdd-scenario-gen`.
+
+Select the title by AC type:
+- `happy_path`: `Scenario: <positive outcome>`
+- `error`: `Scenario: <US title> — <error condition>` (prefer the crisp business-facing failure title from the AC if available)
 - `alternative`: `Scenario: <US title> — <alternative path>`
-
-Generate a scenario for **every** active AC.
-
-Map Given-When-Then from the AC to existing step definitions — reuse exact step text where found. Keep all step text in domain/business language only; never mention HTTP, APIs, selectors, DOM details, databases, or other implementation mechanics.
 
 ```gherkin
 # AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
-  Given the customer has items in their cart and a saved payment method
-  When the customer confirms the order
-  Then the order is confirmed
-  And a confirmation email is sent to the customer
-  And the cart is emptied
+  ...
+
+# AC:US-1-02 (v1.0.0 - Active) — order is rejected when the payment card is declined
+@AC:US-1-02
+Scenario: Order rejected when payment card is declined
+  ...
 ```
 
-### Step 3 — Implement missing step stubs
+### Step 3 — Hand off step bodies to bdd-scenario-gen
 
-For each step not found in existing step files, generate a named stub function in the
-appropriate step file. Apply the following two-case protocol:
+The skeletons from Step 2 use `...` placeholders. To produce full Given/When/Then implementations, pass the generated feature file to `bdd-scenario-gen`. For step definition code, load `gherkin-step`.
 
-**Case A — A PageObject method can implement the step:**
-
-Generate the full stub using the available method:
-
-```
-MISSING STEP: "Given the customer has items in their cart and a saved payment method"
-  PageObject candidate: CheckoutPage (FEAT-003)
-  Suggested step file: tests/steps/checkout_steps.py
-  Generated stub:
-      @given('the customer has items in their cart and a saved payment method')
-      def step_customer_has_cart_with_payment(context):
-          context.checkout_page = CheckoutPage(context.browser)
-          context.checkout_page.add_item_to_cart("SKU-100", quantity=1)
-          context.checkout_page.set_saved_payment_method()
-```
-
-**Case B — No matching PageObject method exists for the step:**
-
-Generate a stub with a `NotImplementedError` failure guard and flag the gap to
-`living-doc-pageobject-scan` (Maintain mode) so it can extend the PageObject:
-
-```
-MISSING STEP + MISSING PAGEOBJECT METHOD:
-  "When the customer applies a promo code"
-  No matching method found in CheckoutPage (FEAT-003)
-  Generated stub (with failure guard):
-      @when('the customer applies a promo code')
-      def step_apply_promo_code(context):
-          raise NotImplementedError(
-              "Step not implemented: 'the customer applies a promo code'. "
-              "CheckoutPage (FEAT-003) is missing an 'apply_promo_code' method. "
-              "Run living-doc-pageobject-scan (Maintain mode) on FEAT-003 to add it."
-          )
-  Action: invoke living-doc-pageobject-scan (Maintain mode) for the missing element
-```
+Do not author step bodies in this skill.
 
 ### Step 4 — Validate AC coverage
 
-Every `Active` or `Implemented` AC must map to at least one scenario.
+Every `ACTIVE` AC must map to at least one scenario.
 The coverage report must list **every** AC on the User Story, including skipped ones.
 Use these skip reasons verbatim so the output is predictable and auditable:
-- `Planned`: `skipped — not yet active`
-- `Deprecated`: `skipped — deprecated AC`
+- `PLANNED`: `skipped — not yet active`
+- `DEPRECATED`: `skipped — deprecated AC`
 
 Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full coverage report.
 
 ```
 AC COVERAGE REPORT — US-001
-  AC:US-001-01 (Active): ✅ covered by "Customer successfully places an order"
-  AC:US-001-02 (Active): ✅ covered by "Order rejected when payment card is declined"
-  AC:US-001-03 (Active): ❌ NOT COVERED — added to gap list
-  AC:US-001-04 (Planned): ⏭  skipped — not yet active
-  AC:US-001-05 (Deprecated): ⏭  skipped — deprecated AC
+  AC:US-001-01 (ACTIVE): ✅ covered by "Customer successfully places an order"
+  AC:US-001-02 (ACTIVE): ✅ covered by "Order rejected when payment card is declined"
+  AC:US-001-03 (ACTIVE): ❌ NOT COVERED — added to gap list
+  AC:US-001-04 (PLANNED): ⏭  skipped — not yet active
+  AC:US-001-05 (DEPRECATED): ⏭  skipped — deprecated AC
 ```
 
 Use `scripts/coverage_report.py` to generate this report across all entities.
@@ -198,30 +149,7 @@ Feature: Place an online order
     ...
 ```
 
-**Missing step report** — generated stub implementations grouped by step file; Case B stubs include `NotImplementedError` failure guards and flag missing PageObject methods for extension (see Step 3).
-
 **Coverage table** — ACs with coverage status (use `scripts/coverage_report.py`). Append it immediately after the `.feature` code block in the response.
-
----
-
-## Step reuse rules
-
-1. **Narrow to page scope first** — identify which PageObject the scenario's steps interact with. Only look in step definition files that already import or reference that PageObject; those are the most likely reuse candidates.
-2. **Match by purpose, not just text** — read the step implementation body to confirm it performs the same business action. Two steps may have identical text but operate on different elements (e.g. a `fill` on `username-input` vs `search-input`). Only reuse if the purpose matches.
-3. If a purpose-matching step exists, reuse it as-is; note the file it lives in.
-4. Only if no match exists: write a new stub using the `gherkin-step` skill. If an existing step is close but not identical, suggest a parameter to generalise it rather than duplicating.
-5. Never create duplicate step definitions — search before creating.
-
-## File placement
-
-| Step domain | Example step file |
-|---|---|
-| Authentication | `tests/steps/auth_steps.py` |
-| Checkout / order | `tests/steps/checkout_steps.py` |
-| Common / shared | `tests/steps/common_steps.py` |
-| Domain-specific | `tests/steps/<domain>_steps.py` |
-
-> **Note:** Paths above are illustrative examples. Actual file locations depend on the project's repository structure.
 
 ---
 
@@ -282,5 +210,9 @@ Functionality scenarios are **not** unit tests written in Gherkin. Steps must st
 
 | Request | Correct skill |
 |---|---|
-| Standalone Gherkin without a User Story | `gherkin-scenario` |
+| Standalone Gherkin without a User Story | `bdd-scenario-gen` |
 | Writing step definition code | `gherkin-step` |
+
+**Ambiguous request — "create scenarios for US-007":** If the user does not specify whether they want skeleton structure or full step bodies, ask:
+> "Do you want the living-doc feature file header and skeleton scenario titles (continue here in `living-doc-scenario-creator`), or full Given/When/Then scenario bodies (use `bdd-scenario-gen`)?"
+This skill produces the reusable structural skeleton (header block + AC-tagged scenario titles); `bdd-scenario-gen` fills in the step bodies.

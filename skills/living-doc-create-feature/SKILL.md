@@ -20,6 +20,7 @@ compatibility: GitHub Copilot
 # Living Doc — Create Feature
 
 > **Key concepts:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** PageObject file header schema — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 ## Step 1 — Identify the system surface
 
@@ -79,6 +80,13 @@ FUNC entries), leave the array as `[]` and add a warning:
 | `external_dependencies` | Services or systems this Feature calls (e.g. payment-gateway, order-service) |
 
 ## Step 6 — Output canonical Feature entity
+
+> **ID assignment:** Before assigning a `FEAT-` ID, run
+> `python scripts/next_id.py --type FEAT --catalog catalog.json`
+> to get the next available numeric ID (e.g. `FEAT-012`) and avoid collisions.
+> If your project uses readable slug IDs instead of numeric ones, derive the slug from the
+> surface name (e.g. `FEAT-checkout`, `FEAT-orders-api`, `FEAT-notifications-centre`)
+> and confirm there is no existing slug with the same name in the catalog.
 
 Use a readable slug ID based on the business surface name: `FEAT-<kebab-name>` (for example `FEAT-checkout`, `FEAT-orders-api`, `FEAT-notifications-centre`). For UI names ending in generic words like `Page`, `Screen`, or `Modal`, you may omit that trailing UI noun in the ID when the shorter slug stays unambiguous.
 

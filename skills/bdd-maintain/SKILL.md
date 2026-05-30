@@ -2,16 +2,26 @@
 name: bdd-maintain
 description: >
   Maintenance modes for the @living-doc-bdd-copilot agent: RE-SCAN (full manifest refresh
-  after UI changes), HEALING (fix selector drift in failing tests only), and REMOVE
-  (delete files linked to a deprecated feature). Activate when the UI has changed and the
-  manifest needs refreshing, when tests are failing due to selector drift, or when a feature
-  has been removed from the product.
+  after UI changes), HEALING (fix selector drift in failing tests only), REMOVE
+  (delete files linked to a deprecated feature), and DEAD CODE AUDIT (find unused step
+  definitions, PageObject methods, and PO components). Activate when the UI has changed and
+  the manifest needs refreshing, when tests are failing due to selector drift, when a feature
+  has been removed from the product, or when dead BDD code needs to be identified.
   Triggers on: "re-scan", "refresh manifest", "heal pageobjects", "fix failing tests",
   "selector drift", "tests are failing", "remove feature", "deprecate bdd", "bdd maintain",
-  "update selectors", "pageobject broken", "scenario failing".
+  "update selectors", "pageobject broken", "scenario failing", "unused steps",
+  "dead pageobject methods", "find unused steps", "dead code audit", "unused po methods".
+  Does NOT trigger for: first-time webapp exploration and seed assembly (use bdd-explore);
+  standalone (non-agent) PageObject maintenance outside @living-doc-bdd-copilot
+  (use living-doc-pageobject-scan).
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # BDD Maintenance
+
+> **Glossary:** Feature, Functionality, User Story — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** manifest.json schema (routes, elements, coverage_gaps, navigation_context) — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 Three modes — activate the one that matches the trigger.
 

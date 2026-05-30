@@ -1,23 +1,29 @@
 ---
 name: living-doc-pageobject-scan
 description: >
-  Explore an existing web application or test codebase to discover, create, and maintain PageObject
-  classes — the bottom-up entry point for BDD-driven UI testing. Use when generating PageObjects
-  from a live webapp URL or test directory, updating PageObjects after UI changes, bootstrapping
-  a test suite for a new screen, generating Functionality stubs from discovered UI elements,
-  updating the PageObject manifest after a redesign, or detecting PageObject drift.
+  Discover, create, and maintain PageObject classes — standalone bottom-up entry point for
+  BDD-driven UI testing. Use when generating PageObjects from a live webapp URL or test
+  directory, updating PageObjects after UI changes, bootstrapping a test suite for a new
+  screen, generating Functionality stubs from discovered UI elements, or detecting PageObject
+  drift.
   Triggers on: "scan this webapp", "generate pageobjects", "update pageobjects",
   "pageobject for this screen", "crawl the UI", "discover UI elements", "create page objects",
   "scan test suite for pageobjects", "living doc bottom-up", "bootstrap page objects",
   "pageobject drift", "sync pageobjects", "update manifest", "functionality stubs from UI".
-  Does NOT trigger for: creating User Stories (use living-doc-create-user-story), writing BDD
-  scenarios (use living-doc-scenario-creator). Pairs with living-doc-create-functionality
-  and living-doc-gap-finder.
+  Does NOT trigger for: creating User Stories (use living-doc-create-user-story), writing
+  scenarios (use living-doc-scenario-creator), agent crawl in @living-doc-bdd-copilot
+  (use bdd-explore), agent maintenance after UI changes (use bdd-maintain).
+  Pairs with living-doc-create-functionality and living-doc-gap-finder. After a scan
+  that produces non-empty coverage_gaps, continue with data-cy-instrument to resolve
+  missing data-cy attributes before generating scenarios.
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # Living Doc — PageObject Scan
 
 > **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** PageObject file header (required fields, cross-reference format, operational notes, common mistakes) — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 **Scope:** This skill generates PageObjects only for `UI` Features (web pages, modals, screens).
 API Features use annotated endpoint methods as their living contract anchor — not PageObjects.
@@ -73,7 +79,7 @@ For each distinct screen/route, extract:
 
 For each form, wizard, or dialog discovered on the route, attempt to fill and progress:
 
-a. **Resolve field values** using the sourcing cascade (see `ExplorationFixture` in the glossary):
+a. **Resolve field values** using the sourcing cascade (see [living-doc-bdd-schemas — ExplorationFixture](../references/living-doc-bdd-schemas.md#explorationfixture)):
    1. Check `seed.yaml form_fixtures` for a pre-declared value for this route + field.
    2. If absent: navigate to the entity list for this surface type; read an actual field value
       from an existing entity. Replay it as `copyable`, or append a suffix (e.g. `-copy`) to
@@ -174,8 +180,8 @@ export class CheckoutPage {
 ```
 
 The Living Doc Feature link (`FEAT-<nnn>`) is recorded in a file-level header comment (see
-examples above) — not in the class docstring. The exact multi-field header format for
-PageObject files is TBD and will follow similar conventions to the US/FUNC feature file header.
+examples above) — not in the class docstring. The multi-field header format for PageObject
+files is defined in [living-doc-bdd-schemas — PageObject File Header](../references/living-doc-bdd-schemas.md#pageobject-file-header).
 
 Flag fragile selectors:
 
@@ -279,6 +285,14 @@ After confirmation of all changes, update the manifest entry for each scanned ro
 Use `scripts/manifest_diff.py` to detect stale manifest entries and undocumented PageObject
 files before running a full rescan.
 
+```bash
+# Show stale manifest entries and undocumented PageObjects
+python scripts/manifest_diff.py --manifest .copilot/bdd/manifest.json --pages-dir tests/pages
+
+# Include a diff of element counts since last scan
+python scripts/manifest_diff.py --manifest .copilot/bdd/manifest.json --pages-dir tests/pages --diff
+```
+
 ---
 
 ## Output artifacts
@@ -286,7 +300,7 @@ files before running a full rescan.
 | Artifact | Location |
 |---|---|
 | PageObject files | `tests/pages/<ScreenName>Page.py` (or `.ts`) |
-| Feature link | `// living-doc: FEAT-<nnn> \| <route>` header comment in the PageObject file. If no Feature exists: `FEAT-UNKNOWN` placeholder and a note in the scan report. Header format TBD — will follow similar conventions to the US/FUNC feature file header. |
+| Feature link | `// living-doc: FEAT-<nnn> \| <route>` header comment in the PageObject file. If no Feature exists: `FEAT-UNKNOWN` placeholder and a note in the scan report. Header format: see [living-doc-bdd-schemas — PageObject File Header](../references/living-doc-bdd-schemas.md#pageobject-file-header). |
 | Functionality feature file stubs | `features/functionalities/<feature-kebab>/func-<kebab>.feature` — one file per discovered Functionality behavior, `@FUNC_ID:FUNC-UNKNOWN` tag until ID is assigned |
 | Breaking change report | `.copilot/bdd/breaking-changes.md` |
 | Inaccessible routes (PHASE 5) | `.copilot/bdd/scan-phase5-inaccessible.md` |
@@ -353,3 +367,4 @@ The manifest records per-route exploration state. Agents and tools read it to dr
 | Generate BDD scenarios for a User Story | `living-doc-scenario-creator` |
 | Create a User Story for this screen | `living-doc-create-user-story` |
 | Document an API endpoint or REST surface | `living-doc-create-functionality` |
+| Resolve missing `data-cy` attributes after scan | `data-cy-instrument` (when `coverage_gaps` non-empty) |

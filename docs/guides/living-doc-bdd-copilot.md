@@ -142,7 +142,7 @@ When this agent loads `living-doc-gap-finder`, it uses the **bottom-up** (scenar
 | `living-doc-pageobject-scan` | Discover, create, and maintain PageObject classes |
 | `living-doc-scenario-creator` | Generate Gherkin scenario skeletons from User Story ACs |
 | `living-doc-gap-finder` | Find ACs with no linked scenario (bottom-up, scenario coverage) |
-| `gherkin-scenario` | Write BDD Gherkin scenarios in plain business language |
+| `bdd-scenario-gen` | Write BDD Gherkin scenarios, detect coverage gaps, resolve step stubs |
 | `gherkin-step` | Implement step definitions — clean, reusable, maintainable |
 | `gherkin-living-doc-sync` | Sync feature files and scenarios with living doc traceability links |
 

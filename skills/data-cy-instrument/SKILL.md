@@ -1,20 +1,34 @@
 ---
 name: data-cy-instrument
 description: >
-  Automatically resolve missing `data-cy` attributes in Angular component templates
+  Automatically resolve missing `data-cy` attributes in component templates (Angular-first)
   and sync the corresponding Playwright PageObjects to use `getByTestId()`. Activate
   whenever coverage gaps exist in `manifest.json`, when PageObject stubs carry
   "⚠️ PROPOSED" locator comments, when Functionality entities have `status: planned`
   due to missing test IDs, or when a dev explicitly asks to instrument templates.
-  Fires automatically at the end of a `bdd-explore` or `bdd-maintain` RE-SCAN session
-  when `coverage_gaps` arrays are non-empty.
+  Activate at the end of a `living-doc-pageobject-scan`, `bdd-explore`, or `bdd-maintain`
+  RE-SCAN session when `coverage_gaps` arrays are non-empty;
   Triggers on: "add missing data-cy", "instrument templates", "fix data-cy gaps",
   "add testids", "data-cy audit", "instrument angular templates", "fix locators",
   "add data-cy attributes", "add test ids to templates", "fix playwright selectors",
   "data-cy-instrument".
+  Does NOT trigger for: adding or fixing Gherkin scenarios (use bdd-scenario-gen); generating
+  or healing PageObjects without instrumentation gaps (use living-doc-pageobject-scan); initial
+  webapp crawl (use bdd-explore).
+license: Apache-2.0
+compatibility: GitHub Copilot
 ---
 
 # data-cy-instrument
+
+> **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
+
+**Framework scope:** This skill is **Angular-first** — naming conventions, routing module paths,
+and feature-flag patterns are Angular-specific. The gap audit, naming validation, and PageObject
+sync phases (Phases 1, 3, 5) are framework-agnostic and apply to any frontend stack. For
+React, Vue, or other frameworks, adapt the component resolution in Phase 2 to the project's
+routing and component model; all other phases apply unchanged.
 
 Resolves missing `data-cy` attributes end-to-end: from gap discovery in `manifest.json`
 through Angular template edits, PageObject sync, Functionality promotion, and WORK_LOG

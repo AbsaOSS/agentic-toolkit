@@ -12,7 +12,7 @@ No fixture files for this skill. All evals are conversational — the skill oper
 | 2 | happy-path | _(none)_ | AC description updated in living doc → propagate to # AC: comment in feature file |
 | 3 | happy-path | _(none)_ | Step text drift after UI rename → DRIFT DETECTED block with two fix options |
 | 4 | regression | _(none)_ | US deprecated in living doc → @deprecated + @review-needed tags on linked scenarios |
-| 5 | negative | _(none)_ | Routing: new scenario authoring → gherkin-scenario |
+| 5 | negative | _(none)_ | Routing: new scenario authoring → bdd-scenario-gen |
 | 6 | paraphrase | _(none)_ | "Feature files are a mess after redesign" → prioritised repair plan: steps first, then links |
 | 7 | edge-case | _(none)_ | Broken AC reference (US-099 not in catalog) → resolution options, never remove the link |
 | 8 | output-format | _(none)_ | Sync run output format: SYNC ACTION + DRIFT DETECTED blocks + summary line |
@@ -27,7 +27,7 @@ No fixture files for this skill. All evals are conversational — the skill oper
 
 | Routes to | Query count |
 |---|---|
-| gherkin-scenario | 2 |
+| bdd-scenario-gen | 2 |
 | gherkin-step | 1 |
 | living-doc-gap-finder | 1 |
 | living-doc-create-user-story | 1 |

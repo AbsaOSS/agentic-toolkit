@@ -60,11 +60,11 @@
       "id": 5,
       "category": "negative",
       "prompt": "I need a new Gherkin scenario for the case where a promo code has expired.",
-      "expected_output": "Writing new scenarios is out of scope for this skill — routes to gherkin-scenario. gherkin-living-doc-sync corrects existing links and syncs existing scenarios; it does not write new scenarios from scratch.",
+      "expected_output": "Writing new scenarios is out of scope for this skill — routes to bdd-scenario-gen. gherkin-living-doc-sync corrects existing links and syncs existing scenarios; it does not write new scenarios from scratch.",
       "files": [],
       "expectations": [
         "Does not write a new scenario",
-        "Routes to gherkin-scenario",
+        "Routes to bdd-scenario-gen",
         "Explains the distinction: sync vs. write new"
       ]
     },

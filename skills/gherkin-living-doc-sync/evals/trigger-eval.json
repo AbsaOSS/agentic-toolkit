@@ -10,13 +10,13 @@
   {"id":  9, "query": "Sync all scenarios in the payments feature file", "should_trigger": true, "reason": "'sync scenarios' trigger phrase"},
   {"id": 10, "query": "The Gherkin scenarios are out of sync with the living doc", "should_trigger": true, "reason": "'gherkin out of sync with living doc' trigger phrase"},
   {"id": 11, "query": "Traceability is broken between the feature files and the AC catalog", "should_trigger": true, "reason": "'traceability broken' trigger phrase"},
-  {"id": 12, "query": "Write a new scenario for the expired promo AC", "should_trigger": false, "reason": "Writing new scenarios — routes to gherkin-scenario"},
+  {"id": 12, "query": "Write a new scenario for the expired promo AC", "should_trigger": false, "reason": "Writing new scenarios — routes to bdd-scenario-gen"},
   {"id": 13, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
   {"id": 14, "query": "Find which User Stories have no Gherkin scenarios", "should_trigger": false, "reason": "Finding living doc gaps — routes to living-doc-gap-finder"},
   {"id": 15, "query": "Create a new User Story for the checkout capability", "should_trigger": false, "reason": "Creating new entities — routes to living-doc-create-user-story"},
   {"id": 16, "query": "Propagate AC changes from the living doc back to the feature files", "should_trigger": true, "reason": "'propagate AC changes' trigger phrase"},
   {"id": 17, "query": "The @AC: tag and the # AC: comment are out of sync — what do I do?", "should_trigger": true, "reason": "Comment/tag mismatch is a sync issue — core task of this skill"},
-  {"id": 18, "query": "Generate a new scenario for the expired promo AC from scratch", "should_trigger": false, "reason": "Writing new scenarios from scratch — routes to gherkin-scenario (not syncing existing ones)"},
+  {"id": 18, "query": "Generate a new scenario for the expired promo AC from scratch", "should_trigger": false, "reason": "Writing new scenarios from scratch — routes to bdd-scenario-gen (not syncing existing ones)"},
   {"id": 19, "query": "Run scan_ac_links.py before doing a sync pass", "should_trigger": true, "reason": "Auditing AC link headers is the first step of the sync workflow — this skill owns scan_ac_links.py"},
   {"id": 20, "query": "An AC was descoped last sprint — what should happen to the linked scenario?", "should_trigger": true, "reason": "Propagating AC status change (descoped) to feature file is a living-doc → feature file sync direction"}
 ]

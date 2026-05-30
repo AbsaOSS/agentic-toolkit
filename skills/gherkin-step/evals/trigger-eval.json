@@ -93,7 +93,7 @@
     "id": 16,
     "query": "Write a Gherkin scenario for the promo code feature",
     "should_trigger": false,
-    "reason": "Writing Gherkin scenarios \u2014 routes to gherkin-scenario"
+    "reason": "Writing Gherkin scenarios — routes to bdd-scenario-gen"
   },
   {
     "id": 17,

@@ -9,7 +9,7 @@
   {"id":  8, "query": "Generate Gherkin from user story US-012", "should_trigger": true, "reason": "'gherkin from user story' trigger phrase"},
   {"id":  9, "query": "Create scenarios for US-007", "should_trigger": true, "reason": "'scenarios for US-' trigger phrase — explicitly mentions a US ID"},
   {"id": 10, "query": "Generate a .feature file for the checkout flow", "should_trigger": true, "reason": "'generate .feature file' trigger phrase"},
-  {"id": 11, "query": "Write standalone Gherkin scenarios for an exploratory test", "should_trigger": false, "reason": "Standalone Gherkin without a User Story — routes to gherkin-scenario"},
+  {"id": 11, "query": "Write standalone Gherkin scenarios for an exploratory test", "should_trigger": false, "reason": "Standalone Gherkin without a User Story — routes to bdd-scenario-gen"},
   {"id": 12, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
   {"id": 13, "query": "Write a unit test for the promo code calculation", "should_trigger": false, "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"},
   {"id": 14, "query": "Find which User Stories have no Gherkin coverage at all", "should_trigger": false, "reason": "Finding doc gaps — routes to living-doc-gap-finder"},

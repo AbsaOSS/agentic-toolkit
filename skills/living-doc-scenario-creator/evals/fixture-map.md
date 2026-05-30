@@ -12,7 +12,7 @@ No fixture files for this skill. All evals use inline User Story/AC definitions 
 | 2 | happy-path | _(none — inline AC list in prompt)_ | AC state filtering: Active → generated, Deprecated → skipped, Planned → skipped |
 | 3 | happy-path | _(none)_ | Case A step stub: PageObject method exists — full stub, no NotImplementedError |
 | 4 | regression | _(none)_ | Case B step stub: missing PageObject method — NotImplementedError + maintenance flag |
-| 5 | negative | _(none)_ | Routing: standalone Gherkin without a US → gherkin-scenario |
+| 5 | negative | _(none)_ | Routing: standalone Gherkin without a US → bdd-scenario-gen |
 | 6 | paraphrase | _(none)_ | "Write feature tests for US-nnn" → scenario generation request |
 | 7 | edge-case | _(none)_ | All ACs Planned → zero scenarios generated; coverage report with skip reasons |
 | 8 | output-format | _(none)_ | .feature file structure: @US_ID:, Feature: header, # AC: + @AC: per scenario |
@@ -26,7 +26,7 @@ No fixture files for this skill. All evals use inline User Story/AC definitions 
 
 | Routes to | Query count |
 |---|---|
-| gherkin-scenario | 1 |
+| bdd-scenario-gen | 1 |
 | gherkin-step | 1 |
 | living-doc-gap-finder | 1 |
 | gherkin-living-doc-sync | 1 |
