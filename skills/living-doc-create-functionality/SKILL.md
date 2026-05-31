@@ -2,7 +2,7 @@
 name: living-doc-create-functionality
 description: >
   Define an atomic, testable behavior (Functionality) with Acceptance Criteria for unit or
-  integration tests. Use when documenting an atomic behavior, writing Functionality-level ACs,
+  integration tests. Use when writing Functionality-level ACs,
   choosing test_type, identifying reuse candidates, or reviewing a Functionality.
   Triggers on: "create a functionality", "document an atomic behavior", "functionality AC",
   "unit-testable behavior", "define component behavior", "atomic acceptance criteria",
@@ -12,9 +12,8 @@ description: >
   Does NOT trigger for: E2E User Stories (use living-doc-create-user-story); system
   surfaces (use living-doc-create-feature); generating BDD scenarios (use
   living-doc-scenario-creator).
-  Pairs with living-doc-create-feature (parent surface first) and living-doc-scenario-creator
-  (BDD after). After creating, update the parent Feature's functionalities[] array
-  (else ORPHAN_FUNCTIONALITY gap).
+  Pairs with living-doc-create-feature and living-doc-scenario-creator. After creating,
+  update the parent Feature's functionalities[] array.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

@@ -9,11 +9,10 @@ description: >
   Triggers on: "living doc impact", "what does this change affect", "impact of PR on living doc",
   "trace affected user stories", "affected features", "impact analysis", "living doc sign-off",
   "what user stories are affected", "which scenarios need re-running", "what needs re-testing",
-  "PR impact on docs".
+  "PR impact on docs", "bootstrap feature_registry".
   Does NOT trigger for: updating living doc (use living-doc-update); finding coverage gaps
   (use living-doc-gap-finder); creating new entities (use living-doc-create-*).
-  Pairs with living-doc-update (apply changes), gherkin-living-doc-sync (propagate AC changes),
-  and bdd-maintain (cleanup for deprecated entities).
+  Pairs with living-doc-update, gherkin-living-doc-sync, and bdd-maintain.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

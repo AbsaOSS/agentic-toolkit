@@ -8,7 +8,7 @@ description: >
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
   feature", "system surface documentation", "feature owners", "feature dependencies",
-  "duplicate feature name", "resolve feature naming".
+  "duplicate feature name", "resolve feature naming", "rename feature".
   Does NOT trigger for: creating User Stories (use living-doc-create-user-story); defining
   behaviors (use living-doc-create-functionality); scanning PageObjects (use
   living-doc-pageobject-scan); deprecating (use living-doc-update).

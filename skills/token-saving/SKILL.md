@@ -9,9 +9,9 @@ description: >
   Great question!, Happy to help!); no closing platitudes (Let me know if you have questions!);
   concise within line limits; skip restating prior context; prefer tables/bullets over prose;
   append What changed / Why / How to verify footer only for code-output responses, not Q&A,
-  reviews, or planning. Boundary: when user explicitly requests full detail, deep dive, complete
-  explanation, or says "don't hold back", length rules suspend — respond fully. Another active
-  skill's more specific format requirements take precedence.
+  reviews, or planning. NOT for (full-detail override): when user explicitly requests full detail,
+  deep dive, complete explanation, or says "don't hold back", length rules suspend — respond
+  fully. Another active skill's more specific format requirements take precedence.
 ---
 
 # Token-Saving

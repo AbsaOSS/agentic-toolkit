@@ -9,9 +9,10 @@ description: >
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "orphan functionalities", "untested AC",
   "documentation coverage", "gap report", "what's not covered", "living doc audit",
-  "documentation audit", "stale reference", "broken AC link", "test points to deprecated AC".
+  "documentation audit", "stale reference", "broken AC link", "test points to deprecated AC",
+  "PLAN mode", "AUDIT mode", "draft ACs from PageObject descriptions".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
-  Pairs with living-doc-update (stale references) and living-doc-create-* skills (gap resolution).
+  Pairs with living-doc-update and living-doc-create-* skills.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

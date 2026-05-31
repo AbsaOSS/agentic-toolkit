@@ -13,8 +13,7 @@ description: >
   "bootstrap pageobjects", "bootstrap page objects".
   Does NOT trigger for: adding/fixing Gherkin (use living-doc-scenario-creator); resolving
   missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain).
-  Pairs with data-cy-instrument, living-doc-create-feature, living-doc-scenario-creator,
-  and gherkin-living-doc-sync.
+  Pairs with data-cy-instrument, living-doc-create-feature, and living-doc-scenario-creator.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
