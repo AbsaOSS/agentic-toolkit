@@ -1,20 +1,176 @@
 [
-  {"id":  1, "query": "Create BDD scenarios for user story US-007 — Place an Online Order", "should_trigger": true, "reason": "'create BDD scenarios for user story' trigger phrase"},
-  {"id":  2, "query": "Generate scenarios for US-003 — Apply Promo Code", "should_trigger": true, "reason": "'generate scenarios for US' trigger phrase"},
-  {"id":  3, "query": "Cover all ACs of US-011 with BDD scenarios", "should_trigger": true, "reason": "'cover AC with scenarios' trigger phrase"},
-  {"id":  4, "query": "Generate a feature file from user story US-015", "should_trigger": true, "reason": "'generate feature file from user story' trigger phrase"},
-  {"id":  5, "query": "Create BDD scenarios from requirements for the login flow", "should_trigger": true, "reason": "'BDD from requirements' trigger phrase"},
-  {"id":  6, "query": "What is the scenario coverage for US-007?", "should_trigger": true, "reason": "'scenario coverage for US' trigger phrase"},
-  {"id":  7, "query": "Map the ACs of US-009 to Gherkin scenarios", "should_trigger": true, "reason": "'map AC to scenarios' trigger phrase"},
-  {"id":  8, "query": "Generate Gherkin from user story US-012", "should_trigger": true, "reason": "'gherkin from user story' trigger phrase"},
-  {"id":  9, "query": "Create scenarios for US-007", "should_trigger": true, "reason": "'scenarios for US-' trigger phrase — explicitly mentions a US ID"},
-  {"id": 10, "query": "Generate a .feature file for the checkout flow", "should_trigger": true, "reason": "'generate .feature file' trigger phrase"},
-  {"id": 11, "query": "Write standalone Gherkin scenarios for an exploratory test", "should_trigger": true, "reason": "Standalone Gherkin without a User Story — uses living-doc-scenario-creator Standalone mode"},
-  {"id": 12, "query": "Implement the step definition for 'When the customer confirms the order'", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
-  {"id": 13, "query": "Write a unit test for the promo code calculation", "should_trigger": false, "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"},
-  {"id": 14, "query": "Find which User Stories have no Gherkin coverage at all", "should_trigger": false, "reason": "Finding doc gaps — routes to living-doc-gap-finder"},
-  {"id": 15, "query": "What is the AC coverage for US-007 — are all ACs covered by a scenario?", "should_trigger": true, "reason": "'scenario coverage for US' trigger phrase — auditing AC-to-scenario coverage"},
-  {"id": 16, "query": "Generate BDD scenarios for all active ACs on US-003", "should_trigger": true, "reason": "'generate scenarios for US' / 'cover AC with scenarios' trigger phrase"},
-  {"id": 17, "query": "My scenario for AC:US-010-01 covers only the username field — how should I tag it?", "should_trigger": true, "reason": "Aspect:value tag encoding is part of scenario generation for multi-aspect ACs"},
-  {"id": 18, "query": "Sync feature files with living doc after AC changes", "should_trigger": false, "reason": "Syncing existing scenarios to living doc — routes to gherkin-living-doc-sync"}
+  {
+    "id": 1,
+    "query": "Create BDD scenarios for user story US-007 — Place an Online Order",
+    "should_trigger": true,
+    "reason": "'create BDD scenarios for user story' trigger phrase"
+  },
+  {
+    "id": 2,
+    "query": "Generate scenarios for US-003 — Apply Promo Code",
+    "should_trigger": true,
+    "reason": "'generate scenarios for US' trigger phrase"
+  },
+  {
+    "id": 3,
+    "query": "Cover all ACs of US-011 with BDD scenarios",
+    "should_trigger": true,
+    "reason": "'cover AC with scenarios' trigger phrase"
+  },
+  {
+    "id": 4,
+    "query": "Generate a feature file from user story US-015",
+    "should_trigger": true,
+    "reason": "'generate feature file from user story' trigger phrase"
+  },
+  {
+    "id": 5,
+    "query": "Create BDD scenarios from requirements for the login flow",
+    "should_trigger": true,
+    "reason": "'BDD from requirements' trigger phrase"
+  },
+  {
+    "id": 6,
+    "query": "What is the scenario coverage for US-007?",
+    "should_trigger": true,
+    "reason": "'scenario coverage for US' trigger phrase"
+  },
+  {
+    "id": 7,
+    "query": "Map the ACs of US-009 to Gherkin scenarios",
+    "should_trigger": true,
+    "reason": "'map AC to scenarios' trigger phrase"
+  },
+  {
+    "id": 8,
+    "query": "Generate Gherkin from user story US-012",
+    "should_trigger": true,
+    "reason": "'gherkin from user story' trigger phrase"
+  },
+  {
+    "id": 9,
+    "query": "Create scenarios for US-007",
+    "should_trigger": true,
+    "reason": "'scenarios for US-' trigger phrase — explicitly mentions a US ID"
+  },
+  {
+    "id": 10,
+    "query": "Generate a .feature file for the checkout flow",
+    "should_trigger": true,
+    "reason": "'generate .feature file' trigger phrase"
+  },
+  {
+    "id": 11,
+    "query": "Write standalone Gherkin scenarios for an exploratory test",
+    "should_trigger": true,
+    "reason": "Standalone Gherkin without a User Story — uses living-doc-scenario-creator Standalone mode"
+  },
+  {
+    "id": 12,
+    "query": "Implement the step definition for 'When the customer confirms the order'",
+    "should_trigger": false,
+    "reason": "Step definition implementation — routes to gherkin-step"
+  },
+  {
+    "id": 13,
+    "query": "Write a unit test for the promo code calculation",
+    "should_trigger": false,
+    "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"
+  },
+  {
+    "id": 14,
+    "query": "Find which User Stories have no Gherkin coverage at all",
+    "should_trigger": false,
+    "reason": "Finding doc gaps — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 15,
+    "query": "What is the AC coverage for US-007 — are all ACs covered by a scenario?",
+    "should_trigger": true,
+    "reason": "'scenario coverage for US' trigger phrase — auditing AC-to-scenario coverage"
+  },
+  {
+    "id": 16,
+    "query": "Generate BDD scenarios for all active ACs on US-003",
+    "should_trigger": true,
+    "reason": "'generate scenarios for US' / 'cover AC with scenarios' trigger phrase"
+  },
+  {
+    "id": 17,
+    "query": "My scenario for AC:US-010-01 covers only the username field — how should I tag it?",
+    "should_trigger": true,
+    "reason": "Aspect:value tag encoding is part of scenario generation for multi-aspect ACs"
+  },
+  {
+    "id": 18,
+    "query": "Sync feature files with living doc after AC changes",
+    "should_trigger": false,
+    "reason": "Syncing existing scenarios to living doc — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 19,
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 20,
+    "query": "Run a dead code audit to find unused step definitions",
+    "should_trigger": false,
+    "reason": "Dead code audit — routes to bdd-maintain"
+  },
+  {
+    "id": 21,
+    "query": "Sync the @AC: tags in the feature files with the AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 22,
+    "query": "Scan the checkout page and generate PageObjects",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 23,
+    "query": "Add data-cy attributes to the checkout template",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 24,
+    "query": "Create a Feature entity for the checkout module",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  },
+  {
+    "id": 25,
+    "query": "Create a Functionality for the promo stacking rule",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 26,
+    "query": "Run a gap analysis to find unlinked test files",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 27,
+    "query": "Update the acceptance criterion wording on US-007-01",
+    "should_trigger": false,
+    "reason": "Updating an entity — routes to living-doc-update"
+  },
+  {
+    "id": 28,
+    "query": "What does the checkout refactor affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 29,
+    "query": "I already have a scenario for AC:US-007-01 — should I skip or regenerate it?",
+    "should_trigger": true,
+    "reason": "Merge policy decision for existing scenario — scenario-creator owns this"
+  }
 ]

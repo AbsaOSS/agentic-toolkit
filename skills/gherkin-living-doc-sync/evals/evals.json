@@ -173,6 +173,18 @@
         "The existing scenario is not deleted or modified beyond the tag update",
         "Developer confirmation is required before any file is edited"
       ]
+    },
+    {
+      "id": 14,
+      "category": "happy-path",
+      "prompt": "During a sync pass I discover that the step text for AC:US-007-03 changed AND the PageObject method that backs it was renamed. What should I do for each part?",
+      "expected_output": "Split the work: (1) gherkin-living-doc-sync updates the step text and the @AC: tag in the .feature file — this skill handles Gherkin text sync. (2) The PageObject method rename (signature and locator) is owned by living-doc-pageobject-scan HEALING scope — load that skill for the PO side. Do not attempt to rename PageObject methods inside this sync skill.",
+      "files": [],
+      "expectations": [
+        "Correctly splits Gherkin-side vs PageObject-side work",
+        "Routes PageObject method rename to living-doc-pageobject-scan HEALING",
+        "Does not attempt to rename PO methods within gherkin-living-doc-sync"
+      ]
     }
   ]
 }

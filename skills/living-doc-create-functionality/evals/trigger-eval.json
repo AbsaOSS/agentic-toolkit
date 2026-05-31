@@ -1,24 +1,200 @@
 [
-  {"id":  1, "query": "Create a functionality for validating cart contents before checkout", "should_trigger": true, "reason": "Explicit 'create a functionality' trigger keyword"},
-  {"id":  2, "query": "Document the atomic behavior: apply discount to a cart item", "should_trigger": true, "reason": "'document an atomic behavior' trigger phrase"},
-  {"id":  3, "query": "Write Functionality ACs for the discount engine", "should_trigger": true, "reason": "'functionality AC' trigger phrase"},
-  {"id":  4, "query": "Define a unit-testable behavior for the coupon validation module", "should_trigger": true, "reason": "'unit-testable behavior' and 'define component behavior' trigger phrases"},
-  {"id":  5, "query": "Document the business rule: orders over $100 get free shipping", "should_trigger": true, "reason": "'document a business rule' trigger phrase"},
-  {"id":  6, "query": "Create a functionality entity for the payment retry logic", "should_trigger": true, "reason": "'create a functionality entity' trigger phrase"},
-  {"id":  7, "query": "What ACs should I write for the email validator function?", "should_trigger": true, "reason": "Asking for atomic AC writing — core functionality skill task"},
-  {"id":  8, "query": "What test_type should I use for checking DB uniqueness constraints?", "should_trigger": true, "reason": "Deciding unit vs integration — functionality skill task"},
-  {"id":  9, "query": "Review this functionality for completeness — it only has a happy path", "should_trigger": true, "reason": "Completeness check of Functionality ACs is a core task"},
-  {"id": 10, "query": "I see this AC in both US-001 and US-007 — should I split it out?", "should_trigger": true, "reason": "Reuse candidate identification — a core functionality skill task"},
-  {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story — routes to living-doc-create-user-story"},
-  {"id": 12, "query": "Document the checkout page as a Feature", "should_trigger": false, "reason": "Feature entity — routes to living-doc-create-feature"},
-  {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
-  {"id": 14, "query": "Run a gap analysis on the living documentation", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"},
-  {"id": 15, "query": "How should I define the component behavior for the payment validator?", "should_trigger": true, "reason": "'define component behavior' trigger phrase"},
-  {"id": 16, "query": "Write atomic acceptance criteria for the session expiry logic", "should_trigger": true, "reason": "'atomic acceptance criteria' trigger phrase"},
-  {"id": 17, "query": "Should this behavior be tested with a unit test or an integration test?", "should_trigger": true, "reason": "'unit vs integration test' trigger phrase"},
-  {"id": 18, "query": "Help me choose test type for the loyalty points calculation — it calls no external services", "should_trigger": true, "reason": "'choose test type' trigger phrase"},
-  {"id": 19, "query": "Help me document the null-check rule for user IDs in the registration service", "should_trigger": true, "reason": "Documenting an atomic validation rule is a Functionality — 'document a business rule' / 'atomic acceptance criteria' pattern"},
-  {"id": 20, "query": "A Functionality I wrote has no parent Feature — how do I link it?", "should_trigger": true, "reason": "Resolving ORPHAN_FUNCTIONALITY — identifying and linking the parent Feature is a Functionality skill task"},
-  {"id": 21, "query": "Update the living doc entity for the discount validation Functionality", "should_trigger": false, "reason": "Updating an existing entity — routes to living-doc-update"},
-  {"id": 22, "query": "Scan the checkout page for UI elements", "should_trigger": false, "reason": "UI scan — routes to living-doc-pageobject-scan"}
+  {
+    "id": 1,
+    "query": "Create a functionality for validating cart contents before checkout",
+    "should_trigger": true,
+    "reason": "Explicit 'create a functionality' trigger keyword"
+  },
+  {
+    "id": 2,
+    "query": "Document the atomic behavior: apply discount to a cart item",
+    "should_trigger": true,
+    "reason": "'document an atomic behavior' trigger phrase"
+  },
+  {
+    "id": 3,
+    "query": "Write Functionality ACs for the discount engine",
+    "should_trigger": true,
+    "reason": "'functionality AC' trigger phrase"
+  },
+  {
+    "id": 4,
+    "query": "Define a unit-testable behavior for the coupon validation module",
+    "should_trigger": true,
+    "reason": "'unit-testable behavior' and 'define component behavior' trigger phrases"
+  },
+  {
+    "id": 5,
+    "query": "Document the business rule: orders over $100 get free shipping",
+    "should_trigger": true,
+    "reason": "'document a business rule' trigger phrase"
+  },
+  {
+    "id": 6,
+    "query": "Create a functionality entity for the payment retry logic",
+    "should_trigger": true,
+    "reason": "'create a functionality entity' trigger phrase"
+  },
+  {
+    "id": 7,
+    "query": "What ACs should I write for the email validator function?",
+    "should_trigger": true,
+    "reason": "Asking for atomic AC writing — core functionality skill task"
+  },
+  {
+    "id": 8,
+    "query": "What test_type should I use for checking DB uniqueness constraints?",
+    "should_trigger": true,
+    "reason": "Deciding unit vs integration — functionality skill task"
+  },
+  {
+    "id": 9,
+    "query": "Review this functionality for completeness — it only has a happy path",
+    "should_trigger": true,
+    "reason": "Completeness check of Functionality ACs is a core task"
+  },
+  {
+    "id": 10,
+    "query": "I see this AC in both US-001 and US-007 — should I split it out?",
+    "should_trigger": true,
+    "reason": "Reuse candidate identification — a core functionality skill task"
+  },
+  {
+    "id": 11,
+    "query": "Create a user story for the checkout capability",
+    "should_trigger": false,
+    "reason": "User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 12,
+    "query": "Document the checkout page as a Feature",
+    "should_trigger": false,
+    "reason": "Feature entity — routes to living-doc-create-feature"
+  },
+  {
+    "id": 13,
+    "query": "Generate BDD scenarios for US-001",
+    "should_trigger": false,
+    "reason": "Scenario generation — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 14,
+    "query": "Run a gap analysis on the living documentation",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 15,
+    "query": "How should I define the component behavior for the payment validator?",
+    "should_trigger": true,
+    "reason": "'define component behavior' trigger phrase"
+  },
+  {
+    "id": 16,
+    "query": "Write atomic acceptance criteria for the session expiry logic",
+    "should_trigger": true,
+    "reason": "'atomic acceptance criteria' trigger phrase"
+  },
+  {
+    "id": 17,
+    "query": "Should this behavior be tested with a unit test or an integration test?",
+    "should_trigger": true,
+    "reason": "'unit vs integration test' trigger phrase"
+  },
+  {
+    "id": 18,
+    "query": "Help me choose test type for the loyalty points calculation — it calls no external services",
+    "should_trigger": true,
+    "reason": "'choose test type' trigger phrase"
+  },
+  {
+    "id": 19,
+    "query": "Help me document the null-check rule for user IDs in the registration service",
+    "should_trigger": true,
+    "reason": "Documenting an atomic validation rule is a Functionality — 'document a business rule' / 'atomic acceptance criteria' pattern"
+  },
+  {
+    "id": 20,
+    "query": "A Functionality I wrote has no parent Feature — how do I link it?",
+    "should_trigger": true,
+    "reason": "Resolving ORPHAN_FUNCTIONALITY — identifying and linking the parent Feature is a Functionality skill task"
+  },
+  {
+    "id": 21,
+    "query": "Update the living doc entity for the discount validation Functionality",
+    "should_trigger": false,
+    "reason": "Updating an existing entity — routes to living-doc-update"
+  },
+  {
+    "id": 22,
+    "query": "Scan the checkout page for UI elements",
+    "should_trigger": false,
+    "reason": "UI scan — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 23,
+    "query": "Write step definitions for the cart validation behavior",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 24,
+    "query": "Run a dead code audit to find unused PageObject methods",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 25,
+    "query": "Sync the feature files with the updated AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 26,
+    "query": "What does changing the cart validator affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 27,
+    "query": "Scan the checkout page for UI elements and generate PageObjects",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 28,
+    "query": "Add data-cy attributes to the checkout form inputs",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 29,
+    "query": "Generate BDD scenarios for all active ACs on US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 30,
+    "query": "Create a User Story for the cart validation capability",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 31,
+    "query": "Create a Feature entity for the checkout module",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  },
+  {
+    "id": 32,
+    "query": "Run a gap analysis on the living documentation",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 33,
+    "query": "I just created FUNC-promo-validate — how do I add it to the parent Feature's functionalities array?",
+    "should_trigger": true,
+    "reason": "Parent Feature sync after creating a Functionality — living-doc-create-functionality owns this step"
+  }
 ]

@@ -185,6 +185,19 @@
         "Warns that identical names break impact analysis and traceability",
         "Notes that FEAT ID must also be unique"
       ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "I need to rename the Feature FEAT-checkout to FEAT-checkout-v2 because we split the checkout domain. What steps do I need to follow?",
+      "expected_output": "Renaming a Feature requires a cascade: (1) Update the entity file (id and name fields). (2) Update feature_id in all linked Functionality entities. (3) Update feature_registry. (4) Update manifest.json / seed.yaml. (5) Update PageObject file headers. (6) Update Gherkin # Feature: headers. (7) Run living-doc-gap-finder to confirm no orphan references remain. Load living-doc-update and follow the 'Rename a Feature' workflow.",
+      "files": [],
+      "expectations": [
+        "Lists all 7 cascade steps for a Feature rename",
+        "Mentions living-doc-update as the skill that owns the rename workflow",
+        "Notes feature_registry and Functionality.feature_id must be updated",
+        "Recommends gap-finder run at the end to confirm clean state"
+      ]
     }
   ]
 }

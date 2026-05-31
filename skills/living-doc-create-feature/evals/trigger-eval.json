@@ -1,20 +1,164 @@
 [
-  {"id":  1, "query": "Document the checkout page as a Feature entity", "should_trigger": true, "reason": "Explicit 'document feature entity' trigger phrase"},
-  {"id":  2, "query": "Create a Feature entity for the Orders API", "should_trigger": true, "reason": "Explicit 'create a feature entity' trigger keyword"},
-  {"id":  3, "query": "New screen documentation for the account preferences page", "should_trigger": true, "reason": "'new screen documentation' trigger phrase"},
-  {"id":  4, "query": "Document a new API endpoint — the payment initiation endpoint", "should_trigger": true, "reason": "'document an API endpoint' trigger phrase"},
-  {"id":  5, "query": "Update the feature registry with the new notification service", "should_trigger": true, "reason": "'feature registry' trigger keyword"},
-  {"id":  6, "query": "What feature owns the checkout screen?", "should_trigger": true, "reason": "'what feature owns this' trigger phrase"},
-  {"id":  7, "query": "Map User Story US-007 to its Feature", "should_trigger": true, "reason": "'map user story to feature' trigger phrase"},
-  {"id":  8, "query": "I need to document the discount engine as a system surface", "should_trigger": true, "reason": "Documenting a system surface — Feature creation workflow"},
-  {"id":  9, "query": "Create a feature entity for the authentication module", "should_trigger": true, "reason": "Explicit 'create feature entity' trigger"},
-  {"id": 10, "query": "What are the owners and dependencies for the checkout feature?", "should_trigger": true, "reason": "Asking about Feature properties — skill can populate or validate"},
-  {"id": 11, "query": "Create a user story for the checkout capability", "should_trigger": false, "reason": "User Story creation — routes to living-doc-create-user-story"},
-  {"id": 12, "query": "Document the atomic behavior: validate cart before checkout", "should_trigger": false, "reason": "Atomic behavior — routes to living-doc-create-functionality"},
-  {"id": 13, "query": "Scan the checkout page for PageObjects", "should_trigger": false, "reason": "UI scan — routes to living-doc-pageobject-scan"},
-  {"id": 14, "query": "Generate Gherkin scenarios for the checkout User Story", "should_trigger": false, "reason": "Scenario creation — routes to living-doc-scenario-creator"},
-  {"id": 15, "query": "Register the notification background worker in the living doc as a system surface", "should_trigger": true, "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=Worker)"},
-  {"id": 16, "query": "Deprecate the checkout feature in the living doc", "should_trigger": false, "reason": "Deprecating an existing entity — routes to living-doc-update"},
-  {"id": 17, "query": "Document the Orders Service — it exposes a REST API to place and cancel orders", "should_trigger": true, "reason": "Documenting a backend service surface — Feature creation (surface_type=Service or API)"},
-  {"id": 18, "query": "Two Features have the same name 'Payment Page' — how do I resolve this?", "should_trigger": true, "reason": "Duplicate Feature name resolution is part of the Feature creation workflow"}
+  {
+    "id": 1,
+    "query": "Document the checkout page as a Feature entity",
+    "should_trigger": true,
+    "reason": "Explicit 'document feature entity' trigger phrase"
+  },
+  {
+    "id": 2,
+    "query": "Create a Feature entity for the Orders API",
+    "should_trigger": true,
+    "reason": "Explicit 'create a feature entity' trigger keyword"
+  },
+  {
+    "id": 3,
+    "query": "New screen documentation for the account preferences page",
+    "should_trigger": true,
+    "reason": "'new screen documentation' trigger phrase"
+  },
+  {
+    "id": 4,
+    "query": "Document a new API endpoint — the payment initiation endpoint",
+    "should_trigger": true,
+    "reason": "'document an API endpoint' trigger phrase"
+  },
+  {
+    "id": 5,
+    "query": "Update the feature registry with the new notification service",
+    "should_trigger": true,
+    "reason": "'feature registry' trigger keyword"
+  },
+  {
+    "id": 6,
+    "query": "What feature owns the checkout screen?",
+    "should_trigger": true,
+    "reason": "'what feature owns this' trigger phrase"
+  },
+  {
+    "id": 7,
+    "query": "Map User Story US-007 to its Feature",
+    "should_trigger": true,
+    "reason": "'map user story to feature' trigger phrase"
+  },
+  {
+    "id": 8,
+    "query": "I need to document the discount engine as a system surface",
+    "should_trigger": true,
+    "reason": "Documenting a system surface — Feature creation workflow"
+  },
+  {
+    "id": 9,
+    "query": "Create a feature entity for the authentication module",
+    "should_trigger": true,
+    "reason": "Explicit 'create feature entity' trigger"
+  },
+  {
+    "id": 10,
+    "query": "What are the owners and dependencies for the checkout feature?",
+    "should_trigger": true,
+    "reason": "Asking about Feature properties — skill can populate or validate"
+  },
+  {
+    "id": 11,
+    "query": "Create a user story for the checkout capability",
+    "should_trigger": false,
+    "reason": "User Story creation — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 12,
+    "query": "Document the atomic behavior: validate cart before checkout",
+    "should_trigger": false,
+    "reason": "Atomic behavior — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 13,
+    "query": "Scan the checkout page for PageObjects",
+    "should_trigger": false,
+    "reason": "UI scan — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 14,
+    "query": "Generate Gherkin scenarios for the checkout User Story",
+    "should_trigger": false,
+    "reason": "Scenario creation — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 15,
+    "query": "Register the notification background worker in the living doc as a system surface",
+    "should_trigger": true,
+    "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=Worker)"
+  },
+  {
+    "id": 16,
+    "query": "Deprecate the checkout feature in the living doc",
+    "should_trigger": false,
+    "reason": "Deprecating an existing entity — routes to living-doc-update"
+  },
+  {
+    "id": 17,
+    "query": "Document the Orders Service — it exposes a REST API to place and cancel orders",
+    "should_trigger": true,
+    "reason": "Documenting a backend service surface — Feature creation (surface_type=Service or API)"
+  },
+  {
+    "id": 18,
+    "query": "Two Features have the same name 'Payment Page' — how do I resolve this?",
+    "should_trigger": true,
+    "reason": "Duplicate Feature name resolution is part of the Feature creation workflow"
+  },
+  {
+    "id": 19,
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 20,
+    "query": "Run a dead code audit to find unused step definitions",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 21,
+    "query": "Run a gap analysis on the living doc",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 22,
+    "query": "Sync the feature files with the updated AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 23,
+    "query": "What does PR #217 affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 24,
+    "query": "Add data-cy attributes to the login form",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 25,
+    "query": "Generate BDD scenarios for all ACs on US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 26,
+    "query": "Create a new Functionality for the promo validation logic",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 27,
+    "query": "I need to rename FEAT-checkout to FEAT-checkout-v2 — what are all the cascade steps?",
+    "should_trigger": true,
+    "reason": "Renaming a Feature — create-feature owns the Feature schema and triggers rename guidance via living-doc-update"
+  }
 ]

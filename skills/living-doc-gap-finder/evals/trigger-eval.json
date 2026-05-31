@@ -1,21 +1,194 @@
 [
-  {"id":  1, "query": "Run a living doc gap analysis", "should_trigger": true, "reason": "'living doc gaps' trigger phrase"},
-  {"id":  2, "query": "What's missing in our living documentation?", "should_trigger": true, "reason": "'what's missing in living doc' trigger phrase"},
-  {"id":  3, "query": "Find undocumented features in the codebase", "should_trigger": true, "reason": "'find undocumented features' trigger phrase"},
-  {"id":  4, "query": "Which tests have no linked acceptance criteria (orphan tests)?", "should_trigger": true, "reason": "'orphan tests' trigger keyword"},
-  {"id":  5, "query": "Which ACs have no tests? (untested ACs)", "should_trigger": true, "reason": "'untested AC' trigger keyword"},
-  {"id":  6, "query": "What is our documentation coverage percentage?", "should_trigger": true, "reason": "'documentation coverage' trigger keyword"},
-  {"id":  7, "query": "Generate a gap report for the payments domain", "should_trigger": true, "reason": "'gap report' trigger keyword"},
-  {"id":  8, "query": "What behaviors are not covered in the living doc?", "should_trigger": true, "reason": "'what's not covered' trigger phrase"},
-  {"id":  9, "query": "Do a living doc audit before the release", "should_trigger": true, "reason": "'living doc audit' trigger phrase"},
-  {"id": 10, "query": "Which User Story ACs are critical but have no BDD scenario?", "should_trigger": true, "reason": "Finding untested critical ACs — core gap-finder task"},
-  {"id": 11, "query": "Find what's not documented in our test suite", "should_trigger": true, "reason": "'find what's not documented' trigger phrase"},
-  {"id": 12, "query": "Create a user story for the preferences screen gap", "should_trigger": false, "reason": "Creating a User Story — routes to living-doc-create-user-story"},
-  {"id": 13, "query": "Create a Feature entity for the account preferences screen", "should_trigger": false, "reason": "Creating a Feature — routes to living-doc-create-feature"},
-  {"id": 14, "query": "Implement step definitions for the gap report scenario", "should_trigger": false, "reason": "Step definition implementation — routes to gherkin-step"},
-  {"id": 15, "query": "Do a documentation audit to check for missing tests before the go-live", "should_trigger": true, "reason": "'documentation audit' trigger phrase"},
-  {"id": 16, "query": "Which Functionalities in our living doc have no parent Feature?", "should_trigger": true, "reason": "Detecting ORPHAN_FUNCTIONALITY gaps — core gap-finder task"},
-  {"id": 17, "query": "A test is pointing to a deprecated AC — what kind of gap is that?", "should_trigger": true, "reason": "Stale reference detection (Gap type 7) — core gap-finder task"},
-  {"id": 18, "query": "We have 100 orphan tests — how should we batch the gap-finder run?", "should_trigger": true, "reason": "Batching strategy for large-scale gap analysis — gap-finder guidance task"},
-  {"id": 19, "query": "Update US-042 to add a new AC", "should_trigger": false, "reason": "Updating an existing entity — routes to living-doc-update"}
+  {
+    "id": 1,
+    "query": "Run a living doc gap analysis",
+    "should_trigger": true,
+    "reason": "'living doc gaps' trigger phrase"
+  },
+  {
+    "id": 2,
+    "query": "What's missing in our living documentation?",
+    "should_trigger": true,
+    "reason": "'what's missing in living doc' trigger phrase"
+  },
+  {
+    "id": 3,
+    "query": "Find undocumented features in the codebase",
+    "should_trigger": true,
+    "reason": "'find undocumented features' trigger phrase"
+  },
+  {
+    "id": 4,
+    "query": "Which tests have no linked acceptance criteria (orphan tests)?",
+    "should_trigger": true,
+    "reason": "'orphan tests' trigger keyword"
+  },
+  {
+    "id": 5,
+    "query": "Which ACs have no tests? (untested ACs)",
+    "should_trigger": true,
+    "reason": "'untested AC' trigger keyword"
+  },
+  {
+    "id": 6,
+    "query": "What is our documentation coverage percentage?",
+    "should_trigger": true,
+    "reason": "'documentation coverage' trigger keyword"
+  },
+  {
+    "id": 7,
+    "query": "Generate a gap report for the payments domain",
+    "should_trigger": true,
+    "reason": "'gap report' trigger keyword"
+  },
+  {
+    "id": 8,
+    "query": "What behaviors are not covered in the living doc?",
+    "should_trigger": true,
+    "reason": "'what's not covered' trigger phrase"
+  },
+  {
+    "id": 9,
+    "query": "Do a living doc audit before the release",
+    "should_trigger": true,
+    "reason": "'living doc audit' trigger phrase"
+  },
+  {
+    "id": 10,
+    "query": "Which User Story ACs are critical but have no BDD scenario?",
+    "should_trigger": true,
+    "reason": "Finding untested critical ACs — core gap-finder task"
+  },
+  {
+    "id": 11,
+    "query": "Find what's not documented in our test suite",
+    "should_trigger": true,
+    "reason": "'find what's not documented' trigger phrase"
+  },
+  {
+    "id": 12,
+    "query": "Create a user story for the preferences screen gap",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 13,
+    "query": "Create a Feature entity for the account preferences screen",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  },
+  {
+    "id": 14,
+    "query": "Implement step definitions for the gap report scenario",
+    "should_trigger": false,
+    "reason": "Step definition implementation — routes to gherkin-step"
+  },
+  {
+    "id": 15,
+    "query": "Do a documentation audit to check for missing tests before the go-live",
+    "should_trigger": true,
+    "reason": "'documentation audit' trigger phrase"
+  },
+  {
+    "id": 16,
+    "query": "Which Functionalities in our living doc have no parent Feature?",
+    "should_trigger": true,
+    "reason": "Detecting ORPHAN_FUNCTIONALITY gaps — core gap-finder task"
+  },
+  {
+    "id": 17,
+    "query": "A test is pointing to a deprecated AC — what kind of gap is that?",
+    "should_trigger": true,
+    "reason": "Stale reference detection (Gap type 7) — core gap-finder task"
+  },
+  {
+    "id": 18,
+    "query": "We have 100 orphan tests — how should we batch the gap-finder run?",
+    "should_trigger": true,
+    "reason": "Batching strategy for large-scale gap analysis — gap-finder guidance task"
+  },
+  {
+    "id": 19,
+    "query": "Update US-042 to add a new AC",
+    "should_trigger": false,
+    "reason": "Updating an existing entity — routes to living-doc-update"
+  },
+  {
+    "id": 20,
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 21,
+    "query": "Delete all BDD artifacts linked to the deprecated feature",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 22,
+    "query": "Sync the @AC: tags in the feature files with the AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 23,
+    "query": "Scan the checkout page and generate PageObjects",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 24,
+    "query": "Add data-cy attributes to the checkout template",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 25,
+    "query": "Generate BDD scenarios for all active ACs on US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 26,
+    "query": "Create a new Functionality for the discount calculation logic",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 27,
+    "query": "Update the wording of AC-1 on US-042",
+    "should_trigger": false,
+    "reason": "Updating an entity — routes to living-doc-update"
+  },
+  {
+    "id": 28,
+    "query": "What does this PR affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 29,
+    "query": "Create a User Story for the account management screen",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 30,
+    "query": "Write behave step definitions for the gap report scenario",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 31,
+    "query": "Run an AUDIT mode gap analysis on the entire catalog before the release",
+    "should_trigger": true,
+    "reason": "AUDIT mode — gap-finder AUDIT mode keyword"
+  },
+  {
+    "id": 32,
+    "query": "Use PLAN mode to draft ACs from the PageObject descriptions for the checkout screen",
+    "should_trigger": true,
+    "reason": "PLAN mode — gap-finder PLAN mode keyword"
+  }
 ]

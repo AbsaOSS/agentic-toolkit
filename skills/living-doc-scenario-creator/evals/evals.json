@@ -148,6 +148,54 @@
         "Notes ID format must match exactly (zero-padded)",
         "Provides the coverage_report.py command for diagnosis"
       ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "I'm generating scenarios for US-007 and AC:US-007-01 already has an existing scenario that matches the intent exactly. What should I do?",
+      "expected_output": "Skip — the existing scenario already covers the AC intent. Do not create a duplicate. Mark it as covered in the coverage report.",
+      "files": [],
+      "expectations": [
+        "Decision: Skip (do not create duplicate)",
+        "Marks AC as covered"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "The existing scenario for AC:US-007-02 has stale Given/When/Then steps — the step text no longer matches the current AC wording. What is the merge policy?",
+      "expected_output": "Update — the scenario intent still matches but the GWT is stale. Rewrite the Given/When/Then steps to match the current AC wording. Do not create a new scenario; update the existing one in place. Load gherkin-living-doc-sync if the @AC: tag or # AC: comment also needs updating.",
+      "files": [],
+      "expectations": [
+        "Decision: Update (rewrite stale GWT)",
+        "Does not create a new scenario",
+        "Routes @AC: tag sync to gherkin-living-doc-sync if needed"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "edge-case",
+      "prompt": "The existing scenario for AC:US-007-03 has status deprecated/review-needed. What is the correct merge-policy action?",
+      "expected_output": "Propose replacement — the existing scenario is deprecated or flagged for review. Generate a new candidate scenario for the AC and mark the old one as superseded. Present both for human review before deleting the old scenario.",
+      "files": [],
+      "expectations": [
+        "Decision: Propose replacement (not silent delete)",
+        "Generates a new candidate scenario",
+        "Marks old scenario as superseded",
+        "Does not auto-delete without human review"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "edge-case",
+      "prompt": "I find that AC:US-007-04 already has three different scenarios linked to it. What is the merge-policy flag?",
+      "expected_output": "Flag for review — multiple scenarios for a single AC indicates potential duplication or scenario sprawl. Do not generate another scenario. Present the duplicates to the user and ask which one should be the canonical scenario for this AC.",
+      "files": [],
+      "expectations": [
+        "Decision: Flag (do not add another scenario)",
+        "Identifies multiple-scenario-per-AC as a design smell",
+        "Asks user to designate the canonical scenario"
+      ]
     }
   ]
 }

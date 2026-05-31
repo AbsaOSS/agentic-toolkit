@@ -163,6 +163,18 @@
         "Both User Stories link to the shared Functionality",
         "Points to living-doc-create-functionality for the extraction"
       ]
+    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "I'm creating US-015 for the promo stacking feature. FUNC-promo-validate and FUNC-promo-stack already exist in the living doc. Should I link them?",
+      "expected_output": "Yes — link both Functionalities in the User Story's 'functionalities' array. Asking about existing Functionalities during US creation prevents ORPHAN_FUNCTIONALITY gaps and makes the entity graph traversable from US down to test coverage. If the Functionalities are relevant, they must be linked.",
+      "files": [],
+      "expectations": [
+        "Confirms the Functionalities should be linked",
+        "Explains the ORPHAN_FUNCTIONALITY consequence if skipped",
+        "Shows how to add them to the functionalities array in the entity"
+      ]
     }
   ]
 }

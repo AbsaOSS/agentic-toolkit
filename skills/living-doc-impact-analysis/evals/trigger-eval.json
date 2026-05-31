@@ -88,5 +88,53 @@
     "query": "Find all Functionalities with no linked User Stories.",
     "should_trigger": false,
     "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
+  },
+  {
+    "id": "t16-not-create-func",
+    "query": "Create a new Functionality for the stacked discount rule",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": "t17-not-scenario-creator",
+    "query": "Generate BDD scenarios for US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": "t18-not-sync",
+    "query": "Sync the @AC: tags in the feature files with the AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": "t19-not-step",
+    "query": "Write step definitions for the order placement scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": "t20-not-pageobject",
+    "query": "Scan the webapp and generate PageObjects for the admin portal",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": "t21-not-data-cy",
+    "query": "Add data-cy attributes to the checkout form inputs",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": "t22-not-bdd-maintain",
+    "query": "Find all unused step definitions in the BDD test suite",
+    "should_trigger": false,
+    "reason": "Dead code audit — routes to bdd-maintain"
+  },
+  {
+    "id": "t23-bootstrap-registry",
+    "query": "The feature_registry is missing — how do I bootstrap it from the codebase?",
+    "should_trigger": true,
+    "reason": "Bootstrapping feature_registry — impact-analysis owns this 4-step procedure"
   }
 ]

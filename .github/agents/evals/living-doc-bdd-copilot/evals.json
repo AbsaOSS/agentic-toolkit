@@ -174,13 +174,168 @@
       "id": 13,
       "category": "regression",
       "prompt": "During seed assembly, the living doc catalog at docs/living-doc/ has FEAT-checkout mapped to route /checkout and FEAT-account mapped to route /account/orders. No sitemap.xml exists. How should known_routes in seed.yaml be populated?",
-      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-checkout \u2192 /checkout and FEAT-account \u2192 /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent \u2014 no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
+      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-checkout → /checkout and FEAT-account → /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent — no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
       "files": [],
       "expectations": [
         "Source A: Feature-to-route mappings extracted from the living doc catalog",
         "Both routes added to known_routes in seed.yaml",
-        "Source B (sitemap) noted as absent \u2014 no error raised",
+        "Source B (sitemap) noted as absent — no error raised",
         "Notes that unlisted routes will be discovered dynamically during crawl"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "skill-dispatch",
+      "prompt": "Run a gap analysis on our living documentation before the v3.0 release. The catalog is at docs/living-doc/.",
+      "expected_output": "Agent switches to catalog-operations mode and loads the `living-doc-gap-finder` skill. Runs AUDIT mode: processes all entities and test files in docs/living-doc/, produces a gap report listing ORPHAN_TEST, STALE_REFERENCE, ORPHAN_FUNCTIONALITY, ORPHAN_FEATURE, EMPTY_FEATURE, and UNDOCUMENTED_SURFACE gaps. Outputs a documentation_coverage percentage and a prioritised gap list (Blocker → Critical → Important → Nit).",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-gap-finder skill",
+        "Runs AUDIT mode — full catalog audit",
+        "Outputs gap report with documentation_coverage percentage",
+        "Prioritised gap list: Blocker → Critical → Important → Nit",
+        "Does not modify any entities — gap-finder is read-only"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "skill-dispatch",
+      "prompt": "What living doc entities does PR #217 affect? It modifies PromoService.java and DiscountController.java.",
+      "expected_output": "Agent loads the `living-doc-impact-analysis` skill. Traces PromoService.java and DiscountController.java through the feature_registry. PromoService maps to FEAT-promo (domain logic — High impact). DiscountController maps to FEAT-discount (API contract — High impact). Output lists: affected Features, affected Functionalities, ACs requiring re-test, and Gherkin scenarios needing re-run. Produces a release sign-off checklist for both impacted Features.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-impact-analysis skill",
+        "Traces changed files through feature_registry",
+        "Classifies each file as domain logic or API contract",
+        "Lists affected Features, Functionalities, ACs, and scenarios",
+        "Produces release sign-off checklist"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "skill-dispatch",
+      "prompt": "The @AC: traceability tags in checkout.feature are out of sync with the living doc. Sync them.",
+      "expected_output": "Agent loads the `gherkin-living-doc-sync` skill. Runs scan_ac_links.py to audit the @AC: tags and # AC: comments across checkout.feature. For each scenario: (1) verifies the @AC: tag matches a live AC in the catalog; (2) checks the # AC: comment format is canonical; (3) flags stale or missing links. Produces a sync diff showing what changed. Does not generate new scenarios — routes new-scenario requests to living-doc-scenario-creator.",
+      "files": [],
+      "expectations": [
+        "Loads gherkin-living-doc-sync skill",
+        "Runs scan_ac_links.py to audit @AC: tags",
+        "Flags stale, missing, or malformed AC links",
+        "Produces a sync diff — does not auto-generate new scenarios",
+        "Routes new-scenario generation to living-doc-scenario-creator"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "skill-dispatch",
+      "prompt": "Write step definitions for the checkout scenarios — I need behave steps for the 'When the customer confirms the order' step.",
+      "expected_output": "Agent loads the `gherkin-step` skill. Generates a Python behave step definition: `@when('the customer confirms the order')` decorated function. The step body accesses `context.checkout_page` (initialised in a Before hook). Uses the CheckoutPage PageObject method `checkout_page.click_confirm_button()`. Follows the naming convention: function named `step_confirm_order`, not the verbose `step_when_the_customer_confirms_the_order`.",
+      "files": [],
+      "expectations": [
+        "Loads gherkin-step skill",
+        "Generates @when decorated behave step function",
+        "Step body delegates to CheckoutPage PageObject method",
+        "Function name follows concise convention (step_confirm_order)",
+        "Does not write the Gherkin scenario itself — routes scenario creation to living-doc-scenario-creator"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "skill-dispatch",
+      "prompt": "Add missing data-cy attributes to the checkout Angular template — the PageObjects have PROPOSED locator comments.",
+      "expected_output": "Agent loads the `data-cy-instrument` skill. Phase 1: scans the checkout Angular template for elements without data-cy attributes; adds data-cy='<element-name>' to each native HTML element. For third-party components that cannot forward attributes, adds a WORK_LOG.md §4 row with library name, version, and issue tracker link. Phase 3: updates CheckoutPage PageObject locators from CSS selectors to getByTestId() calls. Removes PROPOSED comments after update.",
+      "files": [],
+      "expectations": [
+        "Loads data-cy-instrument skill",
+        "Adds data-cy attributes to native HTML elements in the Angular template",
+        "Escalates lib components to WORK_LOG.md §4 — does not silently skip",
+        "Updates PageObject locators to getByTestId()",
+        "Removes PROPOSED comments after locator update"
+      ]
+    },
+    {
+      "id": 19,
+      "category": "skill-dispatch",
+      "prompt": "Delete all BDD artifacts linked to the deprecated FEAT-legacy-promo feature — clean up feature files, step definitions, and PageObjects.",
+      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose # AC: tags reference FEAT-legacy-promo User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
+      "files": [],
+      "expectations": [
+        "Loads bdd-maintain skill",
+        "REMOVE mode — identifies scenarios via # AC: tags linked to deprecated Feature",
+        "Runs all three audit scripts to identify exclusively-used artifacts",
+        "Checks fixtures.ts for PageObject imports",
+        "Presents deletion list for confirmation before touching any file"
+      ]
+    },
+    {
+      "id": 20,
+      "category": "skill-dispatch",
+      "prompt": "Document the Notifications Service as a Feature entity in the living doc — it exposes a REST API at /api/notifications.",
+      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), type ('api'), route ('/api/notifications'), status ('active'), owners (asks user), and empty functionalities and user_stories arrays. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-feature skill",
+        "Assigns next FEAT-nnn ID using next_id.py",
+        "Creates Feature entity JSON with required fields",
+        "Adds entry to feature_registry.json",
+        "Prompts for Functionality creation as next step"
+      ]
+    },
+    {
+      "id": 21,
+      "category": "skill-dispatch",
+      "prompt": "Document the atomic behavior: apply a 20% discount to all cart items for Gold tier customers. Parent Feature is FEAT-discount.",
+      "expected_output": "Agent loads the `living-doc-create-functionality` skill. Assigns the next FUNC-nnn ID via next_id.py. Creates a Functionality entity with: id, name ('Apply Gold Tier Discount'), parent feature_id ('FEAT-discount'), status ('planned'), and at least two ACs — a happy-path AC and an error-path AC. After saving, prompts to load living-doc-update to append FUNC-<id> to FEAT-discount's functionalities array — otherwise the entity will be flagged as ORPHAN_FUNCTIONALITY.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-functionality skill",
+        "Assigns next FUNC-nnn ID via next_id.py",
+        "Creates Functionality with happy-path and error-path ACs",
+        "Prompts to update parent FEAT-discount.functionalities array via living-doc-update",
+        "Warns that skipping the parent link causes ORPHAN_FUNCTIONALITY gap"
+      ]
+    },
+    {
+      "id": 22,
+      "category": "skill-dispatch",
+      "prompt": "Update the AC wording on US-042-AC-1 — the product owner changed the discount threshold from $50 to $75.",
+      "expected_output": "Agent loads the `living-doc-update` skill. Shows the OLD AC-1 text and proposes the NEW text with $75 threshold. Keeps the AC ID (US-042-AC-1) stable — never changes IDs. Bumps the AC version from v1.0.0 to v1.1.0. Flags the linked Gherkin scenario for review — the step 'When the cart total exceeds $50' will need updating. Runs validate_entity.py after the edit to confirm no invariants are broken.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-update skill",
+        "Shows OLD and NEW AC text side by side before committing",
+        "AC ID stays stable — only description/GWT fields updated",
+        "AC version bumped from v1.0.0 to v1.1.0",
+        "Flags linked Gherkin scenario as stale and needing update",
+        "Runs validate_entity.py post-edit"
+      ]
+    },
+    {
+      "id": 23,
+      "category": "skill-dispatch",
+      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order. It has 3 Active ACs and 1 Planned AC.",
+      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios — one per Active AC. The Planned AC is skipped (not generated until Active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 – Active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-scenario-creator skill",
+        "Generates scenarios only for Active ACs — skips Planned",
+        "Each scenario preceded by # AC: traceability comment",
+        "Applies merge policy decision table for existing scenarios",
+        "Output is a named .feature file: us-007-place-an-online-order.feature"
+      ]
+    },
+    {
+      "id": 24,
+      "category": "skill-dispatch",
+      "prompt": "Create a User Story for the guest checkout feature — a guest should be able to place an order without registering.",
+      "expected_output": "Agent loads the `living-doc-create-user-story` skill. Assigns the next US-nnn ID via next_id.py. Elicits the full narrative: As a [guest customer] / I can [place an order without registering] / so that [I can complete a purchase without commitment]. Guides through AC creation: at least a happy-path AC and one error-path AC. Checks whether existing Functionalities (e.g. FUNC-guest-cart, FUNC-guest-checkout) should be linked in the functionalities array. Routes to living-doc-create-functionality if new Functionalities are needed.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-user-story skill",
+        "Assigns next US-nnn ID via next_id.py",
+        "Elicits complete narrative (As a / I can / so that)",
+        "Requires at least one happy-path and one error-path AC",
+        "Asks about existing Functionalities to link — prevents ORPHAN_FUNCTIONALITY gaps"
       ]
     }
   ]

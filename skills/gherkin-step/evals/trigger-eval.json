@@ -99,14 +99,132 @@
     "id": 17,
     "query": "Write a unit test for the discount calculation function",
     "should_trigger": false,
-    "reason": "Unit test request \u2014 out of scope for this toolkit (no test-unit-write skill defined)"
+    "reason": "Unit test request — out of scope for this toolkit (no test-unit-write skill defined)"
   },
   {
     "query": "How do I initialize the CheckoutPage in behave so that context.checkout_page is available in my When and Then step definitions?",
-    "should_trigger": true
+    "should_trigger": true,
+    "id": 18,
+    "reason": "Initialising World context in behave — routes to gherkin-step"
   },
   {
-    "query": "My step function is called step_when_the_customer_clicks_the_submit_order_button \u2014 is that the right naming convention for behave?",
-    "should_trigger": true
+    "query": "My step function is called step_when_the_customer_clicks_the_submit_order_button — is that the right naming convention for behave?",
+    "should_trigger": true,
+    "id": 19,
+    "reason": "Step function naming convention for behave — routes to gherkin-step"
+  },
+  {
+    "id": 20,
+    "query": "How do I set up AppWorld in Cucumber TypeScript for Playwright integration?",
+    "should_trigger": true,
+    "reason": "World/AppWorld setup for Cucumber TypeScript — gherkin-step owns this"
+  },
+  {
+    "id": 21,
+    "query": "How do I use setWorldConstructor to register a custom World with a Playwright browser?",
+    "should_trigger": true,
+    "reason": "Registering World constructor in Cucumber TypeScript — gherkin-step"
+  },
+  {
+    "id": 22,
+    "query": "Write a Gherkin scenario for the checkout flow",
+    "should_trigger": false,
+    "reason": "Writing scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 23,
+    "query": "Create a User Story for the payment capability",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 24,
+    "query": "Sync the feature files with the living doc after AC changes",
+    "should_trigger": false,
+    "reason": "Feature file / AC sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 25,
+    "query": "Run a gap analysis on our test coverage",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 26,
+    "query": "Scan the webapp and generate PageObjects for all screens",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 27,
+    "query": "Document the atomic behavior for cart validation in the living doc",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 28,
+    "query": "Update the wording of AC-1 on US-042",
+    "should_trigger": false,
+    "reason": "Updating a living doc entity — routes to living-doc-update"
+  },
+  {
+    "id": 29,
+    "query": "What does PR #217 affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 30,
+    "query": "Create a Feature entity for the orders service",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  },
+  {
+    "id": 31,
+    "query": "Generate a feature file for all active ACs in US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios from User Story — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 32,
+    "query": "Add data-cy attributes to the confirm button template",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 33,
+    "query": "Find all User Stories that have no BDD scenarios",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 34,
+    "query": "Delete BDD artifacts linked to the deprecated checkout feature",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 35,
+    "query": "Create a new User Story for the express checkout journey",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 36,
+    "query": "Fix the @AC: traceability tags in the checkout feature file",
+    "should_trigger": false,
+    "reason": "@AC: tag sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 37,
+    "query": "Deprecate the checkout feature in the living doc",
+    "should_trigger": false,
+    "reason": "Deprecating an entity — routes to living-doc-update"
+  },
+  {
+    "id": 38,
+    "query": "Crawl the UI to discover all screens and generate page objects",
+    "should_trigger": false,
+    "reason": "UI crawl and PageObject creation — routes to living-doc-pageobject-scan"
   }
 ]

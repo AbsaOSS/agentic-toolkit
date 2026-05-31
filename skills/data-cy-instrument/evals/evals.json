@@ -1,0 +1,130 @@
+{
+  "skill_name": "data-cy-instrument",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Phase 1 scan of the checkout module found 5 elements without data-cy attributes. What are the next steps?",
+      "expected_output": "For each element: (1) Determine if it is a native HTML element — if yes, add a data-cy attribute directly in the Angular template (e.g. data-cy='confirm-order-btn'). (2) If it is a third-party library component that does not forward attributes, mark it ⚠️ 'needs lib support' and add a WORK_LOG.md §4 row with status ⚠️, element description, library name and version, and a link to the library's issue tracker. (3) After all native elements are instrumented, proceed to Phase 3 to update PageObjects to use getByTestId().",
+      "files": [],
+      "expectations": [
+        "Handles native elements by adding data-cy to the template",
+        "Handles lib components with WORK_LOG.md §4 row entry",
+        "WORK_LOG row includes library name, version, and issue tracker link",
+        "Does not silently skip lib components"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "A PageObject has 3 locators marked ⚠️ PROPOSED. What does that mean and what do I do?",
+      "expected_output": "PROPOSED locators indicate that Phase 1 (data-cy instrumentation) has not yet been done for those elements — the PageObject was generated with a best-guess selector pending data-cy confirmation. Steps: (1) Run Phase 1 to add the missing data-cy attributes to the template. (2) Once data-cy is in the template, replace the PROPOSED locator with getByTestId('your-data-cy-value') in the PageObject. (3) Remove the ⚠️ PROPOSED comment after updating.",
+      "files": [],
+      "expectations": [
+        "Explains PROPOSED means data-cy not yet added to template",
+        "Phase 1 first, then update locator to getByTestId()",
+        "Remove PROPOSED comment after fix"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "How do I update a PageObject locator from a CSS selector to getByTestId() after adding the data-cy attribute?",
+      "expected_output": "Replace the old locator: `this.page.locator('button.confirm-order')` → `this.page.getByTestId('confirm-order-btn')` where 'confirm-order-btn' is the value of the data-cy attribute you added to the template. Update the method comment to remove any ⚠️ PROPOSED flag.",
+      "files": [],
+      "expectations": [
+        "Shows the getByTestId() replacement syntax",
+        "data-cy value matches what was added to the template",
+        "Removes PROPOSED comment"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "A third-party PrimeNG Button component does not forward the data-cy attribute. I silently skipped it in Phase 1. Is that OK?",
+      "expected_output": "No — silent skips are not allowed. For any element where the library does not support attribute forwarding, add a WORK_LOG.md §4 row with: status ⚠️, element description, library name (PrimeNG) and version, and a link to the PrimeNG issue tracker or relevant GitHub issue. This ensures the gap is tracked and actionable.",
+      "files": [],
+      "expectations": [
+        "Identifies silent skip as incorrect",
+        "Requires WORK_LOG.md §4 row",
+        "Row must include library name, version, issue tracker link"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "happy-path",
+      "prompt": "FUNC-promo-validate has status 'planned' because the data-cy attributes are missing. After Phase 1 and Phase 3 are complete, what do I do to promote it?",
+      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-promo-validate status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
+      "files": [],
+      "expectations": [
+        "Routes to living-doc-update for status promotion",
+        "Status changes from planned to active",
+        "Only after Phase 1 and Phase 3 are complete"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "The checkout PageObject selectors are broken because the CSS classes changed after the redesign — there are no data-cy attributes involved. Should I run data-cy-instrument?",
+      "expected_output": "No — selector drift caused by CSS class changes without missing data-cy attributes is a HEALING scope concern. Load living-doc-pageobject-scan and use HEALING mode to re-scan the page and update the broken selectors. data-cy-instrument only applies when coverage_gaps are non-empty or PageObjects have PROPOSED locators due to missing test IDs.",
+      "files": [],
+      "expectations": [
+        "Routes to living-doc-pageobject-scan HEALING",
+        "Explains data-cy-instrument does not apply when coverage_gaps are empty",
+        "Does not attempt to re-instrument templates"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "Phases 1 and 3 are Angular-specific. What do I do for a React or Vue app?",
+      "expected_output": "Phases 1, 3, and 5 are framework-agnostic in principle. For React: add data-testid attributes (data-cy is by convention but getByTestId() accepts any value). For Vue: same approach. Phase 2 (ng-add schematics) and Phase 4 (Angular-specific wiring) are Angular-only and should be skipped for other frameworks. Apply Phase 1 (audit), Phase 3 (PO update), and Phase 5 (coverage gap check) to any framework.",
+      "files": [],
+      "expectations": [
+        "States phases 1, 3, 5 are framework-agnostic",
+        "States phases 2 and 4 are Angular-only",
+        "Mentions data-testid equivalence for React/Vue"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me the expected WORK_LOG.md §4 row for a Material Design button that does not support data-cy forwarding.",
+      "expected_output": "| ⚠️ | Checkout confirm button | MatButton (Angular Material v17.3.0) | Cannot forward data-cy; tracked at https://github.com/angular/components/issues/XXXX |",
+      "files": [],
+      "expectations": [
+        "Status column is ⚠️",
+        "Element description present",
+        "Library name and version present",
+        "Issue tracker link present"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "After running Phase 3, coverage_gaps is still non-empty for the promo-apply button. What should I check?",
+      "expected_output": "Check: (1) Did Phase 1 actually add data-cy='promo-apply-btn' to the template? (2) Did Phase 3 update the PageObject locator to getByTestId('promo-apply-btn')? (3) Is the element conditionally rendered (e.g. *ngIf) and not visible during the scan? (4) Is the element inside a Shadow DOM that prevents standard attribute access? If all four checks pass and the gap persists, add a WORK_LOG.md §4 row.",
+      "files": [],
+      "expectations": [
+        "Checks Phase 1 template add",
+        "Checks Phase 3 PO update",
+        "Checks conditional rendering",
+        "Checks Shadow DOM edge case",
+        "Falls back to WORK_LOG if gap persists"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "What is the relationship between data-cy-instrument and living-doc-pageobject-scan?",
+      "expected_output": "living-doc-pageobject-scan is upstream — it creates or heals PageObjects and may produce PROPOSED locator comments when data-cy attributes are missing. data-cy-instrument runs downstream to resolve those PROPOSED locators by instrumenting the templates and updating the PageObjects to use getByTestId(). After data-cy-instrument completes, living-doc-scenario-creator is downstream to generate BDD scenarios using the now-stable locators.",
+      "files": [],
+      "expectations": [
+        "living-doc-pageobject-scan is upstream (produces PROPOSED)",
+        "data-cy-instrument resolves PROPOSED locators",
+        "living-doc-scenario-creator is downstream",
+        "Correct pipeline order stated"
+      ]
+    }
+  ]
+}

@@ -30,10 +30,10 @@
       "id": 3,
       "category": "regression",
       "prompt": "The `LegacyPaymentGatewayService` has been deleted from the codebase. How do I handle this in the living doc?",
-      "expected_output": "Agent sets status to deprecated on the entity \u2014 never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
+      "expected_output": "Agent sets status to deprecated on the entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
-        "Sets status: deprecated \u2014 never deletes the entity file",
+        "Sets status: deprecated — never deletes the entity file",
         "Adds deprecated_at and deprecation_reason fields",
         "Links to the commit that deleted the code if possible",
         "Flags linked Gherkin scenarios for gherkin-living-doc-sync"
@@ -55,10 +55,10 @@
       "id": 5,
       "category": "regression",
       "prompt": "After the sprint review, the product owner clarified the wording of US-042-AC-1. How do I update it without breaking traceability?",
-      "expected_output": "Agent keeps the AC ID stable \u2014 never changes the ID. Only updates the description, given, when, and then fields. Flags for gherkin-living-doc-sync if the linked scenario step text needs updating to match the revised wording.",
+      "expected_output": "Agent keeps the AC ID stable — never changes the ID. Only updates the description, given, when, and then fields. Flags for gherkin-living-doc-sync if the linked scenario step text needs updating to match the revised wording.",
       "files": [],
       "expectations": [
-        "Keeps AC ID stable \u2014 never changes the ID",
+        "Keeps AC ID stable — never changes the ID",
         "Updates only description, given, when, then fields",
         "Flags for gherkin-living-doc-sync if linked scenario text needs updating"
       ]
@@ -67,7 +67,7 @@
       "id": 6,
       "category": "negative",
       "prompt": "Create a new User Story for the express checkout flow.",
-      "expected_output": "Creating a new User Story is out of scope for this skill \u2014 routes to living-doc-create-user-story. living-doc-update amends or deprecates existing entities; it does not create new ones.",
+      "expected_output": "Creating a new User Story is out of scope for this skill — routes to living-doc-create-user-story. living-doc-update amends or deprecates existing entities; it does not create new ones.",
       "files": [],
       "expectations": [
         "Does not create a new User Story",
@@ -79,7 +79,7 @@
       "id": 7,
       "category": "negative",
       "prompt": "Which User Stories don't have any linked Gherkin scenarios?",
-      "expected_output": "Finding coverage gaps is out of scope for this skill \u2014 routes to living-doc-gap-finder. living-doc-update modifies existing entities; gap detection is handled by living-doc-gap-finder.",
+      "expected_output": "Finding coverage gaps is out of scope for this skill — routes to living-doc-gap-finder. living-doc-update modifies existing entities; gap detection is handled by living-doc-gap-finder.",
       "files": [],
       "expectations": [
         "Does not search for User Stories without scenarios",
@@ -90,7 +90,7 @@
     {
       "id": 8,
       "category": "paraphrase",
-      "prompt": "US-089 needs updating \u2014 we discovered a new edge case during testing: when the delivery address is outside our shipping zone, the order should be blocked with a clear message. Can you update the story?",
+      "prompt": "US-089 needs updating — we discovered a new edge case during testing: when the delivery address is outside our shipping zone, the order should be blocked with a clear message. Can you update the story?",
       "expected_output": "Agent identifies this as an add-AC request despite 'update the story' phrasing. Assigns the next sequential AC ID. Forms the AC: Given customer with out-of-zone address / When order is placed / Then order is blocked with SHIPPING_ZONE_EXCLUDED error. Flags for gherkin-living-doc-sync if linked scenarios need updating. Outputs a change summary with the new AC.",
       "files": [],
       "expectations": [
@@ -104,11 +104,11 @@
     {
       "id": 9,
       "category": "edge-case",
-      "prompt": "We decided during the sprint to descope US-042-AC-3 \u2014 the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
-      "expected_output": "Agent sets the AC status to 'descoped' \u2014 does not delete the AC. Adds descoped_at and descoped_reason fields. Adds a future_release reference if the work is planned for a later sprint. Flags any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync.",
+      "prompt": "We decided during the sprint to descope US-042-AC-3 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
+      "expected_output": "Agent sets the AC status to 'descoped' — does not delete the AC. Adds descoped_at and descoped_reason fields. Adds a future_release reference if the work is planned for a later sprint. Flags any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
-        "Sets AC status to 'descoped' \u2014 does not delete the AC",
+        "Sets AC status to 'descoped' — does not delete the AC",
         "Adds descoped_at and descoped_reason fields",
         "Adds a future_release reference if planned for a later sprint",
         "Flags linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync"
@@ -125,7 +125,8 @@
         "New text clearly labelled (NEW)",
         "Linked Gherkin scenarios listed with filename and line number",
         "No content beyond changed AC and linked scenarios is modified"
-      ]
+      ],
+      "category": "happy-path"
     },
     {
       "id": 11,
@@ -141,7 +142,8 @@
         "New AC-2 text shown (labelled NEW)",
         "Linked Gherkin scenario identified for re-sync",
         "No other ACs or sections modified"
-      ]
+      ],
+      "category": "happy-path"
     },
     {
       "id": 12,
@@ -156,7 +158,8 @@
         "superseded_by points to FEAT-payment-page",
         "Flags owned Functionalities for deprecation review",
         "Flags linked tests for update or removal"
-      ]
+      ],
+      "category": "regression"
     },
     {
       "id": 13,
@@ -170,7 +173,8 @@
         "Notes the script checks field requirements, ID format, and status values",
         "Notes --catalog flag for referential integrity checks",
         "Explains exit 0 (valid with warnings) vs exit 1 (errors to fix)"
-      ]
+      ],
+      "category": "regression"
     },
     {
       "id": 14,
@@ -184,18 +188,36 @@
         "Identifies the failing invariant: missing error/alternative-path AC",
         "Proposes an example error-path AC",
         "Does not set status to active until the invariant passes"
-      ]    },
+      ],
+      "category": "edge-case"
+    },
     {
       "id": 15,
       "category": "regression",
-      "prompt": "AC:US-042-01 is currently ACTIVE at v1.0.0. The discount threshold rule changed \u2014 the minimum order value is now \u00a375 instead of \u00a350. I need to update the AC.",
-      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 \u2014 required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC: US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
+      "prompt": "AC:US-042-01 is currently ACTIVE at v1.0.0. The discount threshold rule changed — the minimum order value is now £75 instead of £50. I need to update the AC.",
+      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC: US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
         "Version bumped from v1.0.0 to v1.1.0",
         "AC ID stays unchanged",
         "OLD and NEW AC shown side by side before writing",
         "Linked Gherkin scenarios flagged for re-sync via gherkin-living-doc-sync"
-      ]    }
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "I need to rename FEAT-checkout to FEAT-checkout-v2. Walk me through every change required.",
+      "expected_output": "Feature rename cascade — 7 steps: (1) Update the Feature entity file: change 'id' and 'name' fields. (2) Update feature_id in all linked Functionality entities. (3) Update feature_registry.json: replace the old key with the new feature id. (4) Update manifest.json / seed.yaml: update the Feature name/id entry. (5) Update PageObject file headers: change '# Feature: FEAT-checkout' to '# Feature: FEAT-checkout-v2'. (6) Update Gherkin feature file headers: change '# Feature: checkout' references. (7) Run living-doc-gap-finder to confirm no orphan references remain.",
+      "files": [],
+      "expectations": [
+        "Lists all 7 cascade steps",
+        "Step 2: update feature_id in Functionality entities",
+        "Step 3: update feature_registry.json",
+        "Step 5: update PageObject file headers",
+        "Step 6: update Gherkin # Feature: headers",
+        "Step 7: run gap-finder to confirm clean state"
+      ]
+    }
   ]
 }

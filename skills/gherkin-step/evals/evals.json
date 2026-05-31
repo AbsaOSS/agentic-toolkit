@@ -108,13 +108,77 @@
       "id": 9,
       "prompt": "My step is throwing AttributeError: \"Context\" object has no attribute \"checkout_page\". How do I fix this? The CheckoutPage class is in pages/checkout_page.py.",
       "expected_output": "Explanation that context.checkout_page must be initialized before the step runs, using a before_scenario hook in environment.py; shows the correct before_scenario pattern attaching a CheckoutPage instance to context.",
-      "files": []
+      "files": [],
+      "category": "edge-case",
+      "expectations": [
+        "Explains context.checkout_page must be assigned before the step runs",
+        "Points to a Before hook (environment.py or Cucumber Before) as the fix location",
+        "Shows the correct assignment: context.checkout_page = CheckoutPage(context.browser)",
+        "Does not suggest modifying the step function itself to work around the missing attribute"
+      ]
     },
     {
       "id": 10,
       "prompt": "Should I name my behave step function step_when_the_customer_clicks_the_confirm_order_button or step_confirm_order?",
       "expected_output": "Recommends step_confirm_order - concise action-based name. Explains why verbose full-phrase names are discouraged: they duplicate the Gherkin text and make step files harder to scan.",
-      "files": []
+      "files": [],
+      "category": "happy-path",
+      "expectations": [
+        "Recommends the concise action-based name: step_confirm_order",
+        "Flags the verbose full-phrase name as an anti-pattern",
+        "Explains the reason: long names are hard to read and cause truncation in test output",
+        "Consistent with the step file naming convention: one file per domain"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "happy-path",
+      "prompt": "How do I set up AppWorld in Cucumber TypeScript so that each scenario gets a fresh Playwright browser context?",
+      "expected_output": "Define an AppWorld class implementing the World interface with a `page` property and a `browser` property. In the constructor, record `this.browser = browser`. In a Before hook, call `this.page = await this.browser.newPage()`. Register with `setWorldConstructor(AppWorld)`. Each scenario gets a fresh context automatically.",
+      "files": [],
+      "expectations": [
+        "Shows AppWorld class with World interface implementation",
+        "Includes setWorldConstructor(AppWorld) registration",
+        "Before hook creates new page and assigns to this.page",
+        "After hook closes page"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "Show me a complete Cucumber TypeScript World setup for a Playwright test suite — I need the AppWorld interface, the class, and the Before/After hooks.",
+      "expected_output": "Provide: (1) AppWorld interface with page and browser properties, (2) AppWorld class implementing it with browser injection in constructor, (3) setWorldConstructor(AppWorld), (4) Before hook: this.page = await this.browser.newPage(), (5) After hook: await this.page?.close().",
+      "files": [],
+      "expectations": [
+        "AppWorld interface shown with correct property types",
+        "setWorldConstructor called with the class",
+        "Before and After hooks shown",
+        "No hardcoded browser creation inside the class"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "My Cucumber TypeScript World setup creates a new browser in the constructor with `playwright.chromium.launch()`. What is wrong with this?",
+      "expected_output": "The browser should be injected via the World constructor parameter `{ browser }`, not created inside the class. Creating a browser in the constructor means each scenario launches a separate browser process, bypassing Cucumber's browser management. Use `this.browser = browser` and create only a new page (`this.browser.newPage()`) in the Before hook.",
+      "files": [],
+      "expectations": [
+        "Identifies the anti-pattern: launching browser inside constructor",
+        "Explains the correct pattern: inject browser via constructor parameter",
+        "Shows Before hook creating a new page instead"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "happy-path",
+      "prompt": "What is the correct file naming convention for Cucumber TypeScript step definition files? I have one large steps.ts file right now.",
+      "expected_output": "Use one step file per domain, named after the domain: e.g. `checkout.steps.ts`, `login.steps.ts`. Never use a generic `steps.ts` filename — it makes it hard to locate step definitions during debugging and conflicts when multiple domains are merged.",
+      "files": [],
+      "expectations": [
+        "Recommends per-domain file naming",
+        "Shows example: checkout.steps.ts, login.steps.ts",
+        "Flags generic steps.ts as an anti-pattern"
+      ]
     }
   ]
 }

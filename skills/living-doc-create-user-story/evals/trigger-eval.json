@@ -1,20 +1,164 @@
 [
-  {"id":  1, "query": "Create a user story for the password reset feature", "should_trigger": true, "reason": "Explicit 'create a user story' trigger keyword"},
-  {"id":  2, "query": "Write acceptance criteria for the login capability", "should_trigger": true, "reason": "Explicit 'write acceptance criteria' trigger keyword"},
-  {"id":  3, "query": "I need a new user story — a customer wants to track their delivery", "should_trigger": true, "reason": "Explicit 'new user story' trigger keyword"},
-  {"id":  4, "query": "As a customer I want to view my order history", "should_trigger": true, "reason": "As-a narrative format triggers US elicitation"},
-  {"id":  5, "query": "Help me document a business requirement for promo codes", "should_trigger": true, "reason": "'document a business requirement' trigger phrase"},
-  {"id":  6, "query": "I need to define US AC for the checkout flow", "should_trigger": true, "reason": "'define US AC' trigger phrase"},
-  {"id":  7, "query": "User story template for a SaaS onboarding feature", "should_trigger": true, "reason": "'user story template' trigger phrase"},
-  {"id":  8, "query": "Elicit requirements for the notifications feature", "should_trigger": true, "reason": "'elicit requirements' trigger phrase"},
-  {"id":  9, "query": "Review this user story and tell me what ACs are missing", "should_trigger": true, "reason": "Reviewing US ACs is part of this skill's completeness check"},
-  {"id": 10, "query": "Is my narrative well formed? 'As a system I can process payments'", "should_trigger": true, "reason": "Validating a narrative is a core skill task"},
-  {"id": 11, "query": "Document the checkout page as a Feature entity", "should_trigger": false, "reason": "Feature entity creation — routes to living-doc-create-feature"},
-  {"id": 12, "query": "Document the atomic behavior: validate cart is not empty", "should_trigger": false, "reason": "Atomic behavior is a Functionality — routes to living-doc-create-functionality"},
-  {"id": 13, "query": "Generate BDD scenarios for US-001", "should_trigger": false, "reason": "Scenario generation — routes to living-doc-scenario-creator"},
-  {"id": 14, "query": "What test gaps exist in our living documentation?", "should_trigger": false, "reason": "Gap analysis — routes to living-doc-gap-finder"},
-  {"id": 15, "query": "I want to write requirements for the loyalty points feature", "should_trigger": true, "reason": "'document a business requirement' pattern — User Story elicitation"},
-  {"id": 16, "query": "Is my user story well-formed? Here it is: 'As a system, process the payment'", "should_trigger": true, "reason": "Validating a User Story narrative is a core skill task"},
-  {"id": 17, "query": "My I-want clause contains 'and' — is that OK for a User Story?", "should_trigger": true, "reason": "Reviewing User Story narrative correctness is a core task of this skill"},
-  {"id": 18, "query": "Create a BDD scenario for the checkout User Story", "should_trigger": false, "reason": "Scenario creation from a User Story — routes to living-doc-scenario-creator"}
+  {
+    "id": 1,
+    "query": "Create a user story for the password reset feature",
+    "should_trigger": true,
+    "reason": "Explicit 'create a user story' trigger keyword"
+  },
+  {
+    "id": 2,
+    "query": "Write acceptance criteria for the login capability",
+    "should_trigger": true,
+    "reason": "Explicit 'write acceptance criteria' trigger keyword"
+  },
+  {
+    "id": 3,
+    "query": "I need a new user story — a customer wants to track their delivery",
+    "should_trigger": true,
+    "reason": "Explicit 'new user story' trigger keyword"
+  },
+  {
+    "id": 4,
+    "query": "As a customer I want to view my order history",
+    "should_trigger": true,
+    "reason": "As-a narrative format triggers US elicitation"
+  },
+  {
+    "id": 5,
+    "query": "Help me document a business requirement for promo codes",
+    "should_trigger": true,
+    "reason": "'document a business requirement' trigger phrase"
+  },
+  {
+    "id": 6,
+    "query": "I need to define US AC for the checkout flow",
+    "should_trigger": true,
+    "reason": "'define US AC' trigger phrase"
+  },
+  {
+    "id": 7,
+    "query": "User story template for a SaaS onboarding feature",
+    "should_trigger": true,
+    "reason": "'user story template' trigger phrase"
+  },
+  {
+    "id": 8,
+    "query": "Elicit requirements for the notifications feature",
+    "should_trigger": true,
+    "reason": "'elicit requirements' trigger phrase"
+  },
+  {
+    "id": 9,
+    "query": "Review this user story and tell me what ACs are missing",
+    "should_trigger": true,
+    "reason": "Reviewing US ACs is part of this skill's completeness check"
+  },
+  {
+    "id": 10,
+    "query": "Is my narrative well formed? 'As a system I can process payments'",
+    "should_trigger": true,
+    "reason": "Validating a narrative is a core skill task"
+  },
+  {
+    "id": 11,
+    "query": "Document the checkout page as a Feature entity",
+    "should_trigger": false,
+    "reason": "Feature entity creation — routes to living-doc-create-feature"
+  },
+  {
+    "id": 12,
+    "query": "Document the atomic behavior: validate cart is not empty",
+    "should_trigger": false,
+    "reason": "Atomic behavior is a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": 13,
+    "query": "Generate BDD scenarios for US-001",
+    "should_trigger": false,
+    "reason": "Scenario generation — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 14,
+    "query": "What test gaps exist in our living documentation?",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 15,
+    "query": "I want to write requirements for the loyalty points feature",
+    "should_trigger": true,
+    "reason": "'document a business requirement' pattern — User Story elicitation"
+  },
+  {
+    "id": 16,
+    "query": "Is my user story well-formed? Here it is: 'As a system, process the payment'",
+    "should_trigger": true,
+    "reason": "Validating a User Story narrative is a core skill task"
+  },
+  {
+    "id": 17,
+    "query": "My I-want clause contains 'and' — is that OK for a User Story?",
+    "should_trigger": true,
+    "reason": "Reviewing User Story narrative correctness is a core task of this skill"
+  },
+  {
+    "id": 18,
+    "query": "Create a BDD scenario for the checkout User Story",
+    "should_trigger": false,
+    "reason": "Scenario creation from a User Story — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 19,
+    "query": "Write step definitions for the login AC scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 20,
+    "query": "Delete all BDD artifacts linked to the deprecated US-007",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 21,
+    "query": "Sync the feature files with the updated living doc",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 22,
+    "query": "What does PR #217 affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 23,
+    "query": "Scan the webapp and generate PageObjects for the login screen",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": 24,
+    "query": "Add data-cy attributes to the login form inputs",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 25,
+    "query": "Run a gap analysis to find User Stories without scenarios",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 26,
+    "query": "Create a Feature entity for the authentication module",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  },
+  {
+    "id": 27,
+    "query": "When creating this User Story, should I link the existing Functionality FUNC-promo-validate?",
+    "should_trigger": true,
+    "reason": "Linking existing Functionalities during US creation — living-doc-create-user-story owns this"
+  }
 ]

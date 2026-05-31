@@ -94,5 +94,59 @@
     "query": "Mark FEAT-legacy-payment-widget as deprecated and point to FEAT-payment-page as the replacement.",
     "should_trigger": true,
     "reason": "'mark feature deprecated' and 'deprecate feature' trigger phrases; superseded_by field is set as part of deprecation."
+  },
+  {
+    "id": "t17-not-scenario",
+    "query": "Generate BDD scenarios for all active ACs on US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": "t18-not-step",
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": "t19-not-bdd-maintain",
+    "query": "Run the BDD cleanup for the deprecated checkout feature",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": "t20-not-sync",
+    "query": "Sync the @AC: header comments in the feature files",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": "t21-not-pageobject",
+    "query": "Scan the webapp and regenerate PageObjects after the redesign",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": "t22-not-data-cy",
+    "query": "Add data-cy attributes to the confirm button",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": "t23-not-gap-finder",
+    "query": "Find all User Stories with no AC coverage",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": "t24-not-impact",
+    "query": "What does this PR affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": "t25-rename-feature",
+    "query": "I need to rename FEAT-checkout to FEAT-checkout-v2 — walk me through all the cascade steps",
+    "should_trigger": true,
+    "reason": "Feature rename cascade — living-doc-update owns the 7-step rename workflow"
   }
 ]
