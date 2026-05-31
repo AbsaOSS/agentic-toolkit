@@ -196,6 +196,75 @@
         "Identifies multiple-scenario-per-AC as a design smell",
         "Asks user to designate the canonical scenario"
       ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Run the coverage report for US-007 which has three active ACs. The features directory contains one scenario with '@AC:US-007-01' and one scenario that has a '# AC: US-007-02' comment but no @AC: tag. What does the report show?",
+      "expected_output": "Coverage report shows: AC:US-007-01 ✅ covered (matched by @AC: tag). AC:US-007-02 ❌ NOT COVERED — the # AC: comment is human-readable only; coverage is determined solely by the machine-readable @AC: tag. The comment alone does not count as coverage. AC:US-007-03 ❌ NOT COVERED. Summary: 1 covered, 2 gaps. The report does NOT claim AC:US-007-02 is covered just because a comment references it.",
+      "files": [],
+      "expectations": [
+        "Coverage is based exclusively on @AC: tags — not on # AC: comments",
+        "AC:US-007-01 is marked ✅ covered",
+        "AC:US-007-02 is marked ❌ NOT COVERED despite the # AC: comment",
+        "Summary correctly shows 1 covered, 2 gaps",
+        "Report does not invent or infer coverage from comments or scenario text"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "The coverage report is run against a features directory that contains no .feature files at all. US-005 has two active ACs. What does the report output?",
+      "expected_output": "Report shows both ACs as ❌ NOT COVERED. Summary: 2 active ACs, 0 covered, 2 gaps. The report does not hallucinate coverage, does not generate placeholder scenarios, and does not mark ACs as covered. It exits with code 1 to signal gaps. The output clearly identifies the gaps as the scenario generation queue input: 'NOT COVERED — add to scenario generation queue'.",
+      "files": [],
+      "expectations": [
+        "Both ACs reported as ❌ NOT COVERED",
+        "Summary: 0 covered, 2 gaps",
+        "Exits with code 1",
+        "Does not hallucinate coverage or generate placeholder content",
+        "Gap entries explicitly marked as scenario generation queue input"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "regression",
+      "prompt": "The coverage report is run for US-010. AC:US-010-02 has a scenario tagged '@AC:US-10-02' (missing leading zero in the US number). Is it counted as covered?",
+      "expected_output": "No — AC:US-010-02 is NOT covered. The @AC: tag '@AC:US-10-02' does not match the canonical ID 'US-010-02' because the ID format must match exactly (zero-padded). The report shows AC:US-010-02 ❌ NOT COVERED. A warning or note is shown: '@AC:US-10-02 found in <filename> — does not match any known AC ID; check zero-padding'. The report does not guess or fuzzy-match AC IDs.",
+      "files": [],
+      "expectations": [
+        "AC:US-010-02 is marked ❌ NOT COVERED",
+        "Malformed tag @AC:US-10-02 does not count as coverage",
+        "Report emits a warning about the unrecognised tag",
+        "No fuzzy matching or inference — IDs must match exactly"
+      ]
+    },
+    {
+      "id": 19,
+      "category": "happy-path",
+      "prompt": "Run coverage_report.py for US-007. All three active ACs have matching @AC: tags in feature files. What does the summary look like?",
+      "expected_output": "Report shows all three ACs as ✅ covered with the feature file name(s) listed under each. Summary: Active/Implemented ACs: 3. Covered by scenarios: 3 (100%). Gaps: 0. Exits with code 0. The report lists only real file names from the features directory — it does not invent file names or pad coverage.",
+      "files": [],
+      "expectations": [
+        "All three ACs marked ✅ covered",
+        "Each covered entry lists the actual feature file name",
+        "Summary shows 3/3 covered, 100%, 0 gaps",
+        "Exits with code 0",
+        "No invented file names — only real files from the scanned directory"
+      ]
+    },
+    {
+      "id": 20,
+      "category": "happy-path",
+      "prompt": "After running the coverage report I see 4 gaps for US-012. What should happen next?",
+      "expected_output": "The 4 gap ACs become the scenario generation queue. The agent invokes living-doc-scenario-creator to generate scenarios for each uncovered Active AC — one scenario per AC, in order. The coverage report output (the ❌ rows) is the direct input to scenario generation; no manual re-specification is needed. After generation, re-running the report should show 0 gaps. The agent does not skip gaps or reorder them without explicit instruction.",
+      "files": [],
+      "expectations": [
+        "Gap ACs from the report become the scenario generation queue",
+        "Invokes living-doc-scenario-creator for each uncovered Active AC",
+        "Processes gaps in report order — no reordering",
+        "Does not skip gaps silently",
+        "After generation, re-running the report is expected to show 0 gaps"
+      ]
     }
   ]
 }

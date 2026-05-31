@@ -39,6 +39,22 @@ compatibility: GitHub Copilot
 
 ---
 
+## Pre-flight: MCP Playwright availability check
+
+**This skill requires the MCP Playwright server. Perform this check before any other step, in every mode.**
+
+1. Attempt to call `mcp_microsoft_pla_browser_snapshot` (or any `mcp_microsoft_pla_browser_*` tool) with a no-op argument.
+2. If the call **succeeds** — continue to the relevant mode below.
+3. If the call **fails or the tool is unavailable** — **stop immediately.** Do not fall back to static sources, route configs, or guided traversal as a substitute. Output exactly:
+
+   > **MCP Playwright server is not available.**
+   > This skill requires the `@playwright/mcp` (or equivalent) MCP server to be running and connected.
+   > Please enable it in your VS Code MCP configuration (`.vscode/mcp.json` or user settings) and restart the agent session, then retry.
+
+   Do not attempt any crawl, seed assembly, or DOM interaction until the user confirms the server is available.
+
+---
+
 ## Create mode
 
 ### Step 0 — Business Seed assembly
@@ -225,6 +241,8 @@ guided_steps:
 ---
 
 ## Maintain mode
+
+> **Pre-flight:** Confirm MCP Playwright is available before proceeding (see [Pre-flight check](#pre-flight-mcp-playwright-availability-check) above). Stop and ask if it is not.
 
 Two scopes — activate the one that matches the trigger.
 

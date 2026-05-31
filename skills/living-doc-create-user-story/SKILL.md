@@ -136,6 +136,20 @@ Rules:
 
 > **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC.
 
+## Script — `validate_entity.py`
+
+After outputting the entity, validate it against the canonical schema before saving to the catalog. Do not save the entity if the script exits with code 1.
+
+```bash
+# Validate the output (run from the toolkit root)
+python skills/living-doc-update/scripts/validate_entity.py entity.json
+
+# With referential integrity checks against the full catalog
+python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog catalog.json
+```
+
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, no AC is present, or the status value is invalid.
+
 ## Anti-patterns to flag
 
 | Anti-pattern | Warning |

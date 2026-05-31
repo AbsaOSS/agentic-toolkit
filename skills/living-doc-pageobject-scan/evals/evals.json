@@ -155,6 +155,34 @@
         "Does not skip the route due to authentication requirement",
         "Names appropriate auth strategy for the auth type"
       ]
+    },
+    {
+      "id": 12,
+      "category": "negative",
+      "prompt": "Scan this webapp and generate PageObjects. The MCP Playwright server is not running.",
+      "expected_output": "Agent performs the MCP pre-flight check by attempting to call mcp_microsoft_pla_browser_snapshot. The call fails. Agent stops immediately and outputs: 'MCP Playwright server is not available. This skill requires the @playwright/mcp (or equivalent) MCP server to be running and connected. Please enable it in your VS Code MCP configuration (.vscode/mcp.json or user settings) and restart the agent session, then retry.' Agent does NOT fall back to static sources (route configs, OpenAPI, guided traversal) as a substitute for the crawl. No seed assembly, DOM inspection, or PageObject generation is attempted.",
+      "files": [],
+      "expectations": [
+        "Performs MCP pre-flight check before any other step",
+        "Detects that mcp_microsoft_pla_browser_* tools are unavailable",
+        "Stops immediately — does not proceed to seed assembly or crawl",
+        "Outputs the exact stop message naming the missing MCP server",
+        "Does NOT fall back to static sources (route config, OpenAPI, guided traversal) as a crawl substitute",
+        "Instructs user to enable the MCP server and retry"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "negative",
+      "prompt": "Re-scan the manifest after the latest UI update. The MCP Playwright server is unavailable.",
+      "expected_output": "Agent performs the MCP pre-flight check at the start of Maintain mode. The call to mcp_microsoft_pla_browser_snapshot fails. Agent stops and outputs: 'MCP Playwright server is not available. Please enable it in your VS Code MCP configuration and restart the agent session, then retry.' Agent does not attempt to diff the manifest, update selectors, or infer DOM changes from static files.",
+      "files": [],
+      "expectations": [
+        "Pre-flight check runs before entering RE-SCAN or HEALING scope",
+        "Stops on MCP unavailability — does not attempt static diff or inference",
+        "Outputs the stop message naming the missing MCP server",
+        "Does not touch manifest.json or PageObject files without a live DOM"
+      ]
     }
   ]
 }

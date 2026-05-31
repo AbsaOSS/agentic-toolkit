@@ -140,3 +140,17 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 | Update feature_registry for impact traceability | **living-doc-impact-analysis** (see Feature registry format in that skill) |
 
 > **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there, which covers: Functionality `feature_id` fields, `feature_registry` entry, `manifest.json`, `seed.yaml`, PageObject file headers, and Gherkin feature file `# Feature:` headers.
+
+## Script — `validate_entity.py`
+
+After outputting the entity, validate it against the canonical schema before saving to the catalog. Do not save the entity if the script exits with code 1.
+
+```bash
+# Validate the output (run from the toolkit root)
+python skills/living-doc-update/scripts/validate_entity.py entity.json
+
+# With referential integrity checks against the full catalog
+python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog catalog.json
+```
+
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, or the status or `surface_type` value is invalid.

@@ -187,6 +187,33 @@
       ]
     },
     {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Create a new Feature entity for the 'Notifications Centre' screen. The catalog already contains FEAT-001 through FEAT-011.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FEAT --catalog catalog.json. The script returns FEAT-012. The agent assigns id='FEAT-012' (or the slug 'FEAT-notifications-centre' if the project uses slug IDs). The agent does NOT invent an ID, reuse an existing ID, or leave the id field as a placeholder such as FEAT-XXX or FEAT-<nnn>. The final JSON contains a fully populated id field before being presented to the user.",
+      "files": [],
+      "expectations": [
+        "Runs next_id.py --type FEAT before assigning the ID",
+        "Assigns the ID returned by the script (e.g. FEAT-012)",
+        "Does not invent, guess, or reuse an ID",
+        "Does not leave a placeholder (FEAT-XXX, FEAT-<nnn>, FEAT-unknown)",
+        "Final JSON has a fully populated id field"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "Create a Feature entity for the 'Payment Page'. The catalog file is not present — next_id.py cannot be run. What should the agent do?",
+      "expected_output": "Agent cannot auto-assign a numeric ID. It uses the slug convention instead: id='FEAT-payment-page' derived from the surface name in kebab-case. The agent explicitly states: 'No catalog available — using slug ID FEAT-payment-page. Verify this ID does not conflict with existing entities before saving.' It does NOT invent a numeric ID such as FEAT-001 or FEAT-999 without catalog evidence.",
+      "files": [],
+      "expectations": [
+        "Falls back to slug ID when catalog is unavailable",
+        "Slug is derived from the surface name in kebab-case",
+        "Warns the user to verify no collision before saving",
+        "Does not invent a numeric ID without catalog evidence"
+      ]
+    },
+    {
       "id": 15,
       "category": "regression",
       "prompt": "I need to rename the Feature FEAT-checkout to FEAT-checkout-v2 because we split the checkout domain. What steps do I need to follow?",

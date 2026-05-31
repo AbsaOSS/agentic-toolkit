@@ -137,6 +137,20 @@ Rules:
 
 > **Parent Feature sync:** After saving this entity, load `living-doc-update` and append this `FUNC-<id>` to the parent Feature's `"functionalities"` array. An unlinked Functionality will be flagged as `ORPHAN_FUNCTIONALITY` by `living-doc-gap-finder`.
 
+## Script — `validate_entity.py`
+
+After outputting the entity, validate it against the canonical schema before saving to the catalog. Do not save the entity if the script exits with code 1.
+
+```bash
+# Validate the output (run from the toolkit root)
+python skills/living-doc-update/scripts/validate_entity.py entity.json
+
+# With referential integrity checks against the full catalog
+python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog catalog.json
+```
+
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, `parent_feature` does not match `FEAT-*`, or the status value is invalid.
+
 ## Distinguishing Functionality ACs from User Story ACs
 
 | Dimension | User Story AC | Functionality AC |

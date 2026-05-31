@@ -165,6 +165,33 @@
       ]
     },
     {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Create a new User Story for the password reset capability. The catalog already contains US-001 through US-013.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type US --catalog catalog.json. The script returns US-014. The agent assigns id='US-014'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as US-XXX or US-<nnn>. The final JSON has a fully populated id field before being presented to the user.",
+      "files": [],
+      "expectations": [
+        "Runs next_id.py --type US before assigning the ID",
+        "Assigns the ID returned by the script (e.g. US-014)",
+        "Does not invent, guess, or reuse an ID",
+        "Does not leave a placeholder (US-XXX, US-<nnn>, US-unknown)",
+        "Final JSON has a fully populated id field"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "Create a User Story but the catalog file is missing — next_id.py cannot be run. What should the agent do?",
+      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='US-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type US once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as US-001 without catalog evidence.",
+      "files": [],
+      "expectations": [
+        "Uses US-PENDING placeholder when catalog is unavailable",
+        "Explicitly warns the user that the ID must be assigned before saving",
+        "Does not invent a numeric ID without catalog evidence",
+        "Placeholder is visibly distinct — not a real US-nnn value"
+      ]
+    },
+    {
       "id": 13,
       "category": "happy-path",
       "prompt": "I'm creating US-015 for the promo stacking feature. FUNC-promo-validate and FUNC-promo-stack already exist in the living doc. Should I link them?",

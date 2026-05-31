@@ -167,6 +167,22 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
 Functionalities differ from User Story ACs: they are atomic and fast-testable, not end-to-end.
 A single User Story may trigger multiple Functionalities.
 
+#### User Story vs Functionality — decision boundary
+
+| Dimension | User Story | Functionality |
+|---|---|---|
+| Perspective | End user observing a business outcome | Developer / component behavior |
+| Scope | Full E2E flow across one or more surfaces | Single function, method, or UI behavior |
+| AC example | "Order is confirmed and confirmation email is sent" | "Returns discounted total when a valid membership tier is applied" |
+| Test type | E2E / integration scenario | Unit or fast system test |
+| Trigger question | *"Would a product owner write this as a business requirement?"* → **User Story** | *"Would a developer write this as a function contract?"* → **Functionality** |
+
+**When in doubt:** if the behavior is observable only by looking at the code or component output (not by a user clicking through the UI), it is a Functionality. If it describes what a user can do or see across one or more screens, it is a User Story.
+
+If an AC belongs to the wrong entity type, redirect:
+- AC too atomic / technical inside a US → move to a **Functionality** (`living-doc-create-functionality`)
+- AC describes a full user journey inside a FUNC → move to a **User Story** (`living-doc-create-user-story`)
+
 > Feature file template and `func_type` values: see [living-doc-bdd-schemas — Functionality Feature File Header](./living-doc-bdd-schemas.md#functionality-feature-file-header).
 
 ### Acceptance Criterion (AC)

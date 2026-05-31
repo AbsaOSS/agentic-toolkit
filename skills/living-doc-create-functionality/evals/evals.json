@@ -163,6 +163,33 @@
       ]
     },
     {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Create a new Functionality entity 'Validate discount code expiry'. The catalog already contains FUNC-001 through FUNC-007.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FUNC --catalog catalog.json. The script returns FUNC-008. The agent assigns id='FUNC-008'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as FUNC-XXX or FUNC-<nnn>. The final JSON has a fully populated id field before being presented to the user.",
+      "files": [],
+      "expectations": [
+        "Runs next_id.py --type FUNC before assigning the ID",
+        "Assigns the ID returned by the script (e.g. FUNC-008)",
+        "Does not invent, guess, or reuse an ID",
+        "Does not leave a placeholder (FUNC-XXX, FUNC-<nnn>, FUNC-unknown)",
+        "Final JSON has a fully populated id field"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "Create a Functionality entity but the catalog file is missing — next_id.py cannot be run. What should the agent do?",
+      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='FUNC-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type FUNC once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as FUNC-001 without catalog evidence. The placeholder makes the gap visible rather than hiding it with a guessed value.",
+      "files": [],
+      "expectations": [
+        "Uses FUNC-PENDING placeholder when catalog is unavailable",
+        "Explicitly warns the user that the ID must be assigned before saving",
+        "Does not invent a numeric ID without catalog evidence",
+        "Placeholder is visibly distinct — not a real FUNC-nnn value"
+      ]
+    },
+    {
       "id": 13,
       "category": "regression",
       "prompt": "I just saved FUNC-promo-validate to the living doc. What else do I need to do to make it fully linked?",
