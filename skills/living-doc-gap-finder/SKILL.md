@@ -9,7 +9,7 @@ description: >
   Triggers on: "find what's not documented", "living doc gaps", "what's missing in living doc",
   "find undocumented features", "orphan tests", "orphan functionalities", "untested AC",
   "documentation coverage", "gap report", "what's not covered", "living doc audit",
-  "documentation audit".
+  "documentation audit", "stale reference", "broken AC link", "test points to deprecated AC".
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
   Pairs with living-doc-update (stale references) and living-doc-create-* skills (gap resolution).
 license: Apache-2.0
@@ -76,6 +76,12 @@ Nine types of gaps are detected, in order of risk:
 | 9 — Nit | **Empty Feature** | A Feature entity exists with no Functionalities defined |
 
 > **Resolution routing:** `UNTESTED_AC` → `living-doc-scenario-creator`; `UNDOCUMENTED_SURFACE` / `ORPHAN_FUNCTIONALITY` / `EMPTY_FEATURE` → `living-doc-create-*`; `ORPHAN_FEATURE` / `ORPHAN_USER_STORY` → `living-doc-update` (add missing link); `ORPHAN_TEST` → `gherkin-living-doc-sync`; **`STALE_REFERENCE`** → `living-doc-update` (deprecate the AC or update the test `@AC:` tag); `UNDOCUMENTED_FUNCTIONALITY` → `living-doc-scenario-creator`.
+
+> **ORPHAN_TEST — never delete a test to resolve the gap.** Deleting a test removes coverage; it does not close the gap — it masks it. Instead: (1) find an existing AC that matches the test's intent and add the `@AC:` link, or (2) if no AC exists, create a Functionality with `living-doc-create-functionality` and link the test to the new AC. Only delete a test after explicit product owner confirmation that the behavior is no longer required.
+
+> **ORPHAN_TEST — broken-link variant:** A test may reference an AC that was deleted from the catalog entirely (not merely deprecated). Classify this as `ORPHAN_TEST` (broken-link variant) — not `STALE_REFERENCE`. Resolution options: (1) recreate the entity if the behavior is still required and relink; (2) update the test link to the AC that superseded it; (3) delete the test after product owner confirmation. Never delete without confirmation.
+
+> **Large-scale ORPHAN_TEST remediation:** When a codebase has dozens or hundreds of orphan tests, do not attempt a single full-codebase pass. Batch by domain or Feature area (for example payment, auth, reporting) and process the highest-business-risk areas first. For each batch, identify which Functionalities or User Stories the tests correspond to, create missing entities, and link tests. A single unmanageable gap report leads to paralysis — smaller focused batches produce actionable outcomes.
 
 ## Workflow
 
@@ -149,6 +155,9 @@ For each test in inventory
   where linked_ac.status == Deprecated:
     GAP: STALE_REFERENCE
 ```
+
+**ORPHAN_TEST — broken-link variant:**
+Also report `ORPHAN_TEST` when a test references an AC ID that **no longer exists** in the catalog (deleted, not merely deprecated). Distinguishing the two: a deprecated AC still has a living entity and can be reinstated; a deleted AC has no catalog entry at all. Resolution options are the same as standard `ORPHAN_TEST` — see the resolution routing note above.
 
 **UNDOCUMENTED_FUNCTIONALITY:**
 ```

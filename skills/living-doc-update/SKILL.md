@@ -30,7 +30,7 @@ Ask: *Which entity is being updated, and what kind of change is this?*
 | Add a new AC | User Story / Functionality | Append a new AC entry with the next sequential AC ID |
 | Modify AC description | User Story / Functionality | Edit the description; keep the AC ID stable |
 | Change status | Any entity | Update `status` field; record the transition event |
-| Change owner | Feature | Update `owners` field |
+| Change owner | Feature | Update `owners` field; add `owner_changed_at` (ISO date) and `owner_change_reason` fields; notify the new owner if open User Stories are linked to the Feature |
 | Add a linked User Story | Feature | Append to `user_stories` |
 | Deprecate an entity | Any entity | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
 | Delete a Functionality | Functionality | Do not delete — deprecate it and link to the commit that removed the code |

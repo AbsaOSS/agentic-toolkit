@@ -7,7 +7,8 @@ description: >
   Functionalities have `status: planned` due to missing test IDs.
   Triggers on: "add missing data-cy", "instrument templates", "fix data-cy gaps", "add testids",
   "data-cy audit", "instrument angular templates", "fix locators", "add data-cy attributes",
-  "add test ids to templates", "fix playwright selectors due to missing data-cy", "data-cy-instrument".
+  "add test ids to templates", "fix playwright selectors due to missing data-cy", "data-cy-instrument",
+  "coverage_gaps", "Functionality status planned".
   Does NOT trigger for: adding Gherkin (use living-doc-scenario-creator); PageObject
   healing without data-cy gaps (use living-doc-pageobject-scan HEALING).
   Pairs with living-doc-pageobject-scan (upstream) and living-doc-scenario-creator (downstream);

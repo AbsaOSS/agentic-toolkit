@@ -100,6 +100,24 @@ python playwright/scripts/find_unused_po_components.py \
 
 All three scripts exit `0` on clean, `1` on findings, `2` on bad arguments — safe for CI gating.
 
+### Handling findings — edge cases
+
+**Recommended script order for a full audit:** run in the sequence steps → PO methods → PO components. Deleting unused steps can expose unused PO methods; deleting unused PO methods can then expose unused PO classes. Running in this order ensures each pass builds on the previous one rather than missing transitively dead code.
+
+**Unused step def — distinguish before deleting:**
+- If the step belongs to a **deprecated entity** (the US/Feature has `status: deprecated` in the catalog), delete it — the coverage it provided is no longer needed.
+- If the step belongs to an **active entity** but has no exercising scenario, it is a stale draft or an orphan; flag it for team review before deleting. Someone may be about to add a scenario for it.
+- Never delete without first verifying the step is not imported or re-exported by another step file — grep for the step file name as an import target as well.
+
+**Script false positives — `find_unused_po_methods.py`:**
+The script uses static string matching. It can report a false positive when:
+- A method is called on a variable typed as a **base class or interface** rather than the concrete PageObject (e.g. `page.confirm_order()` where `page: BasePage`)
+- A method is invoked via a dynamic alias or through a test helper that re-exports it
+If the reported method visibly exists in a step file call site, trust the call site over the script output and do not delete the method. File the false positive with the team so the script can be improved.
+
+**Shared steps between deprecated and active scenarios:**
+Before deleting a step definition, always check whether it is exercised by any scenario outside the deprecated entity. Run `find_unused_steps.py` after removing the deprecated scenarios — not before. If the script still reports the step as unused after the deprecated scenarios are removed, it is safe to delete. If it now shows as used (by a surviving scenario), keep it.
+
 ---
 
 ## Out-of-scope routing

@@ -7,7 +7,8 @@ description: >
   Triggers on: "create a functionality", "document an atomic behavior", "functionality AC",
   "unit-testable behavior", "define component behavior", "atomic acceptance criteria",
   "document a business rule", "create a functionality entity", "functionality acceptance criteria",
-  "test_type", "unit vs integration test", "choose test type", "link functionality to feature".
+  "test_type", "unit vs integration test", "choose test type", "link functionality to feature",
+  "review this functionality", "reuse candidate", "what ACs should I write for".
   Does NOT trigger for: E2E User Stories (use living-doc-create-user-story); system
   surfaces (use living-doc-create-feature); generating BDD scenarios (use
   living-doc-scenario-creator).

@@ -63,8 +63,8 @@
       "expected_output": "Standalone Gherkin without a User Story uses living-doc-scenario-creator Standalone mode. Use @AC:STANDALONE tag; scenario is not tied to a catalog entity.",
       "files": [],
       "expectations": [
-        "Does not generate a standalone scenario",
-        "Uses Standalone mode with @AC:STANDALONE tag",
+        "Generates the scenario using Standalone mode — does not refuse the request",
+        "Uses @AC:STANDALONE tag on the generated scenario",
         "Explains the distinction: US-driven vs. standalone Gherkin"
       ]
     },

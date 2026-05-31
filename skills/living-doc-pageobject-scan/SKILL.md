@@ -9,7 +9,8 @@ description: >
   Triggers on: "scan this webapp", "generate pageobjects", "crawl the UI", "explore the app",
   "discover routes", "seed.yaml", "manifest.json", "first scan", "create page objects",
   "pageobject drift", "re-scan", "refresh manifest", "heal pageobjects", "fix failing tests",
-  "selector drift", "tests are failing".
+  "selector drift", "tests are failing", "generate functionality stubs",
+  "bootstrap pageobjects", "bootstrap page objects".
   Does NOT trigger for: adding/fixing Gherkin (use living-doc-scenario-creator); resolving
   missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain).
   Pairs with data-cy-instrument, living-doc-create-feature, living-doc-scenario-creator,
