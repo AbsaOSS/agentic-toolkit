@@ -337,6 +337,19 @@
         "Requires at least one happy-path and one error-path AC",
         "Asks about existing Functionalities to link — prevents ORPHAN_FUNCTIONALITY gaps"
       ]
+    },
+    {
+      "id": 25,
+      "category": "negative",
+      "prompt": "Write a unit test for the applyDiscount() service method.",
+      "expected_output": "Agent declines the request. Explains that writing unit or integration tests is outside its scope. Directs the user to @sdet-copilot (noting it is not yet deployed). Does not write or stub any test code, and does not leave a TODO comment in any file.",
+      "files": [],
+      "expectations": [
+        "Declines the request — does not write any test code",
+        "Directs user to @sdet-copilot",
+        "Does not add a TODO comment to any file",
+        "Does not partially implement or stub the unit test"
+      ]
     }
   ]
 }

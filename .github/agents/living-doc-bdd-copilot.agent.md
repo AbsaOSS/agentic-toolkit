@@ -1,17 +1,13 @@
 ---
 description: >
-  Single agent for living documentation and BDD automation — catalog management plus
-  executable test generation. Catalog: create/update/deprecate User Stories, Features,
-  Functionalities and ACs; impact analysis; gap finding (AUDIT/PLAN modes).
-  Automation: explore webapps, generate PageObjects, produce Gherkin scenarios and step
-  definitions, maintain BDD suites, sync traceability. Triggers: "create user story",
-  "document feature", "update AC", "impact analysis", "living doc gaps", "PLAN mode",
-  "AUDIT mode", "deprecate entity", "mark US ready", "scan webapp", "generate pageobjects",
-  "heal pageobjects", "generate scenarios", "sync gherkin", "playwright crawl",
-  "explore the app", "BDD pipeline", "crawl the UI", "create page objects",
-  "generate feature file", "step definitions", "add missing data-cy", "fix playwright selectors",
-  "living doc bdd copilot", "living doc copilot".
-tools: [vscode/askQuestions, vscode/toolSearch, vscode/memory, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, execute/runInTerminal, execute/getTerminalOutput, execute/sendToTerminal, execute/killTerminal, execute/runTask, execute/createAndRunTask, read/readFile, read/viewImage, read/problems, read/terminalLastCommand, agent/runSubagent, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, edit/createDirectory, edit/createFile, edit/editFiles, edit/rename, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web/fetch, web/githubRepo, web/githubTextSearch, todo]
+  Living documentation catalog (User Story/Feature/Functionality entities, ACs,
+  living-doc traceability analysis, gap finding) and BDD automation (Playwright
+  crawl/explore/scan, PageObject create/heal, Gherkin scenarios/feature files/step
+  definitions, living-doc sync, scenario coverage). Catalog entity creation,
+  update, deprecation; PR trace for living-doc entity impact; credential
+  validation in seed.yaml. NOT for: unit tests, production code, API or generic
+  tech docs, CI/CD, debugging, performance, security, code review.
+tools: [vscode/askQuestions, vscode/toolSearch, vscode/memory, vscode/resolveMemoryFileUri, execute/runInTerminal, execute/getTerminalOutput, execute/sendToTerminal, execute/killTerminal, read/readFile, read/viewImage, read/problems, read/terminalLastCommand, agent/runSubagent, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, edit/createDirectory, edit/createFile, edit/editFiles, edit/rename, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web/fetch, web/githubRepo, web/githubTextSearch, todo]
 ---
 
 # @living-doc-bdd-copilot
@@ -102,6 +98,36 @@ Load **one** skill per session. Do not pre-load skills for modes not yet trigger
 | Implement step definitions | `gherkin-step` | No manifest loading |
 | Find ACs with no linked scenario | `living-doc-gap-finder` (bottom-up) | No manifest loading |
 
+### Automation session setup
+
+**Seed assembly** — build `seed.yaml` from these sources (load what is available; note absent sources, do not error):
+
+| Source | What to load |
+|---|---|
+| A | Feature-to-route mappings from the living doc catalog |
+| B | Route config: Angular router, React Router, or `sitemap.xml` |
+| D | Existing `manifest.json` — if absent, this is a first-run |
+
+After creating `seed.yaml`, propose adding BDD artifact paths (seed, manifest, PageObjects, feature files) to `.github/copilot-instructions.md` so future sessions have them in context automatically.
+
+**Partial state detection:**
+
+| State | Rule |
+|---|---|
+| seed.yaml present, manifest.json absent | First exploration run — start from `base_url`, create manifest during crawl, do not assume prior discovery |
+| Both present | Resume session from manifest state |
+| Neither present | Collect seed inputs from user before proceeding |
+
+**Credential security:** `seed.yaml` credentials must always use `env:VAR_NAME` references. If literal credential values are present, flag as a **security violation** and refuse to proceed until they are replaced with environment variable references. Explain that literal credentials in a committed file are exposed to anyone with repository access.
+
+**Guided traversal (Source E):** When the crawl reaches a page requiring a business-specific value the agent cannot determine (unknown form field, decision point):
+
+1. Take a screenshot and show the user the current state.
+2. Ask: "I've reached a decision point at `<url>`. What should I do next? Please provide the value for `<field>`."
+3. Execute the action via MCP Playwright after receiving the answer.
+4. Immediately append the action to `guided_steps` in `seed.yaml` so the route can be re-navigated without prompting in future sessions.
+5. Do not invent or guess business-specific field values.
+
 ### Entity deprecation chain
 
 When a User Story or Feature is deprecated, three skills fire in sequence. Complete each step fully before starting the next.
@@ -114,9 +140,9 @@ When a User Story or Feature is deprecated, three skills fire in sequence. Compl
 
 Do not skip steps or run them out of order. Complete catalog changes (step 1) before touching any Gherkin or automation files.
 
-**Manifest loading rule:** Use targeted line ranges for the current route(s). Load full manifest only for RE-SCAN. `seed.yaml`: always load in full.
+**Manifest loading rule:** Use targeted line ranges for the current route(s). Load full manifest only for RE-SCAN. `seed.yaml`: always load in full. When PageObject generation discovers a route with no linked Feature entity, set `feature_id: FEAT-UNKNOWN`, flag the route as needing a Feature entity, and cross-load `living-doc-create-feature` to create it before continuing.
 
-**living-doc-bdd-schemas:** Load [remotely](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, or seed.yaml form_fixtures.
+**living-doc-bdd-schemas:** Load [remotely](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
 
 ---
 
@@ -139,8 +165,8 @@ Do not skip steps or run them out of order. Complete catalog changes (step 1) be
 
 ## Does NOT
 
-- Write unit or integration tests: `@sdet-copilot` _(not yet deployed — leave `TODO: @sdet-copilot`)_
-- Run language-specific quality gates: `@quality-gate-copilot` _(not yet deployed — leave a TODO note)_
+- **Write unit or integration tests** — decline and direct the user to `@sdet-copilot` (not yet deployed). Do not write or modify any test code.
+- **Run language-specific quality gates** — decline and direct the user to `@quality-gate-copilot` (not yet deployed). Do not execute linters, type-checkers, or build pipelines.
 
 ---
 

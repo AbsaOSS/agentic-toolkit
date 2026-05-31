@@ -16,6 +16,7 @@
 | 10 | regression | Credential safety — literal credentials in seed.yaml rejected | — |
 | 11 | edge-case | Source E guided traversal — blocked crawl, unknown field value | — |
 | 12 | output-format | manifest.json entry structure for a scanned route | — |
+| 25 | negative | Unit test request → decline + direct to @sdet-copilot | — |
 
 ## Trigger eval summary
 

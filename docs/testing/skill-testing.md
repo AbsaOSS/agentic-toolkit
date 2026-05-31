@@ -45,6 +45,8 @@ Ask for a side-by-side comparison in the Copilot CLI session:
 
 ```
 Use the skill-creator skill to compare outputs for skills/my-skill with and without the skill enabled.
+Compare on: correctness, structure adherence, completeness, and output verbosity.
+Only fix the smallest part of the skill that explains the largest failure cluster. Repeat until all evals pass.
 ```
 
 Compare correctness, completeness, structure, latency, verbosity, and formatting stability.
@@ -78,8 +80,13 @@ When an eval fails, update the smallest possible part of the skill and re-run th
 Ask Copilot to optimize the description against your trigger eval set:
 
 ```
-Use the skill-creator skill to optimize the description for skills/my-skill using skills/my-skill/evals/trigger-eval.json.
+Use the skill-creator skill to optimize the description for skills/my-skill
+using skills/my-skill/evals/trigger-eval.json.
+Keep minimalist (≤ 1024 chars); structured domain nouns/verbs preferred over explicit keyword lists.
+Include a NOT for: boundary clause. Report precision and recall per candidate. Repeat until all evals pass.
 ```
+
+A good description uses structured domain nouns and a `NOT for:` boundary. An explicit keyword list is not required.
 
 ## 10. What “good enough” looks like
 
@@ -101,12 +108,15 @@ Use the skill-creator skill to optimize the description for skills/my-skill usin
 ## 12. Minimal CLI Loop
 
 ```
-gh copilot
-→ "Use the skill-creator skill to test my skill at skills/my-skill"
-→ inspect results and diffs
-→ edit SKILL.md or fixtures
-→ "Use the skill-creator skill to rerun the evals for skills/my-skill"
-→ optimize description if needed
+VS Code Copilot Chat (or gh copilot):
+→ "Use the skill-creator skill to test my skill at skills/my-skill.
+   Run all evals and report pass rate and baseline delta."
+→ inspect results and diffs — classify each change as improvement, regression, or neutral
+→ edit SKILL.md or fixtures (smallest change that fixes the largest failure cluster)
+→ "Use the skill-creator skill to rerun the evals for skills/my-skill."
+→ "Use the skill-creator skill to optimize the description for skills/my-skill
+   using skills/my-skill/evals/trigger-eval.json.
+   Keep ≤ 1024 chars; include a NOT for: boundary clause. Repeat until all evals pass."
 → repeat until stable
 ```
 

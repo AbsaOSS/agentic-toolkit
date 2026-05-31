@@ -46,36 +46,44 @@ The key insight: an agent's `description:` block is read by the same matching me
 
 ## 3. Trigger eval format
 
-Mirrors the skill trigger-eval format exactly. Store at `.github/agents/evals/<agent-name>/trigger-eval.json`:
+Store at `.github/agents/evals/<agent-name>/trigger-eval.json` as a **flat JSON array** (no wrapper object):
 
 ```json
-{
-  "agent_name": "my-agent",
-  "evals": [
-    {
-      "id": "should-trigger-1",
-      "prompt": "scan this webapp and generate pageobjects",
-      "should_trigger": true
-    },
-    {
-      "id": "should-trigger-2",
-      "prompt": "explore the app and create page objects for the login screen",
-      "should_trigger": true
-    },
-    {
-      "id": "should-not-trigger-1",
-      "prompt": "create a user story for the login feature",
-      "should_trigger": false,
-      "expected_agent": "living-doc-bdd-copilot"
-    },
-    {
-      "id": "should-not-trigger-2",
-      "prompt": "write a unit test for the login validator",
-      "should_trigger": false
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "query": "Scan the webapp at https://app.example.com and generate PageObjects",
+    "should_trigger": true,
+    "reason": "'scan webapp' + 'generate pageobjects' core phrase"
+  },
+  {
+    "id": 2,
+    "query": "Explore the app and map all the UI surfaces",
+    "should_trigger": true,
+    "reason": "'explore the app' maps to crawl/explore mode"
+  },
+  {
+    "id": 3,
+    "query": "Create a User Story for the loyalty points redemption feature",
+    "should_trigger": true,
+    "reason": "Catalog entity creation — living-doc layer"
+  },
+  {
+    "id": 4,
+    "query": "Write a unit test for the login validator",
+    "should_trigger": false,
+    "reason": "Unit test authoring — out of scope"
+  },
+  {
+    "id": 5,
+    "query": "Debug the null pointer exception in PaymentService.processOrder()",
+    "should_trigger": false,
+    "reason": "Application debugging — outside scope"
+  }
+]
 ```
+
+Note: the field is `query` (not `prompt`). The `reason` field is for human documentation only — it is not used by the eval runner.
 
 Write at least **5 should-trigger** and **5 should-not-trigger** cases. Should-not-trigger cases are as important as the positive ones — they catch over-broad descriptions that shadow other agents.
 
@@ -122,6 +130,8 @@ Point `skill-creator` at the agent files — it treats the `description:` block 
 ```
 Use the skill-creator skill to optimize the description for .github/agents/my-agent.agent.md
 using the trigger evals at .github/agents/evals/my-agent/trigger-eval.json.
+Constraints: ≤ 1024 chars; structured domain nouns/verbs; include a NOT for: boundary clause.
+Report precision and recall scores for each candidate. Repeat until all trigger evals pass.
 ```
 
 `skill-creator` will propose candidate descriptions, score them against the eval set, and iterate.
@@ -131,6 +141,11 @@ using the trigger evals at .github/agents/evals/my-agent/trigger-eval.json.
 ```
 Use the skill-creator skill to run the body evals for .github/agents/my-agent.agent.md
 using .github/agents/evals/my-agent/evals.json.
+Verify: (1) all body-referenced tools are present in the frontmatter tools: list,
+(2) mode dispatch routes to the correct skill for each intent,
+(3) scope boundaries match ## Scope and ## Does NOT, (4) handoff targets are correct.
+Only fix scope, tool, or handoff issues — do not rewrite unless fundamentally mis-scoped.
+Repeat until all evals pass.
 ```
 
 Use the same with-skill / baseline comparison flow described in [skill-testing.md](./skill-testing.md).
@@ -180,13 +195,18 @@ description: >
   Generates BDD tests.
 ```
 
-**Good pattern** — explicit Triggers list with concrete phrases:
+**Good pattern** — minimalist semantic description with a `NOT for:` boundary:
 ```yaml
 description: >
-  Bridge living documentation to executable tests. ... 
-  Triggers: "scan webapp", "generate pageobjects", "heal pageobjects",
-  "playwright crawl", "BDD pipeline", "crawl the UI".
+  Living documentation catalog (User Stories, Features, Functionalities, ACs, impact
+  analysis, gap finding) and BDD automation (Playwright crawl/explore/scan, PageObjects
+  create/heal, Gherkin scenarios/feature files/step definitions, living-doc sync,
+  scenario coverage). Setup: seed.yaml → manifest.json, credential checks, guided
+  traversal. NOT for: unit tests, production code, API specs, CI/CD, debugging,
+  performance, security.
 ```
+
+The `NOT for:` clause is as important as the positive terms — it prevents the agent from firing on adjacent-but-out-of-scope requests. An explicit `Triggers:` keyword list is not required; structured domain nouns and verbs are sufficient for the matching mechanism to work.
 
 ---
 
@@ -208,13 +228,18 @@ Same as skill testing — run the full trigger-eval set, fix the largest failure
 ## 10. Minimal session
 
 ```
-gh copilot
+VS Code Copilot Chat (or gh copilot):
 → "Use the skill-creator skill to test the agent at .github/agents/my-agent.agent.md
-   using the evals at .github/agents/evals/my-agent/"
-→ inspect trigger accuracy and body output diffs
+   using the evals at .github/agents/evals/my-agent/.
+   Report trigger precision/recall and body eval pass rate."
+→ inspect trigger accuracy report and body output diffs;
+  classify each change as improvement, regression, or neutral
 → edit the `.agent.md` file directly to fix structural issues
-→ "Use the skill-creator skill to optimize the description using the trigger-eval.json"
-→ re-run evals until stable
+  (scope, tools: list, mode dispatch, handoff)
+→ "Use the skill-creator skill to optimize the description for .github/agents/my-agent.agent.md
+   using .github/agents/evals/my-agent/trigger-eval.json.
+   Keep ≤ 1024 chars; include a NOT for: boundary clause. Repeat until all evals pass."
+→ re-run full eval suite; keep or revert each change; repeat until stable
 ```
 
 ---
