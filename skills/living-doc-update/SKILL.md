@@ -54,6 +54,11 @@ When modifying an existing AC **keep the AC ID stable** — changing the ID brea
 to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
+**AC versioning:** ACs carry a `(vMAJOR.MINOR.PATCH – state)` annotation.
+- Bump the **minor** version for any business-rule change to an `ACTIVE` AC (e.g. `v1.0.0 → v1.1.0`).
+- Bump the **patch** version for a wording clarification that does not change the rule (e.g. `v1.0.0 → v1.0.1`).
+- The version must appear in the `# AC:` comment in linked Gherkin feature files — trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
+
 ## Promote a Functionality from planned to active
 
 A Functionality is ready to move from `planned` to `active` when all its ACs have passing tests.
@@ -127,13 +132,13 @@ When a team changes ownership of a Feature, update the `owners` field and set `o
 
 When an AC is moved out of the current sprint but not permanently removed:
 
-- Keep `status: PLANNED` — state does not change for a deferral
-- Add `descoped_at` (date) and `descoped_reason` fields — **do not delete the AC** (preserves audit trail)
+- Set `status: descoped` — do not delete the AC (preserves audit trail and reinstating intent)
+- Add `descoped_at` (date) and `descoped_reason` fields
 - Add `future_release` field if the work is planned for a later sprint
-- Flag any linked tests for `@skip` or `@pending` tagging
+- Flag any linked Gherkin scenarios for `@wip` or `@pending` tagging via `gherkin-living-doc-sync`
 
 ```
-AC:US-042-03 (v1.2.0 – PLANNED)
+AC:US-042-03 (v1.2.0 – descoped)
    – Promo codes can be stacked and applied in defined priority order.
    – descoped_at: 2026-05-15
    – descoped_reason: Promo stacking rule deferred — too complex for current sprint
