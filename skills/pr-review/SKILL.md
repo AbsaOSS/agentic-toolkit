@@ -52,14 +52,12 @@ Single unified PR review skill. Read the full skill and apply only the sections 
 Determine independently whether this PR qualifies:
 - Touches auth config, security controls, or permission logic
 - Touches infrastructure, secrets management, or external integrations
-- Wide refactor affecting many callers (≥ 10 distinct call sites impacted)
 
 Notes on common edge cases that do **not** qualify:
 - A pure DTO rename or API field rename — covered by the **API contracts section**.
 - A DB migration — covered by the **DB migrations section**, which already handles data loss,
   locking, and rollback risks. Only apply elevated risk on top if the migration *also* touches
-  auth tables, involves a coordinated multi-service rollout, or is part of a wide schema
-  restructuring affecting many services.
+  auth tables, security controls, secrets management, or infrastructure/external integrations.
 - Bumping a security/auth library (e.g. `python-jose`, `bcrypt`) — changing a version number in
   `requirements.txt` is not "touching auth controls". Elevated risk requires the PR to *modify
   code* that implements auth or security logic. Use the dependency bumps section for CVE/compat

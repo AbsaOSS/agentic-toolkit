@@ -29,11 +29,11 @@ SECTION_RULES = [
     (
         "Elevated risk",
         [
-            # Word-boundary patterns prevent false positives on paths like
-            # authentication_helper_test.py, AccessibleButton.tsx, or access-logging.md.
-            r"\bauth\b", r"\bsecurity\b", r"\bpermission\b", r"\baccess\b",
-            r"\bmigration\b", r"\balembic\b", r"\bflyway\b", r"\bliquibase\b",
-            r"\bintegration\b", r"\binfra(?:structure)?\b", r"\biac\b",
+            # Elevated risk is an overlay for auth/security/infra-touching PRs.
+            # Use a stricter pattern for "access" so "access-logging" does not match.
+            r"\bauth\b", r"\bsecurity\b", r"\bpermission\b", r"(?<![\w-])access(?![\w-])",
+            r"\bsecret\b", r"\bsecrets\b", r"\binfra(?:structure)?\b", r"\biac\b",
+            r"\boauth\b", r"\bsaml\b", r"\bopenid\b", r"\bjwt\b",
         ],
     ),
     (
@@ -83,6 +83,12 @@ SECTION_RULES = [
         [
             r"alembic/", r"migrations/", r"flyway/", r"liquibase/",
             r"\.sql$", r"db/", r"database/",
+        ],
+    ),
+    (
+        "Skill definitions",
+        [
+            r"(?:^|/)SKILL\.md$",
         ],
     ),
 ]

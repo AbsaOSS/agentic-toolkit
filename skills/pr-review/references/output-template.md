@@ -7,7 +7,7 @@ Use these as a template for formatting your review. The goal is to be useful, no
 ## Example 1: Clean PR (LGTM)
 
 ```markdown
-## Standard review
+## Applied sections: Standard
 
 Files changed: `src/utils/date_utils.py`, `tests/utils/test_date_utils.py`
 

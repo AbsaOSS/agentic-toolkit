@@ -20,7 +20,7 @@ This file links each eval test case to its related fixture diff.
 | 14 | regression | evals/files/skill-definition-violations.diff |
 | 15 | paraphrase | evals/files/skill-definition-violations.diff |
 
-> **Note:** Eval-9 (release-notes negative case) was moved to `trigger-eval.json` as entry `n11-release-notes-from-diff` — it tests trigger boundary, not review quality.
+> **Note:** Eval-9 (release-notes negative case) is intentionally listed here in `evals.json` for quality-suite coverage, and is also mirrored in `trigger-eval.json` as `n11-release-notes-from-diff` for trigger-boundary coverage.
 
 ## Coverage Summary
 

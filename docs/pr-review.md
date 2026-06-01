@@ -30,7 +30,8 @@ The skill always applies **Standard review** and selects additional sections bas
 | CI/CD | `.github/workflows/`, `Jenkinsfile`, `Justfile`, `Makefile` (pipeline), deployment jobs |
 | Infrastructure | `*.tf`, `*.tfvars`, CloudFormation, Helm, Dockerfiles, `docker-compose.yml`, `iac/`, `infra/` |
 | DB migrations | `alembic/`, `flyway/`, `liquibase/`, `migrations/`, `*.sql`, `db/` |
-| Elevated risk | Overlay — applied on top when PR touches auth, security controls, secrets management, or is a wide refactor (≥ 10 call sites) |
+| Skill definitions | `skills/*/SKILL.md`, any `SKILL.md` |
+| Elevated risk | Overlay — applied on top when PR touches auth/security controls, secrets management, or infrastructure/external integrations |
 
 A file may match multiple sections — all matching sections are applied.
 
