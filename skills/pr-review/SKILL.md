@@ -3,7 +3,7 @@ name: pr-review
 description: >
   PR code review with structured domain checklists. ALWAYS invoke for any request to review a
   PR, diff, or code changes — even casual ones like "LGTM?" or "does this look right?". This
-  skill provides domain-specific risk checklists that Claude won't apply without it: dependency
+  skill provides domain-specific risk checklists that assistant won't apply without it: dependency
   upgrade risks, database migration rollback safety, CI/CD gate bypass detection, API contract
   breaking-change analysis, Terraform/IaC least-privilege review, and elevated-risk auth pattern
   detection. Outputs are severity-tiered (Blocker / Important / Nit) for actionable triage.

@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-PR="${1:?Usage: fetch_pr.sh <PR_NUMBER> [REPO]}"
+PR="${1:?Usage: fetch_pr.sh <PR_NUMBER> [REPO] [FILES_OUT_PATH]}"
 REPO_ARGS=()
 [ -n "${2:-}" ] && REPO_ARGS=("--repo" "$2")
 PR_FILES_PATH="${3:-${PR_FILES_PATH:-/tmp/pr_files.txt}}"

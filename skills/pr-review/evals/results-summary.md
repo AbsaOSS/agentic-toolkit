@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-05-12  
 **Skill path:** `skills/pr-review/SKILL.md`  
-**Eval suite:** `evals/evals.json` (12 fixture-based reviews) + `evals/trigger-eval.json` (21 trigger queries)  
+**Eval suite:** `skills/pr-review/evals/evals.json` (12 fixture-based reviews) + `skills/pr-review/evals/trigger-eval.json` (21 trigger queries)  
 **Workspace:** `pr-review-workspace/`
 
 ---
