@@ -132,7 +132,7 @@ Project skills take precedence over global skills when both exist.
 ### Add project-specific skills
 
 For skills that only apply to a specific repository, place them in `.github/skills/` within that repo. These are loaded
-automatically when Copilot CLI is launched from that directory, layered on top of your personal and CPS base skills.
+automatically when Copilot CLI is launched from that directory, layered on top of your global skills.
 
 ```
 your-project-repo/

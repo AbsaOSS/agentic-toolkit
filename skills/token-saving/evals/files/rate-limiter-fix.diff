@@ -1,0 +1,28 @@
+diff --git a/src/middleware/rate_limiter.py b/src/middleware/rate_limiter.py
+index 3a1f2c8..b9e4d71 100644
+--- a/src/middleware/rate_limiter.py
++++ b/src/middleware/rate_limiter.py
+@@ -1,25 +1,25 @@
+ import time
+ from collections import defaultdict
+ from typing import Dict, List
+ 
+ 
+ class RateLimiter:
+     """Sliding window rate limiter keyed by client_id."""
+ 
+     def __init__(self, max_requests: int = 100, window_seconds: int = 60):
+         self.max_requests = max_requests
+         self.window_seconds = window_seconds
+         self.requests: Dict[str, List[float]] = defaultdict(list)
+ 
+     def is_allowed(self, client_id: str) -> bool:
+         now = time.time()
+         window_start = now - self.window_seconds
+-        self.requests[client_id] = [t for t in self.requests[client_id] if t > now]
++        self.requests[client_id] = [t for t in self.requests[client_id] if t > window_start]
+         self.requests[client_id].append(now)
+         return len(self.requests[client_id]) <= self.max_requests
+ 
+     def reset(self, client_id: str) -> None:
+         self.requests.pop(client_id, None)

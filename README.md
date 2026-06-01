@@ -75,7 +75,9 @@ For the full guide — what skills are, how they activate, project-scoped instal
 Browse all available skills in the **[skills/](./skills/)** directory — each skill folder contains a `SKILL.md` with
 its purpose, trigger phrases, and full instructions.
 
-> The catalog table will be populated as skills are added. See `skills/` for the current set.
+| Skill                                                | Description                                                                                                                         |
+|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Finding More Skills
 
@@ -86,8 +88,6 @@ Before building a new skill, check whether one already exists:
 | [github/awesome-copilot](https://github.com/github/awesome-copilot/tree/main/skills) | 200+ community skills: cloud, languages, security, DevOps, productivity |
 | [skills.sh](https://skills.sh)                                                       | Open registry — install with `npx skills add <owner/repo>`              |
 | [anthropics/skills](https://github.com/anthropics/skills)                            | Anthropic reference skills including `skill-creator`                    |
-| [absa-group/agent-skills](https://github.com/absa-group/agent-skills)                | Broader ABSA-owned skill collection                                     |
-| [absa-group/cps-agentic-toolkit](https://github.com/absa-group/cps-agentic-toolkit)  | CPS team's skill set built on top of this repo                          |
 
 ## Contributing
 
@@ -116,3 +116,4 @@ Claude, Cursor, Windsurf, and custom pipelines.
 ## Troubleshooting
 
 Setup issues and common fixes are covered in **[docs/troubleshooting.md](./docs/troubleshooting.md)**.
+All documentation guides are indexed at **[docs/](./docs/)**.
