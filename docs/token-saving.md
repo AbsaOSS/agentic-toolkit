@@ -56,16 +56,4 @@ If another active skill specifies its own output format (e.g. a review skill wit
 
 ## Installation
 
-The skill is installed along with the rest of the toolkit:
-
-```bash
-npx skills add https://github.com/AbsaOSS/agentic-toolkit -g
-```
-
-To install only this skill:
-
-```bash
-npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill token-saving
-```
-
 See [Getting Started](./getting-started.md) for the full install guide.
