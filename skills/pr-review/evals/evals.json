@@ -115,8 +115,8 @@
         "Hardcoded user IDs [1, 2, 42] bypass for 'development speed' is flagged (Blocker or Important)",
         "Inlined admin check (header-based admin role) is flagged as Blocker or Important",
         "Removing legacy_phone while 40+ queries reference it is flagged as Blocker or Important",
-        "Wide refactor (multiple endpoints + services) with incomplete test coverage is flagged as elevated risk",
-        "Permission logic refactor with partial test coverage is flagged as Important/elevated risk",
+        "Auth/permission changes trigger the elevated risk overlay (not just standard review)",
+        "Permission logic refactor with partial test coverage is flagged as Important or elevated risk finding",
         "Elevated risk section overlay is applied on top of standard + other applicable sections"
       ]
     },
@@ -132,7 +132,7 @@
         "Output is grouped into Blocker / Important / Nit sections",
         "Lack of PR description or intent statement is flagged as a Nit",
         "Reviewer explicitly notes they cannot assess intent and risk without PR context",
-        "Reviewer recommends adding description explaining: what is being changed, why, and what impact is expected",
+        "Reviewer recommends adding description explaining what is being changed and why",
         "The review still proceeds with file-based assessment, but notes the description gap clearly"
       ]
     },

@@ -1,16 +1,16 @@
 ---
 name: pr-review
 description: >
-  PR code review with structured domain checklists. ALWAYS invoke for any request to review a
-  PR, diff, or code changes — even casual ones like "LGTM?" or "does this look right?". This
-  skill provides domain-specific risk checklists that assistant won't apply without it: dependency
-  upgrade risks, database migration rollback safety, CI/CD gate bypass detection, API contract
-  breaking-change analysis, Terraform/IaC least-privilege review, and elevated-risk auth pattern
-  detection. Outputs are severity-tiered (Blocker / Important / Nit) for actionable triage.
-  Invoke whenever: PR review, sanity check on a diff, pre-merge approval feedback, "any issues
-  with this PR?", or when a user shares a PR link and wants feedback.
-  Does NOT invoke for: generating release notes/changelogs from a diff, refactoring tasks,
-  writing new code, or debugging errors.
+  Use this skill when the user wants review or approval feedback on existing code changes: a PR,
+  diff, patch, workflow file, migration, Terraform/IaC change, dependency bump, auth/security
+  refactor, API change, or SKILL.md update. Trigger on intents like: review, sanity check, LGTM,
+  pre-merge feedback, "before I approve", "before we merge", "any issues with this PR?", "does
+  this look right?", or when a PR link/number is shared for comments. Covers correctness, security,
+  tests, maintainability, API breaking changes, DB migration rollback/locking risk, CI/CD gate
+  bypasses and secret exposure, Terraform least-privilege, risky dependency upgrades, and skill
+  naming/description conventions. Outputs: Blocker, Important, Nit. Do not use for writing or
+  refactoring code, implementing features, debugging errors, creating issues, or generating release
+  notes when the user explicitly wants notes only.
 ---
 
 # PR Review
