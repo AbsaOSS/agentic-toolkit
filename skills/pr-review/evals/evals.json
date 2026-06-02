@@ -196,7 +196,8 @@
         "CI/CD: skipping test_user_api tests (-k flag) flagged as quality gate bypass (Blocker)",
         "CI/CD: deploy trigger widened from branch-scoped to all pushes flagged",
         "Elevated-risk overlay is NOT applied \u2014 PR has no auth/security/infra/wide-refactor touches despite touching multiple sections"
-      ]    },
+      ]
+    },
     {
       "id": 13,
       "category": "happy-path",
@@ -248,6 +249,7 @@
         "Missing trigger keywords in description is flagged",
         "Hardcoded absolute path is flagged",
         "Unreferenced script is flagged"
-      ]    }
+      ]
+    }
   ]
 }

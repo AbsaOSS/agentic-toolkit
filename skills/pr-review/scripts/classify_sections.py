@@ -13,11 +13,13 @@ Usage:
 Output example:
     Sections to apply:
       [x] Standard review       (always)
-      [x] API contracts         (router.py, schemas.py)
       [ ] Elevated risk
+      [x] API contracts         (router.py, schemas.py)
       [ ] Dependency bumps
       [ ] CI/CD
       [ ] Infrastructure
+      [ ] DB migrations
+      [ ] Skill definitions
 """
 
 import sys
