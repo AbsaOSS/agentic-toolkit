@@ -47,11 +47,10 @@ Using the JSON from Phase 1:
    - Match template structure — don't add extra sections.
 
 2. **Post** (skip confirmation unless `--confirm`):
-   ```
-   gh issue create --title "TITLE" --body-file - [--label x] [-R repo] <<'EOF'
-   BODY
-   EOF
-   ```
+   - Write the body to a temp file using the Write tool (e.g., `tmp_issue_body.md` in the repo root).
+   - Run: `gh issue create --title "TITLE" --body-file tmp_issue_body.md [--label x] [-R repo]`
+   - Delete the temp file after successful creation.
+   - Never use `--body` flag or stdin piping (`--body-file -` / heredocs) — they break on special characters across shells.
    On metadata error → retry without it, report what was dropped. On total failure → offer `--web`.
 
 3. **Output**: issue URL + one-line summary. Nothing else.
