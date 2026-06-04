@@ -1,74 +1,57 @@
 ---
 name: create-issue
-description: Creates a GitHub issue based on a prompt. Analyzes the code related to the issue, selects the correct issue template type, and opens the issue via gh CLI. Triggers on requests like "create an issue for X", "open a bug report about Y", "file a feature request for Z", "add a ticket for W".
+description: Creates a GitHub issue from a natural language prompt. Discovers repo templates, fills the best match, posts via gh CLI. Use this skill whenever the user wants to create an issue, open a bug report, file a feature request, submit a ticket, log a bug, report a problem, track something as an issue, or add a ticket — even if they don't say "issue" explicitly.
 ---
 
-# Create Issue Skill
+# Create Issue
 
-Creates a structured GitHub issue from a natural language description. Discovers the real issue templates in the target repo, analyzes relevant code context, fills the right template, confirms with the user, and posts via `gh issue create`.
+Two-phase: **discover** (cheap model) → **draft + post** (you).
 
-## Step-by-Step Instructions
+Flags: `--confirm` (review before posting), `--web` (open in browser), `-R owner/repo` (target repo).
 
-### 1. Resolve the target repository
+## Phase 1 — Discover (delegate to Haiku)
 
-- Determine which repo to open the issue in:
-  - If the user specifies a repo (e.g. `org/repo` or `--repo`), use that.
-  - Otherwise use the repo for the current working directory: `gh repo view --json nameWithOwner -q .nameWithOwner`
-- Verify `gh auth status` succeeds and issues are enabled for the repo.
-- Pass `-R owner/repo` to all subsequent `gh` calls when the target differs from cwd.
+Spawn a subagent with `model: "haiku"` to handle all mechanical work. Give it this prompt, filling in the repo if the user specified one:
 
-### 2. Parse the user's intent
+> Discover issue templates for a GitHub repo and return structured JSON.
+>
+> 1. Resolve repo: use `-R {owner/repo}` if provided, else run `gh repo view --json nameWithOwner -q .nameWithOwner`.
+> 2. List `.github/ISSUE_TEMPLATE/` — locally if the repo is the cwd, else via `gh api repos/OWNER/REPO/contents/.github/ISSUE_TEMPLATE --jq '.[].name'`.
+> 3. If `config.yml` or `config.yaml` exists, read it and extract `blank_issues_enabled`.
+> 4. For each template file (not config), extract `name`, `about`/`description`, and `labels` from the front-matter or YAML top-level fields.
+> 5. Read the full content of the template that best matches the issue type hint: `{type_hint}`.
+> 6. Return ONLY a single JSON block — no commentary:
+> ```json
+> {
+>   "repo": "owner/repo",
+>   "blank_issues_enabled": true,
+>   "templates": [{"file": "bug_report.yml", "name": "Bug Report", "about": "File a bug", "labels": "bug"}],
+>   "selected": {"file": "bug_report.yml", "content": "<full template content>"},
+>   "default_labels": "bug"
+> }
+> ```
+> If no templates exist, return: `{"repo": "owner/repo", "blank_issues_enabled": true, "templates": [], "selected": null, "default_labels": ""}`
 
-Extract from the prompt:
-- **Issue type hint** — bug, feature request, improvement, question, task, etc.
-- **Subject** — the feature, component, file, or behaviour being reported.
-- **Extra context** — error messages, steps to reproduce, desired behaviour, affected versions.
+Replace `{type_hint}` with the issue type you parsed from the user's prompt (bug/feature/task/question).
 
-### 3. Discover templates
+## Phase 2 — Draft and post (you)
 
-Read `.github/ISSUE_TEMPLATE/` in the target repo. See `references/templates.md` for how to parse YAML issue forms and Markdown templates.
+Using the JSON from Phase 1:
 
-- Also read `config.yml` / `config.yaml` if present (see `references/templates.md` → Config file).
-- If blank issues are **disabled** and no template matches well, fall back to `--web`.
-- If no templates exist at all, proceed with a plain title + body.
+1. **Draft** title + body from user prompt and conversation context:
+   - If `selected` has content, fill its template sections. See `references/templates.md` for YAML form → markdown rendering rules.
+   - If `selected` is null, use plain title + body.
+   - If `blank_issues_enabled` is false and no template matched, fall back to `--web`.
+   - Use `<!-- TODO: fill in -->` for required fields that can't be inferred.
+   - Include fix suggestions only when root cause is clear from context.
+   - Match template structure — don't add extra sections.
 
-### 4. Analyze relevant code (conditional)
+2. **Post** (skip confirmation unless `--confirm`):
+   ```
+   gh issue create --title "TITLE" --body-file - [--label x] [-R repo] <<'EOF'
+   BODY
+   EOF
+   ```
+   On metadata error → retry without it, report what was dropped. On total failure → offer `--web`.
 
-Only when the prompt names a specific component, file, or error:
-
-- Use `glob` / `grep` / `view` to locate relevant files and identify key symbols, error strings, or call sites.
-- Summarize findings in 2–5 bullet points — **do not paste raw code or internal paths** into the issue body.
-
-### 5. Select the best template
-
-Rank available templates using their `name`, `about`, default `labels`, and body prompt text against the parsed intent. See `references/templates.md` → Template selection.
-
-- Auto-select only when confidence is high (single clear match).
-- If ambiguous, list the top candidates and ask the user to choose.
-
-### 6. Draft the issue
-
-Fill every section of the chosen template using gathered context:
-
-- **Title** — concise, factual, imperative or declarative. No issue numbers.
-- **Body** — complete each template section. For required fields that cannot be inferred, insert a clear placeholder and flag it to the user.
-- **Labels / assignees / milestone** — apply only when explicitly requested or when the template's `labels:` defaults them.
-
-For YAML issue forms with required dropdowns or checkboxes that cannot be safely inferred, fall back to `--web` rather than submitting an invalid form.
-
-### 7. Confirm with the user
-
-Show the full draft (title + body + metadata). Ask:
-> "Shall I create this issue? Reply **yes** to confirm, **edit** to adjust, or **web** to open the form in browser."
-
-### 8. Create the issue
-
-Use `gh issue create` with the rendered body piped on stdin (see `references/gh-commands.md`).
-
-On error:
-- If a label/assignee/milestone is not found, retry without it and report what was omitted.
-- If creation fails entirely, offer `gh issue create --web` as a fallback.
-
-### 9. Report
-
-Output the created issue URL and a one-line summary.
+3. **Output**: issue URL + one-line summary. Nothing else.
