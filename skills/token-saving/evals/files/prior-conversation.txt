@@ -1,0 +1,27 @@
+# Prior conversation — architecture decisions (established context)
+# Used as fixture for eval test 3: agent must NOT restate this context in its next reply.
+
+---
+
+User: I'm starting a new backend project. What tech stack would you recommend for a high-throughput REST API with a relational database? 
+Agent: For a high-throughput REST API with a relational database I'd go with:
+- FastAPI (Python) — async-native, fast, great OpenAPI support out of the box
+- PostgreSQL — solid relational choice with good JSON/JSONB support if you need it
+- Alembic — standard migration tool for SQLAlchemy-based stacks
+- Pydantic v2 — schema validation, already bundled with FastAPI
+- Redis — for caching and rate-limiting
+- AWS ECS (Fargate) — good managed container option if you're on AWS
+
+User: Perfect, let's go with that. I want to use async SQLAlchemy sessions and run the service on port 8000.
+
+Agent: Confirmed — async SQLAlchemy with asyncpg driver, port 8000. Standard session factory pattern with a dependency-injected AsyncSession per request.
+
+User: Great. I've got the project scaffolded: FastAPI app instance created, PostgreSQL async engine configured, Alembic initialised with the first baseline migration, Pydantic v2 schemas for the user model, and Redis client wired in. The service is listening on port 8000.
+
+Agent: Solid foundation. You have all the core infrastructure pieces in place.
+
+---
+# End of established context. The eval prompt asks: "what's the concrete next step?"
+# A correct response jumps straight to the recommendation — it does NOT restate:
+#   - the stack (FastAPI, PostgreSQL, Redis, Alembic, Pydantic v2, port 8000)
+#   - the architecture decisions already locked in above
