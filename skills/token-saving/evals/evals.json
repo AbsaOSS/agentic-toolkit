@@ -1,0 +1,186 @@
+{
+  "skill_name": "token-saving",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "What is the purpose of a Dockerfile ENTRYPOINT vs CMD?",
+      "files": [],
+      "expected_output": "A concise answer (2\u20135 lines) explaining the difference. No preamble, no closing filler.",
+      "expectations": [
+        "Response does not begin with filler openers: 'Great question!', 'Certainly!', 'Sure!', 'Of course!', 'As an AI...', 'Happy to help!' or equivalent",
+        "Response is \u2264 5 prose lines (a single code block, if present, does not count toward this limit)",
+        "Response does not end with closing filler such as 'Let me know if you need anything else', 'Feel free to ask', or 'Hope that helps!'",
+        "Response correctly explains ENTRYPOINT (fixed executable) vs CMD (default overridable args) without padding",
+        "Response does NOT end with a **What changed** / **Why** / **How to verify** footer — pure Q&A, not a code output response"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Fix the window comparison bug in the rate limiter. The diff is at evals/files/rate-limiter-fix.diff \u2014 apply the fix and confirm.",
+      "files": [
+        "evals/files/rate-limiter-fix.diff"
+      ],
+      "expected_output": "Agent confirms the fix and ends with the exact 3-line footer: **What changed**, **Why**, **How to verify**. Shows only the changed line, not the full file.",
+      "expectations": [
+        "Response ends with exactly the footer: '**What changed:** <one line>', '**Why:** <one line>', '**How to verify:** <command or test instruction>'",
+        "Response does NOT include the full contents of rate_limiter.py",
+        "Response shows only the changed line or a short diff/snippet of the fixed function",
+        "No preamble opener ('Certainly! I'll fix that for you...')",
+        "No closing filler after the footer"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "regression",
+      "prompt": "Context from prior conversation is in evals/files/prior-conversation.txt. Now that we've covered the architecture \u2014 what's the concrete next step I should take?",
+      "files": [
+        "evals/files/prior-conversation.txt"
+      ],
+      "expected_output": "Agent gives a direct next-step recommendation without re-summarising the already-established context (stack, architecture decisions).",
+      "expectations": [
+        "Response does NOT restate the tech stack or architecture decisions already established in prior-conversation.txt",
+        "Response does NOT open with 'As we discussed...' or 'To summarise what we covered...' or 'So you have a FastAPI app with...'",
+        "Response jumps directly to the next-step recommendation",
+        "Response is \u2264 5 lines",
+        "No closing filler line"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "Fix the validate_email bug in evals/files/large-user-service.py \u2014 it currently allows empty strings through. Fix only that function.",
+      "files": [
+        "evals/files/large-user-service.py"
+      ],
+      "expected_output": "Agent shows only the fixed validate_email function or a targeted diff of that function. Does not paste the entire large-user-service.py.",
+      "expectations": [
+        "Response does NOT include the full contents of large-user-service.py",
+        "Response shows only the fixed validate_email function or a targeted diff of that function",
+        "Response ends with **What changed** / **Why** / **How to verify** footer",
+        "No preamble opener",
+        "No closing filler after the footer"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "happy-path",
+      "prompt": "Give me a concise recap of what changed in the user service this sprint. Use evals/files/sprint-changelog.txt as input.",
+      "files": [
+        "evals/files/sprint-changelog.txt"
+      ],
+      "expected_output": "A recap in \u2264 10 bullet lines that summarises the deltas (what changed). Does not quote large blocks from the changelog verbatim.",
+      "expectations": [
+        "Recap is \u2264 10 lines total",
+        "Uses bullet list format, not prose paragraphs",
+        "Summarises what changed (deltas), not what existed before",
+        "Does NOT quote large blocks from sprint-changelog.txt verbatim",
+        "No closing filler line"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "happy-path",
+      "prompt": "Update the PR description to reflect the latest commit (abc1234): we added input sanitisation to the registration endpoint. Current PR body is in evals/files/pr-description-existing.md.",
+      "files": [
+        "evals/files/pr-description-existing.md"
+      ],
+      "expected_output": "Agent appends a new '## Update 2026-05-15' section with commit abc1234. Does not rewrite or delete any prior section.",
+      "expectations": [
+        "Agent appends a new section headed '## Update YYYY-MM-DD' \u2014 date matches current date",
+        "The commit hash abc1234 is included in the appended section",
+        "The existing PR description body and prior '## Update' sections are NOT modified or deleted",
+        "Agent does NOT rewrite the entire PR description from scratch",
+        "No closing filler line"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "negative",
+      "prompt": "Please give me a full in-depth explanation of how OAuth 2.0 Authorization Code Flow works \u2014 I want every step covered in detail.",
+      "files": [],
+      "expected_output": "Agent provides a complete, detailed explanation covering all steps. Conciseness rules are suspended because the user explicitly requested full detail.",
+      "expectations": [
+        "Agent provides a comprehensive explanation of ALL steps: client registration, redirect URI, auth request, user consent, auth code, token exchange, token use",
+        "Response is NOT artificially truncated \u2014 user explicitly asked for all details",
+        "Agent does NOT cite conciseness or brevity rules to justify shortening the response",
+        "Response does NOT end with the code-change footer (not a code change task)"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "regression",
+      "prompt": "Write a Python function to check if a number is prime.",
+      "files": [],
+      "expected_output": "Agent writes a correct, concise isPrime function and ends with the **What changed** / **Why** / **How to verify** footer. No preamble.",
+      "expectations": [
+        "Response does NOT open with 'Certainly!', 'Sure!', 'Great!' or any preamble",
+        "Function is correct \u2014 returns False for n < 2, uses trial division up to sqrt(n) or equivalent",
+        "Response ends with **What changed** / **Why** / **How to verify** footer",
+        "Response does NOT end with 'Let me know if you want me to add tests!' or similar filler",
+        "Response does NOT explain every line of the function with excessive inline commentary"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "paraphrase",
+      "prompt": "Quick answer only \u2014 what's the difference between a process and a thread?",
+      "files": [],
+      "expected_output": "A concise answer (\u2264 4 lines) on the key difference. No acknowledgement of the 'quick answer' request \u2014 it just IS quick.",
+      "expectations": [
+        "Response is \u2264 4 lines",
+        "Response correctly explains the key difference (separate memory space vs shared memory / OS-scheduled vs cooperatively scheduled)",
+        "Response does NOT open by acknowledging 'Quick answer:' or 'Here's a quick answer:' \u2014 the terseness is implicit",
+        "No preamble opener",
+        "No closing filler",
+        "Response does NOT end with a **What changed** / **Why** / **How to verify** footer — pure Q&A, not a code output response"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "edge-case",
+      "prompt": "We've been working on this feature for the past hour. Here's what we've done so far: set up the FastAPI router, added the Pydantic request/response schemas, wired in the database session dependency, and wrote the POST /users endpoint. What should we tackle next?",
+      "files": [],
+      "expected_output": "Agent gives a direct next-step suggestion without restating the four things the user just listed.",
+      "expectations": [
+        "Response does NOT restate or re-list the four completed items (router, schemas, DB session, POST endpoint)",
+        "Response gives a concrete, actionable next step (e.g. tests, auth middleware, error handling, GET endpoint)",
+        "Response is \u2264 4 lines",
+        "No preamble opener",
+        "No closing filler",
+        "Response does NOT end with a **What changed** / **Why** / **How to verify** footer — planning response, not a code output"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "Review this diff and tell me if the fix looks correct: evals/files/rate-limiter-fix.diff",
+      "files": [
+        "evals/files/rate-limiter-fix.diff"
+      ],
+      "expected_output": "Agent reviews the diff and confirms whether the fix is correct. Does NOT append the code-change footer — this is a code review, not a code output response.",
+      "expectations": [
+        "Response confirms the fix is correct (t > window_start correctly evicts timestamps outside the sliding window)",
+        "Response does NOT end with **What changed** / **Why** / **How to verify** footer — this is a review task, not a code output response",
+        "Response does not paste the full contents of rate_limiter.py",
+        "No preamble opener",
+        "No closing filler"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "Compare synchronous vs asynchronous SQLAlchemy sessions — when should I use each?",
+      "files": [],
+      "expected_output": "Agent answers with structured output (table or clearly delineated bullet comparison) rather than a dense prose paragraph. Concise, within line limits.",
+      "expectations": [
+        "Response uses structured output — a comparison table or clearly delineated bullet sections — not a prose paragraph",
+        "Response is concise and does not expand into a full SQLAlchemy tutorial",
+        "No preamble opener",
+        "No closing filler",
+        "Response does NOT end with a **What changed** / **Why** / **How to verify** footer — pure Q&A comparison"
+      ]
+    }
+  ]
+}

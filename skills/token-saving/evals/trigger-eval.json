@@ -1,0 +1,107 @@
+[
+  {
+    "_comment": "token-saving is always-active: should_trigger is true for every prompt type. There are no should_trigger:false cases — that is itself the key assertion. Cases are grouped into: (1) keyword-free prompts (tests that 'always active' is not just keyword matching), (2) explicit-keyword prompts (tests that the description's trigger list is recognised), (3) boundary prompts (explicit verbosity request — skill still LOADS but its rules are suspended per the override section). The trigger-eval passes when ALL 14 cases return true."
+  },
+  {
+    "id": "t01-generic-coding-no-keyword",
+    "query": "What does the `__slots__` attribute do in Python?",
+    "should_trigger": true,
+    "reason": "Generic coding question with zero token-saving keywords. Always-active skill must load regardless of prompt content."
+  },
+  {
+    "id": "t02-code-generation-no-keyword",
+    "query": "Write a Python function that flattens a nested list.",
+    "should_trigger": true,
+    "reason": "Code generation task. No conciseness keywords present. Always-active rule applies."
+  },
+  {
+    "id": "t03-debugging-no-keyword",
+    "query": "Why does my Dockerfile build succeed but the container exits immediately at startup?",
+    "should_trigger": true,
+    "reason": "Debugging question with no skill keywords. Validates always-active claim holds for question-style prompts."
+  },
+  {
+    "id": "t04-conceptual-explanation-no-keyword",
+    "query": "Explain eventual consistency in distributed systems.",
+    "should_trigger": true,
+    "reason": "Conceptual explanation request. No trigger keywords. Tests that the skill doesn't require topic-match to load."
+  },
+  {
+    "id": "t05-non-technical-no-keyword",
+    "query": "What is the difference between a kanban board and a sprint board?",
+    "should_trigger": true,
+    "reason": "Non-technical process question. Always-active means the skill loads even outside software engineering topics."
+  },
+  {
+    "id": "t06-pr-description-update-no-keyword",
+    "query": "Update the PR description to mention the hotfix for the null pointer in checkout.",
+    "should_trigger": true,
+    "reason": "PR workflow task. No explicit conciseness language. Tests always-active across workflow tasks."
+  },
+  {
+    "id": "t07-recap-request-no-keyword",
+    "query": "Summarise the changes we made to the auth service today.",
+    "should_trigger": true,
+    "reason": "'summarise' appears in the description trigger list. But the primary signal is always-active. Confirms overlap between trigger list and always-active rule."
+  },
+  {
+    "id": "t08-explicit-be-concise",
+    "query": "Give me a concise explanation of how TLS handshakes work.",
+    "should_trigger": true,
+    "reason": "'concise' is an explicit trigger keyword in the description. Skill must load and apply length constraints."
+  },
+  {
+    "id": "t09-explicit-save-tokens",
+    "query": "Keep the response short — save tokens where you can.",
+    "should_trigger": true,
+    "reason": "'save tokens' and 'short' are explicit trigger phrases. Tests that the description's keyword list is matched."
+  },
+  {
+    "id": "t10-explicit-too-verbose",
+    "query": "Your last answer was too verbose. Give me the same thing but shorter.",
+    "should_trigger": true,
+    "reason": "'too verbose' and 'shorter' are both explicit triggers in the description. Should reliably load the skill."
+  },
+  {
+    "id": "t11-explicit-shorter",
+    "query": "Can you make that shorter?",
+    "should_trigger": true,
+    "reason": "'shorter' is an explicit trigger keyword. Minimal prompt — tests that a single keyword is sufficient."
+  },
+  {
+    "id": "b01-explicit-full-detail-boundary",
+    "query": "Give me a full in-depth explanation of OAuth 2.0 Authorization Code Flow — I want every step.",
+    "should_trigger": true,
+    "boundary": true,
+    "reason": "Explicit verbosity request. Skill should still LOAD (trigger=true), but the override section suspends all length and summarisation rules. Trigger result is true; behavioural result is unconstrained response.",
+    "expected_behaviour": "Skill loads. All length limits and bullet caps are suspended. Full response with every step is produced."
+  },
+  {
+    "id": "b02-deep-dive-boundary",
+    "query": "I want a deep dive — don't hold back on detail.",
+    "should_trigger": true,
+    "boundary": true,
+    "reason": "'deep dive' matches the override trigger in the skill body. Skill loads but rules are suspended.",
+    "expected_behaviour": "Skill loads. No artificial truncation. Response length reflects actual content depth."
+  },
+  {
+    "id": "b03-rationale-boundary",
+    "query": "Walk me through the full rationale for choosing event sourcing over CRUD for this audit log.",
+    "should_trigger": true,
+    "boundary": true,
+    "reason": "'full rationale' matches the override trigger. Skill loads but all conciseness rules are suspended for this response.",
+    "expected_behaviour": "Skill loads. Agent covers all architectural tradeoffs without summarising or capping bullets."
+  },
+  {
+    "id": "t12-co-trigger-pr-review",
+    "query": "Review this PR for API contract breaking changes before we merge.",
+    "should_trigger": true,
+    "reason": "Token-saving is always-active and must co-load alongside the pr-review skill. pr-review output structure (Blocker/Important/Nit) takes precedence per the skill's precedence rule, but token-saving still loads to suppress filler openers and closing padding."
+  },
+  {
+    "id": "t13-co-trigger-kudos",
+    "query": "Nominate Sarah for kudos — she fixed a critical auth bug under pressure.",
+    "should_trigger": true,
+    "reason": "Token-saving is always-active and must co-load alongside the kudos skill. Kudos nomination format takes precedence, but token-saving still loads to enforce no-preamble and no-filler rules."
+  }
+]
