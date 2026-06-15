@@ -1,0 +1,27 @@
+name: Check PR Requirements
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR requirements
+        uses: AbsaOSS/check-pr-requirements@adb22f6d88c93fd801e787a63d948d6fbbdd4af3 # v0.2.0
+        with:
+          pr-title: ${{ github.event.pull_request.title }}
+          pr-body: ${{ github.event.pull_request.body }}
+          pr-branch: ${{ github.event.pull_request.head.ref }}
+          pr-number: ${{ github.event.pull_request.number }}
+          target-branch: ${{ github.event.pull_request.base.ref }}
+          files-changed: ${{ github.event.pull_request.changed_files }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          check-title: "true"
+          check-description: "true"
+          check-issue-reference: "true"
