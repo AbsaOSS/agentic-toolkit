@@ -1,0 +1,63 @@
+name: Build Merged Website
+
+# Builds the website with skills and guides merged from this repo plus an
+# additional repo (e.g. an internal mirror), then uploads the static site
+# as a dist.tar.gz artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      extra_repo:
+        description: 'Additional repo to merge (owner/name)'
+        required: true
+        default: 'absa-group/agentic-toolkit'
+      extra_ref:
+        description: 'Branch or tag of the additional repo'
+        required: true
+        default: 'main'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Checked out via the Actions token (or EXTRA_REPO_TOKEN secret for
+      # private cross-org repos) so no credentials end up in clone URLs.
+      - name: Checkout extra repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.extra_repo }}
+          ref: ${{ inputs.extra_ref }}
+          path: website/.external/extra
+          token: ${{ secrets.EXTRA_REPO_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: website
+        run: npm install
+
+      - name: Build merged website
+        working-directory: website
+        env:
+          # local = already-checked-out content; url = where the install
+          # commands on skill pages should point.
+          MERGE_REPOS: '[{"name":"${{ inputs.extra_repo }}","local":".external/extra","url":"https://github.com/${{ inputs.extra_repo }}"}]'
+        run: npm run build
+
+      - name: Pack static site
+        working-directory: website
+        run: tar -czf dist.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-website
+          path: website/dist.tar.gz
+          if-no-files-found: error

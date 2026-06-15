@@ -1,0 +1,29 @@
+---
+/**
+ * Renders the guide list directly from the content collection —
+ * single source of truth, nothing duplicated into index pages.
+ */
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { getCollection } from 'astro:content';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const guides = (await getCollection('docs'))
+  .filter((d) => d.slug.startsWith('guidelines/') && d.slug !== 'guidelines/index')
+  .sort(
+    (a, b) => (a.data.sidebar?.order ?? 99) - (b.data.sidebar?.order ?? 99),
+  );
+
+const excerpt = (s = '', max = 160) =>
+  s.length > max ? `${s.slice(0, max).trimEnd()}…` : s;
+---
+
+<CardGrid>
+  {guides.map((g) => (
+    <LinkCard
+      title={g.data.title}
+      description={excerpt(g.data.description)}
+      href={`${BASE}/${g.slug}/`}
+    />
+  ))}
+</CardGrid>

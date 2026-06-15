@@ -1,0 +1,281 @@
+/* ============================================================
+   Agentic Toolkit — ABSA-branded Starlight Theme
+   Bricolage Grotesque + DM Sans | Energy Orange accent
+   ============================================================ */
+
+/* ── Theme tokens ── */
+:root {
+  --sl-color-accent-low: #1f0f00;
+  --sl-color-accent: #ff780f;
+  --sl-color-accent-high: #ffcc99;
+
+  --sl-color-white: #f5f0eb;
+  --sl-color-gray-1: #d4cfc9;
+  --sl-color-gray-2: #a39e98;
+  --sl-color-gray-3: #706b66;
+  --sl-color-gray-4: #4a4641;
+  --sl-color-gray-5: #2a2724;
+  --sl-color-gray-6: #1a1816;
+  --sl-color-black: #0d0c0b;
+
+  --sl-font: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  --at-display: 'Bricolage Grotesque', Georgia, serif;
+  --at-orange: #ff780f;
+  --at-amber: #f2b200;
+  --at-card-bg: rgba(26, 24, 22, 0.6);
+  --at-card-border: rgba(255, 120, 15, 0.08);
+  --at-card-border-hover: rgba(255, 120, 15, 0.35);
+  --at-glow: rgba(255, 120, 15, 0.12);
+  --at-glow-strong: rgba(255, 120, 15, 0.25);
+}
+
+/* Starlight inverts the gray scale in light mode:
+   --sl-color-black is the page background, --sl-color-white the text color. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #fff5ee;
+  --sl-color-accent: #c45500;
+  --sl-color-accent-high: #6d3000;
+
+  --sl-color-white: #1f1812;
+  --sl-color-gray-1: #33291f;
+  --sl-color-gray-2: #4d4339;
+  --sl-color-gray-3: #756a5e;
+  --sl-color-gray-4: #a89d91;
+  --sl-color-gray-5: #ded5ca;
+  --sl-color-gray-6: #f4efe8;
+  --sl-color-gray-7: #faf6f1;
+  --sl-color-black: #fdfbf8;
+
+  --at-card-bg: rgba(255, 255, 255, 0.7);
+  --at-card-border: rgba(0, 0, 0, 0.07);
+  --at-card-border-hover: rgba(196, 85, 0, 0.4);
+  --at-glow: rgba(196, 85, 0, 0.06);
+  --at-glow-strong: rgba(196, 85, 0, 0.14);
+  --at-orange: #d35f00;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--at-display);
+  letter-spacing: -0.025em;
+}
+
+.site-title {
+  font-family: var(--at-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  font-size: 1.15rem !important;
+}
+
+/* ── Ambient background ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255, 120, 15, 0.04), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 85% 80%, rgba(242, 178, 0, 0.025), transparent 50%);
+}
+
+/* ── Header ── */
+.header {
+  border-bottom: 2px solid var(--at-orange) !important;
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+
+/* ── Cards (Card component) ── */
+.card {
+  background: var(--at-card-bg) !important;
+  border: 1px solid var(--at-card-border) !important;
+  border-radius: 14px !important;
+  padding: 1.75rem !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--at-card-border-hover) !important;
+  box-shadow: 0 12px 40px var(--at-glow);
+}
+
+.card .title {
+  font-family: var(--at-display) !important;
+  font-weight: 600 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: -0.01em;
+}
+
+.card .icon {
+  color: var(--at-orange) !important;
+}
+
+/* ── Link cards (LinkCard component) ── */
+.sl-link-card {
+  background: var(--at-card-bg) !important;
+  border: 1px solid var(--at-card-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.3s ease;
+  text-decoration: none !important;
+  padding: 1.25rem 1.5rem !important;
+}
+
+.sl-link-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--at-card-border-hover) !important;
+  box-shadow: 0 10px 35px var(--at-glow);
+}
+
+.sl-link-card .link-title {
+  font-family: var(--at-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.sl-link-card .description {
+  opacity: 0.7;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Card grid gap */
+.card-grid {
+  gap: 1.25rem !important;
+}
+
+/* ── Staggered card animations ── */
+.card,
+.sl-link-card {
+  animation: cardIn 0.55s ease-out both;
+}
+
+.card-grid > :nth-child(1) { animation-delay: 0.06s; }
+.card-grid > :nth-child(2) { animation-delay: 0.12s; }
+.card-grid > :nth-child(3) { animation-delay: 0.18s; }
+.card-grid > :nth-child(4) { animation-delay: 0.24s; }
+.card-grid > :nth-child(5) { animation-delay: 0.30s; }
+.card-grid > :nth-child(6) { animation-delay: 0.36s; }
+
+/* ── Sidebar ── */
+.sidebar-pane {
+  border-right: 1px solid var(--at-card-border) !important;
+}
+
+nav.sidebar .top-level > li > details > summary,
+nav.sidebar .top-level > li > a {
+  font-family: var(--at-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--at-orange) !important;
+  padding: 0.5rem 0.75rem;
+}
+
+nav.sidebar a[aria-current='page'],
+nav.sidebar a[aria-current='true'] {
+  background: var(--at-glow) !important;
+  border-left: 3px solid var(--at-orange);
+  font-weight: 700;
+  color: var(--sl-color-white) !important;
+  border-radius: 0 6px 6px 0;
+}
+
+nav.sidebar a:hover {
+  color: var(--sl-color-accent) !important;
+}
+
+/* ── Content pages ── */
+.sl-markdown-content {
+  font-size: 1.04rem;
+  line-height: 1.78;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--at-card-border);
+  font-size: 1.6rem;
+}
+
+.sl-markdown-content h3 {
+  font-size: 1.25rem;
+  margin-top: 2rem;
+}
+
+/* Tables */
+.sl-markdown-content table {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--at-card-border);
+}
+
+.sl-markdown-content th {
+  font-family: var(--at-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+/* Asides */
+.starlight-aside {
+  border-radius: 10px !important;
+  border-left-width: 4px !important;
+}
+
+/* Code blocks */
+.expressive-code {
+  border-radius: 12px !important;
+  border: 1px solid var(--at-card-border) !important;
+}
+
+/* ── Pagination ── */
+.pagination-links {
+  margin-top: 3rem !important;
+  border-top: 1px solid var(--at-card-border);
+  padding-top: 1.5rem;
+}
+
+.pagination-links a {
+  border-radius: 10px !important;
+  border: 1px solid var(--at-card-border) !important;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pagination-links a:hover {
+  border-color: var(--at-card-border-hover) !important;
+  background: var(--at-glow);
+}
+
+/* ── Right sidebar (ToC) ── */
+.right-sidebar-panel {
+  border-left: 1px solid var(--at-card-border);
+}
+
+/* ── Animations ── */
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.repos-cache/
+.external/
+dist.tar.gz
+
+# Generated content — build artifacts only, never committed.
+# scripts/fetch-content.mjs regenerates these from the root docs/ and skills/
+# folders (single source of truth) on every `npm run dev` / `npm run build`.
+src/content/docs/guidelines/
+src/content/docs/skills/

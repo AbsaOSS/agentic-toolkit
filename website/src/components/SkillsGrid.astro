@@ -1,0 +1,27 @@
+---
+/**
+ * Renders the skill catalog directly from the content collection —
+ * single source of truth, nothing duplicated into index pages.
+ */
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { getCollection } from 'astro:content';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const skills = (await getCollection('docs'))
+  .filter((d) => d.slug.startsWith('skills/') && d.slug !== 'skills/index')
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const excerpt = (s = '', max = 160) =>
+  s.length > max ? `${s.slice(0, max).trimEnd()}…` : s;
+---
+
+<CardGrid>
+  {skills.map((s) => (
+    <LinkCard
+      title={s.data.title}
+      description={excerpt(s.data.description)}
+      href={`${BASE}/${s.slug}/`}
+    />
+  ))}
+</CardGrid>

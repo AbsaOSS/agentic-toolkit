@@ -1,0 +1,18 @@
+{
+  "name": "agentic-toolkit-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch-content.mjs",
+    "dev": "node scripts/fetch-content.mjs && astro dev",
+    "dev:server": "astro dev",
+    "build": "node scripts/fetch-content.mjs && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.34.3",
+    "astro": "^5.7.10",
+    "sharp": "^0.33.0"
+  }
+}
