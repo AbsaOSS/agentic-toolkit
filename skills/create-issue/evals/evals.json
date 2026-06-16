@@ -1,0 +1,44 @@
+{
+  "skill_name": "create-issue",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an issue for the login page — when you enter a wrong password it just shows a blank screen instead of an error message. The console shows 'TypeError: Cannot read properties of undefined (reading message)' in ErrorHandler.tsx line 42.",
+      "expected_output": "A well-structured bug report issue created via gh CLI with title, reproduction steps, error details, and the issue URL returned",
+      "files": [],
+      "expectations": [
+        "The issue title is concise and describes the blank screen / missing error message problem",
+        "The issue body includes the TypeError and ErrorHandler.tsx reference",
+        "The issue body includes reproduction steps mentioning wrong password entry",
+        "gh issue create was called with --body-file - to handle multiline body",
+        "The output ends with the issue URL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I've been debugging this for a while. The problem is in src/api/rateLimiter.ts — the sliding window counter uses Date.now() but the Redis TTL is set in seconds, so there's a units mismatch. Requests that should be rate-limited at 100/min are actually getting through at ~100000/min because the window comparison is off by 1000x. The fix is to divide Date.now() by 1000 before comparing with the TTL. Can you file an issue for this?",
+      "expected_output": "An issue that incorporates debugging context from the conversation, not just a vague placeholder",
+      "files": [],
+      "expectations": [
+        "The issue body mentions the units mismatch between Date.now() milliseconds and Redis TTL seconds",
+        "The issue body mentions the 1000x rate limit bypass (100/min intended vs ~100000/min actual)",
+        "The issue body references rateLimiter.ts or the sliding window counter",
+        "The issue body mentions the fix (divide by 1000) or describes the root cause clearly enough to act on",
+        "gh issue create was called and the output includes the issue URL"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "open a feature request in microsoft/vscode for adding native support for .jsonc files in the search results preview — right now it just shows raw text with comments and it's hard to read",
+      "expected_output": "A feature request issue created in the microsoft/vscode repo using -R flag, with clear description of the desired behavior",
+      "files": [],
+      "expectations": [
+        "gh issue create uses -R microsoft/vscode",
+        "The issue type is feature request, not bug",
+        "The title mentions JSONC support in search preview or similar",
+        "The body describes current behavior (raw text) and desired behavior (rendered preview)",
+        "The output includes the issue URL"
+      ]
+    }
+  ]
+}
