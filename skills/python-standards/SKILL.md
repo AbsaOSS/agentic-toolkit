@@ -10,16 +10,16 @@ description: >-
 
 **Repo conventions first.** Check for `pyproject.toml`, `setup.cfg`, `.pre-commit-config.yaml`, `CONTRIBUTING.md`. If found: read and follow them. Skip any rule below that conflicts. Don't introduce new tools unless the user explicitly asks.
 
-**Infer regime and extras from file path:**
+**Infer mode and extras from file path:**
 
-| Signal | Regime | Load extras |
-|--------|--------|-------------|
+| Signal | Mode | Load extras |
+|--------|------|-------------|
 | Path contains `tests/`, or filename matches `test_*.py` / `*_test.py` | strict | load `references/testing.md` |
-| Path in `src/`, `app/`, or a named service package | strict | - |
-| Path in `scripts/`, `tools/`, `notebooks/`, or a one-off utility | relaxed | - |
+| Path in `src/`, `app/`, or a named service package | strict | don't load extras |
+| Path in `scripts/`, `tools/`, `notebooks/`, or a one-off utility | relaxed | don't load extras |
 | Ambiguous - none of the above match | **ask the user**: "strict (production) or relaxed (script)?" | based on answer |
 
-**Relaxed regime:** annotate public API only; `print()` allowed; docstrings recommended but not required.
+**Relaxed mode:** annotate public API only; `print()` allowed; docstrings recommended but not required.
 
 ---
 
@@ -74,7 +74,7 @@ description: >-
 
 - Docstring on every public module, class, and function. First line: single summary sentence.
 - Follow the repo's existing docstring style (Google, NumPy, reST). No convention → pick one and be consistent.
-- Comment the *why*, not the *what*. Remove commented-out code. No separator comments (`# ---`).
+- Comment the *why*, not the *what*. Remove commented-out code.
 
 ## Idiomatic Python
 
