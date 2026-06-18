@@ -1,7 +1,9 @@
 # Responsible AI Agent Use & Token Budget
 
-A practical guide to not burning your **GitHub Copilot** budget in a handful of prompts. Covers where the
-budget actually goes, how context, plugins, MCP servers, and skills affect cost, and a must-do checklist.
+A practical guide to not burning your **GitHub Copilot** budget in a handful of prompts. Written for
+**agent-mode work** — where the agent reads, edits, and verifies in a loop, which is how most engineering with
+Copilot now happens and where the budget goes fastest. Covers where the budget actually goes, how context,
+plugins, MCP servers, and skills affect cost, and a must-do checklist.
 
 ---
 
@@ -40,16 +42,18 @@ Every interaction is billed across three kinds of token, each at a **different r
 
 | Token type | What it is | Relative cost | Caching |
 |------------|------------|---------------|---------|
-| **Input** | Everything sent to the model: your prompt, system instructions, chat history, pasted files, tool / MCP schemas | Base rate — cheapest per token, but usually the **largest volume** | Can be cached |
-| **Output** | Everything the model generates: explanations, code, tool calls | **2–6× the input rate** (across Copilot's model menu the output spread is ~40×) | **Never** discounted by caching |
+| **Input** | Everything sent to the model each turn: your prompt, system + instruction files, the running history, **every file the agent reads and every command / tool result it captures**, plus tool / MCP schemas | Base rate — cheapest per token, but usually the **largest volume** (agent loops inflate it fast) | Can be cached |
+| **Output** | Everything the model generates: reasoning, edits, tool calls — **on every turn of the loop** | **2–6× the input rate** (across Copilot's model menu the output spread is ~40×) | **Never** discounted by caching |
 | **Cached input** | Input the model has already seen, served from a reused prefix | **~10% of the input rate** (a cache *read* is up to ~90% off) | This *is* the discount |
 
 How it works:
 
-- **Input** is re-sent on every turn — a 50-file context is billed as input on turn 1, turn 2, turn 3… This is
-  where context discipline pays off most, because the volume is large and recurring.
-- **Output** is the priciest per token. Generating a full rewritten file costs far more than generating a small
-  diff, even when the input is identical. Caching never touches output.
+- **Input** is re-sent on every turn, and in agent mode it compounds: each file the agent reads and each command
+  output it captures stays in context and is re-billed on every later turn. A ten-step agent task pays for its
+  early file reads ten times over. This is where context discipline pays off most.
+- **Output** is the priciest per token, and an agent emits output **every turn** — reasoning, tool calls, and
+  edits across the whole loop. Targeted edits cost far less than rewriting whole files; a long autonomous run on
+  a vague goal is mostly output you pay a premium for. Caching never touches output.
 - **Caching** lets the provider skip re-processing an unchanged prefix. A *cache read* is heavily discounted
   (~90% off input). Anthropic models add a small **cache write** premium (~1.25× input) the first time a prefix
   is cached; OpenAI caches automatically with no write surcharge. Caches are short-lived (Anthropic's default
@@ -60,19 +64,26 @@ How it works:
 
 ### Cut each one
 
-**Input tokens — reduce the volume you resend**
+**Input tokens — control what the agent pulls into context**
 
-- Keep context tight and task-scoped; reference `path:line`, don't paste whole files.
-- Summarise large logs / JSON before feeding them in.
+- **Scope the agent.** Point it at the specific files or folders the task touches, not "the repo." The narrower
+  the scope, the less it reads in.
+- Let the agent **read on demand**, but steer it **off huge or generated files** (lockfiles, build output,
+  vendored code) it doesn't need.
+- Keep a **project instructions file** (e.g. `.github/copilot-instructions.md`) so you don't re-explain
+  conventions every session — written once, it loads as a stable, cacheable prefix.
+- Prefer **search / grep** over having the agent read whole files when it only needs a few symbols.
 - Connect only the MCP servers you need — every server's tool schemas are input on *every* turn.
-- Start a new conversation when the task changes, so old history stops being resent.
+- Start a new session when the task changes, so old reads and history stop being resent.
 
-**Output tokens — generate less, and cheaper**
+**Output tokens — make the agent generate less**
 
-- Ask for **diffs / just the changed lines**, not full-file rewrites.
-- Request concise answers; use a brevity skill like [`token-saving`](./token-saving.md) to kill filler output.
-- Don't ask a model to echo back code you already have.
-- For verbose, low-stakes generation, drop to a cheaper model — the output-rate spread between models is huge.
+- Steer the agent toward **targeted edits**, not rewriting whole files it could patch in place.
+- **Bound the loop:** give acceptance criteria so it stops when done instead of polishing, and interrupt a run
+  that's spiralling — every extra turn is more output.
+- Use a brevity skill like [`token-saving`](./token-saving.md) to cut filler from the agent's prose.
+- Don't have the agent echo back code or files it already has in context.
+- For verbose, low-stakes work, drop to a cheaper model — the output-rate spread between models is huge.
 
 **Cached tokens — engineer for cache hits**
 
@@ -93,7 +104,7 @@ Five levers account for nearly all avoidable spend:
 |-------|-------|-----------|
 | **Context size** | Tight, task-scoped context | Whole repo / long history resent every turn |
 | **Model choice** | Base / lightweight model | Premium reasoning model for trivial tasks |
-| **Mode** | Inline completion, single-shot chat | Multi-step agent loops left running |
+| **Agent loop** | Bounded task, named files, a clear stop condition | Open-ended loop on a vague, repo-wide goal |
 | **MCP servers** | 2-3 relevant servers | Many servers, each injecting tool schemas + data |
 | **Code review** | Targeted, on real diffs | Auto-review on every push |
 
@@ -109,14 +120,16 @@ the new question is small.
 
 **Maintain context deliberately:**
 
-- Keep one conversation to **one task**. Scope creep = context creep.
-- Paste **only the relevant lines**, not entire files. Reference `path:line` instead of dumping.
-- Prefer the agent **reading** a file on demand over you pre-loading it "just in case."
-- Summarise long outputs (logs, test runs, JSON) **before** feeding them in — process, don't paste raw.
+- Keep one session to **one task**. Scope creep = context creep.
+- **Scope what the agent can read** — name the files or folders in play so it doesn't wander the whole tree.
+- Let the agent read on demand, but steer it **off huge or generated files** (lockfiles, build logs, vendored
+  code) that bloat context without helping.
+- When a step produces a wall of output (full test run, verbose build), have the agent **run it narrowly** (one
+  test, one package) so it doesn't ingest and then re-send megabytes of logs every later turn.
 
 **Clear context aggressively:**
 
-- Start a **new conversation** when the task changes. Don't continue an old thread out of convenience.
+- Start a **new session** when the task changes. Don't continue an old thread out of convenience.
 - Use `/clear` (or the client equivalent) the moment a sub-task is done.
 - If a thread has gone long and circular, **summarise the state into 5 lines, start fresh** with that summary.
 - Watch for context warnings — a near-full window means you're paying maximum tokens on every reply.
@@ -140,15 +153,26 @@ Per-token pricing means model choice is a direct cost multiplier.
 
 ---
 
-## Agent mode: powerful, and the easiest way to overspend
+## Agent mode: the default — and where most budget goes
 
-Agent mode runs **multiple model turns per request** — it reads, plans, edits, and verifies in a loop. Each
-loop iteration is billed.
+Agent mode is how most work happens now: the agent **reads, plans, edits, and verifies in a loop**, many model
+turns per request. It's also where budget evaporates, because every turn re-sends the accumulated context
+(input) and emits fresh reasoning and edits (output). The fix isn't to avoid agent mode — it's to run it
+**bounded and well-scoped**.
 
-- Give agents **narrow, well-specified tasks**. Vague goals cause exploratory wandering (= many turns).
-- Provide constraints up front (files, acceptance criteria) so the agent doesn't burn turns discovering them.
-- **Stop a runaway agent.** If it's looping or off-track, interrupt — don't let it spend to a dead end.
-- Use single-shot chat for anything that doesn't genuinely need autonomous multi-step execution.
+- **Scope tightly.** Name the files, folder, or component the task touches. An agent told "fix the repo" reads
+  far more than one told "fix the validation in `auth/login.ts`."
+- **Plan before editing.** For anything non-trivial, have the agent produce a short plan first, confirm it, then
+  execute. A wrong direction caught in the plan costs a few hundred tokens; caught after ten edit-verify turns,
+  it costs thousands.
+- **Give a stop condition.** State acceptance criteria so the agent knows when it's done and doesn't keep
+  polishing.
+- **Watch verification cost.** Running the full test suite or build on every loop dumps large output into
+  context each time. Point the agent at the **targeted test or package** for the change.
+- **Stop a runaway.** If it's looping, re-reading the same files, or off-track, interrupt — don't let it spend
+  to a dead end.
+- **Reuse the session** for tightly related steps, so the stable prefix (instructions, already-read files) stays
+  cached; start fresh when the task genuinely changes.
 
 ---
 
@@ -189,17 +213,18 @@ Run through this before and during any non-trivial Copilot session.
 
 **Before you start**
 
-- [ ] One conversation = one task. New task → new conversation.
+- [ ] One session = one task. New task → new session.
 - [ ] Right model selected for the task (base for trivial, premium only when it earns it).
 - [ ] Only the MCP servers / plugins needed for *this* work are connected.
 - [ ] Relevant skills available (so you don't re-explain workflows).
 
-**While working**
+**While working (agent mode)**
 
-- [ ] Share `path:line` references, not whole-file dumps.
-- [ ] Summarise large outputs (logs/JSON/test runs) before feeding them in.
-- [ ] Give agents narrow, fully-specified tasks; stop them if they wander.
-- [ ] Clear / start fresh the moment a sub-task is done.
+- [ ] Scope the agent to the files / folders in play — not "the repo."
+- [ ] Plan-then-execute for non-trivial tasks; confirm direction before it edits.
+- [ ] Give a clear stop condition; interrupt loops that wander or re-read.
+- [ ] Run targeted tests / builds, not the full suite, on each verify step.
+- [ ] Start a fresh session when the task changes.
 
 **Hygiene & guardrails**
 
@@ -211,9 +236,10 @@ Run through this before and during any non-trivial Copilot session.
 
 ## TL;DR
 
-> Tokens are the bill. Context size and model choice set the token count. Keep context tight, clear it often,
-> connect only the MCP servers and plugins you need, let skills carry repeated workflows, and give agents narrow
-> tasks.
+> Tokens are the bill. In agent mode every loop re-sends context (input) and emits edits (output), so cost
+> compounds with scope and loop length. Scope the agent to the files in play, plan before it edits, give it a
+> stop condition, run targeted tests, connect only the MCP servers you need, and let skills and an instructions
+> file carry the repeated context. Clear between tasks, not mid-task.
 
 ---
 
