@@ -11,6 +11,15 @@ Navigation hub for all guides in this repository. Browse by category below.
 | [Skill Testing](./skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues |
 
+## Tools for Agentic Development
+
+| Guide                       | Description                                                        |
+|-----------------------------|--------------------------------------------------------------------|
+| [Tools Overview](./tools/)    | Catalog of CLI-based AI coding agents and agentic development tools |
+| [Pi Coding Agent](./tools/pi.md) | Minimal BYOK terminal agent -- quickstart, extensions, troubleshooting |
+| [GitHub Copilot CLI](./tools/copilot-cli.md) | Multi-model agentic terminal agent with native GitHub integration |
+| [CodeBurn](./tools/codeburn.md) | Token usage, cost, and performance dashboard for 25+ AI coding tools |
+
 ## Skill Guides
 
 | Guide | Description |
