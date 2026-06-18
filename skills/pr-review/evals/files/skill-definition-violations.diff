@@ -1,0 +1,52 @@
+diff --git a/skills/data-transformer/SKILL.md b/skills/data-transformer/SKILL.md
+new file mode 100644
+index 0000000..9f8e7d6
+--- /dev/null
++++ b/skills/data-transformer/SKILL.md
+@@ -0,0 +1,32 @@
++---
++name: DataTransformer
++description: >
++  This skill is used for transforming data. It handles various data transformation
++  tasks across the platform. The skill covers ETL operations and can be used when
++  working with data in various formats. It is a general-purpose transformation skill
++  that may be useful in many data engineering contexts. Developers may find this
++  helpful when they need to transform data from one format to another, such as when
++  migrating data or building pipelines. It also helps with schema mapping, type
++  coercion, and handling null values in a consistent way across the platform.
++---
++
++# Data Transformer
++
++This skill covers data transformation patterns.
++
++## Setup
++
++All transformation scripts are located at:
++/Users/john.doe/repos/internal-toolkit/skills/data-transformer/scripts/
++
++Copy them to your local machine before running.
++
++## Transformation rules
++
++- Coerce string numerics to int before storing
++- Null values must be replaced with domain defaults
++- Date strings must be normalised to ISO-8601 before persisting
++
++## Testing
++
++Run the unit tests in `tests/data_transformer/` before submitting.
+diff --git a/skills/data-transformer/scripts/run_transform.sh b/skills/data-transformer/scripts/run_transform.sh
+new file mode 100644
+index 0000000..4f5a6b7
+--- /dev/null
++++ b/skills/data-transformer/scripts/run_transform.sh
+@@ -0,0 +1,8 @@
++#!/usr/bin/env bash
++# Runs the data transformation pipeline on a given input file.
++set -euo pipefail
++
++INPUT_FILE="${1:?Usage: run_transform.sh <input_file>}"
++
++python3 -m data_transformer.pipeline --input "$INPUT_FILE"
++echo "Transformation complete."
