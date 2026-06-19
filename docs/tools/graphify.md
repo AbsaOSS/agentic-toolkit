@@ -5,7 +5,7 @@ Graphify is a free, open-source skill that turns a codebase — or any folder of
 ## Why Graphify
 
 - **Context, pre-computed.** Nodes are functions, files, and concepts; edges are the calls, imports, and semantic relationships between them. The agent gets a map of the project before it touches a single file.
-- **Local-first.** Parsing and graph-building run on your machine. The one LLM labelling pass (see below) may send derived cluster summaries to a model provider depending on how you configure it — check Graphify's settings if you need full air-gapping.
+- **Local-first.** Source files are parsed on your machine with Tree-sitter and never leave it; only derived semantic descriptions (cluster labels, doc/image summaries) go to the LLM you configure. Use a local model (Ollama) for full air-gapping. See [Pricing](#pricing).
 - **Broad inputs.** Not just code: SQL schemas, shell/R scripts, docs, and more can land in one graph, so app code + database + infrastructure are queryable together.
 - **Drop-in skill.** Registers itself as a skill for the major agents; in Claude Code you invoke it with `/graphify`.
 
@@ -25,9 +25,30 @@ Often, yes — but the size of the win depends heavily on **repo size and query 
 
 - **The mechanism is real.** A question like *"where does billing deduct credits?"* can resolve in **~1.7k tokens** of graph lookup versus the **~123k** a naive grep-and-read would burn on a large repo — a ~70× reduction in that scenario. Independent reviews report a wide range (**~7× to ~71×**) depending on the codebase and query.
 - **Biggest gains on large, unfamiliar repos** (hundreds of files), where blind exploration is most wasteful. On small or familiar repos the savings are modest and may not repay the build.
-- **The build is not free.** The semantic-labelling pass spends tokens, and clustering is CPU-intensive. You pay that cost once; it amortises only if you run enough graph-backed queries afterward.
+- **The build is not free.** Code parsing is local and free, but the semantic-labelling pass (plus any docs/images) spends LLM tokens, and clustering is CPU-intensive — see [Pricing](#pricing). You pay that cost once; it amortises only if you run enough graph-backed queries afterward.
 
 **Net:** a strong token-saver for navigating and reasoning about large codebases; marginal for small ones. Measure on your own repo (e.g. with [CodeBurn](./codeburn.md)) rather than trusting a single multiplier.
+
+## Pricing
+
+Graphify itself is **free and open-source** — no paid tier, no subscription, no commercial plan. The only cost is **LLM usage during the build**, and you **bring your own key (BYOK)**: Graphify doesn't bundle a model, it uses whatever provider you've already configured and auto-detects it from the environment.
+
+- **Code parsing is free.** Source is analysed locally with Tree-sitter — no model, no network, no per-token cost.
+- **The LLM is used for semantic work only** — labelling clusters/relationships and describing non-code assets (docs, PDFs, images). Only derived descriptions are sent upstream, never raw source.
+- **You pay your LLM provider's normal per-token rates** for that usage, on a key you already have — or nothing if you run a local model. There is no Graphify surcharge.
+
+Graphify auto-detects the backend from your environment. Common choices:
+
+| Backend | Cost | Notes |
+|---------|------|-------|
+| Local model (e.g. Ollama) | **Free** | Runs on your machine; no API charge and full air-gapping. |
+| Hosted LLM provider — OpenAI, Anthropic, Gemini, DeepSeek, Moonshot (Kimi), AWS Bedrock | Provider's per-token rate | Set the matching `*_API_KEY`; pick a cheaper model to lower the build cost. |
+
+Because it's BYOK, your spend is **whatever you already pay your model provider** — independent of which coding agent you drive it from (GitHub Copilot CLI, Codex, Cursor, Claude Code, …). If your agent exposes its own model session, Graphify can reuse that without a separate key.
+
+The build cost is **one-time and upfront**, proportional to how much code and (especially) non-code content you index, then amortised across every later query. As a rough scale, one indexed project reported a ~1.5M-token one-time build that paid back at ~46× average query reduction; large repos reach ~70×.
+
+> **Gotcha:** current versions may demand an LLM API key even for a **code-only** corpus that makes no LLM calls ([issue #1122](https://github.com/safishamsi/graphify/issues/1122)). Set any supported key — or point it at a local model — to proceed.
 
 ## Trade-offs
 
