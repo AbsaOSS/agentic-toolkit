@@ -176,6 +176,45 @@ turns per request. It's also where budget evaporates, because every turn re-send
 
 ---
 
+## Sub-agents: isolate heavy work, keep the main context lean
+
+A **sub-agent** is a separate agent instance the main agent spawns to handle a focused subtask. It runs in its
+**own context window**: it reads files, runs searches, and produces tool output in isolation, then returns
+**only a compact summary or result** to the main thread. The intermediate noise — the file reads, the search
+hits, the verbose command output — stays inside the sub-agent and never enters the main conversation.
+
+Why it protects the budget: the expensive thing in agent mode is context that **accumulates and is re-sent on
+every turn**. Offload a read-heavy subtask and those tokens are paid **once**, inside the sub-agent, then
+discarded — the main thread only ever carries the summary, instead of dragging the whole investigation through
+every subsequent turn.
+
+**Good candidates to delegate:**
+
+- Large codebase searches / "where is X used" sweeps across many files.
+- Log, test-output, or data analysis that produces a wall of text you only need a conclusion from.
+- Multi-file investigation where only the *finding* matters to the downstream task.
+
+**The catch — sub-agents are not free.** Each one opens its own context window and re-establishes its own setup,
+so spawning them carelessly can cost *more*, not less. Anthropic reports that a single agent uses roughly **4×**
+the tokens of a plain chat, and multi-agent systems about **15×**. The saving is real only when delegation
+**replaces** context that would otherwise pile up in the main thread — or when the sub-agent runs a cheaper
+model.
+
+**Use them well:**
+
+- Delegate **self-contained, read / search / analysis-heavy** tasks; have the sub-agent return a **tight
+  summary**, not raw dumps.
+- Pass **scoped context in** (the specific question plus the few files it needs), not the whole history — a
+  structured hand-off is hundreds of tokens; forwarding the full conversation is thousands.
+- Run workers on a **cheaper model** (premium orchestrator, lightweight workers) — reported 5–10× cost cuts at
+  similar quality.
+- Don't fan out sub-agents for trivial work; below a certain size the per-agent overhead outweighs the saving.
+
+> Rule of thumb: delegate to a sub-agent when a subtask's **intermediate** tokens dwarf its **answer**. You pay
+> for the work once and keep only the answer.
+
+---
+
 ## MCP servers: every connected server has a standing cost
 
 Model Context Protocol (MCP) servers extend Copilot Chat with external tools and data. Useful — but each
@@ -224,6 +263,7 @@ Run through this before and during any non-trivial Copilot session.
 - [ ] Plan-then-execute for non-trivial tasks; confirm direction before it edits.
 - [ ] Give a clear stop condition; interrupt loops that wander or re-read.
 - [ ] Run targeted tests / builds, not the full suite, on each verify step.
+- [ ] Delegate heavy read / search / analysis to a sub-agent; keep only its summary in the main thread.
 - [ ] Start a fresh session when the task changes.
 
 **Hygiene & guardrails**
@@ -239,7 +279,8 @@ Run through this before and during any non-trivial Copilot session.
 > Tokens are the bill. In agent mode every loop re-sends context (input) and emits edits (output), so cost
 > compounds with scope and loop length. Scope the agent to the files in play, plan before it edits, give it a
 > stop condition, run targeted tests, connect only the MCP servers you need, and let skills and an instructions
-> file carry the repeated context. Clear between tasks, not mid-task.
+> file carry the repeated context. Delegate heavy read/search subtasks to sub-agents so their noise stays out of
+> the main thread. Clear between tasks, not mid-task.
 
 ---
 
@@ -252,3 +293,6 @@ Run through this before and during any non-trivial Copilot session.
 - [Prompt caching — OpenAI API Docs](https://platform.openai.com/docs/guides/prompt-caching) (automatic caching, input-only discount)
 - [LLM API Pricing Comparison 2026 — CloudZero](https://www.cloudzero.com/blog/llm-api-pricing-comparison/) (input-vs-output multiples across providers)
 - [Extending GitHub Copilot Chat with MCP servers — GitHub Docs](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp)
+- [How we built our multi-agent research system — Anthropic](https://www.anthropic.com/engineering/multi-agent-research-system) (single agent ~4× / multi-agent ~15× chat token usage)
+- [Subagents in the SDK — Claude Code Docs](https://code.claude.com/docs/en/agent-sdk/subagents) (isolated context window, summary-only return)
+- [Why Claude Code Subagents Burn So Many Tokens — youcanbuildthings](https://youcanbuildthings.com/articles/claude-code-subagents-token-usage/) (per-agent overhead caveat)
