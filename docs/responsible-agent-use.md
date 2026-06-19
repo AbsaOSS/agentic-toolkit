@@ -2,8 +2,8 @@
 
 A practical guide to not burning your **GitHub Copilot** budget in a handful of prompts. Written for
 **agent-mode work** — where the agent reads, edits, and verifies in a loop, which is how most engineering with
-Copilot now happens and where the budget goes fastest. Covers where the budget actually goes, how context,
-plugins, MCP servers, and skills affect cost, and a must-do checklist.
+Copilot now happens and where the budget goes fastest. Covers where the budget actually goes, and how agent
+mode, context, sub-agents, MCP servers, plugins, and skills each affect cost — plus a must-do checklist.
 
 ---
 
@@ -21,7 +21,7 @@ Input, output, and cached tokens each carry a **different rate**, and the rate a
 follows from three facts:
 
 1. **Cost scales with tokens**, and input tokens scale with **how much context you carry** — every input token
-   in a conversation is re-sent (and re-billed) on **every turn**. A long chat is not free history; it is a
+   in a session is re-sent (and re-billed) on **every turn**. A long session is not free history; it is a
    recurring charge.
 2. **The model is a multiplier.** A premium reasoning model on a trivial task costs many times what a base
    model would.
@@ -89,7 +89,7 @@ How it works:
 
 - Keep the **large, stable part of context first and unchanged** (system instructions, a big reference file) so
   it forms a reusable prefix; put the part that changes at the end.
-- Within one task, keep working in the **same conversation** and reply promptly — caches expire after a few
+- Within one task, keep working in the **same session** and reply promptly — caches expire after a few
   minutes of inactivity, and editing early context invalidates the cache.
 - This is the one place where *not* clearing helps: clear when the **task** changes, but during a task a stable
   prefix earns the cache discount on every follow-up turn.
@@ -115,8 +115,8 @@ Everything below is about pulling these levers in the cheap direction without lo
 ## Context: maintain it, then clear it
 
 The single biggest cost driver is the **context window**. Every token in it is re-sent on every turn — so a
-conversation that accumulates files, logs, and back-and-forth gets more expensive with each reply, even when
-the new question is small.
+session that accumulates files, logs, and back-and-forth gets more expensive with each reply, even when the new
+question is small.
 
 **Maintain context deliberately:**
 
@@ -129,9 +129,9 @@ the new question is small.
 
 **Clear context aggressively:**
 
-- Start a **new session** when the task changes. Don't continue an old thread out of convenience.
+- Start a **new session** when the task changes. Don't continue an old one out of convenience.
 - Use `/clear` (or the client equivalent) the moment a sub-task is done.
-- If a thread has gone long and circular, **summarise the state into 5 lines, start fresh** with that summary.
+- If a session has gone long and circular, **summarise the state into 5 lines, start fresh** with that summary.
 - Watch for context warnings — a near-full window means you're paying maximum tokens on every reply.
 
 > Rule of thumb: if you can't say why a piece of text needs to be in context **right now**, it's costing you.
@@ -183,6 +183,11 @@ A **sub-agent** is a separate agent instance the main agent spawns to handle a f
 **only a compact summary or result** to the main thread. The intermediate noise — the file reads, the search
 hits, the verbose command output — stays inside the sub-agent and never enters the main conversation.
 
+> **Availability varies by tool.** Native sub-agent spawning is built into harnesses like Claude Code; in GitHub
+> Copilot the same idea surfaces through custom agents and orchestration features. The token figures below come
+> from the Claude ecosystem but the principle is general — isolate a subtask in its own context, return only the
+> result — and applies wherever your tool supports it.
+
 Why it protects the budget: the expensive thing in agent mode is context that **accumulates and is re-sent on
 every turn**. Offload a read-heavy subtask and those tokens are paid **once**, inside the sub-agent, then
 discarded — the main thread only ever carries the summary, instead of dragging the whole investigation through
@@ -233,7 +238,7 @@ on top.
 **Skills** are loadable instruction bundles (like those in this repo). Used well, they are net **token savers**:
 
 - A skill like [`token-saving`](./token-saving.md) trims filler from every response — pure savings.
-- Skills encode a workflow **once** so you don't re-explain it (and re-pay for it) in every conversation.
+- Skills encode a workflow **once** so you don't re-explain it (and re-pay for it) in every session.
 - They load **on demand** when a task matches, so a large library doesn't tax context until it's relevant
   (see [What Is a Skill?](./getting-started.md#what-is-a-skill) for the loading model).
 
