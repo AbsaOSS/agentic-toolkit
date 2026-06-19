@@ -19,6 +19,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | [Pi Coding Agent](./tools/pi.md) | Minimal BYOK terminal agent -- quickstart, extensions, troubleshooting |
 | [GitHub Copilot CLI](./tools/copilot-cli.md) | Multi-model agentic terminal agent with native GitHub integration |
 | [CodeBurn](./tools/codeburn.md) | Token usage, cost, and performance dashboard for 25+ AI coding tools |
+| [Graphify](./tools/graphify.md) | Local knowledge-graph skill — pre-computes codebase structure so agents retrieve targeted context |
 
 ## Skill Guides
 
