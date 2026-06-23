@@ -1,18 +1,21 @@
 ---
 name: test-unit-review
 description: >
-  Procedural skill for reviewing and auditing existing unit tests against team standards.
-  Activate when the user asks to review, audit, check, or give feedback on an existing test
-  file — including informal requests and sharing a test file for a quality opinion.
+  Review and audit existing unit tests against quality standards. Activate when the user
+  asks to review, critique, give feedback, check quality, or audit any existing test file
+  — including informal requests like "does this look right?" or sharing a test for a quality
+  opinion. This skill evaluates tests for isolation, scope, naming, assertions, coverage, and
+  fixture reuse.
   Triggers on: "review these tests", "audit this test file", "check my tests", "are these
   tests good enough", "do these tests follow our standards", "LGTM on tests",
   "does this test look right", "is this test missing anything", "any issues with my tests",
-  "give feedback on this test file", "are these tests up to scratch".
-  Does NOT trigger for: writing new tests (use test-unit-write), choosing test doubles
-  (use test-mocking-patterns), managing test data strategies (use test-data-management),
-  debugging why a test fails at runtime, PR reviews not specifically about test quality,
-  or integration test planning (use test-integration-standards).
-  Pairs with test-unit-standards (rules checklist) and test-unit-write (if new tests needed).
+  "give feedback on this test file", "are these tests up to scratch", "are these tests
+  properly isolated", "test isolation check", "assertion quality".
+  Does NOT trigger for: writing new tests (use test-unit-write), adding tests or coverage
+  (use test-unit-write), choosing test doubles or mocking strategy (use test-mocking-patterns),
+  managing test data strategies (use test-data-management), debugging failing tests at runtime,
+  general PR review (use pr-review), or integration test planning (use test-integration-standards).
+  Pairs with test-unit-write (to add missing tests) and test-unit-standards (for reference).
 license: Proprietary
 compatibility: GitHub Copilot
 ---

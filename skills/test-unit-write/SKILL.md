@@ -1,18 +1,21 @@
 ---
 name: test-unit-write
 description: >
-  Procedural skill for writing unit tests from scratch or extending partial coverage. Activate
-  when the user asks to write, generate, add, or scaffold unit tests for a function, class, or
-  module — including requests for partial coverage such as "add failure-path tests", "add boundary
-  tests", or "I need tests for this method". Also activate for "help me test this" and "what tests
-  should I write for X?".
-  Triggers on: "write unit tests for", "add tests for", "generate test cases for", "help me test
-  this", "add coverage for", "scaffold tests for", "I need unit tests", "write tests that cover",
-  "what tests should I write", "add failure-path coverage", "add edge case tests".
-  Does NOT trigger for: reviewing or auditing existing tests (use test-unit-review), choosing test
-  doubles (use test-mocking-patterns), managing test data strategies (use test-data-management),
-  debugging failing tests at runtime, integration or e2e test planning, or documentation writing.
-  Pairs with test-unit-standards and test-mocking-patterns.
+  Write unit tests from scratch or extend partial coverage for functions, classes, or modules.
+  Activate when the user asks to write, generate, add, or scaffold unit tests — including
+  requests for partial coverage such as "add failure-path tests", "add boundary tests", or
+  "I need tests for this method". Also activate for "help me test this" and "what tests
+  should I write for X?". This skill covers test isolation, naming, assertions, and coverage.
+  Triggers on: "write unit tests for", "add tests for", "generate test cases for",
+  "help me test this", "add coverage for", "scaffold tests for", "I need unit tests",
+  "write tests that cover", "what tests should I write", "add failure-path coverage",
+  "add edge case tests", "add boundary tests", "test this method", "generate test".
+  Does NOT trigger for: reviewing or auditing existing tests (use test-unit-review), asking
+  about test standards or conventions (use test-unit-standards), choosing test doubles — spy
+  vs stub vs mock (use test-mocking-patterns), managing test data strategies (use test-data-management),
+  debugging failing tests at runtime, integration or e2e test planning, documentation writing,
+  or general code refactoring.
+  Pairs with test-unit-standards (reference) and test-mocking-patterns (test-double selection).
 ---
 
 # Unit Test Writer
