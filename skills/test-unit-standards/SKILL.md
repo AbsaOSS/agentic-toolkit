@@ -14,7 +14,7 @@ description: >
   test data strategies (use test-data-management), debugging or running tests,
   integration test planning, general PR review (use pr-review), or non-test tasks.
   Pairs with test-unit-write and test-unit-review — standards is their reference layer.
-license: Proprietary
+license: Apache-2.0
 compatibility: GitHub Copilot
 ---
 
