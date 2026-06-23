@@ -1,16 +1,12 @@
 ---
 name: test-unit-review
 description: >
-  Review and audit existing unit tests against quality standards. Activate when the user
-  asks to review, critique, audit, or give feedback on any existing test file — including
-  informal requests sharing a test for a quality opinion. Evaluates isolation, scope, naming,
-  assertions, coverage, and fixture reuse.
+  Review existing unit tests: isolation, scope, naming, assertions, coverage, fixture reuse.
   Triggers on: "review these tests", "audit this test file", "check my tests", "LGTM on tests",
-  "does this test look right", "any issues with my tests", "test isolation check", "assertion quality".
-  Does NOT trigger for: writing new tests (use test-unit-write), choosing test doubles
-  (use test-mocking-patterns), managing test data (use test-data-management), debugging failing
-  tests at runtime, general PR review (use pr-review), or integration test planning
-  (use test-integration-standards). Pairs with test-unit-write and test-unit-standards.
+  "test isolation check", "assertion quality".
+  Does NOT trigger for: writing new tests (use test-unit-write), test conventions
+  (use test-unit-standards), test doubles (use test-mocking-patterns), test data
+  (use test-data-management), PR review (use pr-review), integration tests (use test-integration-standards).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

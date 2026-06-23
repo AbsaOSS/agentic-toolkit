@@ -1,19 +1,12 @@
 ---
 name: test-unit-standards
 description: >
-  Reference checklist for unit test standards — isolation, scope, naming,
-  assertions, coverage, and fixtures. Ask this skill about test conventions, structural
-  rules, and best practices. This is the reference layer that test-unit-write and
-  test-unit-review consult; it does not write or audit tests itself.
-  Triggers on: "unit test standards", "test isolation rules", "test naming convention",
-  "assertion standards", "fixture reuse rules", "private member in tests", "test
-  conventions", "what are the rules for", "how should I structure my tests", "best
-  practices for unit tests".
-  Does NOT trigger for: writing new tests (use test-unit-write), reviewing or auditing
-  existing tests (use test-unit-review), choosing test doubles (use test-mocking-patterns),
-  test data strategies (use test-data-management), debugging or running tests,
-  integration test planning, general PR review (use pr-review), or non-test tasks.
-  Pairs with test-unit-write and test-unit-review — standards is their reference layer.
+  Unit test standards reference: isolation, scope, naming, assertions, coverage, fixtures.
+  Does not write or audit tests.
+  Triggers on: "unit test standards", "test naming convention", "best practices for unit tests",
+  "how should I structure my tests".
+  Does NOT trigger for: writing tests (use test-unit-write), reviewing tests (use test-unit-review),
+  test doubles (use test-mocking-patterns), test data (use test-data-management), PR review (use pr-review).
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
