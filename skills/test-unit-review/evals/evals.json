@@ -154,6 +154,123 @@
         "Reviewer recommends moving to an integration suite or stubbing the producer",
         "Isolation rule is cited as the violated standard"
       ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "Review these ReportExporter unit tests — do they follow isolation standards? File: evals/files/real-io-violations.py",
+      "expected_output": "Review flags three isolation violations: (1) test_export_pdf_creates_file writes to the real filesystem (/tmp). (2) test_fetch_template_from_cdn makes a real outbound HTTP request. (3) TestReportExporterWithDB.setup_method opens a live PostgreSQL connection. Each should be replaced with a mock or stub at its I/O boundary.",
+      "files": [
+        "evals/files/real-io-violations.py"
+      ],
+      "expectations": [
+        "test_export_pdf_creates_file is flagged for real filesystem write",
+        "test_fetch_template_from_cdn is flagged for real outbound HTTP call",
+        "TestReportExporterWithDB.setup_method is flagged for real PostgreSQL connection",
+        "Reviewer recommends mocking os/pathlib, requests, and psycopg2 at their boundary",
+        "Isolation rule is cited as the violated standard"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "regression",
+      "prompt": "Check whether these TokenValidator tests follow our standards. Do any of them access things they shouldn't? File: evals/files/private-member-access.py",
+      "expected_output": "Review flags three scope violations: (1) test_internal_decode_extracts_sub_claim calls private method _decode directly. (2) test_signature_cache_is_populated reads private attribute _cache. (3) test_algorithm_whitelist_contains_hs256 reads private attribute _allowed_algorithms. All three should be rewritten to assert behaviour through the public validate() interface.",
+      "files": [
+        "evals/files/private-member-access.py"
+      ],
+      "expectations": [
+        "test_internal_decode_extracts_sub_claim is flagged for calling private method _decode",
+        "test_signature_cache_is_populated is flagged for reading private attribute _cache",
+        "test_algorithm_whitelist_contains_hs256 is flagged for reading private attribute _allowed_algorithms",
+        "Reviewer explains that behaviour should be verified through the public interface",
+        "Scope rule is cited as the violated standard"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "Are these OrderProcessor tests complete? Do the assertions and coverage look right to you? File: evals/files/weak-assertions-no-failure.py",
+      "expected_output": "Review flags assertion completeness issues: (1) test_process_order_returns_something uses 'is not None' — too weak, should assert the specific return value. (2) test_process_order_completes asserts truthy only. (3) test_reserve_stock_called asserts '.called is not None' which is always True and proves nothing. Also flags missing failure-path coverage (out-of-stock, unknown SKU) and missing boundary tests (quantity=0, quantity=1).",
+      "files": [
+        "evals/files/weak-assertions-no-failure.py"
+      ],
+      "expectations": [
+        "test_process_order_returns_something is flagged for 'is not None' weak assertion",
+        "test_process_order_completes is flagged for truthy-check-only assertion",
+        "test_reserve_stock_called is flagged for '.called is not None' which is always True",
+        "Missing failure-path tests (out-of-stock or unknown SKU) are flagged",
+        "Missing boundary tests (quantity=0) are flagged",
+        "Assertion completeness and boundary coverage rules are cited"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Review these UserProfileService tests — I think there may be some duplication issues. File: evals/files/copy-paste-setup.py",
+      "expected_output": "Review flags that the (repo, cache, service) setup block is copy-pasted identically across all four tests. Recommends extracting it into a shared @pytest.fixture (or conftest.py). Also notes that fixtures should be documented with their purpose and any side effects.",
+      "files": [
+        "evals/files/copy-paste-setup.py"
+      ],
+      "expectations": [
+        "Identical (repo, cache, service) setup in each test is flagged as copy-pasted",
+        "Reviewer recommends extracting shared setup into a @pytest.fixture",
+        "Reviewer mentions placing shared fixtures in conftest.py or a test class setup",
+        "Reviewer notes that fixtures should be documented with purpose and side effects",
+        "Fixture management rule is cited as the violated standard"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "Audit these DiscountCalculator tests for naming conventions and test coverage gaps. File: evals/files/bad-naming-missing-boundaries.py",
+      "expected_output": "Review flags four naming violations: (1) test_1 has no descriptive name. (2) test_discount_works is vague — no condition or expected outcome. (3) test_it_returns_price is missing the expected-outcome segment. (4) test_big_number does not follow test_<what>_<condition>_<expected> format. Also flags missing boundary test for price=0, missing failure test for negative price, and missing failure test for unknown tier string.",
+      "files": [
+        "evals/files/bad-naming-missing-boundaries.py"
+      ],
+      "expectations": [
+        "test_1 is flagged as having no descriptive name",
+        "test_discount_works is flagged as vague — missing condition and expected outcome",
+        "test_it_returns_price is flagged for missing the expected-outcome segment",
+        "test_big_number is flagged for not following test_<what>_<condition>_<expected>",
+        "Missing boundary test for price=0 is flagged",
+        "Missing failure test for negative price is flagged",
+        "Missing failure test for unknown member_tier string is flagged",
+        "Naming convention and boundary coverage rules are cited"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Check these InvoiceGenerator tests for structural issues — docstrings, comments, that kind of thing. File: evals/files/missing-docstrings-stray-comments.py",
+      "expected_output": "Review flags: (1) test_generate_valid_invoice has no docstring — scenario not stated. (2) test_generate_zero_amount and test_generate_missing_client_raises use inline comments instead of docstrings. (3) A stray explanatory comment appears between test functions (outside any test method) above test_generate_negative_amount. (4) The generator fixture has no docstring documenting its purpose or side effects.",
+      "files": [
+        "evals/files/missing-docstrings-stray-comments.py"
+      ],
+      "expectations": [
+        "test_generate_valid_invoice is flagged for missing docstring",
+        "test_generate_zero_amount is flagged for using an inline comment instead of a docstring",
+        "The stray comment between test functions (outside a test method) is flagged",
+        "test_generate_missing_client_raises is flagged for inline comment instead of docstring",
+        "The generator fixture is flagged for missing purpose/side-effects docstring",
+        "Naming/structure rule (docstring required, no stray comments outside test methods) is cited"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "edge-case",
+      "prompt": "Can you review these PriceValidator tests for framework idiom issues? File: evals/files/framework-idiom-misuse.py",
+      "expected_output": "Review explains the pytest.raises match parameter is a regex, not a literal substring. test_negative_price_raises_error uses match=\"Price must be non-negative\", which works only because it contains no regex metacharacters; a literal string with metacharacters (e.g. an unescaped '.') would silently fail to match. test_unknown_currency_raises_error is correct. The reviewer should clarify the idiom (match must be a valid regex) rather than flag a broken test — this is a latent edge case, not a current failure.",
+      "files": [
+        "evals/files/framework-idiom-misuse.py"
+      ],
+      "expectations": [
+        "test_negative_price_raises_error match parameter is reviewed for regex safety",
+        "Reviewer explains that match is a regex, not a literal string",
+        "Reviewer notes test_unknown_currency_raises_error is correct",
+        "Reviewer clarifies the idiom (match parameter must be a valid regex)",
+        "Exception assertion rule is cited"
+      ]
     }
   ]
 }

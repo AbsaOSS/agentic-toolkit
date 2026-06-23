@@ -3,123 +3,94 @@
   "evals": [
     {
       "id": 1,
-      "category": "happy-path",
-      "prompt": "Can you review these unit tests for our PaymentService and confirm they follow our unit testing standards? File: evals/files/compliant-payment-tests.py",
-      "expected_output": "Review confirms the tests comply with all unit testing standards. All I/O is stubbed via fixtures (no real network, DB, or filesystem). Tests use only the public interface. Names follow test_<what>_<condition>_<expected>. Assertions are specific. Both success and failure paths are covered. Boundary value (0.01) is tested. Shared fixtures are defined and documented. No violations found.",
-      "files": [
-        "evals/files/compliant-payment-tests.py"
-      ],
+      "category": "reference",
+      "prompt": "What are our unit test standards? Give me the checklist before I start writing tests.",
+      "expected_output": "Agent summarises the six standards categories from the skill: isolation (no real I/O, mock all boundaries, independent tests), scope (one unit, public interface only, no private access), naming/structure (scenario-stating names, one behavior per test, docstring required), assertions (return values/exceptions/logs, success + ≥1 failure path, boundaries and null/empty), and fixtures (idiomatic location, reuse not copy-paste, documented). It presents these as reference guidance, not as an audit of any specific file.",
+      "files": [],
       "expectations": [
-        "No violations are reported",
-        "Reviewer confirms all I/O is properly stubbed (isolation maintained)",
-        "Reviewer confirms tests use the public interface only",
-        "Reviewer confirms naming convention test_<what>_<condition>_<expected> is followed",
-        "Reviewer confirms success and failure paths are both covered",
-        "Reviewer acknowledges shared fixtures are defined and documented",
-        "Reviewer does not fabricate problems where none exist"
+        "All six categories are described: isolation, scope, naming/structure, assertions, coverage, fixtures",
+        "Response is reference guidance, not a file audit",
+        "No specific test file is assumed or reviewed",
+        "Does not fabricate violations or apply Blocker/Important/Nit findings to non-existent code"
       ]
     },
     {
       "id": 2,
-      "category": "regression",
-      "prompt": "Please review these unit tests for the ReportExporter. Do they follow isolation standards? File: evals/files/real-io-violations.py",
-      "expected_output": "Review flags three isolation violations: (1) test_export_pdf_creates_file writes to the real filesystem (/tmp). (2) test_fetch_template_from_cdn makes a real outbound HTTP request. (3) TestReportExporterWithDB.setup_method opens a live PostgreSQL connection. Each should be replaced with a mock or stub at its I/O boundary.",
-      "files": [
-        "evals/files/real-io-violations.py"
-      ],
+      "category": "reference",
+      "prompt": "What's the rule on accessing private members in unit tests?",
+      "expected_output": "Agent explains the scope rule: tests should verify behaviour through the public interface only and must not call private methods or read private attributes directly. It explains why — private members are implementation details that change without affecting the contract, so tests coupled to them are brittle. It points to the language reference for the specific convention. No file is reviewed.",
+      "files": [],
       "expectations": [
-        "test_export_pdf_creates_file is flagged for real filesystem write",
-        "test_fetch_template_from_cdn is flagged for real outbound HTTP call",
-        "TestReportExporterWithDB.setup_method is flagged for real PostgreSQL connection",
-        "Reviewer recommends mocking os/pathlib, requests, and psycopg2 at their boundary",
-        "Isolation rule is cited as the violated standard"
+        "States that tests should use the public interface only",
+        "States that private methods/attributes should not be accessed directly",
+        "Explains the rationale (implementation details, brittleness)",
+        "Does not audit a specific file"
       ]
     },
     {
       "id": 3,
-      "category": "regression",
-      "prompt": "Check whether these TokenValidator tests follow unit test standards. Do any of them access things they shouldn't? File: evals/files/private-member-access.py",
-      "expected_output": "Review flags three scope violations: (1) test_internal_decode_extracts_sub_claim calls private method _decode directly. (2) test_signature_cache_is_populated reads private attribute _cache. (3) test_algorithm_whitelist_contains_hs256 reads private attribute _allowed_algorithms. All three should be rewritten to assert behaviour through the public validate() interface.",
-      "files": [
-        "evals/files/private-member-access.py"
-      ],
+      "category": "reference",
+      "prompt": "What naming convention should our unit test functions follow, and how many assertions per test?",
+      "expected_output": "Agent states test names must state the scenario following the language-reference format (e.g. test_<unit>_<condition>_<expected>), and that each test should cover one logical behaviour — multiple asserts are acceptable only when they collectively confirm a single outcome. It also notes a docstring stating the scenario is required and loose comments between methods are discouraged. Reference guidance only.",
+      "files": [],
       "expectations": [
-        "test_internal_decode_extracts_sub_claim is flagged for calling private method _decode",
-        "test_signature_cache_is_populated is flagged for reading private attribute _cache",
-        "test_algorithm_whitelist_contains_hs256 is flagged for reading private attribute _allowed_algorithms",
-        "Reviewer explains that behaviour should be verified through the public interface",
-        "Scope rule is cited as the violated standard"
+        "Names must state the scenario (test_<unit>_<condition>_<expected> or language-reference format)",
+        "One logical behaviour per test; multiple asserts OK only if confirming a single outcome",
+        "Docstring stating the scenario is required",
+        "No specific file is reviewed"
       ]
     },
     {
       "id": 4,
-      "category": "regression",
-      "prompt": "Are these OrderProcessor tests complete? Do the assertions and coverage look right to you? File: evals/files/weak-assertions-no-failure.py",
-      "expected_output": "Review flags assertion completeness issues: (1) test_process_order_returns_something uses 'is not None' — too weak, should assert the specific return value. (2) test_process_order_completes asserts truthy only. (3) test_reserve_stock_called asserts '.called is not None' which is always True and proves nothing. Also flags missing failure-path coverage (out-of-stock, unknown SKU) and missing boundary tests (quantity=0, quantity=1).",
-      "files": [
-        "evals/files/weak-assertions-no-failure.py"
-      ],
+      "category": "reference",
+      "prompt": "What are the rules for failure-path and boundary coverage in our unit tests?",
+      "expected_output": "Agent explains the assertion/coverage standard: every behaviour needs success plus at least one failure path, plus boundary values and empty/null inputs. Assertions must be specific (return values, exceptions, contract-sensitive log messages, exit codes) rather than generic truthy or is-not-None checks. Reference guidance only — no file audit.",
+      "files": [],
       "expectations": [
-        "test_process_order_returns_something is flagged for 'is not None' weak assertion",
-        "test_process_order_completes is flagged for truthy-check-only assertion",
-        "test_reserve_stock_called is flagged for '.called is not None' which is always True",
-        "Missing failure-path tests (out-of-stock or unknown SKU) are flagged",
-        "Missing boundary tests (quantity=0) are flagged",
-        "Assertion completeness and boundary coverage rules are cited"
+        "Requires success plus at least one failure path per behaviour",
+        "Requires boundary values and empty/null input coverage",
+        "Requires specific assertions over generic truthy/is-not-None checks",
+        "Does not audit a specific file"
       ]
     },
     {
       "id": 5,
-      "category": "regression",
-      "prompt": "Review these UserProfileService tests — I think there may be some duplication issues. File: evals/files/copy-paste-setup.py",
-      "expected_output": "Review flags that the (repo, cache, service) setup block is copy-pasted identically across all four tests. Recommends extracting it into a shared @pytest.fixture (or conftest.py). Also notes that fixtures should be documented with their purpose and any side effects.",
-      "files": [
-        "evals/files/copy-paste-setup.py"
-      ],
+      "category": "reference",
+      "prompt": "Where should pytest fixtures live and how should they be documented?",
+      "expected_output": "Agent states fixtures belong in a framework-idiomatic location (for pytest, conftest.py), must be reused across tests rather than copy-pasted into each test, and must be documented with their purpose and any side effects. Reference guidance only.",
+      "files": [],
       "expectations": [
-        "Identical (repo, cache, service) setup in each test is flagged as copy-pasted",
-        "Reviewer recommends extracting shared setup into a @pytest.fixture",
-        "Reviewer mentions placing shared fixtures in conftest.py or a test class setup",
-        "Reviewer notes that fixtures should be documented with purpose and side effects",
-        "Fixture management rule is cited as the violated standard"
+        "Fixtures placed in idiomatic location (pytest: conftest.py)",
+        "Reuse across tests, no copy-pasted setup",
+        "Document purpose and side effects",
+        "No specific file is reviewed"
       ]
     },
     {
       "id": 6,
-      "category": "regression",
-      "prompt": "Audit these DiscountCalculator tests for naming conventions and test coverage gaps. File: evals/files/bad-naming-missing-boundaries.py",
-      "expected_output": "Review flags four naming violations: (1) test_1 has no descriptive name. (2) test_discount_works is vague — no condition or expected outcome. (3) test_it_returns_price is missing the expected-outcome segment. (4) test_big_number does not follow test_<what>_<condition>_<expected> format. Also flags missing boundary test for price=0, missing failure test for negative price, and missing failure test for unknown tier string.",
-      "files": [
-        "evals/files/bad-naming-missing-boundaries.py"
-      ],
+      "category": "edge-case",
+      "prompt": "A test uses pytest's tmp_path fixture to write a file and then reads it back. Is using a real file system in a unit test a violation of our standards?",
+      "expected_output": "Yes, but it is a borderline case worth explaining. The standard says no real I/O in unit tests. tmp_path is an in-process temporary directory that does touch the real file system, so strictly it violates the isolation rule. However, if the function under test explicitly takes a file path and its core logic is the file handling, the choice is: (1) refactor to accept a file-like object (preferred — allows full in-memory testing); (2) accept tmp_path as a pragmatic exception only when refactoring is disproportionate. Flag it as Important with the refactoring suggestion as the preferred fix.",
+      "files": [],
       "expectations": [
-        "test_1 is flagged as having no descriptive name",
-        "test_discount_works is flagged as vague — missing condition and expected outcome",
-        "test_it_returns_price is flagged for missing the expected-outcome segment",
-        "test_big_number is flagged for not following test_<what>_<condition>_<expected>",
-        "Missing boundary test for price=0 is flagged",
-        "Missing failure test for negative price is flagged",
-        "Missing failure test for unknown member_tier string is flagged",
-        "Naming convention and boundary coverage rules are cited"
+        "Identifies tmp_path as real file system I/O — a standards violation",
+        "Notes the borderline nature of the case",
+        "Recommends refactoring to accept a file-like object as the preferred fix",
+        "Acknowledges tmp_path as a pragmatic exception only when refactoring is disproportionate",
+        "Flags as Important, not Nit"
       ]
     },
     {
       "id": 7,
-      "category": "happy-path",
-      "prompt": "Write unit tests for the DiscountCalculator class in evals/files/source-discount-calculator.py. Make sure they follow our unit test standards.",
-      "expected_output": "Output produces compliant unit tests: names follow test_<what>_<condition>_<expected>; all valid tiers (gold, silver, bronze, None) have a success test; failure paths for negative price and unknown tier are tested with specific exception assertions; boundary value price=0 is tested; assertions are specific (assertEqual / assert ==); no private members are accessed; no real I/O is introduced.",
-      "files": [
-        "evals/files/source-discount-calculator.py"
-      ],
+      "category": "edge-case",
+      "prompt": "Is it OK for a single unit test to have several assert statements, or should it be one assert per test?",
+      "expected_output": "Agent explains the one-logical-behaviour-per-test rule: multiple assert statements are acceptable when they collectively confirm a single outcome (e.g. asserting several fields of one returned object), but a test asserting several unrelated behaviours should be split so a failure points to a single invariant. Reference guidance, not a file audit.",
+      "files": [],
       "expectations": [
-        "Test names follow test_<what>_<condition>_<expected> convention",
-        "All four tiers (gold, silver, bronze, None) are tested for correct discount",
-        "Failure path for negative price is tested with a specific exception assertion",
-        "Failure path for unknown tier string is tested with a specific exception assertion",
-        "Boundary value price=0 is covered",
-        "Assertions are specific (exact value comparison, not 'is not None' or truthy)",
-        "No private members are accessed",
-        "No real I/O or external dependencies are introduced"
+        "States one logical behaviour per test, not strictly one assert",
+        "Multiple asserts OK when confirming a single outcome",
+        "Unrelated behaviours should be split into separate tests",
+        "Explains the rationale (failure localisation)"
       ]
     },
     {
@@ -137,76 +108,6 @@
     },
     {
       "id": 9,
-      "category": "paraphrase",
-      "prompt": "Are these tests up to scratch? I want to make sure they're not calling anything outside the service under test. evals/files/real-io-violations.py",
-      "expected_output": "Same core behaviour as eval 2: all three real-I/O violations are identified (real filesystem, real HTTP call, real DB connection) with remediation guidance. Phrasing of the request differs but the findings and rule citations should be equivalent.",
-      "files": [
-        "evals/files/real-io-violations.py"
-      ],
-      "expectations": [
-        "Real filesystem I/O (test_export_pdf_creates_file) is flagged",
-        "Real HTTP call (test_fetch_template_from_cdn) is flagged",
-        "Real PostgreSQL connection (TestReportExporterWithDB.setup_method) is flagged",
-        "Remediation guidance (mock os/requests/psycopg2) is provided",
-        "Response substance matches eval 2 despite different prompt phrasing"
-      ]
-    },
-    {
-      "id": 10,
-      "category": "multi-violation",
-      "prompt": "Full audit of these NotificationService unit tests — tell me everything that's wrong. File: evals/files/multi-violation-audit.py",
-      "expected_output": "Review identifies violations across all six rule categories: (1) ISOLATION — setup_method uses a real Redis connection. (2) SCOPE — _build_message (private method) and _retry_count (private attribute) are accessed directly. (3) NAMING — test_send, test_error, test_ok do not follow test_<what>_<condition>_<expected>. (4) ASSERTIONS — test_send uses 'is not None'; test_ok uses a truthy check; test_error has no assertion. (5) FIXTURES — redis_mock + email_client setup is copy-pasted in the standalone tests instead of using a shared fixture. (6) BOUNDARIES — no test for empty recipients, None subject, or zero-length body.",
-      "files": [
-        "evals/files/multi-violation-audit.py"
-      ],
-      "expectations": [
-        "setup_method real Redis connection is flagged as an isolation violation",
-        "_build_message call in test_build_message_template is flagged as private method access",
-        "_retry_count read in test_retry_count_after_failure is flagged as private attribute access",
-        "test_send, test_error, test_ok are flagged for not following the naming convention",
-        "test_send 'is not None' assertion is flagged as weak",
-        "test_ok truthy-only assertion is flagged as weak",
-        "test_error has no assertion — flagged as an incomplete test",
-        "Copy-pasted redis_mock + email_client setup in standalone tests is flagged",
-        "Missing boundary tests (empty recipients, None subject) are flagged",
-        "All six rule categories are applied: isolation, scope, naming, assertions, fixtures, boundaries"
-      ]
-    },
-    {
-      "id": 11,
-      "category": "regression",
-      "prompt": "Are there any isolation issues in these CartService tests? File: evals/files/shared-mutable-state.py",
-      "expected_output": "Review flags that TestCartServiceSequenced._processed is a class-level mutable list shared across all test instances. test_refund_removes_order depends on test_checkout_records_order having run first, making the suite order-dependent. Each test must be fully independent and runnable in any order; shared mutable state must be reset per-test (e.g. in a fixture with function scope).",
-      "files": [
-        "evals/files/shared-mutable-state.py"
-      ],
-      "expectations": [
-        "_processed class-level mutable list is flagged as shared mutable state",
-        "test_refund_removes_order is flagged as order-dependent on test_checkout_records_order",
-        "Reviewer explains the tests are not independently runnable",
-        "Reviewer recommends resetting state per-test via a function-scoped fixture or instance attribute",
-        "Isolation rule (no shared mutable state, each test runnable in isolation) is cited"
-      ]
-    },
-    {
-      "id": 12,
-      "category": "regression",
-      "prompt": "Check these InvoiceGenerator tests for structural issues — docstrings, comments, that kind of thing. File: evals/files/missing-docstrings-stray-comments.py",
-      "expected_output": "Review flags: (1) test_generate_valid_invoice has no docstring — scenario not stated. (2) test_generate_zero_amount and test_generate_missing_client_raises use inline comments instead of docstrings. (3) A stray explanatory comment appears between test functions (outside any test method) above test_generate_negative_amount. (4) The generator fixture has no docstring documenting its purpose or side effects.",
-      "files": [
-        "evals/files/missing-docstrings-stray-comments.py"
-      ],
-      "expectations": [
-        "test_generate_valid_invoice is flagged for missing docstring",
-        "test_generate_zero_amount is flagged for using an inline comment instead of a docstring",
-        "The stray comment between test functions (outside a test method) is flagged",
-        "test_generate_missing_client_raises is flagged for inline comment instead of docstring",
-        "The generator fixture is flagged for missing purpose/side-effects docstring",
-        "Naming/structure rule (docstring required, no stray comments outside test methods) is cited"
-      ]
-    },
-    {
-      "id": 13,
       "category": "negative",
       "prompt": "The calculate() method in evals/files/mixed-source-and-tests.py uses a chain of if/elif blocks. Can you refactor it to use a cleaner lookup structure? The test file is there for reference — don't change the tests.",
       "expected_output": "Assistant refactors the calculate() method (e.g. replacing the if/elif weight tiers with a sorted lookup table). It does NOT apply unit test standards to the test portion of the file, flag test names, assert coverage gaps, or cite isolation rules — because the request is a source-code refactor, not a test review.",
@@ -222,60 +123,15 @@
       ]
     },
     {
-      "id": 14,
-      "category": "paraphrase",
-      "prompt": "Are these tests following our conventions? They were written by a new team member.",
-      "expected_output": "Agent applies the full six-category unit test standards checklist: isolation (no real I/O), scope (no private member access), naming (test_<unit>_<condition>_<expected>), assertions (specific values vs truthy checks), coverage (failure paths, boundaries, edge cases), fixtures (docstrings, no shared mutable state). Groups findings as Blocker / Important / Nit. Confirms compliance explicitly if all categories pass. The 'new team member' framing does not change the standard applied.",
+      "id": 10,
+      "category": "negative",
+      "prompt": "Can you review these unit tests and tell me what's wrong with them? evals/files/some-tests.py",
+      "expected_output": "This is a review/audit request for a specific file, which routes to test-unit-review — not the standards reference layer. The standards skill provides the rules that the review skill applies; it does not itself perform file audits. If handled here, it should defer to test-unit-review for the audit.",
       "files": [],
       "expectations": [
-        "Identifies 'following our conventions' as a unit test standards review",
-        "Applies all six standards categories",
-        "Groups findings as Blocker / Important / Nit",
-        "Does not soften the standard because the author is new"
-      ]
-    },
-    {
-      "id": 15,
-      "category": "edge-case",
-      "prompt": "A test uses pytest's tmp_path fixture to write a file and then reads it back. Is using a real file system in a unit test a violation?",
-      "expected_output": "Yes, but it is a borderline case worth explaining. The standard says no real I/O in unit tests. tmp_path is an in-process temporary directory that does touch the real file system, so strictly it is a violation of the isolation rule. However, if the function under test explicitly takes a file path and its core logic is the file handling, the choice is: (1) refactor to accept a file-like object (preferred — allows full in-memory testing); (2) accept tmp_path as a pragmatic exception only when refactoring is disproportionate. Flag it as Important with the refactoring suggestion as the preferred fix.",
-      "files": [],
-      "expectations": [
-        "Identifies tmp_path as real file system I/O — a standards violation",
-        "Notes the borderline nature of the case",
-        "Recommends refactoring to accept a file-like object as the preferred fix",
-        "Acknowledges tmp_path as a pragmatic exception only when refactoring is disproportionate",
-        "Flags as Important, not Nit"
-      ]
-    },
-    {
-      "id": 16,
-      "category": "output-format",
-      "prompt": "Show me what the skill output looks like for a test file with one isolation violation and one naming violation.",
-      "expected_output": "The response groups findings under '### Blocker', '### Important', '### Nit' headers. Each violation is a bulleted item with: (1) test name in backticks, (2) standards category (e.g. 'Isolation', 'Naming'), (3) the specific rule violated, (4) a concrete fix suggestion. Code snippets showing the fix appear in fenced code blocks. A compliance confirmation is stated explicitly when no Blocker or Important findings exist.",
-      "files": [],
-      "expectations": [
-        "Blocker / Important / Nit H3 sections",
-        "Bulleted items with test name in backticks",
-        "Standards category name in each finding",
-        "Fix suggestions in fenced code blocks where applicable",
-        "Explicit compliance confirmation when no Blocker/Important findings"
-      ]
-    },
-    {
-      "id": 17,
-      "category": "regression",
-      "prompt": "Can you review these PriceValidator tests for framework idiom issues? File: evals/files/framework-idiom-misuse.py",
-      "expected_output": "Review flags a pytest idiom violation: test_negative_price_raises_error uses pytest.raises(ValueError, match=\"Price must be non-negative\") where match is a regex parameter, not a literal substring. The match parameter expects a compiled regex or regex string; a literal match parameter that is not a valid regex will not work correctly. Correct usage: match=r'Price must be' or match='Price must' (a valid regex substring). This is not a broken test (the other test shows correct usage), but a potential edge case where exact strings as match parameters can fail if they contain regex metacharacters.",
-      "files": [
-        "evals/files/framework-idiom-misuse.py"
-      ],
-      "expectations": [
-        "test_negative_price_raises_error match parameter is reviewed for regex safety",
-        "Reviewer explains that match is a regex, not a literal string",
-        "Reviewer notes test_unknown_currency_raises_error is correct",
-        "Reviewer clarifies the idiom (match parameter must be a valid regex)",
-        "Exception assertion rule is cited"
+        "Skill does not perform a file-by-file audit itself",
+        "Skill defers reviewing/auditing an existing file to test-unit-review",
+        "Reference layer boundary is respected (standards informs, review audits)"
       ]
     }
   ]

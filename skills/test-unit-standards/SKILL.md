@@ -1,21 +1,19 @@
 ---
 name: test-unit-standards
 description: >
-  Reference guide and checklist for unit test standards — test isolation, scope, naming,
-  assertions, coverage, and fixtures. Use this skill to ask questions about test conventions,
-  structural rules, best practices, and to audit test files against standards. Activate when
-  the user asks about standards, conventions, or wants to understand what makes a good test.
-  Triggers on: "write unit tests", "add tests for", "audit this test file", "review these tests",
-  "unit test standards", "test isolation rules", "test naming convention", "assertion standards",
-  "fixture reuse rules", "private member in tests", "failure-path coverage", "are these tests
-  good enough", "test conventions", "what are the rules for", "how should I structure my tests",
-  "best practices for unit tests", "should I be mocking", "do these tests follow our standards".
-  Does NOT trigger for: writing specific test cases or test code (use test-unit-write for "write a test for
-  the edge case where..."), choosing test doubles — spy vs stub vs mock (use test-mocking-patterns),
-  managing test data strategies (use test-data-management), debugging a failing test at runtime,
-  running tests, refactoring test code for clarity/duplication, integration test planning, general
-  PR review (use pr-review), or non-test tasks.
-  Pairs with test-unit-write and test-unit-review — standards is the reference layer they consult.
+  Reference checklist for unit test standards — isolation, scope, naming,
+  assertions, coverage, and fixtures. Ask this skill about test conventions, structural
+  rules, and best practices. This is the reference layer that test-unit-write and
+  test-unit-review consult; it does not write or audit tests itself.
+  Triggers on: "unit test standards", "test isolation rules", "test naming convention",
+  "assertion standards", "fixture reuse rules", "private member in tests", "test
+  conventions", "what are the rules for", "how should I structure my tests", "best
+  practices for unit tests".
+  Does NOT trigger for: writing new tests (use test-unit-write), reviewing or auditing
+  existing tests (use test-unit-review), choosing test doubles (use test-mocking-patterns),
+  test data strategies (use test-data-management), debugging or running tests,
+  integration test planning, general PR review (use pr-review), or non-test tasks.
+  Pairs with test-unit-write and test-unit-review — standards is their reference layer.
 license: Proprietary
 compatibility: GitHub Copilot
 ---

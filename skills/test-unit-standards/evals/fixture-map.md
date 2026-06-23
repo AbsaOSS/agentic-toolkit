@@ -2,58 +2,48 @@
 
 Links each eval test case to its fixture file(s).
 
-| Test ID | Category | Fixture |
-|---|---|---|
-| 1 | happy-path | evals/files/compliant-payment-tests.py |
-| 2 | regression | evals/files/real-io-violations.py |
-| 3 | regression | evals/files/private-member-access.py |
-| 4 | regression | evals/files/weak-assertions-no-failure.py |
-| 5 | regression | evals/files/copy-paste-setup.py |
-| 6 | regression | evals/files/bad-naming-missing-boundaries.py |
-| 7 | happy-path | evals/files/source-discount-calculator.py |
-| 8 | negative | *(no file — docstring task)* |
-| 9 | paraphrase | evals/files/real-io-violations.py |
-| 10 | multi-violation | evals/files/multi-violation-audit.py |
-| 11 | regression | evals/files/shared-mutable-state.py |
-| 12 | regression | evals/files/missing-docstrings-stray-comments.py |
-| 13 | negative | evals/files/mixed-source-and-tests.py |
-| 14 | paraphrase | *(no file — informal phrasing)* |
-| 15 | edge-case | *(no file — tmp_path guidance)* |
-| 16 | output-format | *(no file — format documentation)* |
-| 17 | regression | evals/files/framework-idiom-misuse.py |
+`test-unit-standards` is the reference layer: it answers questions about test
+conventions and rules. It does not write tests (see `test-unit-write`) or audit
+specific test files (see `test-unit-review`), so most evals are file-free Q&A.
 
-## Fixture → Rule mapping
+| Test ID | Category   | Fixture |
+|---------|------------|---------|
+| 1       | reference  | *(no file — standards checklist Q&A)* |
+| 2       | reference  | *(no file — private member rule Q&A)* |
+| 3       | reference  | *(no file — naming + asserts-per-test Q&A)* |
+| 4       | reference  | *(no file — failure-path/boundary rule Q&A)* |
+| 5       | reference  | *(no file — fixture placement/docs Q&A)* |
+| 6       | edge-case  | *(no file — tmp_path guidance)* |
+| 7       | edge-case  | *(no file — multiple-asserts guidance)* |
+| 8       | negative   | *(no file — docstring task)* |
+| 9       | negative   | evals/files/mixed-source-and-tests.py |
+| 10      | negative   | *(no file — review request routed to test-unit-review)* |
 
-| Fixture file | Primary rule(s) exercised |
+## Fixture → purpose mapping
+
+| Fixture file | Purpose |
 |---|---|
-| compliant-payment-tests.py | All rules — no violations (reference implementation) |
-| real-io-violations.py | Isolation — real I/O (filesystem, HTTP, DB) |
-| private-member-access.py | Scope — private member access |
-| weak-assertions-no-failure.py | Assertion completeness, boundary values |
-| copy-paste-setup.py | Fixture management |
-| bad-naming-missing-boundaries.py | Naming conventions, boundary values |
-| source-discount-calculator.py | All rules — write-from-scratch task |
-| shared-mutable-state.py | Isolation — shared mutable state between tests |
-| missing-docstrings-stray-comments.py | Naming/structure — docstrings required, no stray comments |
-| mixed-source-and-tests.py | Scope note — non-test task must not trigger rule enforcement |
-| multi-violation-audit.py | All rules — isolation, scope, naming, assertions, fixtures, boundaries |
-| framework-idiom-misuse.py | Assertions — pytest.raises idiom (regex match parameter) |
+| mixed-source-and-tests.py | Scope note — non-test (source refactor) task must not trigger standards enforcement |
 
 ## Coverage summary
 
-- happy-path: 2
-- regression: 8
-- negative: 2
-- paraphrase: 2
-- multi-violation: 1
-- edge-case: 1
-- output-format: 1
-- **total: 17**
+- reference: 5
+- edge-case: 2
+- negative: 3
+- **total: 10**
 
 ## Trigger eval coverage
 
 | Direction | Count |
 |---|---|
-| should_trigger = true | 12 |
-| should_trigger = false | 18 |
-| **total** | **30** |
+| should_trigger = true | 10 |
+| should_trigger = false | 16 |
+| **total** | **26** |
+
+## Notes
+
+Behavioral review/audit fixtures (private member access, naming, weak assertions,
+copy-paste fixtures, real I/O, missing docstrings, framework idiom misuse) were
+migrated to `test-unit-review/evals/files/` when this skill was narrowed to a pure
+reference layer. The review skill owns file-audit behaviour and those fixtures back
+its single-category regression evals.
