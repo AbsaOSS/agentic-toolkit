@@ -1,15 +1,15 @@
 ---
 name: tdd-workflow
 description: >
-  Test-driven development (TDD) workflow for implementing new code. Use this skill whenever
-  the user wants to implement a feature, fix a bug, or add functionality — even without
-  mentioning TDD explicitly. Enforces: SPEC.md-first specification with systematic edge
-  case discovery, explicit test case confirmation with user review gates, and red-green-refactor
-  cycle. Language-agnostic. Triggers on: "implement…", "I want to…", "fix the…", "add a…",
-  "build a…", "write tests first", "TDD", "red-green-refactor", "unit tests before coding",
-  "add test coverage", "design decisions before coding", "edge cases for…". Does NOT trigger
-  for: conceptual/educational questions about TDD, reviewing existing tests, or refactoring
-  code where all tests already pass.
+  Test-driven development (TDD) workflow for implementing and modifying code. ALWAYS use this
+  skill when a user needs to write new code, fix bugs, implement features, design systems,
+  or add functionality — even without mentioning TDD explicitly. This applies to: implementing
+  features, fixing bugs, adding functionality, building utilities, designing modules, capturing
+  edge cases, planning test scenarios, documenting design decisions, and adding test coverage.
+  Provides: SPEC.md planning, systematic edge case discovery, explicit test tables, confirmation
+  gates, and red-green-refactor cycles. Does NOT apply to: asking what-is questions about TDD,
+  understanding TDD concepts, reviewing completed tests, analyzing test suites, or refactoring
+  when all tests pass.
 ---
 
 # TDD Workflow
