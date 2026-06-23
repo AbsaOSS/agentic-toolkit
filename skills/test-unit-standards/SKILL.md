@@ -59,6 +59,7 @@ When no violations found, explicitly confirm compliance for each category.
 - Cover success + ≥1 failure path per behaviour
 - Cover boundary values & empty/null inputs
 - Specific over generic assertions (see language reference)
+- **Note on exception assertions:** When using `pytest.raises(..., match=...)`, the `match` parameter accepts a regex pattern. Plain literal strings (e.g., `match="Invalid user"`) are valid regex patterns. Only flag if the string contains unescaped regex metacharacters (e.g., `match="Price."` without escaping the dot) and the test intends a literal match.
 
 ## Fixtures
 

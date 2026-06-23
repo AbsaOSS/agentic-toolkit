@@ -72,7 +72,7 @@ For each category, list every violation found before moving to the next.
 - Weak assertions (`assert result`, `assert result is not None`) where exact value known?
 - Missing assertions (test body with no assert)?
 - Side-effect assertions using manual truthy instead of framework matcher?
-- **Note:** `pytest.approx` is **correct** for floats — do not flag. Only flag genuine weak assertions.
+- **Note:** `pytest.approx` is **correct** for floats — do not flag. It is a specific assertion that verifies the value within a tolerance, stronger than truthy or `is not None` checks and kills arithmetic operator mutants. Only flag genuine weak assertions.
 
 ### 4.5 Coverage
 
@@ -87,7 +87,7 @@ For each category, list every violation found before moving to the next.
 
 ## Step 5 — Report findings
 
-Group by severity. Cite test name, line, rule, fix suggestion. Empty sections show `(none)`.
+Group by severity. Cite test name, line, rule, fix suggestion. Empty sections show `(none)`. End with a line confirming overall compliance or summarizing blockers/important issues.
 
 ### Blocker
 

@@ -76,7 +76,7 @@ Per test:
 - Docstring: scenario in plain language
 - Public interface only, no private access
 - One logical behaviour (multiple asserts OK if collectively confirm single outcome)
-- **One test per exception type + condition** — do not combine invalid inputs. Each deserves own test. Use `pytest.raises` context manager; use `pytest.mark.parametrize` for many inputs.
+- **One test per exception type + condition** — do not combine invalid inputs. Each deserves own test. Exception: a single boundary path may cover the last valid and first invalid value together (e.g. `amount == total` succeeds, `amount > total` raises). Use `pytest.raises` context manager; use `pytest.mark.parametrize` for many inputs.
 
 ## Step 6 — Assert correctly
 
