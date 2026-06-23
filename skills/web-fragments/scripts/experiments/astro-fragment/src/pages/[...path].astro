@@ -1,0 +1,55 @@
+---
+import { ClientRouter } from 'astro:transitions';
+
+// Mimic "embedding multiple static sites, each referencing different CSS", served from a
+// catch-all route. Each site injects its OWN inline <style> and external <link> into the
+// head via set:html, exactly around <ClientRouter />.
+const SITES = {
+  a: { color: 'rgb(255, 0, 0)', name: 'Site A (red)' },
+  b: { color: 'rgb(0, 128, 0)', name: 'Site B (green)' },
+  c: { color: 'rgb(0, 0, 255)', name: 'Site C (blue)' },
+};
+
+export function getStaticPaths() {
+  return ['a', 'b', 'c'].map((p) => ({ params: { path: p } }));
+}
+
+const { path } = Astro.params;
+const site = SITES[path] ?? SITES.a;
+
+// Distinct, NON-overlapping rule per site targeting the shared #site-name element.
+// If old head styles are not removed on nav, these stack and visibly pollute later pages.
+const distinct = {
+  a: '#site-name{ background-color: rgb(255,0,0); }',
+  b: '#site-name{ border-bottom: 4px solid rgb(0,128,0); }',
+  c: '#site-name{ font-style: italic; }',
+}[path] ?? '';
+
+// raw HTML injected before and after <ClientRouter /> — the reported pattern
+const beforeHeadEnd = `<style class="wf-probe-inline" data-site="${path}">.inline-mark{color:${site.color}} ${distinct}</style>`;
+const afterHeadEnd = `<link class="wf-probe-link" data-site="${path}" rel="stylesheet" href="/astro/css/${path}.css" />`;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{site.name}</title>
+    <Fragment set:html={beforeHeadEnd} />
+    <ClientRouter />
+    <Fragment set:html={afterHeadEnd} />
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1rem; }
+      nav a { margin-right: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h2>Embedded static site: <span id="site-name">{site.name}</span></h2>
+    <nav>
+      <a href="/astro/">Home</a>
+      <a href="/astro/a/">A</a>
+      <a href="/astro/b/">B</a>
+      <a href="/astro/c/">C</a>
+    </nav>
+    <p class="inline-mark" id="inline-mark" data-site={path}>inline-mark (expect {site.color} from this site's inline &lt;style&gt;)</p>
+    <p class="link-mark" id="link-mark" data-site={path}>link-mark (expect {site.color} from this site's &lt;link&gt; css)</p>
+  </body>
+</html>

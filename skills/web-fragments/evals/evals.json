@@ -1,0 +1,48 @@
+{
+  "skill_name": "web-fragments",
+  "evals": [
+    {
+      "id": 0,
+      "name": "embed-react-widget-into-express-host",
+      "prompt": "I run an existing Express app (Node) and I have a separately deployed React widget hosted at https://reviews.acme.dev. I want to embed that widget as a micro-frontend on my /products page using the web-fragments library. Show me everything I need: the gateway setup, the middleware, the client bootstrap, and where the element goes.",
+      "expected_output": "Uses FragmentGateway + registerFragment with fragmentId/endpoint/routePatterns (asset pattern + /products host route), getNodeMiddleware from web-fragments/gateway/node, initializeWebFragments() in client bootstrap, and a <web-fragment fragment-id> on the /products page. Must NOT import web-fragments/middleware and must use registerFragment not register.",
+      "assertions": [
+        {"text": "Imports getNodeMiddleware from 'web-fragments/gateway/node' (Node host)", "type": "code"},
+        {"text": "Calls gateway.registerFragment(...) and NOT gateway.register(...)", "type": "code"},
+        {"text": "registerFragment config includes fragmentId, endpoint, and routePatterns", "type": "code"},
+        {"text": "routePatterns include both an asset pattern (e.g. /__wf/...) and the /products host route", "type": "code"},
+        {"text": "Calls initializeWebFragments() in the client bootstrap", "type": "code"},
+        {"text": "Places a <web-fragment fragment-id=\"...\"> element on the /products page", "type": "code"},
+        {"text": "Does NOT import from 'web-fragments/middleware' (non-existent entry point)", "type": "code"}
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "debug-blank-fragment-asset-404",
+      "prompt": "I'm using web-fragments. My fragment renders blank on the host page and the browser console shows the fragment's JS and CSS files returning 404 under /__wf/. The host page itself loads fine and the fragment app works when I open its own URL directly. The fragment is a Vite app. What's going wrong and how do I fix it?",
+      "expected_output": "Identifies the asset-path vs routePattern mismatch as the root cause: the fragment's Vite build.assetsDir must share the same /__wf/<unique>/ prefix as the gateway's asset routePattern. Gives a concrete fix aligning the two. Does not invent unrelated causes.",
+      "assertions": [
+        {"text": "Identifies asset path / routePattern prefix mismatch as the root cause", "type": "manual"},
+        {"text": "References Vite build.assetsDir alignment with the /__wf/ asset routePattern", "type": "code"},
+        {"text": "Gives a concrete corrective step (edit assetsDir or routePattern so prefixes match)", "type": "manual"},
+        {"text": "Does not hallucinate an unrelated root cause (e.g. CORS, missing fragment-id) as primary", "type": "manual"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "author-fragment-and-register-on-cloudflare",
+      "prompt": "Create a brand-new web fragment from scratch: a small standalone 'newsletter-signup' app. Then show me how to register and serve it from my host app, which is deployed on Cloudflare Pages.",
+      "expected_output": "A standalone fragment app that does NOT import web-fragments, with a unique Vite build.assetsDir under __wf/. Host registration uses FragmentGateway + registerFragment with a matching asset routePattern, and Cloudflare Pages middleware uses getWebMiddleware from web-fragments/gateway (Web, not Node) in a functions/_middleware.ts onRequest handler.",
+      "assertions": [
+        {"text": "The fragment app does NOT import the web-fragments package (it's a plain standalone app)", "type": "manual"},
+        {"text": "Sets a unique Vite build.assetsDir under __wf/ for the fragment", "type": "code"},
+        {"text": "Uses getWebMiddleware from 'web-fragments/gateway' (Web runtime), NOT getNodeMiddleware", "type": "code"},
+        {"text": "Cloudflare Pages wiring uses functions/_middleware.ts with an onRequest handler", "type": "code"},
+        {"text": "registerFragment asset routePattern prefix matches the fragment's assetsDir", "type": "manual"}
+      ],
+      "files": []
+    }
+  ]
+}
