@@ -1,0 +1,110 @@
+[
+  {
+    "id": "w-t01-write-tests-explicit",
+    "query": "Write unit tests for the OrderService class.",
+    "should_trigger": true,
+    "reason": "Explicit test-writing request — primary trigger."
+  },
+  {
+    "id": "w-t02-add-tests-for-method",
+    "query": "Add unit tests for the place_order method.",
+    "should_trigger": true,
+    "reason": "Explicit request to add tests for a specific method."
+  },
+  {
+    "id": "w-t03-generate-test-cases",
+    "query": "Generate test cases for the PriceCalculator.calculate() function.",
+    "should_trigger": true,
+    "reason": "'Generate test cases' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t04-help-me-test",
+    "query": "Help me test this service — it has a database dependency.",
+    "should_trigger": true,
+    "reason": "'Help me test this' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t05-scaffold-tests",
+    "query": "Scaffold the tests for this module following our standards.",
+    "should_trigger": true,
+    "reason": "'Scaffold tests for' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t06-add-failure-coverage",
+    "query": "I only have happy-path tests — can you add failure-path coverage for me?",
+    "should_trigger": true,
+    "reason": "'Add failure-path coverage' is a listed trigger phrase for extension scenarios."
+  },
+  {
+    "id": "w-t07-what-tests-to-write",
+    "query": "What tests should I write for this function?",
+    "should_trigger": true,
+    "reason": "'What tests should I write for X' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t08-add-edge-case-tests",
+    "query": "Add edge case tests for the boundary values in this calculator.",
+    "should_trigger": true,
+    "reason": "'Add edge case tests' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t09-i-need-unit-tests",
+    "query": "I need unit tests for the NotificationService before I merge this.",
+    "should_trigger": true,
+    "reason": "'I need unit tests' is a listed trigger phrase."
+  },
+  {
+    "id": "w-t10-add-coverage-for",
+    "query": "Add coverage for the cancel_order and refund paths.",
+    "should_trigger": true,
+    "reason": "'Add coverage for' is a listed trigger phrase."
+  },
+  {
+    "id": "w-n01-review-tests",
+    "query": "Review these unit tests and tell me what's wrong with them.",
+    "should_trigger": false,
+    "reason": "Review request — routes to test-unit-review, not test-unit-write."
+  },
+  {
+    "id": "w-n02-audit-test-standards",
+    "query": "Audit this test file against our unit test standards.",
+    "should_trigger": false,
+    "reason": "Audit/review request — routes to test-unit-review."
+  },
+  {
+    "id": "w-n03-spy-vs-mock",
+    "query": "Should I use a spy or a mock for the email client?",
+    "should_trigger": false,
+    "reason": "Test-double selection — routes to test-mocking-patterns."
+  },
+  {
+    "id": "w-n04-test-data-factory",
+    "query": "How should I organise my test data with a factory function?",
+    "should_trigger": false,
+    "reason": "Test data strategy — routes to test-data-management."
+  },
+  {
+    "id": "w-n05-debug-failing-test",
+    "query": "Why is my test throwing AttributeError: 'NoneType' object has no attribute 'charge'?",
+    "should_trigger": false,
+    "reason": "Runtime debugging of a failing test — not a test-writing task."
+  },
+  {
+    "id": "w-n06-integration-test",
+    "query": "Design an integration test plan for the full payment flow with the gateway sandbox.",
+    "should_trigger": false,
+    "reason": "Integration test planning — the skill covers unit tests only."
+  },
+  {
+    "id": "w-n07-write-docstring",
+    "query": "Write a docstring for the OrderService class.",
+    "should_trigger": false,
+    "reason": "Documentation task — no test authoring intent."
+  },
+  {
+    "id": "w-n08-refactor",
+    "query": "Refactor this service to reduce its cyclomatic complexity.",
+    "should_trigger": false,
+    "reason": "Source code refactoring — no test writing requested."
+  }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "id": "t01-write-unit-tests-explicit",
+    "query": "Write unit tests for the PaymentService class.",
+    "should_trigger": true,
+    "reason": "Explicit test-writing request — core trigger for the skill."
+  },
+  {
+    "id": "t02-review-unit-tests-explicit",
+    "query": "Can you review these unit tests and tell me if they follow best practices?",
+    "should_trigger": true,
+    "reason": "Explicit unit test review request."
+  },
+  {
+    "id": "t03-audit-test-standards",
+    "query": "Audit this test file against our unit test standards.",
+    "should_trigger": true,
+    "reason": "Direct audit request using 'unit test standards' — primary trigger phrase."
+  },
+  {
+    "id": "t04-test-isolation-check",
+    "query": "Are these tests properly isolated? I want to make sure they don't call real APIs.",
+    "should_trigger": true,
+    "reason": "Isolation check request — test isolation is explicitly listed in the skill description."
+  },
+  {
+    "id": "t05-check-test-naming",
+    "query": "Do my test function names follow the right convention?",
+    "should_trigger": true,
+    "reason": "Test naming convention check — covered explicitly by the skill."
+  },
+  {
+    "id": "t06-assertions-review",
+    "query": "Are the assertions in these tests strong enough, or am I missing edge cases?",
+    "should_trigger": true,
+    "reason": "Assertion completeness and boundary coverage — both listed in the skill description."
+  },
+  {
+    "id": "t07-fixture-review",
+    "query": "I have a lot of copy-paste in my test setup — how should I refactor it using fixtures?",
+    "should_trigger": true,
+    "reason": "Fixture management question — fixture reuse is a named concern in the skill."
+  },
+  {
+    "id": "t08-private-member-access",
+    "query": "Are any of these tests accessing private methods or internal state they shouldn't?",
+    "should_trigger": true,
+    "reason": "Private member access check — directly listed in the skill description."
+  },
+  {
+    "id": "t09-write-tests-for-edge-cases",
+    "query": "Write me a test for the edge case where the input list is empty and one where it is None.",
+    "should_trigger": true,
+    "reason": "Test writing for boundary/null inputs — boundary values and empty/null inputs are explicitly in scope."
+  },
+  {
+    "id": "t10-are-tests-up-to-scratch",
+    "query": "Are these tests up to scratch? I want to ship this service today.",
+    "should_trigger": true,
+    "reason": "Paraphrased test quality review — 'are these tests ok' maps to reviewing against test standards."
+  },
+  {
+    "id": "t11-mocking-boundaries",
+    "query": "Should I be mocking the database layer in these tests, or is it fine to use a real connection?",
+    "should_trigger": true,
+    "reason": "Boundary mocking question — mock/stub decisions for I/O boundaries are within skill scope."
+  },
+  {
+    "id": "t12-failure-path-coverage",
+    "query": "I only have happy-path tests for this service — can you help me add failure-path coverage?",
+    "should_trigger": true,
+    "reason": "Failure-path coverage — the skill explicitly requires at least one failure path per behaviour."
+  },
+  {
+    "id": "n01-review-pr",
+    "query": "Review this PR before I merge it.",
+    "should_trigger": false,
+    "reason": "PR review request — routes to pr-review skill, not unit test standards."
+  },
+  {
+    "id": "n02-implement-feature",
+    "query": "Implement a discount calculation function in Python.",
+    "should_trigger": false,
+    "reason": "Feature implementation request with no test-writing or test-review intent."
+  },
+  {
+    "id": "n03-generate-docs",
+    "query": "Write docstrings for all the public methods in this module.",
+    "should_trigger": false,
+    "reason": "Documentation generation task — no test authoring or review requested."
+  },
+  {
+    "id": "n04-terraform-module",
+    "query": "Create a Terraform module for an S3 bucket with versioning enabled.",
+    "should_trigger": false,
+    "reason": "Infrastructure-as-code task — routes to cps-iac skill."
+  },
+  {
+    "id": "n05-why-test-failing",
+    "query": "Why is my test throwing AttributeError: 'NoneType' object has no attribute 'charge'?",
+    "should_trigger": false,
+    "reason": "Runtime debugging question about a test error — not a standards review or test-writing task."
+  },
+  {
+    "id": "n06-refactor-service",
+    "query": "Refactor this service class for lower cyclomatic complexity.",
+    "should_trigger": false,
+    "reason": "Production code refactoring request — no test standards involvement."
+  },
+  {
+    "id": "n07-create-github-issue",
+    "query": "Create a GitHub issue for the flaky integration test in CI.",
+    "should_trigger": false,
+    "reason": "Issue creation task — routes to create-issue skill."
+  },
+  {
+    "id": "n08-kudos",
+    "query": "Give kudos to Alex for fixing the performance regression.",
+    "should_trigger": false,
+    "reason": "Recognition workflow — routes to kudos skill."
+  },
+  {
+    "id": "n09-explain-code",
+    "query": "Explain how the payment gateway client works.",
+    "should_trigger": false,
+    "reason": "Code explanation request — no test writing or review in scope."
+  },
+  {
+    "id": "n10-crossall-update",
+    "query": "Generate the crossall status update for this sprint.",
+    "should_trigger": false,
+    "reason": "Sprint reporting task — routes to crossall-changes skill."
+  },
+  {
+    "id": "n11-integration-test-design",
+    "query": "Design an integration test plan for the full payment flow including the gateway sandbox.",
+    "should_trigger": false,
+    "reason": "Integration test planning — the skill covers unit tests only; integration tests deliberately use real I/O and are out of scope."
+  },
+  {
+    "id": "n12-test-double-selection",
+    "query": "Should I use a spy or a stub for the email client in this test? What's the difference?",
+    "should_trigger": false,
+    "reason": "Test-double selection (spy vs stub vs mock) routes to the test-mocking-patterns skill; the skill description explicitly pairs with it for double selection and does not own this decision."
+  },
+  {
+    "id": "n13-run-the-tests",
+    "query": "Can you run the unit tests for the PaymentService and show me the output?",
+    "should_trigger": false,
+    "reason": "Test execution request — the skill covers writing, reviewing, and auditing test standards, not running tests."
+  }
+]
