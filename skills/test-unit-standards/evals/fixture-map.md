@@ -17,6 +17,10 @@ Links each eval test case to its fixture file(s).
 | 11 | regression | evals/files/shared-mutable-state.py |
 | 12 | regression | evals/files/missing-docstrings-stray-comments.py |
 | 13 | negative | evals/files/mixed-source-and-tests.py |
+| 14 | paraphrase | *(no file — informal phrasing)* |
+| 15 | edge-case | *(no file — tmp_path guidance)* |
+| 16 | output-format | *(no file — format documentation)* |
+| 17 | regression | evals/files/framework-idiom-misuse.py |
 
 ## Fixture → Rule mapping
 
@@ -33,20 +37,23 @@ Links each eval test case to its fixture file(s).
 | missing-docstrings-stray-comments.py | Naming/structure — docstrings required, no stray comments |
 | mixed-source-and-tests.py | Scope note — non-test task must not trigger rule enforcement |
 | multi-violation-audit.py | All rules — isolation, scope, naming, assertions, fixtures, boundaries |
+| framework-idiom-misuse.py | Assertions — pytest.raises idiom (regex match parameter) |
 
 ## Coverage summary
 
 - happy-path: 2
-- regression: 7
+- regression: 8
 - negative: 2
-- paraphrase: 1
+- paraphrase: 2
 - multi-violation: 1
-- **total: 13**
+- edge-case: 1
+- output-format: 1
+- **total: 17**
 
 ## Trigger eval coverage
 
 | Direction | Count |
 |---|---|
 | should_trigger = true | 12 |
-| should_trigger = false | 13 |
-| **total** | **25** |
+| should_trigger = false | 18 |
+| **total** | **30** |

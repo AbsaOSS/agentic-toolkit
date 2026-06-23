@@ -145,6 +145,25 @@
         "Boundary value 100 is covered",
         "No 'assert result' or 'assert result is not None' style assertions"
       ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "Write unit tests for DiscountCalculator.calculate_discount() using pytest.mark.parametrize to cover all tiers. File: evals/files/source-parametrized-discounts.py",
+      "expected_output": "Output uses pytest.mark.parametrize to test all four tiers (gold, silver, bronze, standard) and None with expected discount rates. Additionally, tests for failure cases: negative amount (ValueError), unknown tier (ValueError). Assertions verify exact discount amounts (e.g. amount * 0.8 for gold tier). No test duplication; a single parametrized test covers all success paths. Test names clearly indicate parametrized nature (e.g. test_calculate_discount_with_tier[gold-20%]).",
+      "files": [
+        "evals/files/source-parametrized-discounts.py"
+      ],
+      "expectations": [
+        "pytest.mark.parametrize is used for multiple tier inputs",
+        "All four tiers (gold, silver, bronze, standard) are covered",
+        "None tier is tested (no discount)",
+        "Failure path for negative amount is tested",
+        "Failure path for unknown tier is tested",
+        "Assertions verify exact discount amounts, not just non-None",
+        "No test duplication",
+        "Test names reflect parametrized values"
+      ]
     }
   ]
 }

@@ -106,5 +106,17 @@
     "query": "Refactor this service to reduce its cyclomatic complexity.",
     "should_trigger": false,
     "reason": "Source code refactoring — no test writing requested."
+  },
+  {
+    "id": "w-n09-test-data-strategy",
+    "query": "How should I organise my test data with a factory builder pattern? Should each test create its own data?",
+    "should_trigger": false,
+    "reason": "Test data strategy — routes to test-data-management, not test-unit-write (which uses fixtures, not factories)."
+  },
+  {
+    "id": "w-n10-language-choice",
+    "query": "Should I write my unit tests in Python or TypeScript?",
+    "should_trigger": false,
+    "reason": "Technology choice and architecture decision — not a test-writing task."
   }
 ]

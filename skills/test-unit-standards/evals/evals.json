@@ -261,6 +261,22 @@
         "Fix suggestions in fenced code blocks where applicable",
         "Explicit compliance confirmation when no Blocker/Important findings"
       ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "Can you review these PriceValidator tests for framework idiom issues? File: evals/files/framework-idiom-misuse.py",
+      "expected_output": "Review flags a pytest idiom violation: test_negative_price_raises_error uses pytest.raises(ValueError, match=\"Price must be non-negative\") where match is a regex parameter, not a literal substring. The match parameter expects a compiled regex or regex string; a literal match parameter that is not a valid regex will not work correctly. Correct usage: match=r'Price must be' or match='Price must' (a valid regex substring). This is not a broken test (the other test shows correct usage), but a potential edge case where exact strings as match parameters can fail if they contain regex metacharacters.",
+      "files": [
+        "evals/files/framework-idiom-misuse.py"
+      ],
+      "expectations": [
+        "test_negative_price_raises_error match parameter is reviewed for regex safety",
+        "Reviewer explains that match is a regex, not a literal string",
+        "Reviewer notes test_unknown_currency_raises_error is correct",
+        "Reviewer clarifies the idiom (match parameter must be a valid regex)",
+        "Exception assertion rule is cited"
+      ]
     }
   ]
 }

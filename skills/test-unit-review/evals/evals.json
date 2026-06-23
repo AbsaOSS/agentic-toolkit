@@ -122,6 +122,38 @@
         "Empty sections show (none)",
         "Final compliance status line present"
       ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "Are these UserService tests reliable? Can they run in any order and pass consistently? File: evals/files/flaky-shared-mock-state.py",
+      "expected_output": "Review flags isolation violation: a module-level mutable variable _mock_user is shared across all tests. test_delete_user_clears_cache depends on test_create_user_sets_id running first; if test execution order changes or tests run in parallel, the suite fails. Each test must be fully independent with its own fixtures. Recommend moving _mock_user inside each test or using a function-scoped fixture.",
+      "files": [
+        "evals/files/flaky-shared-mock-state.py"
+      ],
+      "expectations": [
+        "Module-level _mock_user variable is flagged as shared mutable state",
+        "test_delete_user_clears_cache is flagged as order-dependent on test_create_user_sets_id",
+        "Reviewer identifies that parallel execution will break the suite",
+        "Reviewer recommends moving state into test functions or function-scoped fixtures",
+        "Isolation rule (no shared state, runnable in any order) is cited"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "I have some unit tests but one of them makes a real Kafka call. Is that a problem? File: evals/files/integration-test-in-unit-suite.py",
+      "expected_output": "Review flags isolation violation: test_publish_event_to_kafka makes a real outbound call to a live Kafka cluster (bootstrap_servers=['localhost:9092']). This is an integration test, not a unit test, and violates test isolation. It should either (1) be removed from the unit suite and moved to integration tests, or (2) be rewritten to stub the KafkaProducer. The test also has no meaningful assertion (just calls real I/O).",
+      "files": [
+        "evals/files/integration-test-in-unit-suite.py"
+      ],
+      "expectations": [
+        "test_publish_event_to_kafka is flagged as an integration test, not a unit test",
+        "Real KafkaProducer and bootstrap_servers are flagged as real I/O",
+        "Reviewer explains that integration tests violate unit test isolation",
+        "Reviewer recommends moving to an integration suite or stubbing the producer",
+        "Isolation rule is cited as the violated standard"
+      ]
     }
   ]
 }

@@ -100,5 +100,17 @@
     "query": "Design an integration test plan for the checkout flow.",
     "should_trigger": false,
     "reason": "Integration test planning is out of scope for this skill."
+  },
+  {
+    "id": "r-n07-flaky-tests-ci",
+    "query": "Why are my tests flaky when run in parallel in CI but not locally?",
+    "should_trigger": false,
+    "reason": "Debugging runtime behaviour and CI infrastructure — not a standards review of test code quality."
+  },
+  {
+    "id": "r-n08-parallel-execution",
+    "query": "Should I run unit tests in parallel or sequentially?",
+    "should_trigger": false,
+    "reason": "Test execution strategy and CI infrastructure configuration — outside the standards review scope."
   }
 ]

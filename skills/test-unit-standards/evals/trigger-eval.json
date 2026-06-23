@@ -5,12 +5,7 @@
     "should_trigger": true,
     "reason": "Explicit test-writing request — core trigger for the skill."
   },
-  {
-    "id": "t02-review-unit-tests-explicit",
-    "query": "Can you review these unit tests and tell me if they follow best practices?",
-    "should_trigger": true,
-    "reason": "Explicit unit test review request."
-  },
+
   {
     "id": "t03-audit-test-standards",
     "query": "Audit this test file against our unit test standards.",
@@ -47,12 +42,7 @@
     "should_trigger": true,
     "reason": "Private member access check — directly listed in the skill description."
   },
-  {
-    "id": "t09-write-tests-for-edge-cases",
-    "query": "Write me a test for the edge case where the input list is empty and one where it is None.",
-    "should_trigger": true,
-    "reason": "Test writing for boundary/null inputs — boundary values and empty/null inputs are explicitly in scope."
-  },
+
   {
     "id": "t10-are-tests-up-to-scratch",
     "query": "Are these tests up to scratch? I want to ship this service today.",
@@ -148,5 +138,29 @@
     "query": "Can you run the unit tests for the PaymentService and show me the output?",
     "should_trigger": false,
     "reason": "Test execution request — the skill covers writing, reviewing, and auditing test standards, not running tests."
+  },
+  {
+    "id": "n14-review-tests-explicit",
+    "query": "Can you review these unit tests and tell me if they follow best practices?",
+    "should_trigger": false,
+    "reason": "Test review request — routes to test-unit-review, not test-unit-standards. Standards is a reference checklist, not the primary workflow trigger."
+  },
+  {
+    "id": "n15-write-boundary-tests",
+    "query": "Write me a test for the edge case where the input list is empty and one where it is None.",
+    "should_trigger": false,
+    "reason": "Test-writing request — routes to test-unit-write, not test-unit-standards. Test writing is a procedural workflow."
+  },
+  {
+    "id": "n16-refactor-for-clarity",
+    "query": "Refactor this test file to reduce duplication in the setup logic.",
+    "should_trigger": false,
+    "reason": "Test refactoring request — while fixture reuse is mentioned, refactoring code is not a standards audit or checklist application."
+  },
+  {
+    "id": "n17-write-docstring",
+    "query": "Write docstrings for all the test functions in this file.",
+    "should_trigger": false,
+    "reason": "Documentation generation task — no test authoring or standards audit requested."
   }
 ]
