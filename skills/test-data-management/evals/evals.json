@@ -64,11 +64,11 @@
       "id": 5,
       "category": "negative",
       "prompt": "Should I use a mock or a stub for the payment gateway?",
-      "expected_output": "This is a test double selection question that routes to test-mocking-patterns. test-data-management covers data setup strategy, not double selection.",
+      "expected_output": "This is a test double selection question — out of scope for test-data-management. Response should redirect to a mocking/test-doubles guide and not provide factory or parametrize advice.",
       "files": [],
       "expectations": [
         "Skill correctly identifies this as a mocking question",
-        "Response defers to test-mocking-patterns for double selection"
+        "Response defers to a mocking/test-doubles guide, not test-data-management"
       ]
     },
     {
@@ -109,6 +109,35 @@
         "Returns dict or dataclass with order_id, user_id, sku, quantity, status",
         "Usage example with override syntax shown",
         "No assertions in the factory body"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "happy-path",
+      "prompt": "My integration tests are leaving records in the database. How do I clean up after each test?",
+      "expected_output": "Recommend at least two cleanup strategies from: (1) wrap each test in a transaction and roll back after, (2) truncate tables in afterEach/teardown, (3) use test containers with per-test teardown, (4) use a unique run-scoped ID/prefix for all created records so cleanup is targeted. State that unit tests do not need cleanup. Warn that failing to clean up causes test pollution and non-deterministic failures.",
+      "files": [],
+      "expectations": [
+        "At least two cleanup strategies named",
+        "Transaction rollback is mentioned as an option",
+        "Test containers or afterEach teardown mentioned",
+        "Run-scoped prefix/ID strategy mentioned",
+        "States unit tests do not need cleanup",
+        "Test pollution / non-determinism risk is explained"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "edge-case",
+      "prompt": "I'm writing tests in TypeScript with Jest. How do I parametrize a test that checks the same discount calculation with five different discount rates?",
+      "expected_output": "Recommend Jest test.each with an inline data table. Show the test.each([[rate, input, expected], ...]) syntax and the it/test function signature receiving the parameters. Mention that this is the TypeScript/Jest equivalent of pytest.mark.parametrize and xUnit Theory. The five rate variations should collapse into a single test block.",
+      "files": [],
+      "expectations": [
+        "Jest test.each is recommended",
+        "Correct test.each([[...], ...]) syntax shown",
+        "Test function signature using destructured or positional params shown",
+        "Equivalence to pytest.mark.parametrize or xUnit Theory noted",
+        "All five rate variations collapse into one test block"
       ]
     }
   ]

@@ -1,19 +1,13 @@
 ---
 name: test-data-management
 description: >
-  Test data setup and management. Activate when writing tests that require complex data setup —
-  domain objects, database records, API payloads, or configuration structures with multiple input
-  combinations. Prefers parametrised and data-driven test patterns. Covers factory functions,
-  deterministic seeds, fixture reuse, and no-production-data rules. Triggers on: "how should I
-  manage test data", "test data factory", "fixture builder", "parametrize this test", "how to
-  avoid duplicating test data", "builder pattern for tests", "seed data for tests",
-  "how to vary inputs across tests", "data-driven tests", "my test setup is duplicated everywhere",
-  "how do I inject a fixed timestamp in tests", "expected value changes each run",
-  "can I use production data in tests".
-  Does NOT trigger for: choosing test doubles (use test-mocking-patterns), writing test logic
-  (use test-unit-write), reviewing tests against standards (use test-unit-review),
-  debugging test runtime errors.
-  Pairs with test-unit-write and test-mocking-patterns.
+  Test data setup and management. Activate when test setup is duplicated, inputs need
+  parametrisation, factories/builders are needed, timestamps are non-deterministic, or
+  production data rules apply. Triggers on: "test data factory", "fixture builder",
+  "parametrize this test", "data-driven tests", "test setup is duplicated",
+  "inject fixed timestamp", "can I use production data",
+  "clean up after integration tests". Does NOT trigger for: test double selection,
+  writing or reviewing tests, debug errors.
 license: Proprietary
 compatibility: GitHub Copilot
 ---
@@ -65,7 +59,7 @@ def test_cancel_order_when_shipped_returns_false():
 
 ### Composable nested factories
 
-When an object graph is deeply nested, create a factory per level and compose them:
+Create a factory per level and compose them:
 
 ```python
 # ✅ — each factory owns one level; override at any depth
@@ -128,31 +122,11 @@ def test_order_placed_at_is_set():
 - Integration tests must clean up created data after each test run
 - Strategies: transactions rolled back after each test, temp tables, test containers with
   per-test teardown, or database truncation in `afterEach`
+- Use a unique run-scoped prefix or ID for all created records so cleanup is scoped and safe
 - Unit tests do not need cleanup — they use no real resources
 
-## Test data for consumer-driven contract tests
+## Out of scope
 
-When using Pact (see `test-api-standards`) the consumer-side contract is generated from test data
-defined in the Pact interaction builder. Apply the same factory / builder patterns:
-
-```python
-# ✅ — Pact interaction uses factory-produced payload
-from tests.factories import make_order_payload
-
-(
-    pact
-    .given("a valid order exists")
-    .upon_receiving("a request to place an order")
-    .with_request("POST", "/orders", body=make_order_payload())
-    .will_respond_with(201, body={"id": "ORD-1", "status": "placed"})
-)
-```
-
-- Keep Pact interaction data in the same factory layer as all other test data
-- Never hardcode raw dicts in the Pact builder — use overridable factory functions
-
-## Routing
-
-- Choosing which test double to use (mock, stub, spy, fake) → use **test-mocking-patterns**
-- Writing the test logic itself → use **test-unit-write**
-- Reviewing tests against standards → use **test-unit-review**
+- Choosing test doubles (mock, stub, spy, fake) — handle in your project's mocking guide
+- Writing test logic and assertions — handled separately
+- Reviewing tests for standards compliance — handled separately

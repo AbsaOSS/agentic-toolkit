@@ -24,8 +24,9 @@ Navigation hub for all guides in this repository. Browse by category below.
 
 | Guide | Description |
 |----|----|
-| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
-| [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
+| [PR Review](./pr-review.md)                         | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [Test Data Management](./test-data-management.md)   | How the test-data-management skill works, what it covers, and when it fires |
+| [Token Saving](./token-saving.md)                   | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 

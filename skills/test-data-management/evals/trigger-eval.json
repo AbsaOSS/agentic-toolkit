@@ -75,24 +75,42 @@
     "id": "d-n01-spy-vs-mock",
     "query": "Should I use a spy or a mock for the inventory repository?",
     "should_trigger": false,
-    "reason": "Test-double selection — routes to test-mocking-patterns."
+    "reason": "Test-double selection — out of scope for test-data-management."
   },
   {
     "id": "d-n02-write-unit-tests",
     "query": "Write unit tests for the ShippingCalculator class.",
     "should_trigger": false,
-    "reason": "Test-writing request — routes to test-unit-write."
+    "reason": "Test-writing request — does not involve data setup strategy."
   },
   {
     "id": "d-n03-review-tests",
     "query": "Review this test file for standards compliance.",
     "should_trigger": false,
-    "reason": "Test review request — routes to test-unit-review."
+    "reason": "Test review request — out of scope for test-data-management."
   },
   {
     "id": "d-n04-debug-test",
     "query": "Why is my parametrize test throwing a TypeError on the second argument?",
     "should_trigger": false,
     "reason": "Runtime debugging of a specific error — not test data strategy."
+  },
+  {
+    "id": "d-t13-cleanup-integration",
+    "query": "How do I clean up test data after each integration test run?",
+    "should_trigger": true,
+    "reason": "'Clean up after integration tests' is a listed trigger phrase and covered in the integration cleanup section."
+  },
+  {
+    "id": "d-t14-polluted-db",
+    "query": "My integration tests are polluting the database — records from one test affect the next.",
+    "should_trigger": true,
+    "reason": "Test data pollution is a data isolation/cleanup concern — core to the skill."
+  },
+  {
+    "id": "d-n05-setup-test-container",
+    "query": "How do I configure a Testcontainers PostgreSQL instance for my tests?",
+    "should_trigger": false,
+    "reason": "Test infrastructure/environment setup — not test data management strategy."
   }
 ]
