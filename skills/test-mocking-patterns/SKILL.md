@@ -1,9 +1,7 @@
 ---
 name: test-mocking-patterns
 description: >
-  Test double selection and implementation patterns. Use when choosing between mock, stub, spy, fake, or dummy; implementing test doubles; fixing a broken mock or patch target; controlling mocking scope; or troubleshooting why a mock isn't being called. Covers: how to classify dependencies (query vs command), where to patch (patch where it's imported, not where defined), patching with unittest.mock, Jest mocks, Scala mockito, freezegun for time control, and mocking environment variables. Not for: writing complete test suites (test-unit-write), reviewing tests for standards violations (test-unit-review), managing test data and fixtures (test-data-management), or testing actual external services (test-integration-standards). Pairs with test-unit-write, test-unit-review, and test-data-management.
-license: Proprietary
-compatibility: GitHub Copilot
+  Test double selection and implementation patterns. Use when choosing between mock, stub, spy, fake, or dummy; implementing test doubles; fixing a broken mock or patch target; controlling mocking scope; or troubleshooting why a mock isn't being called. Covers: how to classify dependencies (stub vs mock vs spy), where to patch (patch where it's imported, not where defined), patching with unittest.mock, Jest mocks, Scala mockito, freezegun for time control, and mocking environment variables. Not for: writing complete test suites (test-unit-write), reviewing tests for standards violations (test-unit-review), managing test data and fixtures (test-data-management), or testing actual external services (test-integration-standards). Pairs with test-unit-write, test-unit-review, and test-data-management.
 ---
 
 # Test Mocking Patterns
