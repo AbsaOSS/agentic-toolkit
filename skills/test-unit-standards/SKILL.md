@@ -1,13 +1,12 @@
 ---
 name: test-unit-standards
 description: >
-  Reference for unit test standards: isolation, scope, naming, assertions, coverage, and fixtures.
-  Triggers: abstract questions only ("what are our unit test standards", "test naming convention",
-  "best practices for unit tests", "how should I structure my tests", "what's the rule for test isolation",
-  "assertion standards", "rules for reusing fixtures", "should I access private members",
-  "test conventions", "what are the rules for failure-path coverage").
-  NOT for: writing (→test-unit-write), reviewing/auditing files (→test-unit-review), test doubles (→test-mocking-patterns),
-  test data strategies (→test-data-management), or PR review (→pr-review).
+  Comprehensive reference for unit test standards: isolation, scope, naming, assertions, coverage, fixtures.
+  Language-specific guidance with principles, rationale, and conventions. Triggers on abstract questions only 
+  ("what are our standards", "naming convention", "best practices", "how to structure", "rules for isolation", 
+  "fixture reuse", "failure-path coverage").
+  NOT: writing (→test-unit-write), reviewing files (→test-unit-review), test doubles (→test-mocking-patterns),
+  test data (→test-data-management), PR review (→pr-review), code refactoring.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

@@ -1,13 +1,12 @@
 ---
 name: test-unit-write
 description: >
-  Write unit tests from scratch or extend coverage for functions, classes, or modules.
-  Triggers: test-writing requests ("write unit tests for", "add unit tests for", "generate test cases",
-  "help me test this", "scaffold tests", "add failure-path coverage", "what tests should I write",
-  "add edge case tests", "I need unit tests", "add coverage for", "I only have happy-path tests").
-  NOT for: reviewing/auditing (→test-unit-review), standards questions (→test-unit-standards),
-  test doubles (→test-mocking-patterns), test data organization (→test-data-management),
-  debugging, integration tests (→test-integration-standards), or code refactoring.
+  Write complete unit tests from scratch or extend coverage for functions, classes, modules.
+  Follows standards and coverage-driven approach with language-specific patterns.
+  Triggers on: test-writing requests ("write unit tests for", "add unit tests for", 
+  "generate test cases", "help me test", "scaffold tests", "add failure-path", "add coverage").
+  NOT: reviewing (→test-unit-review), standards (→test-unit-standards), test doubles (→test-mocking-patterns),
+  test data (→test-data-management), debugging, integration tests (→test-integration-standards), refactoring.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---

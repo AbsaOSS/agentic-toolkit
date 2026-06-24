@@ -1,13 +1,12 @@
 ---
 name: test-unit-review
 description: >
-  Review and audit existing unit tests: isolation, scope, naming, assertions, coverage, fixtures.
-  Triggers: feedback/review/check/audit on tests ("review these tests", "audit this test file", "check my tests",
-  "LGTM on tests", "are these tests up to scratch", "does this test look right", "any issues with my tests",
-  "give me feedback on this test file", "is this test missing coverage", "do these tests follow standards",
-  "are these tests properly isolated").
-  NOT for: writing (→test-unit-write), standards questions (→test-unit-standards), test doubles (→test-mocking-patterns),
-  test data (→test-data-management), PR review (→pr-review), or debugging/CI.
+  Systematically review unit tests against isolation, scope, naming, assertions, coverage, fixtures. 
+  Categorizes issues by severity (blocker/important/nit) with standards-grounded feedback.
+  Triggers on: review, audit, check, feedback requests ("review these tests", "audit this file", 
+  "check my tests", "LGTM", "any issues", "give feedback", "do these follow standards").
+  NOT: writing (→test-unit-write), standards (→test-unit-standards), test doubles (→test-mocking-patterns),
+  test data (→test-data-management), PR review (→pr-review), debugging/CI.
 license: Apache-2.0
 compatibility: GitHub Copilot
 ---
