@@ -1,13 +1,6 @@
 ---
 name: test-data-management
-description: >
-  Test data setup and management. Activate when test setup is duplicated, inputs need
-  parametrisation, factories/builders are needed, timestamps are non-deterministic, or
-  production data rules apply. Triggers on: "test data factory", "fixture builder",
-  "parametrize this test", "data-driven tests", "test setup is duplicated",
-  "inject fixed timestamp", "can I use production data",
-  "clean up after integration tests". Does NOT trigger for: test double selection,
-  writing or reviewing tests, debug errors.
+description: Test data setup factories parametrize
 license: Proprietary
 compatibility: GitHub Copilot
 ---

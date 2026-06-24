@@ -1,75 +1,75 @@
 [
   {
     "id": "d-t01-manage-test-data",
-    "query": "How should I manage test data for this service?",
+    "query": "I've got 50 test functions in my service, and each one creates a Customer object with different fields. The test setup code is scattered everywhere and makes tests hard to maintain. How can I organize this?",
     "should_trigger": true,
-    "reason": "'How should I manage test data' is a listed trigger phrase."
+    "reason": "Concrete problem: fragmented test setup across many tests → needs data management strategy"
   },
   {
     "id": "d-t02-test-data-factory",
-    "query": "How do I set up a test data factory for my domain objects?",
+    "query": "I'm writing tests for my domain model and I keep creating Order objects with the same fields repeated in every test. I want to extract this into something reusable. How do I set up a factory for my domain objects?",
     "should_trigger": true,
-    "reason": "'Test data factory' is a listed trigger phrase."
+    "reason": "Concrete problem: duplicated object creation → needs factory pattern guidance"
   },
   {
     "id": "d-t03-fixture-builder",
-    "query": "I need a fixture builder for generating test orders.",
+    "query": "My e-commerce tests need to generate test orders with different combinations of items, customers, and payment methods. Writing out all combinations manually in each test is getting unwieldy. How do I build flexible test data fixtures?",
     "should_trigger": true,
-    "reason": "'Fixture builder' is a listed trigger phrase."
+    "reason": "Concrete problem: complex test data combinations → needs builder/fixture pattern"
   },
   {
     "id": "d-t04-parametrize-test",
-    "query": "Can you help me parametrize this test to avoid duplication?",
+    "query": "I've got a function that calculates shipping costs. I need to test it with 10 different inputs (different regions, weights, speeds) but I don't want to write 10 separate test methods. How do I parametrize this?",
     "should_trigger": true,
-    "reason": "'Parametrize this test' is a listed trigger phrase."
+    "reason": "Concrete problem: multiple test inputs without duplication → needs parametrization guidance"
   },
   {
     "id": "d-t05-avoid-duplicating",
-    "query": "How do I avoid duplicating test data setup across ten test functions?",
+    "query": "I have 15 integration tests for my user service. Every single one starts by creating a test user with the same fields (name, email, role). I'm copying this code into each test. This feels wrong. How do I avoid this duplication?",
     "should_trigger": true,
-    "reason": "'How to avoid duplicating test data' is a listed trigger phrase."
+    "reason": "Concrete problem: repeated setup code across tests → needs data sharing/factory strategy"
   },
   {
     "id": "d-t06-builder-pattern",
-    "query": "I want to use the builder pattern for my test data objects.",
+    "query": "My Order objects have 10 required fields plus 5 optional ones. In my tests, I want to create different variations (just the required ones, or with some optional fields set, etc.) without having to specify all fields every time. What's a good pattern?",
     "should_trigger": true,
-    "reason": "'Builder pattern for tests' is a listed trigger phrase."
+    "reason": "Concrete problem: flexible object construction with defaults → needs builder pattern guidance"
   },
   {
     "id": "d-t07-seed-data",
-    "query": "What's the best way to seed data for integration tests?",
+    "query": "I'm setting up integration tests for my API. Before each test, I need to populate the database with base data (5 test users, 3 regions, 20 products). After the test, I need to clean it up. What's the best approach?",
     "should_trigger": true,
-    "reason": "'Seed data for tests' is a listed trigger phrase."
+    "reason": "Concrete problem: pre-populating and cleaning database for tests → needs seeding/cleanup strategy"
   },
   {
     "id": "d-t08-data-driven",
-    "query": "How do I write data-driven tests for this calculator?",
+    "query": "I have a tax calculation service. I need to verify it works correctly for 12 different scenarios (different tax rates, holidays, regions). Currently I have 12 separate test methods with almost identical code. How can I write this more efficiently?",
     "should_trigger": true,
-    "reason": "'Data-driven tests' is a listed trigger phrase."
+    "reason": "Concrete problem: multiple scenarios with different inputs → needs data-driven testing approach"
   },
   {
     "id": "d-t09-vary-inputs",
-    "query": "How do I vary the inputs across multiple test cases without copy-paste?",
+    "query": "I'm testing a discount calculator. It needs to work correctly for 8 different inputs (different customer types, product types, discount codes, quantities). I could write 8 tests but that's a lot of repetition. How do I test multiple input combinations cleanly?",
     "should_trigger": true,
-    "reason": "'How to vary inputs across tests' is a listed trigger phrase."
+    "reason": "Concrete problem: testing many input combinations → needs parametrization/variation strategy"
   },
   {
     "id": "d-t10-prod-data",
-    "query": "Can I use production data in my tests if I anonymise it first?",
+    "query": "I have a database backup from production that I want to use as test data. I've anonymized the personal info, but I'm not sure if using real production data in my test suite is a good idea. What should I do?",
     "should_trigger": true,
-    "reason": "No-production-data rule is core to this skill; question directly triggers it."
+    "reason": "Concrete problem: production data usage decision → needs guidance on data sourcing policy"
   },
   {
     "id": "d-t11-timestamp-in-tests",
-    "query": "My test keeps failing because the expected timestamp changes every run.",
+    "query": "I'm testing a date-sensitive feature (e.g., expired coupons). My test works fine in the morning but fails in the afternoon because the date changes. How do I make my tests deterministic?",
     "should_trigger": true,
-    "reason": "Paraphrase of 'how do I inject a fixed timestamp' — deterministic data rule."
+    "reason": "Concrete problem: time-dependent test behavior → needs deterministic test data strategy"
   },
   {
     "id": "d-t12-setup-duplicated",
-    "query": "My test setup is duplicated everywhere — every test creates the same User object.",
+    "query": "I'm reviewing my test suite and I see the same pattern everywhere: every test creates a User object with `id=1, name='Test User', email='test@example.com', role='admin'`. This code is duplicated across maybe 30 tests. What's the best way to fix this?",
     "should_trigger": true,
-    "reason": "'My test setup is duplicated everywhere' is a listed trigger phrase."
+    "reason": "Concrete problem: duplicated object creation across many tests → needs factory/fixture strategy"
   },
   {
     "id": "d-n01-spy-vs-mock",
@@ -97,15 +97,15 @@
   },
   {
     "id": "d-t13-cleanup-integration",
-    "query": "How do I clean up test data after each integration test run?",
+    "query": "My integration tests run against a real database. Each test inserts records during setup. After it finishes, I need to clean up so the next test starts fresh. Currently I'm manually deleting each record type. How should I approach this?",
     "should_trigger": true,
-    "reason": "'Clean up after integration tests' is a listed trigger phrase and covered in the integration cleanup section."
+    "reason": "Concrete problem: post-test database cleanup → needs cleanup strategy"
   },
   {
     "id": "d-t14-polluted-db",
-    "query": "My integration tests are polluting the database — records from one test affect the next.",
+    "query": "I'm debugging my integration test suite and noticed that tests sometimes pass when run individually but fail when run as a suite. I think it's because records created in earlier tests are affecting later tests. How do I fix this data isolation issue?",
     "should_trigger": true,
-    "reason": "Test data pollution is a data isolation/cleanup concern — core to the skill."
+    "reason": "Concrete problem: test data leakage between tests → needs isolation/cleanup strategy"
   },
   {
     "id": "d-n05-setup-test-container",
