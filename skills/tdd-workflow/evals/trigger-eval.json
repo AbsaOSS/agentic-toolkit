@@ -70,5 +70,25 @@
   {
     "query": "Refactor this function to reduce nesting. All tests already pass.",
     "should_trigger": false
+  },
+  {
+    "query": "Design the service layer for a payment processing module.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to document design decisions for the cache invalidation strategy before we build it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add test coverage to the checkout flow before the sprint release.",
+    "should_trigger": true
+  },
+  {
+    "query": "What does TDD stand for and when should I use it?",
+    "should_trigger": false
+  },
+  {
+    "query": "Analyze my test suite and tell me if I have good coverage.",
+    "should_trigger": false
   }
 ]
