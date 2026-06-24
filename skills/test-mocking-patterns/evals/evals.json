@@ -1,0 +1,128 @@
+{
+  "skill_name": "test-mocking-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I'm writing tests for EmailNotificationService in evals/files/source-email-notification-service.py. Should I use a mock or a stub for the HTTP client? What about the SMTP client and the metrics recorder?",
+      "expected_output": "The HTTP client should be stubbed (it returns a value that the code uses — a preferences response — so it's a query dependency). The SMTP client should be mocked (it's called for its side effect — sending the email — and the test needs to verify it was called with the correct address and message). The metrics recorder can be a mock if the test needs to verify the metric was recorded, or a dummy MagicMock if it's irrelevant to the scenario under test.",
+      "files": [
+        "evals/files/source-email-notification-service.py"
+      ],
+      "expectations": [
+        "HTTP client is classified as a stub (query — return value used by the code)",
+        "SMTP client is classified as a mock (command — side effect to be verified)",
+        "Metrics recorder is classified as mock or dummy depending on test intent",
+        "Explanation distinguishes between stubs (return value control) and mocks (call verification)",
+        "Specific implementation guidance for Python pytest-mock is provided"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "regression",
+      "prompt": "My mock isn't being called — the test is passing but I can see the real HTTP request going out. Here's the test file: evals/files/wrong-patch-target.py",
+      "expected_output": "The problem is that requests.get is being patched at its source (requests.get) instead of where it is imported in the module under test. The module imports requests as http_lib, so the correct patch target is 'source_email_notification_service.http_lib.get'. Patching 'requests.get' directly has no effect because the module under test already holds a reference to the function through its local import.",
+      "files": [
+        "evals/files/wrong-patch-target.py"
+      ],
+      "expectations": [
+        "Root cause identified: patching the source module instead of the import location",
+        "Correct patch target 'source_email_notification_service.http_lib.get' is given",
+        "Explanation of why the wrong-target patch has no effect is provided",
+        "Fixed test code with the correct patch target is shown"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "For the AuditService in evals/files/source-audit-service.py, should I use a spy or a mock for audit_writer? I want to verify that the formatted string was passed correctly.",
+      "expected_output": "Use a mock for audit_writer — it is an injected external dependency called for its side effect (write). To verify the formatted string, assert on mock_writer.write.assert_called_once_with('[AUDIT] user=u1 action=delete resource=doc-42'). A spy is not needed here because audit_writer is not a real object being partially replaced — it is an injected collaborator. The formatting logic (_format_entry) is internal and is best tested indirectly through the mock call assertion on audit_writer.",
+      "files": [
+        "evals/files/source-audit-service.py"
+      ],
+      "expectations": [
+        "Mock is recommended for audit_writer (injected external dependency, side-effect call)",
+        "Assertion on write called with the formatted string is demonstrated",
+        "Explanation of why spy is not needed for an injected dependency is given",
+        "Note that _format_entry is private and should not be tested directly"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "How do I mock an environment variable in a Python pytest test? The service reads os.environ['PROMOTIONS_API_URL'] at call time.",
+      "expected_output": "Use mocker.patch.dict('os.environ', {'PROMOTIONS_API_URL': 'http://test-promos'}) or monkeypatch.setenv('PROMOTIONS_API_URL', 'http://test-promos'). Both approaches are automatically cleaned up after the test. Do not set os.environ directly in the test body — that would leak state into subsequent tests.",
+      "files": [],
+      "expectations": [
+        "mocker.patch.dict or monkeypatch.setenv is recommended",
+        "Automatic cleanup after the test is mentioned",
+        "Warning against direct os.environ mutation is given",
+        "Example code snippet is provided"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Write the full unit tests for EmailNotificationService including all the mocks.",
+      "expected_output": "This is a test-writing request that routes to test-unit-write. test-mocking-patterns owns double-selection guidance, not full test suite generation.",
+      "files": [
+        "evals/files/source-email-notification-service.py"
+      ],
+      "expectations": [
+        "Skill correctly identifies this as a write task",
+        "Skill either defers to test-unit-write or notes that full suite generation is handled there",
+        "Skill may offer mock selection guidance as a precursor but does not generate the full test file"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "Review my test file and tell me if there are any standards violations.",
+      "expected_output": "This is a test review request that routes to test-unit-review. test-mocking-patterns does not apply the full standards checklist.",
+      "files": [],
+      "expectations": [
+        "Skill correctly identifies this as a review task",
+        "Skill defers to test-unit-review rather than applying mocking guidance to a review request"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "paraphrase",
+      "prompt": "I want to isolate the OrderService from the database in my tests. What do I need to do?",
+      "expected_output": "Agent identifies this as a test double selection question. The database is a query dependency (it returns data that the service uses) so use a stub — configure it to return specific values for each test. Use mocker.MagicMock() for the repository and configure .find_by_id.return_value = {...}. Do not use a real database in unit tests. Notes: if the goal is to test the SQL queries themselves, that is an integration test — routes to test-integration-standards.",
+      "files": [],
+      "expectations": [
+        "Identifies the database as a query dependency — use a stub",
+        "Provides mocker.MagicMock() as the stub implementation",
+        "Shows .return_value configuration",
+        "Notes that testing SQL queries requires Testcontainers (integration)"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "edge-case",
+      "prompt": "I'm patching a method on a class but the patch doesn't seem to be working — the real method is still being called. The class is imported at the top of the module under test as 'from payments import StripeGateway'.",
+      "expected_output": "The patch target must be the name in the module under test, not the source module. Because the module imports StripeGateway directly via 'from payments import StripeGateway', the correct patch target is 'order_service.StripeGateway' (where order_service is the module under test), not 'payments.StripeGateway'. Patching 'payments.StripeGateway' replaces the class in the source module but the module under test already has a direct reference to the original class.",
+      "files": [],
+      "expectations": [
+        "Identifies wrong patch target as the root cause",
+        "Explains that the correct target is the import location in the module under test",
+        "Provides the correct patch path: 'order_service.StripeGateway'",
+        "Explains why patching the source module has no effect"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "output-format",
+      "prompt": "Show me the difference between a stub and a mock with a concrete Python example for an OrderService.",
+      "expected_output": "The response contains two fenced ```python code blocks. The first is labelled '# Stub: replaces a query dependency' and uses .return_value. The second is labelled '# Mock: verifies a command dependency' and uses .assert_called_once_with(). The distinction between stub (query) and mock (command) is explained in prose between the two code blocks. No prose appears inside the code blocks.",
+      "files": [],
+      "expectations": [
+        "Two fenced ```python code blocks",
+        "First block labelled as Stub using .return_value",
+        "Second block labelled as Mock using .assert_called_once_with()",
+        "Stub vs mock distinction explained in prose between blocks"
+      ]
+    }
+  ]
+}

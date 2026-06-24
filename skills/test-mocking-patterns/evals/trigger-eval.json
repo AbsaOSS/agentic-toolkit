@@ -1,0 +1,110 @@
+[
+  {
+    "id": "m-t01-spy-or-mock",
+    "query": "Should I use a spy or a mock for the email client in this test?",
+    "should_trigger": true,
+    "reason": "'Should I use a spy or mock' is a primary listed trigger phrase."
+  },
+  {
+    "id": "m-t02-what-test-double",
+    "query": "What test double should I use for the payment gateway?",
+    "should_trigger": true,
+    "reason": "'What test double should I use' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t03-how-to-mock",
+    "query": "How do I mock the database connection in these tests?",
+    "should_trigger": true,
+    "reason": "'How do I mock this' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t04-stub-http-calls",
+    "query": "How to stub HTTP calls in a pytest test?",
+    "should_trigger": true,
+    "reason": "'How to stub HTTP calls' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t05-fake-vs-mock",
+    "query": "What's the difference between a fake and a mock?",
+    "should_trigger": true,
+    "reason": "'Fake vs mock vs stub' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t06-how-to-patch",
+    "query": "How do I patch the requests library in my test?",
+    "should_trigger": true,
+    "reason": "'How to patch' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t07-where-to-patch",
+    "query": "Where should I patch the datetime.now() call — in the source or in the test?",
+    "should_trigger": true,
+    "reason": "'Where should I patch' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t08-mock-not-called",
+    "query": "My mock isn't being called — the real implementation keeps running.",
+    "should_trigger": true,
+    "reason": "'Mock not being called' and 'my mock isn't working' are listed trigger phrases."
+  },
+  {
+    "id": "m-t09-mock-not-working",
+    "query": "The stub I set up is returning None even though I configured a return value.",
+    "should_trigger": true,
+    "reason": "Paraphrase of 'my mock isn't working' — setup/return value not taking effect."
+  },
+  {
+    "id": "m-t10-spy-on-method",
+    "query": "How do I spy on the format_entry method without replacing it?",
+    "should_trigger": true,
+    "reason": "'How to spy on a method' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t11-mock-env-var",
+    "query": "How do I mock an environment variable in a pytest test?",
+    "should_trigger": true,
+    "reason": "'How to mock an environment variable' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t12-verify-method-called",
+    "query": "How do I verify that a method was called with specific arguments in Jest?",
+    "should_trigger": true,
+    "reason": "'How do I verify a method was called' is a listed trigger phrase."
+  },
+  {
+    "id": "m-t13-dont-own-type",
+    "query": "Should I mock the boto3 S3 client directly or wrap it?",
+    "should_trigger": true,
+    "reason": "Mocking a type you don't own — covered by the 'wrap third-party libraries' rule."
+  },
+  {
+    "id": "m-n01-write-full-tests",
+    "query": "Write unit tests for the PaymentService class.",
+    "should_trigger": false,
+    "reason": "Test-writing request — routes to test-unit-write."
+  },
+  {
+    "id": "m-n02-review-tests",
+    "query": "Review this test file and tell me if it follows our standards.",
+    "should_trigger": false,
+    "reason": "Test review request — routes to test-unit-review."
+  },
+  {
+    "id": "m-n03-test-data-factory",
+    "query": "How should I organise test data using factory functions?",
+    "should_trigger": false,
+    "reason": "Test data strategy — routes to test-data-management."
+  },
+  {
+    "id": "m-n04-why-test-failing",
+    "query": "Why is my test throwing KeyError on the mock return value?",
+    "should_trigger": false,
+    "reason": "Runtime debugging of a specific error — not a double-selection or patching question."
+  },
+  {
+    "id": "m-n05-parametrize",
+    "query": "How do I use parametrize to run the same test with different inputs?",
+    "should_trigger": false,
+    "reason": "Parametrised test data — routes to test-data-management."
+  }
+]
