@@ -73,4 +73,4 @@ If any box is unchecked, do not proceed.
 
 ## Research Backing
 
-The approach (upfront SPEC.md + vertical slicing) is canon TDD endorsed by Kent Beck (TDD creator) and validated across 50+ real-world projects. Academic research (IEEE Transactions on Software Engineering, 2017) confirms quality improves with "small, uniform development steps" more than test-first ordering alone.
+The approach (upfront SPEC.md + vertical slicing) is canon TDD endorsed by Kent Beck (TDD creator) and validated across 50+ real-world projects. Academic research indicates that quality improves more with small, uniform development steps than with test-first ordering alone — the discipline of the cycle matters as much as writing tests first.

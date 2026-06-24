@@ -24,4 +24,4 @@ A simple bank account that supports deposit, withdrawal, and balance inquiry. Us
 - Multi-currency support
 
 ## Open Questions
-- Should `withdraw(0)` be allowed or raise an error?
+_None._ Design decisions resolved: `withdraw(0)` is allowed and treated as a no-op (balance unchanged), consistent with how `deposit(0)` behaves.

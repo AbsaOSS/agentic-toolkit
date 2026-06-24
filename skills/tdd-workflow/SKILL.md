@@ -24,7 +24,7 @@ Write tests before code, always. SPEC.md is a session scratchpad — never commi
 
 ## Step 1 — Create SPEC.md
 
-Write a specification in the relevant package directory. Complete all sections:
+Write a specification in the relevant package directory using `assets/SPEC_TEMPLATE.md` as your starting point. Complete all sections:
 
 - **Purpose:** What does this do? Why does it exist?
 - **Scenarios:** Table with 3-5+ concrete cases (inputs → expected outputs)
@@ -147,4 +147,4 @@ Before you write the first test (Step 3), verify:
 - **Do not mock internal collaborators** — test through the public interface or the behavior is implementation-specific.
 - **One test at a time** — write one test, make it pass, refactor, then move to the next. Not all tests, then all code.
 - **Test before code, always** — if you write implementation code, pause and write tests instead.
-- **Use section separators in test files** — test names should be self-describing, no inline comments.
+- **Use descriptive test names over inline comments** — e.g. in Python, prefer section separators (`# --- deposit ---`) and self-describing test names rather than prose comments inside the test body.
