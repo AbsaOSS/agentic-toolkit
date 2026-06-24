@@ -26,6 +26,9 @@ Navigation hub for all guides in this repository. Browse by category below.
 |----|----|
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
+| [Unit Test Standards](./test-unit-standards.md)  | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
+| [Unit Test Writer](./test-unit-write.md)         | Generate complete unit tests from scratch following language-specific standards |
+| [Unit Test Reviewer](./test-unit-review.md)      | Systematically audit unit tests and report findings by severity |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 

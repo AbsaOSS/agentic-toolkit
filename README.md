@@ -78,6 +78,9 @@ its purpose, trigger phrases, and full instructions.
 | Skill                                                | Description                                                                                                                         |
 |------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | **[pr-review](./skills/pr-review/)**                 | Pull request code review — reviews diffs for risk, security issues, API contract changes, dependency bumps, CI/CD and infrastructure changes. Produces concise Blocker / Important / Nit comments. |
+| **[test-unit-standards](./skills/test-unit-standards/)** | Reference for unit test standards across isolation, scope, naming, assertions, coverage, and fixtures. Language-specific guidance (pytest, Jest, MUnit) with principles and conventions. |
+| **[test-unit-write](./skills/test-unit-write/)**     | Generate unit tests from scratch following language-specific standards. Analyzes source, selects mock strategies, and produces tests covering happy paths, failure conditions, and edge cases. |
+| **[test-unit-review](./skills/test-unit-review/)**   | Systematically audit unit test suites. Runs test runner, checks isolation/scope/naming/assertions/coverage standards, and reports findings by severity (Blocker / Important / Nit). |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Finding More Skills
