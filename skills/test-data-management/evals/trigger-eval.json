@@ -1,0 +1,98 @@
+[
+  {
+    "id": "d-t01-manage-test-data",
+    "query": "How should I manage test data for this service?",
+    "should_trigger": true,
+    "reason": "'How should I manage test data' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t02-test-data-factory",
+    "query": "How do I set up a test data factory for my domain objects?",
+    "should_trigger": true,
+    "reason": "'Test data factory' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t03-fixture-builder",
+    "query": "I need a fixture builder for generating test orders.",
+    "should_trigger": true,
+    "reason": "'Fixture builder' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t04-parametrize-test",
+    "query": "Can you help me parametrize this test to avoid duplication?",
+    "should_trigger": true,
+    "reason": "'Parametrize this test' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t05-avoid-duplicating",
+    "query": "How do I avoid duplicating test data setup across ten test functions?",
+    "should_trigger": true,
+    "reason": "'How to avoid duplicating test data' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t06-builder-pattern",
+    "query": "I want to use the builder pattern for my test data objects.",
+    "should_trigger": true,
+    "reason": "'Builder pattern for tests' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t07-seed-data",
+    "query": "What's the best way to seed data for integration tests?",
+    "should_trigger": true,
+    "reason": "'Seed data for tests' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t08-data-driven",
+    "query": "How do I write data-driven tests for this calculator?",
+    "should_trigger": true,
+    "reason": "'Data-driven tests' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t09-vary-inputs",
+    "query": "How do I vary the inputs across multiple test cases without copy-paste?",
+    "should_trigger": true,
+    "reason": "'How to vary inputs across tests' is a listed trigger phrase."
+  },
+  {
+    "id": "d-t10-prod-data",
+    "query": "Can I use production data in my tests if I anonymise it first?",
+    "should_trigger": true,
+    "reason": "No-production-data rule is core to this skill; question directly triggers it."
+  },
+  {
+    "id": "d-t11-timestamp-in-tests",
+    "query": "My test keeps failing because the expected timestamp changes every run.",
+    "should_trigger": true,
+    "reason": "Paraphrase of 'how do I inject a fixed timestamp' — deterministic data rule."
+  },
+  {
+    "id": "d-t12-setup-duplicated",
+    "query": "My test setup is duplicated everywhere — every test creates the same User object.",
+    "should_trigger": true,
+    "reason": "'My test setup is duplicated everywhere' is a listed trigger phrase."
+  },
+  {
+    "id": "d-n01-spy-vs-mock",
+    "query": "Should I use a spy or a mock for the inventory repository?",
+    "should_trigger": false,
+    "reason": "Test-double selection — routes to test-mocking-patterns."
+  },
+  {
+    "id": "d-n02-write-unit-tests",
+    "query": "Write unit tests for the ShippingCalculator class.",
+    "should_trigger": false,
+    "reason": "Test-writing request — routes to test-unit-write."
+  },
+  {
+    "id": "d-n03-review-tests",
+    "query": "Review this test file for standards compliance.",
+    "should_trigger": false,
+    "reason": "Test review request — routes to test-unit-review."
+  },
+  {
+    "id": "d-n04-debug-test",
+    "query": "Why is my parametrize test throwing a TypeError on the second argument?",
+    "should_trigger": false,
+    "reason": "Runtime debugging of a specific error — not test data strategy."
+  }
+]
