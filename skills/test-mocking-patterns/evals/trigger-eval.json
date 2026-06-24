@@ -106,5 +106,23 @@
     "query": "How do I use parametrize to run the same test with different inputs?",
     "should_trigger": false,
     "reason": "Parametrised test data — routes to test-data-management."
+  },
+  {
+    "id": "m-t14-freeze-time",
+    "query": "How do I freeze time in a pytest test so datetime.now() returns a fixed value?",
+    "should_trigger": true,
+    "reason": "Controlling datetime in tests is a mocking / patching concern covered by the freezegun section."
+  },
+  {
+    "id": "m-t15-dont-own-orm",
+    "query": "How should I handle the SQLAlchemy session in my unit tests — should I mock it?",
+    "should_trigger": true,
+    "reason": "Paraphrase of 'don't mock what you don't own' for ORM session objects — covered by the wrapping pattern."
+  },
+  {
+    "id": "m-n06-real-s3-test",
+    "query": "How do I test that my S3 upload actually works against a real bucket?",
+    "should_trigger": false,
+    "reason": "Integration test against real infrastructure — routes to test-integration-standards, not double selection."
   }
 ]

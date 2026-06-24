@@ -25,6 +25,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide | Description |
 |----|----|
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [Test Mocking Patterns](./test-mocking-patterns.md) | Double selection, patching strategies, cleanup, and language-specific guidance |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.

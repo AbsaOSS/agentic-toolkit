@@ -1,19 +1,12 @@
 ---
 name: test-mocking-patterns
 description: >
-  Guides selection and implementation of test doubles (mock, stub, spy, fake, dummy) in unit
-  tests. Activate when deciding which double type to use, implementing a specific double,
-  debugging a non-working mock or stub, or choosing a patching strategy (where to patch,
-  scope, partial mocking, resetting between tests).
-  Triggers on: "should I use a spy or mock", "what test double should I use", "how do I mock
-  this", "how to stub HTTP calls", "fake vs mock vs stub", "how to patch", "where should I
-  patch", "mock not being called", "my mock isn't working", "how to spy on a method",
-  "stub vs mock", "when to use a fake", "how to mock a class method", "how to mock an
-  environment variable", "how do I verify a method was called".
-  Does NOT trigger for: writing full test suites (use test-unit-write), reviewing test files
-  against standards (use test-unit-review), managing test data and fixture builders
-  (use test-data-management), debugging test errors (TypeError, KeyError).
-  Pairs with test-unit-write and test-unit-review.
+  Test double selection and implementation (mock, stub, spy, fake, dummy). Activate when
+  choosing a double type, implementing it, or debugging a broken mock or patch.
+  Triggers on: "spy or mock", "what test double", "how to stub HTTP", "fake vs mock vs stub",
+  "where to patch", "mock not being called", "mock env var", "verify method called".
+  Not for: writing tests (test-unit-write), test file review (test-unit-review),
+  test data (test-data-management). Pairs with test-unit-write, test-unit-review.
 license: Proprietary
 compatibility: GitHub Copilot
 ---
@@ -90,6 +83,55 @@ mock_send.assert_called_with(ANY, subject=ANY)   # use ANY for irrelevant args
 # ❌ — always True; proves nothing
 assert mock_send.called is not None
 assert mock_send.call_count >= 0
+```
+
+#### HTTP stubbing (Python)
+
+For code that makes HTTP calls, prefer a dedicated interceptor library over patching `requests` by path:
+
+| Library | Works with | When to prefer |
+|---|---|---|
+| `responses` | `requests` | Your codebase uses `requests`; avoids maintaining a patch path |
+| `pytest-httpx` | `httpx` | Your codebase uses `httpx` |
+
+```python
+# ✅ — responses library: intercepted by URL, no patch path to maintain
+import responses as rsps
+
+@rsps.activate
+def test_fetch_preferences_returns_email():
+    rsps.add(rsps.GET, "https://prefs.example.com/users/u1",
+             json={"email": "alice@example.com"}, status=200)
+    result = service.fetch_preferences("u1")
+    assert result["email"] == "alice@example.com"
+```
+
+Fall back to `mocker.patch` only when the HTTP client is injected and a library-level interceptor is unavailable.
+
+#### Mocking datetime / time (Python)
+
+When code calls `datetime.now()`, `date.today()`, or `time.time()`, use `freezegun` to fix the
+clock rather than patching `datetime` directly — `datetime` is a C extension and partial patching
+it is fragile:
+
+```python
+from freezegun import freeze_time
+
+# ✅ — freeze_time decorator pins datetime.now() for the whole test
+@freeze_time("2025-01-15 12:00:00")
+def test_audit_entry_includes_timestamp():
+    service = AuditService(writer=MagicMock())
+    service.audit_action("u1", "delete", "doc-42")
+    # assertions on timestamp-dependent output here
+
+# ✅ — freeze_time context manager for a narrower scope
+def test_report_uses_today():
+    with freeze_time("2025-01-15"):
+        result = report_service.generate_daily_report()
+    assert result["date"] == "2025-01-15"
+
+# ❌ — patching datetime.datetime is fragile; fails for C-extension datetime
+mocker.patch("myapp.service.datetime.datetime", ...)
 ```
 
 ---
@@ -216,8 +258,46 @@ os.environ["PROMOTIONS_API_URL"] = "http://test-promos"
 > Prefer `monkeypatch.setenv` for single variables; `mocker.patch.dict("os.environ", {...})` when
 > setting multiple keys at once.
 
+## Don't mock what you don't own
+
+Avoid mocking types defined in third-party libraries (AWS SDKs, database drivers, gRPC stubs,
+ORM sessions). Your test becomes coupled to SDK internals that can change without notice, and the
+mock no longer represents what the real object does.
+
+Wrap the third-party type in a thin interface you control, then mock that interface:
+
+```python
+# ❌ — mocking boto3 internals; test is coupled to AWS SDK response shape
+mock_s3 = MagicMock()
+mock_s3.put_object.return_value = {"ResponseMetadata": {"HTTPStatusCode": 200}}
+
+# ✅ — define a thin protocol you own; mock that instead
+from typing import Protocol
+
+class StorageClient(Protocol):
+    def upload(self, key: str, data: bytes) -> None: ...
+
+class S3StorageClient:
+    def __init__(self, bucket: str):
+        self._s3 = boto3.client("s3")
+        self._bucket = bucket
+
+    def upload(self, key: str, data: bytes) -> None:
+        self._s3.put_object(Bucket=self._bucket, Key=key, Body=data)
+
+# In unit tests: mock StorageClient — your interface, your contract
+mock_storage = MagicMock(spec=StorageClient)
+```
+
+The same principle applies to: database driver cursors, gRPC channel stubs, ORM session objects,
+and any external SDK type.
+
+> The integration test verifying that `S3StorageClient.upload` connects correctly to S3 or a
+> LocalStack endpoint belongs in an integration test, not a unit test.
+
 ## Routing
 
 - Writing a full test suite (generating all test methods) → use **test-unit-write**
 - Reviewing a test file for standards violations → use **test-unit-review**
 - Managing test data setup, factories, parametrisation → use **test-data-management**
+- Testing that a real external dependency works (database queries, S3, gRPC) → use **test-integration-standards**

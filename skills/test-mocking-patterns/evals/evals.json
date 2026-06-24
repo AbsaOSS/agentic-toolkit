@@ -123,6 +123,47 @@
         "Second block labelled as Mock using .assert_called_once_with()",
         "Stub vs mock distinction explained in prose between blocks"
       ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "I'm using Jest and my mocked function's call count keeps bleeding from one test into the next. I have `jest.mock('../emailClient')` at the top of the file and `const mockSend = emailClient.send as jest.Mock`. How do I fix the bleed?",
+      "expected_output": "Add `jest.clearAllMocks()` in a `beforeEach` block. This resets call counts and recorded arguments but keeps mock implementations in place. If you also want to remove implementations, use `jest.resetAllMocks()`. If you used `jest.spyOn()` and want to restore the original function, use `jest.restoreAllMocks()`. The difference matters: clearAllMocks keeps the mock working for the next test; resetAllMocks forces you to re-configure return values in each test.",
+      "files": [],
+      "expectations": [
+        "jest.clearAllMocks() in beforeEach is the primary recommendation",
+        "Distinction between clearAllMocks, resetAllMocks, and restoreAllMocks is explained",
+        "Example beforeEach block is shown",
+        "Explanation of why call counts bleed without cleanup"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "edge-case",
+      "prompt": "Should I mock the boto3 S3 client directly in my unit tests, or is there a better approach?",
+      "expected_output": "Do not mock boto3 directly — it is a third-party type you don't own. Mocking it couples the test to AWS SDK internals that can change without notice. Instead, define a thin interface (e.g. a StorageClient Protocol) that your application code depends on, and mock that. Provide a concrete S3StorageClient implementation wrapping boto3 for production. The unit test mocks the interface; a separate integration test (using LocalStack or moto) verifies the real S3 connection.",
+      "files": [],
+      "expectations": [
+        "Direct boto3 mocking is identified as problematic",
+        "The 'don't mock what you don't own' principle is stated",
+        "A thin wrapper interface (Protocol) is recommended",
+        "Integration test context (LocalStack / moto) is mentioned for the real connectivity test",
+        "Python example with spec=StorageClient or Protocol shown"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "My service calls datetime.now() to timestamp an audit entry. How do I control the timestamp in a pytest test so the assertion doesn't depend on wall-clock time?",
+      "expected_output": "Use the `freezegun` library. Apply `@freeze_time('2025-01-15 12:00:00')` as a decorator on the test function, or use `with freeze_time('2025-01-15'):` as a context manager for narrower scope. Do not try to patch `datetime.datetime` directly — datetime is a C extension and partial patching is fragile. With freeze_time in place, any call to datetime.now(), date.today(), or time.time() inside the test returns the frozen value.",
+      "files": [],
+      "expectations": [
+        "freezegun is recommended as the primary tool",
+        "@freeze_time decorator example is shown",
+        "Context manager alternative is shown",
+        "Warning against patching datetime directly is given",
+        "Explanation of why freezegun works reliably (handles C extension)"
+      ]
     }
   ]
 }
