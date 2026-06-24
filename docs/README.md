@@ -25,6 +25,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide | Description |
 |----|----|
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [TDD Workflow](./tdd-workflow.md)       | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
