@@ -1,8 +1,12 @@
 ---
 name: test-data-management
-description: Test data setup factories parametrize
-license: Proprietary
-compatibility: GitHub Copilot
+description: |
+  Test data management: parametrize tests, use factories and builders, avoid duplication and test pollution.
+  Use this skill whenever the user asks about: parametrizing tests, creating test fixtures, test data factories,
+  test builders, avoiding duplicated test setup, cleaning up test data, avoiding test pollution, seeding databases,
+  using production data in tests, making tests deterministic, isolating tests, or any other test data strategy.
+  Invoke this skill even if the user doesn't explicitly ask for "test data" — if they're talking about test setup,
+  fixtures, factories, builders, parametrization, or data isolation in tests, this is the right skill.
 ---
 
 # Test Data Management
