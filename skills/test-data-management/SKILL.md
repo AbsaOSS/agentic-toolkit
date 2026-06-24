@@ -11,10 +11,10 @@ description: |
 
 # Test Data Management
 
-## Prefer data-driven and parametrised tests
+## Prefer data-driven and parametrized tests
 
-When a behaviour must be tested with multiple input combinations, prefer parametrised tests over
-duplicated test methods. One parametrised test with a data table is clearer, easier to extend,
+When a behaviour must be tested with multiple input combinations, prefer parametrized tests over
+duplicated test methods. One parametrized test with a data table is clearer, easier to extend,
 and reduces duplication.
 
 | Language | Tool | Pattern |
@@ -25,10 +25,10 @@ and reduces duplication.
 | TypeScript | Jest `test.each` | `test.each([[input, expected]])` |
 | Java | JUnit 5 `@ParameterizedTest` | `@ParameterizedTest @MethodSource` |
 
-**Use** parametrised tests when: the same behaviour is tested with ≥ 3 input combinations, or when
+**Use** parametrized tests when: the same behaviour is tested with ≥ 3 input combinations, or when
 combinations form a clear equivalence class table.
 
-**Do not use** parametrised tests when: each case requires fundamentally different setup or
+**Do not use** parametrized tests when: each case requires fundamentally different setup or
 assertions — use separate named tests instead.
 
 ## Use factory and builder patterns
@@ -124,6 +124,6 @@ def test_order_placed_at_is_set():
 
 ## Out of scope
 
-- Choosing test doubles (mock, stub, spy, fake) — handle in your project's mocking guide
+- Choosing test doubles (mock, stub, spy, fake)
 - Writing test logic and assertions — handled separately
 - Reviewing tests for standards compliance — handled separately
