@@ -1,15 +1,14 @@
 ---
 name: tdd-workflow
 description: >
-  Test-driven development (TDD) workflow for implementing and modifying code using vertical slicing
-  (one test → one implementation cycle at a time). ALWAYS use this skill when a user needs to write
-  new code, fix bugs, implement features, design systems, or add functionality — even without
-  mentioning TDD explicitly. This applies to: implementing features, fixing bugs, adding functionality,
-  building utilities, designing modules, capturing edge cases, planning test scenarios, documenting
-  design decisions, and adding test coverage. Provides: SPEC.md planning, systematic edge case
-  discovery, explicit test tables, confirmation gates, tracer bullets, and incremental red-green-refactor
-  cycles. Does NOT apply to: asking what-is questions about TDD, understanding TDD concepts, reviewing
-  completed tests, analyzing test suites, or refactoring when all tests pass.
+  Test-first development workflow for new code, bug fixes, features, and systems. Activate for:
+  implementing functionality, fixing bugs, designing modules or systems, building utilities,
+  planning tests, or documenting design before code. Uses vertical slicing (one test → one
+  implementation at a time, not all tests first). Creates SPEC.md (local scratchpad), proposes
+  test table, confirms with user, then cycles red (write failing test) → green (minimal code) →
+  refactor. Covers: requirement capture, edge case discovery, test table construction, confirmation
+  gates, tracer bullets, and incremental TDD cycles. Does NOT use TDD when: answering conceptual
+  TDD questions, reviewing/analyzing existing code, or refactoring passing code without new requirements.
 ---
 
 # TDD Workflow
