@@ -29,6 +29,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | [Unit Test Standards](./test-unit-standards.md)  | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
 | [Unit Test Writer](./test-unit-write.md)         | Generate complete unit tests from scratch following language-specific standards |
 | [Unit Test Reviewer](./test-unit-review.md)      | Systematically audit unit tests and report findings by severity |
+| [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 
