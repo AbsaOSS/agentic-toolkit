@@ -18,9 +18,15 @@ Full living documentation agent. Owns both the catalog layer (requirements, enti
 
 ---
 
-## Initialisation (catalog layer)
+## Initialisation
 
-When the user is setting up living documentation for the first time, ask:
+**Project Profile (all layers) — load first.** At session start, read
+`.copilot/bdd/.project-profile.yaml`. It holds every project-specific convention skills must not
+hardcode: the test-id attribute, feature/PageObject/steps directories, AC state and PageObject
+status vocabularies, scenario tag conventions, and the manifest shape. If it is absent, create it
+from the defaults in the [BDD schemas reference — Project Profile](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-bdd-schemas.md) and confirm each value with the user. Once loaded, profile values override any default path, attribute, or casing shown in a skill.
+
+**Storage Profile (catalog layer).** When the user is setting up living documentation for the first time, also ask:
 
 > "Which storage format does your living doc use? Describe field names, entity structure, and where entities are stored (e.g. YAML files in `docs/living-doc/`)."
 
@@ -44,6 +50,7 @@ _Auto-managed. Delete when session complete._
 ## Mode  <!-- e.g. HEALING | EXPLORE | SCENARIO-GEN -->
 ## Goal  <!-- One sentence -->
 ## Artifacts  <!-- seed.yaml: <path> / manifest.json: <path> — for automation sessions -->
+## Tools  <!-- mcp_browser_prefix: <resolved prefix, e.g. mcp_playwright2_browser_> — automation sessions -->
 
 ## Progress
 <!-- CATALOG: - [x] US-001 done  / [-] US-002 in progress  / [ ] US-003 pending -->
@@ -176,7 +183,7 @@ Every AC must carry:
 
 | Field | Values |
 |---|---|
-| `state` | `PLANNED` / `IN_REVIEW` / `ACTIVE` / `DEPRECATED` |
+| `state` | `Planned` / `In Review` / `Active` / `Deprecated` (written Title-case per the profile `ac_states`) |
 | `version` | Semantic version string |
 | `pre-conditions` | Conditions that must hold before the AC can be tested |
 | `not_in_scope` | Explicit exclusion statement |
@@ -230,9 +237,9 @@ Full model: [living-doc-glossary](https://raw.githubusercontent.com/AbsaOSS/agen
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 
 **AC reference format:** `AC:<parent-id>-<nn> (v<version> – <State>) — <description>`
-State: `PLANNED | IN_REVIEW | ACTIVE | DEPRECATED`
+State (written Title-case per the profile `ac_states`): `Planned | In Review | Active | Deprecated`
 
-**Gherkin traceability:** every scenario in `features/us/` and `features/functionalities/` requires:
+**Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:
 ```gherkin
 # AC:US-1-01 (v1.0.0 - ACTIVE) — <description>
 @AC:US-1-01
@@ -240,7 +247,7 @@ Scenario: ...
 ```
 Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the single source of machine traceability.
 
-**Surface types:** `UI` → PageObject (prefer `data-testid`). `API` → contract test layer only.
+**Surface types:** `UI` → PageObject (locators via `getByTestId()`, resolving to the profile `test_id_attribute`, default `data-cy`). `API` → contract test layer only.
 
 **ACTIVE ACs** drive scenario generation. DEPRECATED ACs require `deprecated_at`, `deprecation_reason`, optionally `superseded_by`.
 

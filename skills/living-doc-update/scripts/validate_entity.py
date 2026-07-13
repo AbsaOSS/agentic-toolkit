@@ -25,7 +25,9 @@ import sys
 
 VALID_STATUSES = {"planned", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
-VALID_AC_STATUSES = {"Planned", "Active", "Implemented", "Deprecated"}
+# AC state vocabulary — defaults mirror the Project Profile `ac_states` (Title-case).
+# Override at runtime with --profile to read the project's own ac_states list.
+VALID_AC_STATUSES = {"Planned", "In Review", "Active", "Deprecated"}
 
 ID_PATTERNS: dict[str, re.Pattern] = {
     "User Story": re.compile(r"^US-\d{3,}$"),
@@ -56,6 +58,22 @@ ERROR_KEYWORDS_RE = re.compile(
 
 
 # ── Validation logic ───────────────────────────────────────────────────────────
+
+def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
+    """Read `ac_states` from a Project Profile YAML. Returns None if unavailable."""
+    try:
+        import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
+
+        with open(profile_path) as f:
+            profile = yaml.safe_load(f) or {}
+    except (FileNotFoundError, ImportError, ValueError) as exc:
+        print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
+        return None
+    states = profile.get("ac_states")
+    if isinstance(states, list) and states:
+        return {str(s) for s in states}
+    return None
+
 
 def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
     """
@@ -300,11 +318,21 @@ def main() -> None:
         help="Path to catalog JSON — enables referential integrity checks",
     )
     parser.add_argument(
+        "--profile", "-p",
+        help="Path to .project-profile.yaml — overrides the AC state vocabulary from `ac_states`",
+    )
+    parser.add_argument(
         "--json", "-j",
         action="store_true",
         help="Output validation results as JSON instead of human-readable text",
     )
     args = parser.parse_args()
+
+    if args.profile:
+        profile_states = load_ac_states_from_profile(args.profile)
+        if profile_states:
+            global VALID_AC_STATUSES
+            VALID_AC_STATUSES = profile_states
 
     try:
         if args.entity == "-":

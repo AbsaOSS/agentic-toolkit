@@ -41,10 +41,12 @@ so that <business outcome>.
 
 **Validation:**
 - Actor must be a named role — not "system", "admin", or "the app"
-- If the actor given is "the system" or similar, reject it: *"The system is not a valid actor.
-  Ask: who triggers this action? Who benefits from it? Name that human role."*
-  System-initiated or background flows do not belong in a User Story — they belong in a
-  Functionality. Redirect to `living-doc-create-functionality` for system-driven behaviors.
+- If the actor given is "the system" or similar, warn: *"Using a system actor is not prohibited,
+  but it is strongly discouraged. Prefer naming the human role that triggers or benefits from
+  the behavior. If the flow is system-initiated with no direct human interaction, it is a better
+  fit for a Functionality entity."*
+  If the user insists on a system actor, ensure the `so that` clause names a human beneficiary.
+  For purely system-driven behaviors with no human outcome, redirect to `living-doc-create-functionality`.
 - Capability must be an action the user performs — not a technical implementation
 - Outcome must describe business value — not system state
 
@@ -65,6 +67,10 @@ Each AC must be:
 - **Outcome-focused** — "order is confirmed" not "DB record is inserted"
 - **Binary** — clear pass/fail; no "should usually" or "typically"
 - **Single placeholder** — at most ONE `{placeholder}` per AC statement. If two aspects vary independently, write a separate AC for each.
+- **Present simple tense** — "the user sees" not "the user will see" or "should be shown"; ACs are timeless contracts, not predictions
+- **Active voice** — "the user sees confirmation" not "confirmation is shown to the user"; makes subject and action unambiguous
+- **Correct modal verbs** — use `can` for user-initiated capability; drop the modal for outcome statements ("a confirmation is displayed"); avoid "should", "may", "might" (non-binary)
+- **Named persona** — use the actor from the narrative ("a data steward can approve…") not the generic "the user"
 
 Use `{placeholder}` syntax when a value varies, and list the concrete values immediately below. During elicitation, capture ACs using structured condition / action / outcome language; in the final JSON, convert each accepted AC into a plain-language description.
 
@@ -134,7 +140,7 @@ Rules:
 - Every AC object must have `id` in `AC:US-<nnn>-<nn>` format and a plain-language `description`
 - Write AC descriptions in plain language — no structured language keywords in JSON values
 
-> **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC.
+> **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `Active` AC.
 
 ## Script — `validate_entity.py`
 
@@ -146,6 +152,9 @@ python skills/living-doc-update/scripts/validate_entity.py entity.json
 
 # With referential integrity checks against the full catalog
 python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog catalog.json
+
+# Enforce the project's AC state vocabulary (reads `ac_states` from the Project Profile)
+python skills/living-doc-update/scripts/validate_entity.py entity.json --profile .copilot/bdd/.project-profile.yaml
 ```
 
 Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, no AC is present, or the status value is invalid.
@@ -156,13 +165,16 @@ Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is m
 |---|---|
 | AC says "the system saves to the database" | Technical implementation — restate as user outcome. Provide a rewritten AC: e.g. "When the customer confirms the order, then the order is acknowledged and the customer sees a confirmation message." |
 | AC says "unit test passes" | Test is not an AC — describe the behavior, not how it's verified |
-| Narrative says "As a system..." | System is not a user — name the human role |
+| Narrative says "As a system..." | Not prohibited, but strongly discouraged — system-initiated flows are better modelled as Functionality entities. If kept, the `so that` clause must name a human beneficiary. |
 | Same capability described for two different actors | Two actors = two separate User Stories. Different actors have different permissions, audit requirements, and AC sets. Mixing two actor perspectives in one User Story produces ambiguous ACs. Shared Functionalities (e.g. OTP generation, email delivery) can be linked to both User Stories. |
 | User Story "I want" clause contains "and" | Multiple capabilities in one User Story — split at each “and”. Each capability has its own failure paths and may touch different Features; bundling them makes ACs ambiguous and traceability impossible. |
 | AC uses `{placeholder}` for a single value | Placeholder syntax is only justified when two or more values vary. If only one value applies, write it inline. Example: instead of `{error type}: inline validation message`, write `an inline validation message is shown`. |
 | AC describes a non-observable outcome | e.g. “a background job processes the record” — the user cannot observe this. Restate as the observable signal (e.g. “the confirmation email arrives within 60 seconds”), or redirect the behavior to a Functionality entity if it is purely technical. |
 | AC identifier does not follow `AC:US-<nnn>-<nn>` | Every acceptance criterion in the JSON output needs a stable `AC:US-<nnn>-<nn>` id so it can be referenced unambiguously. |
 | AC behavior already documented in another User Story | Duplicate ACs create a maintenance burden — any change must be applied in every copy. Extract the shared behavior into a Functionality entity and link both User Stories to it. |
+| AC uses "should", "may", or "might" | Non-binary modal — the AC cannot be passed or failed decisively. Use `can` for user capability ("a data steward can approve…") and drop the modal for outcome statements ("a confirmation message is displayed"). |
+| AC subject is "the user" (generic) | Use the named actor from the narrative — "a data steward can approve…" not "the user can approve…". Generic "user" creates ambiguity when multiple roles share a surface. |
+| AC outcome is vague ("success is shown", "an error appears") | State what the user experiences specifically enough to test: "a confirmation message is displayed" or "an inline error states the email is already in use". Avoid both vague and over-specific (visual style, pixel dimensions, component names). |
 
 ---
 

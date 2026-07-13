@@ -32,6 +32,8 @@ Resolves missing `data-cy` attributes end-to-end: from gap discovery in `manifes
 through Angular template edits, PageObject sync, Functionality promotion, and WORK_LOG
 status update. All steps are in sequence — do not skip steps or re-order them.
 
+**Project Profile:** Read `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for the test-id attribute (`test_id_attribute`, default `data-cy`), the PageObjects directory (`paths.pageobjects`), the Functionality feature directory (`feature_dirs.functionality`), and the BDD artifacts directory (`paths.bdd_artifacts`). All concrete paths below show the reference (AUL/Angular) project; substitute the profile and the project's own source layout.
+
 ---
 
 ## When this skill activates
@@ -160,7 +162,7 @@ When a gap covers multiple instances of the same component in a loop (e.g. one "
 
 ## Phase 5 · PageObject Sync
 
-After every template change, update the matching PageObject in `aul-ui/playwright/pages/`.
+After every template change, update the matching PageObject in `<paths.pageobjects>/` (e.g. `aul-ui/playwright/pages/`).
 
 **Replace proposed/fallback locators with `getByTestId()`:**
 
@@ -187,7 +189,7 @@ readonly requestAccessButton: Locator = page.getByTestId('btn-request-access-rig
 
 For each Functionality whose `status: planned` was solely due to missing `data-cy`:
 
-1. Open `aul-ui/playwright/features/liv_doc_func/func-{NNN}-*.feature`.
+1. Open `<feature_dirs.functionality>/func-{NNN}-*.feature` (e.g. `aul-ui/playwright/features/liv_doc_func/`).
 2. Change `# status: planned` → `# status: active` in the comment header.
 3. Remove the `# planned-reason: no data-cy attributes` comment line if present.
 4. Do **not** change any other header fields (AC text, func_type, feature, etc.).

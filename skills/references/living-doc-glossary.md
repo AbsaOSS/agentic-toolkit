@@ -41,7 +41,7 @@ A named system surface — the structural layer between User Stories and atomic 
 
 | Type | Description | Test abstraction |
 |---|---|---|
-| `UI` | A web page, modal, or named screen | **PageObject** design pattern — class encapsulating selectors and user interactions for one screen. Selector preference: `data-testid` > `aria-label`/role > CSS class. |
+| `UI` | A web page, modal, or named screen | **PageObject** design pattern — class encapsulating selectors and user interactions for one screen. Selector preference: `getByTestId()` (resolves to the Project Profile `test_id_attribute`, default `data-cy`) > `aria-label`/role > CSS class. |
 | `API` | A REST/GraphQL endpoint or endpoint group. A backend service is documented as an API Feature representing its public contract. | **Annotated endpoint method** — the endpoint method with its API documentation header (OpenAPI annotation, JSDoc, etc.) serves as the living contract anchor. |
 
 - Owns: one or more **Functionalities**
@@ -203,13 +203,13 @@ AC:<parent-id>-<nn> (v<version> - <State>)
    - Rationale: <business context, policy reference, or design decision>  ← optional
 ```
 
-State values: `PLANNED | IN_REVIEW | ACTIVE | DEPRECATED`
+State values: `Planned | In Review | Active | Deprecated` (written Title-case per the Project Profile `ac_states`; `PLANNED`/`ACTIVE` etc. in prose refer to the same logical states).
 
 **Scenario traceability:** living-doc scenarios (US and Functionality feature files) carry two
 complementary annotations — a human-readable `# AC:` comment and a machine-readable `@AC:` tag:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
   ...
@@ -219,7 +219,7 @@ When a scenario covers only **one aspect** of a multi-aspect AC, encode the aspe
 the `@AC:` tag using the `/param:value` param syntax, and mirror it in the comment:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
   ...
@@ -228,8 +228,8 @@ Scenario: Login form shows the username input field
 Multiple ACs — one comment + tag pair per AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — invalid credentials show an error message
-# AC:US-1-02 (v1.0.0 - ACTIVE) — account lockout after 3 failed attempts
+# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
 @AC:US-1-01
 @AC:US-1-02
 @Regression
@@ -249,7 +249,7 @@ Additional `/param:value` segments can be appended as needed — the format is o
 - The `@AC:` Cucumber tag is machine-readable: drives script scanning, coverage reports, and sync checks.
 - US scenarios: `@AC:US-<n>-<nn>` (e.g. `@AC:US-1-01`)
 - Functionality scenarios: `@AC:FUNC-<nnn>-<nn>` (e.g. `@AC:FUNC-001-01`)
-- Both annotations are required for living-doc feature files (`features/us/` and `features/functionalities/`).
+- Both annotations are required for living-doc feature files (`feature_dirs.user_story` and `feature_dirs.functionality`, defaults `features/liv_doc_us/` and `features/liv_doc_func/`).
 - Feature files outside the living-doc directories (smoke tests, regression suites, exploratory probes)
   do not require `@AC:` tags.
 
@@ -272,15 +272,15 @@ AC:<parent-id>-<nn> (v<version> – PLANNED)
 **User Story AC examples** (in the `# Acceptance Criteria:` file header block):
 
 ```
-AC:US-001-01 (v1.0.0 - ACTIVE)
+AC:US-001-01 (v1.0.0 - Active)
    - The login screen displays {required field}.
    - Required field: username input, password input, login button
    - Rationale: Accessibility standard — all interactive controls must be visible on load.
 
-AC:US-001-02 (v1.1.0 - ACTIVE)
+AC:US-001-02 (v1.1.0 - Active)
    - An inline field validation message is shown when invalid credentials are submitted.
 
-AC:US-001-03 (v2.1.0 - DEPRECATED - removal planned v3.0.0)
+AC:US-001-03 (v2.1.0 - Deprecated - removal planned v3.0.0)
    - A "Remember me" checkbox retains the session across browser restarts.
    - Rationale: Deprecated due to security policy change in v2.0 — persistent sessions no longer permitted.
 ```
@@ -288,15 +288,15 @@ AC:US-001-03 (v2.1.0 - DEPRECATED - removal planned v3.0.0)
 **Functionality AC examples** (in the `# Acceptance Criteria:` file header block):
 
 ```
-AC:FUNC-001-01 (v1.0.0 - ACTIVE)
+AC:FUNC-001-01 (v1.0.0 - Active)
    - Returns valid=true when the password satisfies all complexity rules.
 
-AC:FUNC-001-02 (v1.0.0 - ACTIVE)
+AC:FUNC-001-02 (v1.0.0 - Active)
    - Raises {error code} when the credential check fails.
    - Error code: INVALID_PASSWORD, USER_NOT_FOUND, ACCOUNT_LOCKED
    - Rationale: Distinct error codes per failure reason, required by the global auth error contract.
 
-AC:FUNC-001-03 (v1.0.0 - ACTIVE)
+AC:FUNC-001-03 (v1.0.0 - Active)
    - Rejects passwords shorter than 8 characters.
 ```
 
@@ -314,13 +314,13 @@ User Story (US)
                     └── owns: Functionality (FUNC)
                                     └── owns: Functionality ACs
                                     └── maps to: Functionality feature file (system test)
-                                    |              features/functionalities/<feat>/<func>.feature
+                                    |              <feature_dirs.functionality>/func-<nnn>-<kebab>.feature
                                     |              @FUNC_ID tag + @AC:FUNC-nnn-nn tagged scenarios
                                     |              └── implemented by: Step Definitions
                                     └── can map to: unit/integration tests
   └── owns: User Story ACs (in # Acceptance Criteria: header block)
                   └── linked via: @AC:US-n-nn tags on Scenarios
-                  └── can map to: E2E BDD Scenarios (features/us/*.feature)
+                  └── can map to: E2E BDD Scenarios (<feature_dirs.user_story>/*.feature)
                                        @US_ID tag + @AC:US-n-nn tagged scenarios
                                        └── implemented by: Step Definitions
                                                                └── delegates to: PageObjects

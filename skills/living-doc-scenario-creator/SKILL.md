@@ -19,9 +19,11 @@ compatibility: GitHub Copilot
 # Living Doc — Scenario Creator
 
 > **Glossary:** User Story, AC, Feature, PageObject — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
-> **BDD schemas:** US and Functionality feature file templates — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
+> **BDD schemas:** Project Profile, US and Functionality feature file templates — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
-**AC states:** `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED`. Only `ACTIVE` ACs drive scenario generation.
+**Project Profile:** Read `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for feature directories (`feature_dirs.*`), the AC state vocabulary (`ac_states`), and scenario tag conventions. All paths and tags below show the reference-project defaults; profile values win.
+
+**AC states:** written Title-case per the profile `ac_states` (`Active`, `Planned`, `In Review`, `Deprecated`). Only `Active` ACs drive scenario generation.
 
 ---
 
@@ -40,14 +42,14 @@ compatibility: GitHub Copilot
 
 Load the User Story or Functionality. Confirm:
 - ID follows `US-<nnn>` or `FUNC-<nnn>` format.
-- Which ACs are `ACTIVE` (eligible for generation).
+- Which ACs are `Active` (eligible for generation).
 - ACs are atomic — one input condition, one observable outcome.
 
-If no ACs are `ACTIVE`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`PLANNED`: `skipped — not yet active`, `DEPRECATED`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `ACTIVE`.
+If no ACs are `Active`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`Planned`: `skipped — not yet active`, `Deprecated`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `Active`.
 
 ### Step 2 — Gap detection and merge policy
 
-An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `ACTIVE` ACs with no linked scenario before writing new files.
+An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `Active` ACs with no linked scenario before writing new files.
 
 **If a scenario already exists for an AC**, apply this policy:
 
@@ -60,7 +62,7 @@ An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap
 
 ### Step 3 — Generate feature file
 
-For each `ACTIVE` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and full Given/When/Then step bodies.
+For each `Active` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and full Given/When/Then step bodies. Emit scenarios in **ascending AC-id order**, grouped under section banners (happy day before negative), so re-generation is byte-stable.
 
 **Scenario title by AC type:**
 - `happy_path` → `Scenario: <positive outcome>`
@@ -70,7 +72,7 @@ For each `ACTIVE` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and
 **Traceability format** (authoritative — `gherkin-living-doc-sync` validates against this definition):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
   Given the customer has items in their cart
@@ -81,7 +83,7 @@ Scenario: Customer successfully places an order
 Aspect variant (when one scenario covers only one aspect of a multi-aspect AC):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
 ```
@@ -89,8 +91,8 @@ Scenario: Login form shows the username input field
 Multiple ACs per scenario — one comment + tag pair per AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — invalid credentials show an error message
-# AC:US-1-02 (v1.0.0 - ACTIVE) — account lockout after 3 failed attempts
+# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
 @AC:US-1-01
 @AC:US-1-02
 @Regression
@@ -101,12 +103,17 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 
 **Feature file types:**
 
-| Type | Location | Feature block |
+| Type | Location (default) | Feature block |
 |---|---|---|
-| User Story (E2E) | `features/us/us-<nnn>-<kebab>.feature` | `Feature: <US title>` with As-a/I-can/so-that + `@US_ID:US-<n>` |
-| Functionality | `features/functionalities/<feat-kebab>/func-<nnn>-<kebab>.feature` | `Feature: <Feature name> — <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
+| User Story (E2E) | `<feature_dirs.user_story>/us-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_us/`) | `Feature: <US title>` with As-a/I-can/so-that + `@US_ID:US-<n>` |
+| Functionality | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) | `Feature: <Feature name> — <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
 
-**US feature file example:**
+**Feature-level and scenario tags** (when `scenario_conventions` enables them in the profile):
+- Feature-level: the entity tag (`@US_ID:US-<n>` / `@FUNC_ID:FUNC-<nnn>`) plus an optional domain tag, e.g. `@domain_create`.
+- Scenario-level: the `@AC:<id>` tag(s), plus optional suite tags such as `@Regression`.
+- Section banners may group scenarios, e.g. `# *** Happy day scenarios ***` and `# *** Negative scenarios ***`.
+
+**US feature file example** — copy this skeleton verbatim and replace only the `<...>` placeholders and AC lines; do not reorder the header blocks or rename the tags:
 
 ```gherkin
 # us-001-place-an-online-order.feature
@@ -119,17 +126,23 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 #   AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined.
 
 @US_ID:US-001
+@domain_orders
 Feature: Place an online order
   As a registered customer
   I can place an order for in-stock items
   So that the items are delivered to my address
 
+  # *** Happy day scenarios ***
+
   # AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method
   @AC:US-001-01
+  @Regression
   Scenario: Customer successfully places an order
     Given the customer has items in their cart
     When they confirm the order with their saved payment method
     Then the order confirmation is displayed
+
+  # *** Negative scenarios ***
 
   # AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined
   @AC:US-001-02
@@ -174,6 +187,24 @@ For each generated scenario step:
 3. If purpose-matching step exists, reuse it; note the source file.
 4. If no reuse candidate but the PageObject method exists, generate a thin step stub via `gherkin-step`.
 5. If neither exists, generate a stub that raises `NotImplementedError` and flag the PageObject extension needed.
+
+### Step 6 — Validation gate (closeout — mandatory)
+
+Before reporting done, prove traceability with the scripts — do not finish while an error remains:
+
+```bash
+# AC link health (missing/malformed @AC: tags, missing # AC: comments, duplicate links):
+python skills/gherkin-living-doc-sync/scripts/scan_ac_links.py <features_dir> \
+  --us-dir <feature_dirs.user_story> --func-dir <feature_dirs.functionality>
+# AC coverage (every Active AC mapped to a scenario):
+python skills/living-doc-scenario-creator/scripts/coverage_report.py <living_doc_dir> <features_dir>
+```
+
+**Regression-coverage rule:** for the goal of covering every User Story's happy-day path, each
+`Active` `happy_path` AC must have exactly one scenario carrying both its `@AC:<id>` tag and a
+`@Regression` suite tag, placed under the `# *** Happy day scenarios ***` banner. The coverage
+report must show **0 NOT COVERED** happy-path ACs before the session closes. Fix gaps and re-run
+until `scan_ac_links` exits 0 and the coverage report is clean.
 
 ---
 

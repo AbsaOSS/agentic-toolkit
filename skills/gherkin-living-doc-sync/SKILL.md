@@ -26,8 +26,10 @@ Sync runs in three directions: (1) feature file to living doc, (2) living doc AC
 (3) step text to PageObject method signature.
 
 Use `scripts/scan_ac_links.py` to detect missing or malformed `@AC:` tags and missing `# AC:`
-comments before a full sync run. The script only checks living-doc feature files (`features/us/`
-and `features/functionalities/`) — other feature files are skipped.
+comments before a full sync run. The script only checks the living-doc feature directories
+(`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults
+`features/liv_doc_us/` and `features/liv_doc_func/`; pass them via `--us-dir`/`--func-dir`) — other
+feature files are skipped.
 
 ---
 
@@ -76,7 +78,8 @@ Scenario: Login form shows the username input field
 build the list of affected scenarios before running the standard checklist:
 
 1. Collect all AC IDs owned by the deprecated US (from the US entity or its feature file header).
-2. Search all `.feature` files under `features/us/` and `features/functionalities/` for
+2. Search all `.feature` files under the living-doc directories (`feature_dirs.user_story` and
+   `feature_dirs.functionality`) for
    `@AC:` tags matching those IDs.
 3. For each matching scenario, emit a SYNC ACTION to add `@deprecated` and `@review-needed`,
    with a comment recording the deprecation date and reason from the US entity.
@@ -86,7 +89,7 @@ build the list of affected scenarios before running the standard checklist:
 1. Does every `Scenario:` / `Scenario Outline:` in living-doc files have at least one `@AC:` tag?
 2. Is the corresponding `# AC:` comment present and matching the tag's AC ID?
 3. Does the referenced AC ID exist in the living documentation?
-4. Does the AC state match (`ACTIVE` — not `DEPRECATED`, `PLANNED`, or `IN_REVIEW`)?
+4. Does the AC state match (logically `Active` — not `Deprecated`, `Planned`, or `In Review`, per the profile `ac_states`)?
 5. Does the AC description (in the file header) match the scenario intent?
 
 For each missing or mismatched tag:

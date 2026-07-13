@@ -72,11 +72,11 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "Write feature tests for US-007 — I need full coverage of all the acceptance criteria.",
-      "expected_output": "Agent recognises this as a scenario generation request for a User Story. Loads US-007, filters to Active and Implemented ACs, and generates one scenario per AC. Outputs the .feature file and a coverage table. If any ACs are Planned or Deprecated, notes them as skipped in the coverage report.",
+      "expected_output": "Agent recognises this as a scenario generation request for a User Story. Loads US-007, filters to Active ACs, and generates one scenario per AC. Outputs the .feature file and a coverage table. If any ACs are Planned or Deprecated, notes them as skipped in the coverage report.",
       "files": [],
       "expectations": [
         "Recognises 'write feature tests for US-nnn' as a scenario generation request",
-        "Filters to Active/Implemented ACs only",
+        "Filters to Active ACs only",
         "Generates one scenario per AC",
         "Outputs coverage table with skip reasons for excluded ACs"
       ]
@@ -264,6 +264,20 @@
         "Processes gaps in report order — no reordering",
         "Does not skip gaps silently",
         "After generation, re-running the report is expected to show 0 gaps"
+      ]
+    },
+    {
+      "id": 21,
+      "category": "output-format",
+      "prompt": "For regression automation, generate the happy-day scenario for US-007 (AC:US-007-01 is the Active happy_path AC) and show how it is tagged and where the closeout gate confirms coverage.",
+      "expected_output": "Generates exactly one happy-day scenario for AC:US-007-01 under a '# *** Happy day scenarios ***' banner. The scenario carries both the '@AC:US-007-01' traceability tag and a '@Regression' suite tag, with the '# AC:US-007-01 (v1.0.0 - Active) — ...' comment immediately above it (state written Title-case 'Active'). At closeout the skill runs scan_ac_links.py (exits 0) and coverage_report.py, which must show 0 NOT COVERED happy-path ACs before the session closes. Scenarios are emitted in ascending AC-id order so regeneration is byte-stable.",
+      "files": [],
+      "expectations": [
+        "One happy-day scenario for the Active happy_path AC under the '# *** Happy day scenarios ***' banner",
+        "Scenario carries both @AC:US-007-01 and @Regression tags",
+        "AC state written Title-case ('Active') in the # AC: comment",
+        "Closeout runs scan_ac_links.py (exit 0) and coverage_report.py with 0 NOT COVERED happy-path ACs",
+        "Scenarios emitted in ascending AC-id order for byte-stable regeneration"
       ]
     }
   ]

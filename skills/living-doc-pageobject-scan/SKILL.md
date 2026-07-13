@@ -21,11 +21,13 @@ compatibility: GitHub Copilot
 # Living Doc — PageObject Scan & Webapp Exploration
 
 > **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
-> **BDD schemas:** ExplorationFixture, seed.yaml, manifest field_constraints, PageObject file header — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
+> **BDD schemas:** Project Profile, seed.yaml, manifest.json, PageObject file header — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)). Machine-readable contracts: [schemas/](../references/schemas/).
 
 **Scope:** UI Features only (web pages, modals, screens). API Features use annotated endpoint methods — not PageObjects.
 
-**Selector preference:** `data-testid` > `aria-label`/role > CSS class. Flag positional selectors (`nth-child`, `first-of-type`) as `FRAGILE`.
+**Project Profile:** Before any mode, load `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`). It supplies the test-id attribute, feature/PageObject/steps directories, and state vocabularies. Create it from the defaults in [living-doc-bdd-schemas — Project Profile](../references/living-doc-bdd-schemas.md#project-profile-config-driven-conventions) on first run. Wherever this skill shows a default path or `data-cy`, the profile value wins.
+
+**Selector preference:** `getByTestId()` (resolves to the profile `test_id_attribute`, default `data-cy`) > `aria-label`/role > CSS class. Flag positional selectors (`nth-child`, `first-of-type`) as `FRAGILE`.
 
 ---
 
@@ -43,9 +45,10 @@ compatibility: GitHub Copilot
 
 **This skill requires the MCP Playwright server. Perform this check before any other step, in every mode.**
 
-1. Attempt to call `mcp_microsoft_pla_browser_snapshot` (or any `mcp_microsoft_pla_browser_*` tool) with a no-op argument.
-2. If the call **succeeds** — continue to the relevant mode below.
-3. If the call **fails or the tool is unavailable** — **stop immediately.** Do not fall back to static sources, route configs, or guided traversal as a substitute. Output exactly:
+1. Attempt to call any MCP Playwright browser tool (e.g. the `*browser_snapshot*` tool exposed by your `@playwright/mcp` server) with a no-op argument. Tool names vary by server build (for example `mcp_playwright2_browser_snapshot`) — do not hardcode a specific prefix; use whichever browser tools your environment exposes.
+2. **Resolve once, reuse for the session.** On the first successful call, record the working tool prefix (e.g. `mcp_playwright2_browser_`) in the automation session-state file `<paths.bdd_artifacts>/.session-state.md` under an `mcp_browser_prefix:` line, and use that exact prefix for every subsequent browser call this session. This keeps tool selection deterministic within a run.
+3. If the call **succeeds** — continue to the relevant mode below.
+4. If the call **fails or the tool is unavailable** — **stop immediately.** Do not fall back to static sources, route configs, or guided traversal as a substitute. Output exactly:
 
    > **MCP Playwright server is not available.**
    > This skill requires the `@playwright/mcp` (or equivalent) MCP server to be running and connected.
@@ -82,19 +85,7 @@ Collect seed content from whichever sources are available:
 | **D — Existing PageObjects** | Load current `manifest.json` — treat known surfaces as already discovered. |
 | **E — Guided traversal** | See [Guided Traversal Protocol](#guided-traversal-protocol-source-e) below. |
 
-**Credential rule:** Never store literals in `seed.yaml`. Always use `env:VAR_NAME`:
-
-```yaml
-base_url: https://...
-credentials:
-  username: env:BDD_USERNAME
-  password: env:BDD_PASSWORD
-known_routes:
-  - path: /login
-    feature: Authentication
-guided_steps: []
-form_fixtures: {}
-```
+**Credential rule:** Never store literals in `seed.yaml` — reference an env file via `credentials_source` or use `env:VAR_NAME`. For the full Business Seed structure (`app`, `business_domains`, `known_entities`, `user_roles`, `form_fixtures`) see [living-doc-bdd-schemas — seed.yaml](../references/living-doc-bdd-schemas.md#seedyaml-business-seed). Do not invent an alternate seed shape.
 
 **Partial state rule:** `seed.yaml` present, `manifest.json` absent = first run. Begin crawl from `base_url`; do not assume any surfaces are discovered.
 
@@ -130,7 +121,7 @@ Resolve field values using the **ExplorationFixture sourcing cascade** (see [liv
 
 Skip `condition`-gated fields until the controlling field holds the required value.
 
-After successful submit, probe each text input: special characters (`<>'"&\`), oversized input (200+ chars), wrong type, duplicate value. Run core scan after each probe to capture `data-cy` error elements visible only in error state. Record in `navigation_context.field_constraints`.
+After successful submit, probe each text input: special characters (`<>'"&\`), oversized input (200+ chars), wrong type, duplicate value. Run core scan after each probe to capture error elements (in the profile `test_id_attribute`) visible only in error state. Record in the route's `field_constraints[]` (see schema ref).
 
 #### Angular CPS component interactions
 
@@ -144,16 +135,28 @@ After successful submit, probe each text input: special characters (`<>'"&\`), o
 | `cps-switch` / `cps-checkbox` | `browser_click` the wrapper. |
 | `app-text-editor` (rich text) | `browser_click` `contenteditable` child, then `browser_type`. |
 | `cps-button` | `browser_click` inner `<button>` (or `evaluate`: `el.querySelector('button').click()`). |
-| `input[type=file]` | `mcp_browser_file_upload` or `page.setInputFiles()` with fixture path from `seed.yaml`. |
+| `input[type=file]` | the MCP browser file-upload tool or `page.setInputFiles()` with fixture path from `seed.yaml`. |
 
 After interacting with a required field (e.g. `cps-radio-group`), re-check whether gated buttons (Continue, Save) have become enabled.
 
 ### Step 4 — Generate PageObject skeleton
 
-One class per distinct screen. Naming: `<ScreenName>Page`.
+One class per distinct screen. Naming: `<ScreenName>Page`. Open every PageObject file with the full living-doc header block (`surface_type`, `route`, `owners`, `status`, `purpose`, `user_stories`, `functionalities`, `external_dependencies`, `page-object`) — see [living-doc-bdd-schemas — PageObject File Header](../references/living-doc-bdd-schemas.md#pageobject-file-header). Secondary files sharing one Feature use the cross-reference header. Locators use `getByTestId()` (resolves to the profile `test_id_attribute`).
 
 ```typescript
-// living-doc: FEAT-003 | /checkout
+/* =============================================================================
+ * LIVING DOC — FEAT-003 · Checkout
+ * =============================================================================
+ * surface_type:          UI
+ * route:                 /checkout
+ * owners:                <Team>
+ * status:                active
+ * purpose:               Checkout screen where the customer confirms and pays for an order.
+ * user_stories:          US-7
+ * functionalities:       FUNC-005
+ * external_dependencies: none
+ * page-object:           CheckoutPage.ts
+ * ============================================================================= */
 import { type Page, type Locator, expect } from '@playwright/test';
 
 export class CheckoutPage {
@@ -174,12 +177,12 @@ export class CheckoutPage {
 ```
 
 ```python
-# living-doc: FEAT-003 | /checkout
+# living-doc header (Python projects): replicate the same fields as a module docstring or comment block.
 class CheckoutPage:
     ROUTE          = '/checkout'
-    CONFIRM_BUTTON = '[data-testid="confirm-order-btn"]'
-    PROMO_INPUT    = '[data-testid="promo-code-input"]'
-    ERROR_BANNER   = '[data-testid="error-banner"]'
+    CONFIRM_BUTTON = '[data-cy="confirm-order-btn"]'   # selector uses the profile test_id_attribute
+    PROMO_INPUT    = '[data-cy="promo-code-input"]'
+    ERROR_BANNER   = '[data-cy="error-banner"]'
 
     def __init__(self, page, base_url=''):
         self.page = page
@@ -189,11 +192,11 @@ class CheckoutPage:
     def assert_error_visible(self, msg): expect(self.page.locator(self.ERROR_BANNER)).to_contain_text(msg)
 ```
 
-Flag fragile selectors: annotate `# FRAGILE`, recommend `data-testid='<descriptive-name>'`. Keep the current selector so authoring is not blocked.
+Flag fragile selectors: annotate `# FRAGILE`, recommend adding the profile `test_id_attribute` (e.g. `data-cy='<descriptive-name>'`). Keep the current selector so authoring is not blocked.
 
 ### Step 5 — Map PageObjects to Feature entities
 
-One PageObject ≈ one `UI` Feature. Write `// living-doc: FEAT-<nnn> | <route>` as a file-level header and record `feature_id` in the manifest.
+One PageObject ≈ one `UI` Feature. Write the full living-doc header block (see schema ref) carrying `feature_id`/`route`, and record `feature_id` in the manifest.
 
 - Feature exists → add header and manifest entry.
 - No Feature → write `FEAT-UNKNOWN` placeholder, flag as **"needs Feature entity"** in the scan report. Do not auto-create — raise via `living-doc-create-feature`.
@@ -206,7 +209,7 @@ For each discovered behavior, propose a stub named `<Feature name> – <behavior
 - Form → `"Login Page – Submit Credentials"`
 - Table → `"Order History Page – Display Order List"`
 
-Output to `features/functionalities/<feat-kebab>/func-<kebab>.feature` with `@FUNC_ID:FUNC-UNKNOWN`. Promote via `living-doc-create-functionality` when IDs are assigned.
+Output to `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (default `features/liv_doc_func/`) with `@FUNC_ID:FUNC-UNKNOWN`. Promote via `living-doc-create-functionality` when IDs are assigned.
 
 **Post-Create pipeline:**
 - Non-empty `coverage_gaps` in the manifest → trigger `data-cy-instrument` to add missing `data-cy` attributes.
@@ -323,52 +326,50 @@ After confirming changes: set `last_scanned`, update `elements` and `coverage_ga
 
 ## Manifest schema
 
-```json
-{
-  "version": "1.0",
-  "routes": {
-    "/auth/all-domains": {
-      "pageobject_path": "playwright/pages/AllDomainsPage.ts",
-      "feature_id": "FEAT-001",
-      "last_scanned": "2026-05-26T10:30:00Z",
-      "elements": [{ "data_cy": "create-domain-btn", "tag": "cps-button" }],
-      "coverage_gaps": [{ "tag": "input", "placeholder": "Search", "suggested_data_cy": "domains-search-input" }],
-      "navigation_context": {
-        "prerequisites": "User must be logged in.",
-        "navigation_steps": "Click sidebar 'All Domains'.",
-        "data_requirements": null,
-        "auth_role": "standard user",
-        "notes": null,
-        "field_constraints": []
-      }
-    }
-  }
-}
-```
-
-| Field | Purpose |
-|---|---|
-| `last_scanned` | ISO 8601 timestamp; surfaces stale entries. |
-| `elements` | All `data-cy` elements at last scan. |
-| `coverage_gaps` | Interactive elements lacking `data-cy`; with suggested names. |
-| `pageobject_path` | Relative path to PageObject file. |
-| `feature_id` | Living doc Feature entity ID. |
-| `navigation_context` | How to reach hard-to-access routes; reused in all subsequent sessions. |
-| `navigation_context.field_constraints` | Per-field validation findings. Schema: `{ field_data_cy, max_length, special_chars, duplicate, duplicate_error_data_cy, real_world_required }`. |
+`manifest.json` `routes` is a **JSON array** of route objects. Each entry uses the literal key
+`data-cy` for elements and `suggestedDataCy` for gaps, and `navigation_context` is a **string**.
+The full, authoritative schema (route fields, `coverage_gaps[]`, optional `open_actions_menu` and
+`field_constraints[]`) is defined once in
+[living-doc-bdd-schemas — manifest.json](../references/living-doc-bdd-schemas.md#manifestjson-exploration-manifest).
+Do not emit an alternate shape (object-keyed routes, `data_cy`/`suggested_data_cy` snake_case, or an
+object `navigation_context`).
 
 ---
 
 ## Output artifacts
 
-| Artifact | Location |
-|---|---|
-| PageObject files | `tests/pages/<ScreenName>Page.py` / `.ts` |
-| Feature link | `// living-doc: FEAT-<nnn> | <route>` header comment |
-| Functionality stubs | `features/functionalities/<feat-kebab>/func-<kebab>.feature` |
-| Breaking change report | `.copilot/bdd/breaking-changes.md` |
-| Exploration manifest | `.copilot/bdd/manifest.json` |
+All paths come from the Project Profile (`paths.*`, `feature_dirs.*`); the defaults below match the
+reference project.
 
-> Paths are defaults — actual locations depend on the project's Storage Profile.
+| Artifact | Location (default) |
+|---|---|
+| PageObject files | `<paths.pageobjects>/<ScreenName>Page.ts` (e.g. `playwright/pages/`) |
+| Feature link | Full living-doc header block in the PageObject file (see schema ref) |
+| Functionality stubs | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) |
+| Breaking change report | `<paths.bdd_artifacts>/breaking-changes.md` (e.g. `.copilot/bdd/`) |
+| Exploration manifest | `<paths.bdd_artifacts>/manifest.json` (e.g. `.copilot/bdd/`) |
+
+> Paths are defaults — actual locations come from the Project Profile.
+
+---
+
+## Validation gate (closeout — mandatory)
+
+Before reporting the scan complete, run the artifact validators and **do not finish while any error
+remains**. This moves shape enforcement off the model and makes re-runs reproducible:
+
+```bash
+# Canonicalize (sort routes by url, elements by data-cy) AND validate in one step:
+python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize
+python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py seed     <bdd_artifacts>/seed.yaml
+```
+
+- The **manifest** check rejects object-keyed routes, `data_cy`/`suggested_data_cy` snake_case keys,
+  and an object `navigation_context`; `--canonicalize` rewrites the file with sorted routes/elements
+  and sorted JSON keys so diffs stay stable across scans.
+- The **seed** check rejects inline credential literals (security gate) and a malformed shape.
+- If a profile is in use, also run `validate_artifacts.py profile <bdd_artifacts>/.project-profile.yaml`.
+- Fix every reported error and re-run until both pass (exit code 0) before closing the session.
 
 ---
 

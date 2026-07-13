@@ -170,6 +170,9 @@ python scripts/validate_entity.py entity.json
 # Validate with referential integrity checks
 python scripts/validate_entity.py entity.json --catalog catalog.json
 
+# Enforce the project's AC state vocabulary (reads `ac_states` from the Project Profile)
+python scripts/validate_entity.py entity.json --profile .copilot/bdd/.project-profile.yaml
+
 # Machine-readable output (exits 1 if any error)
 python scripts/validate_entity.py entity.json --json
 ```

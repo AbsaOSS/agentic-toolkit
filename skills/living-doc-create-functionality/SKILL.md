@@ -147,6 +147,9 @@ python skills/living-doc-update/scripts/validate_entity.py entity.json
 
 # With referential integrity checks against the full catalog
 python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog catalog.json
+
+# Enforce the project's AC state vocabulary (reads `ac_states` from the Project Profile)
+python skills/living-doc-update/scripts/validate_entity.py entity.json --profile .copilot/bdd/.project-profile.yaml
 ```
 
 Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, `parent_feature` does not match `FEAT-*`, or the status value is invalid.
@@ -171,6 +174,7 @@ redirect to `living-doc-create-user-story`.
 | Functionality AC describes a full user journey (e.g. "User logs in and sees their dashboard") | That is a User Story AC — redirect to **living-doc-create-user-story**. Functionality ACs describe a single behavior's input to output or side effect. |
 | Functionality has only happy-path ACs | Edge cases (null input, boundary values, partial validity, error codes) are missing. Run through the completeness checklist in Step 3 before confirming. |
 | AC says "returns error" without specifying the type or code | Specify the exact error code. Without a named code, the AC is not testable. |
+| AC uses "should", "may", or "might" | Non-binary wording makes the AC untestable. Use `must` for rules the system enforces, `returns` for calculations, `rejects`/`accepts` for validations. |
 | AC wording is vague (e.g. "works correctly", "handles it appropriately") | Rewrite with exact `When` / `Then` behavior and explicit outputs or error codes. |
 | Functionality has more than 7 ACs | Review for non-atomic scope. Around 12 ACs is almost certainly too broad and should be split into 2-3 Functionalities. |
 | Two Functionalities have identical or near-identical ACs | Duplicate ACs create a maintenance burden. Consolidate into one shared Functionality and link all related `user_stories`. |
@@ -180,7 +184,7 @@ redirect to `living-doc-create-user-story`.
 
 | Request type | Correct skill |
 |---|---|
-| "Create a User Story" | `living-doc-create-user-story` — this skill documents atomic behaviors, not end-to-end User Stories |
+| "Create a User Story" | `living-doc-create-user-story` — this skill documents atomic behaviors, not end-to-end User Stories. Note: a system-actor narrative ("As a system...") with no human beneficiary in `so that` is a strong signal to use this skill instead |
 | "Create a Feature entity" | `living-doc-create-feature` — a Feature is a system surface, not an atomic behavior |
 | "Write unit tests for this Functionality" | No skill in this toolkit covers unit test authoring — use your project's test framework directly. This skill defines the _what_ (ACs); writing the test code is outside scope. |
 | "Generate BDD scenarios for this Functionality" | `living-doc-scenario-creator` |

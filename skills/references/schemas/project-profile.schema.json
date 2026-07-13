@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/references/schemas/project-profile.schema.json",
+  "title": "Project Profile",
+  "description": "Config-driven conventions loaded by the living-doc-bdd agent at session start. Canonical machine contract for .copilot/bdd/.project-profile.yaml. See living-doc-bdd-schemas.md > Project Profile.",
+  "type": "object",
+  "required": [
+    "test_id_attribute",
+    "feature_dirs",
+    "paths",
+    "ac_states",
+    "pageobject_statuses"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "test_id_attribute": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Attribute page.getByTestId() resolves to (Playwright testIdAttribute), e.g. data-cy."
+    },
+    "feature_dirs": {
+      "type": "object",
+      "required": ["user_story", "functionality"],
+      "additionalProperties": false,
+      "properties": {
+        "user_story": { "type": "string", "minLength": 1 },
+        "functionality": { "type": "string", "minLength": 1 }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "required": ["bdd_artifacts", "pageobjects", "steps"],
+      "additionalProperties": true,
+      "properties": {
+        "bdd_artifacts": { "type": "string", "minLength": 1 },
+        "pageobjects": { "type": "string", "minLength": 1 },
+        "steps": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ac_states": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "AC state vocabulary written Title-case inside '# AC:' blocks, e.g. [Planned, In Review, Active, Deprecated]."
+    },
+    "pageobject_statuses": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "PageObject header 'status:' vocabulary, lowercase, e.g. [planned, candidate, active, deprecated]."
+    },
+    "scenario_conventions": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "feature_tag": { "type": "boolean" },
+        "domain_tag": { "type": "boolean" },
+        "suite_tags": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^@" }
+        },
+        "section_banners": { "type": "boolean" }
+      }
+    },
+    "manifest_shape": {
+      "type": "string",
+      "enum": ["array"],
+      "description": "Proven manifests use a JSON array for routes."
+    }
+  }
+}

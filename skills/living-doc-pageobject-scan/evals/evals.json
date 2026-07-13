@@ -5,13 +5,13 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "We have a new checkout screen at https://app.example.com/checkout with no PageObjects yet. Please bootstrap a PageObject for it.",
-      "expected_output": "Operates in Create mode. Crawls /checkout and discovers interactive elements: a promo code input, a confirm order button, and an error banner. Generates a CheckoutPage skeleton with one selector constant per element, following data-testid selector preference. Outputs Python or TypeScript class with: class-level selector constants, __init__ or constructor that takes a page, and method stubs for each interactive element (enter_promo_code, confirm_order, assert_error_visible). Includes a file-level '# living-doc: FEAT-<nnn> | /checkout' comment. If no matching Feature exists in the catalog, proposes drafting FEAT-<nnn> via living-doc-create-feature.",
+      "expected_output": "Operates in Create mode. Crawls /checkout and discovers interactive elements: a promo code input, a confirm order button, and an error banner. Generates a CheckoutPage skeleton with one Locator per element, using page.getByTestId() resolving to the profile test_id_attribute (default data-cy). Outputs Python or TypeScript class with: class-level locators/selector constants, __init__ or constructor that takes a page, and method stubs for each interactive element (enter_promo_code, confirm_order, assert_error_visible). Includes the living-doc PageObject header block (FEAT id + route). If no matching Feature exists in the catalog, proposes drafting FEAT-<nnn> via living-doc-create-feature.",
       "files": [],
       "expectations": [
         "Operates in Create mode",
         "Generates a PageObject named CheckoutPage",
-        "Selector constants use data-testid preference over CSS class or positional selectors",
-        "Includes file-level living-doc: FEAT-nnn | /route comment",
+        "Locators use getByTestId() (profile test_id_attribute, default data-cy) over CSS class or positional selectors",
+        "Includes the living-doc PageObject header block with the FEAT id and route",
         "Method stubs for each interactive element",
         "Proposes creating Feature entity if none exists in catalog"
       ]
@@ -115,12 +115,12 @@
       "id": 9,
       "category": "happy-path",
       "prompt": "During a Create mode scan of the checkout page, the agent discovers a 'Confirm Order' button and an 'Apply Promo Code' form input. What Functionality stubs should be generated?",
-      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page – Confirm Order' (for the button) and (2) 'Checkout Page – Apply Promo Code' (for the form input). Both are output to features/functionalities/feat-checkout/ with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
+      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page – Confirm Order' (for the button) and (2) 'Checkout Page – Apply Promo Code' (for the form input). Both are output to the profile Functionality feature directory (feature_dirs.functionality, default features/liv_doc_func/) as func-<nnn>-<kebab>.feature with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
       "files": [],
       "expectations": [
         "Generates one Functionality stub per distinct behavior (button → action, form input → action)",
         "Stub names follow: '<Feature name> – <behavior phrase>'",
-        "Stubs output to features/functionalities/<feat-kebab>/ directory",
+        "Stubs output to the profile feature_dirs.functionality directory (default features/liv_doc_func/)",
         "Stubs use @FUNC_ID:FUNC-UNKNOWN placeholder tags",
         "Notes formal definition via living-doc-create-functionality is the next step"
       ]
@@ -146,12 +146,12 @@
       "id": 11,
       "category": "edge-case",
       "prompt": "During a Maintain mode rescan, a route /admin/orders requires a multi-step authentication flow to reach. How should this be handled?",
-      "expected_output": "Check the manifest entry for /admin/orders for a navigation_context.navigation_steps field. If navigation steps are recorded (e.g. log in, navigate to admin panel, open orders tab), follow those steps instead of rediscovering the route from scratch. If no navigation context exists, prompt the team to add it to the manifest so future rescans can navigate to authenticated/multi-step routes reliably. Never skip a route just because it requires authentication — use the authentication strategy appropriate to the auth type (cookie/session, OAuth token injection, or TOTP).",
+      "expected_output": "Check the manifest entry for /admin/orders for its navigation_context (a prose string describing how to reach the route, e.g. 'log in, open the admin panel, click the Orders tab'). If a navigation_context is recorded, follow those steps instead of rediscovering the route from scratch. If it is empty or missing, prompt the team to add it to the manifest route so future rescans can navigate to authenticated/multi-step routes reliably. Never skip a route just because it requires authentication — use the authentication strategy appropriate to the auth type (cookie/session, OAuth token injection, or TOTP).",
       "files": [],
       "expectations": [
-        "Checks manifest for navigation_context.navigation_steps",
-        "Uses recorded navigation steps if available",
-        "Prompts to add navigation context if missing",
+        "Reads the route's navigation_context string from the manifest",
+        "Uses the recorded navigation context if available",
+        "Prompts to add navigation_context if missing",
         "Does not skip the route due to authentication requirement",
         "Names appropriate auth strategy for the auth type"
       ]
@@ -160,11 +160,11 @@
       "id": 12,
       "category": "negative",
       "prompt": "Scan this webapp and generate PageObjects. The MCP Playwright server is not running.",
-      "expected_output": "Agent performs the MCP pre-flight check by attempting to call mcp_microsoft_pla_browser_snapshot. The call fails. Agent stops immediately and outputs: 'MCP Playwright server is not available. This skill requires the @playwright/mcp (or equivalent) MCP server to be running and connected. Please enable it in your VS Code MCP configuration (.vscode/mcp.json or user settings) and restart the agent session, then retry.' Agent does NOT fall back to static sources (route configs, OpenAPI, guided traversal) as a substitute for the crawl. No seed assembly, DOM inspection, or PageObject generation is attempted.",
+      "expected_output": "Agent performs the MCP pre-flight check by attempting to call an MCP Playwright browser tool (e.g. the browser_snapshot tool exposed by the @playwright/mcp server). The call fails. Agent stops immediately and outputs: 'MCP Playwright server is not available. This skill requires the @playwright/mcp (or equivalent) MCP server to be running and connected. Please enable it in your VS Code MCP configuration (.vscode/mcp.json or user settings) and restart the agent session, then retry.' Agent does NOT fall back to static sources (route configs, OpenAPI, guided traversal) as a substitute for the crawl. No seed assembly, DOM inspection, or PageObject generation is attempted.",
       "files": [],
       "expectations": [
         "Performs MCP pre-flight check before any other step",
-        "Detects that mcp_microsoft_pla_browser_* tools are unavailable",
+        "Detects that the MCP Playwright browser tools are unavailable",
         "Stops immediately — does not proceed to seed assembly or crawl",
         "Outputs the exact stop message naming the missing MCP server",
         "Does NOT fall back to static sources (route config, OpenAPI, guided traversal) as a crawl substitute",
@@ -175,13 +175,41 @@
       "id": 13,
       "category": "negative",
       "prompt": "Re-scan the manifest after the latest UI update. The MCP Playwright server is unavailable.",
-      "expected_output": "Agent performs the MCP pre-flight check at the start of Maintain mode. The call to mcp_microsoft_pla_browser_snapshot fails. Agent stops and outputs: 'MCP Playwright server is not available. Please enable it in your VS Code MCP configuration and restart the agent session, then retry.' Agent does not attempt to diff the manifest, update selectors, or infer DOM changes from static files.",
+      "expected_output": "Agent performs the MCP pre-flight check at the start of Maintain mode. The call to an MCP Playwright browser tool fails. Agent stops and outputs: 'MCP Playwright server is not available. Please enable it in your VS Code MCP configuration and restart the agent session, then retry.' Agent does not attempt to diff the manifest, update selectors, or infer DOM changes from static files.",
       "files": [],
       "expectations": [
         "Pre-flight check runs before entering RE-SCAN or HEALING scope",
         "Stops on MCP unavailability — does not attempt static diff or inference",
         "Outputs the stop message naming the missing MCP server",
         "Does not touch manifest.json or PageObject files without a live DOM"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "output-format",
+      "prompt": "Show the structure of the manifest.json a Create-mode scan should write for the /login route.",
+      "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the literal key 'data-cy' (not snake_case 'data_cy'), and each coverage_gap uses camelCase 'suggestedDataCy' (not 'suggested_data_cy'). 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
+      "files": [],
+      "expectations": [
+        "routes is a JSON array of route objects (manifest_shape: array)",
+        "Element keys use literal 'data-cy', not 'data_cy'",
+        "Gap keys use camelCase 'suggestedDataCy', not 'suggested_data_cy'",
+        "navigation_context is a string, not an object",
+        "References validating/canonicalizing via validate_artifacts.py before closeout"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "output-format",
+      "prompt": "Before you report the scan complete, what validation do you run on the artifacts?",
+      "expected_output": "Runs the mandatory closeout validation gate: 'python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize' and 'validate_artifacts.py seed <bdd_artifacts>/seed.yaml' (and 'validate_artifacts.py profile' if a profile is present). The manifest check rejects snake_case keys and an object navigation_context; --canonicalize sorts routes/elements and rewrites with sorted keys. The seed check rejects inline credential literals. The session is not reported complete until every validator exits 0.",
+      "files": [],
+      "expectations": [
+        "Runs validate_artifacts.py on the manifest with --canonicalize",
+        "Runs validate_artifacts.py on the seed",
+        "Notes the manifest check rejects snake_case keys and object navigation_context",
+        "Notes the seed check rejects inline credential literals",
+        "Does not report done until validators exit 0"
       ]
     }
   ]

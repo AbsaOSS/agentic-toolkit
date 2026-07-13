@@ -3,10 +3,11 @@
 scan_ac_links.py — scan living-doc .feature files for missing or malformed @AC: traceability.
 
 Usage:
-    python scan_ac_links.py <features_dir>
+    python scan_ac_links.py <features_dir> [--us-dir <rel>] [--func-dir <rel>]
 
-Only scans files under 'features/us/' and 'features/functionalities/' — living-doc paths.
-Other feature files (smoke tests, regression suites, exploratory probes) are skipped.
+Only scans files under the living-doc directories (default 'features/liv_doc_us/' and
+'features/liv_doc_func/'; override with --us-dir/--func-dir to match the Project Profile
+`feature_dirs`). Other feature files (smoke tests, regression suites, exploratory probes) are skipped.
 
 For every Scenario: / Scenario Outline: line found in living-doc files, checks that:
   - At least one '@AC:<id>' Cucumber tag appears on a tag line immediately above it (error)
@@ -38,14 +39,15 @@ TAG_LINE = re.compile(r"^\s*@\S+")
 COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)
 
-# Living-doc path components — only files under these directories are scanned
-LIVING_DOC_PATHS = ("features/us/", "features/functionalities/")
+# Living-doc path components — only files under these directories are scanned.
+# Defaults match the reference project; override via --us-dir / --func-dir.
+LIVING_DOC_PATHS = ("features/liv_doc_us/", "features/liv_doc_func/")
 
 
-def is_living_doc_file(path: Path) -> bool:
+def is_living_doc_file(path: Path, living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS) -> bool:
     """Return True if the file is in a living-doc feature directory."""
     normalised = str(path).replace("\\", "/")
-    return any(segment in normalised for segment in LIVING_DOC_PATHS)
+    return any(segment in normalised for segment in living_doc_paths)
 
 
 def get_tags_above(lines: list[str], scenario_index: int) -> list[str]:
@@ -159,14 +161,14 @@ def scan_file(path: Path) -> list[dict]:
     return issues
 
 
-def main(features_dir: str) -> None:
+def main(features_dir: str, living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS) -> None:
     root = Path(features_dir)
     if not root.exists():
         print(f"Error: directory not found: {features_dir}")
         sys.exit(1)
 
     all_files = sorted(root.rglob("*.feature"))
-    feature_files = [f for f in all_files if is_living_doc_file(f)]
+    feature_files = [f for f in all_files if is_living_doc_file(f, living_doc_paths)]
     skipped = len(all_files) - len(feature_files)
 
     if skipped:
@@ -174,7 +176,7 @@ def main(features_dir: str) -> None:
 
     if not feature_files:
         print(f"No living-doc .feature files found under {features_dir}")
-        print(f"Expected files under 'features/us/' or 'features/functionalities/'")
+        print(f"Expected files under {' or '.join(repr(p) for p in living_doc_paths)}")
         return
 
     all_issues: list[dict] = []
@@ -217,7 +219,26 @@ def main(features_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python scan_ac_links.py <features_dir>")
-        sys.exit(1)
-    main(sys.argv[1])
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Scan living-doc .feature files for missing or malformed @AC: traceability."
+    )
+    parser.add_argument("features_dir", help="Root directory to scan recursively for .feature files.")
+    parser.add_argument(
+        "--us-dir",
+        default="features/liv_doc_us/",
+        help="Living-doc User Story directory fragment (Project Profile feature_dirs.user_story).",
+    )
+    parser.add_argument(
+        "--func-dir",
+        default="features/liv_doc_func/",
+        help="Living-doc Functionality directory fragment (Project Profile feature_dirs.functionality).",
+    )
+    args = parser.parse_args()
+
+    def _norm(fragment: str) -> str:
+        fragment = fragment.replace("\\", "/").strip("/")
+        return f"{fragment}/"
+
+    main(args.features_dir, (_norm(args.us_dir), _norm(args.func_dir)))

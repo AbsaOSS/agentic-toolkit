@@ -1,18 +1,77 @@
 # Living Documentation — BDD Schemas
 
 Templates and schemas for BDD automation files. Load this file when writing or validating:
-- US or Functionality **feature file headers** (`features/us/`, `features/functionalities/`)
+- The **Project Profile** (`.project-profile.yaml`) — the per-project config that supplies all conventions below
+- US or Functionality **feature file headers**
 - **PageObject file headers** (full header or cross-reference header)
-- **ExplorationFixture** entries in `seed.yaml`
-- **manifest.json** `field_constraints` entries
+- **seed.yaml** (Business Seed) and **manifest.json** (Exploration Manifest)
 
 For entity definitions (IDs, status vocabulary, AC format, relationship diagram) see [living-doc-glossary](./living-doc-glossary.md).
 
 ---
 
+## Project Profile (config-driven conventions)
+
+**Every value a skill could otherwise hardcode — directory names, the test-id attribute,
+state-casing, tag conventions — lives in one Project Profile file.** Skills read the profile at
+session start and never assume defaults. This keeps the toolkit portable across projects that use
+different directory layouts or naming.
+
+**Location:** `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`).
+The agent creates it on first run from the defaults below and confirms each value with the user.
+If it already exists, load it and skip the prompt.
+
+```yaml
+# .copilot/bdd/.project-profile.yaml — defaults shown match the reference (AUL) project.
+test_id_attribute: data-cy            # what page.getByTestId() resolves to (Playwright testIdAttribute)
+
+feature_dirs:
+  user_story:    features/liv_doc_us      # E2E User Story feature files
+  functionality: features/liv_doc_func    # Functionality (system-test) feature files
+
+paths:
+  bdd_artifacts:  .copilot/bdd            # seed.yaml, manifest.json, breaking-changes.md
+  pageobjects:    playwright/pages
+  steps:          playwright/steps
+
+# AC state vocabulary as written inside `# AC:` blocks and feature-file headers (Title-case).
+ac_states: [Planned, In Review, Active, Deprecated]
+
+# PageObject header `status:` vocabulary (lowercase).
+pageobject_statuses: [planned, candidate, active, deprecated]
+
+# Scenario tagging conventions (see "Feature file tags" below).
+scenario_conventions:
+  feature_tag:        true     # @US_ID:<id> / @FUNC_ID:<id> on the Feature
+  domain_tag:         true     # optional second feature-level tag, e.g. @domain_create
+  suite_tags:         ["@Regression"]   # additional scenario-level tags allowed beside @AC:
+  section_banners:    true     # "# *** Happy day scenarios ***" / "# *** Negative scenarios ***"
+
+manifest_shape: array          # routes is a JSON array of {url, ...} objects (see Manifest schema)
+```
+
+| Field | Used by | Default (AUL) |
+|---|---|---|
+| `test_id_attribute` | pageobject-scan, data-cy-instrument, gherkin-step | `data-cy` |
+| `feature_dirs.user_story` | scenario-creator, gherkin-living-doc-sync, gap-finder, scripts | `features/liv_doc_us` |
+| `feature_dirs.functionality` | scenario-creator, pageobject-scan, gap-finder, scripts | `features/liv_doc_func` |
+| `paths.bdd_artifacts` | pageobject-scan, data-cy-instrument | `.copilot/bdd` |
+| `paths.pageobjects` / `paths.steps` | pageobject-scan, gherkin-step | `playwright/pages` / `playwright/steps` |
+| `ac_states` | all catalog skills, scenario-creator, gherkin-living-doc-sync | `Active` etc. (Title-case) |
+| `pageobject_statuses` | pageobject-scan | `active` etc. (lowercase) |
+| `scenario_conventions` | scenario-creator, gherkin-living-doc-sync | as shown |
+
+> **Casing rule:** AC states are **Title-case** inside `# AC:` blocks (`- Active`). PageObject header
+> `status:` is **lowercase** (`status: active`). These are two distinct fields — do not unify them.
+> Wherever this document or a skill shows `ACTIVE`/`PLANNED` in upper-case prose, it refers to the
+> *logical* state; the *written* form follows the profile vocabulary above.
+
+---
+
 ## US Feature File Header
 
-Header comment block at the top of every `features/us/us-<nnn>-<kebab>.feature` file.
+Header comment block at the top of every User Story feature file —
+`<feature_dirs.user_story>/us-<nnn>-<kebab>.feature` (default `features/liv_doc_us/`).
 Holds all US metadata and is mined during living documentation output generation.
 
 ```gherkin
@@ -20,7 +79,7 @@ Holds all US metadata and is mined during living documentation output generation
 # LIVING DOC — US-<n> · <US Title>
 # =============================================================================
 # source:          https://github.com/<org>/<repo>/issues/<n>    ← optional
-# status:          PLANNED | IN_REVIEW | ACTIVE | DEPRECATED
+# status:          active        ← one of profile `ac_states`, lower-cased (active | planned | deprecated)
 # business_value:
 #   - <bullet describing the business outcome>
 # not_in_scope:                                                  ← optional
@@ -32,10 +91,11 @@ Holds all US metadata and is mined during living documentation output generation
 #
 #   AC:US-<n>-01 (v<version> - <State>)
 #     - <description of the AC>
-#     - <Aspect>: <value1>, <value2>      ← optional; used for {placeholder} ACs
+#     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed in AC text
 #
 #   AC:US-<n>-02 (v<version> - <State>)
-#     - <description of the AC>
+#     - <description of the AC with optional {placeholder-name} for parameterised variants>
+#     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
 
 @US_ID:US-<n>
@@ -47,7 +107,21 @@ Feature: <US Title>
 
   # AC:US-<n>-01 (v<version> - <State>) — <AC description>
   @AC:US-<n>-01
-  Scenario: <scenario title>
+  Scenario: <scenario title>             ← single scenario = full AC coverage (no aspect split)
+    ...
+
+  # — when Aspect values are declared and need individual scenarios:
+  @AC:US-<n>-01/aspect:<value1>
+  Scenario: <scenario title for value1 branch>
+    ...
+
+  # — when a custom {placeholder-name} keyword is used (both US and Func):
+  @AC:US-<n>-02/<placeholder-name>:<value1>
+  Scenario: <scenario title for value1>
+    ...
+
+  @AC:US-<n>-02/<placeholder-name>:<value2>
+  Scenario: <scenario title for value2>
     ...
 ```
 
@@ -67,7 +141,8 @@ Feature: <US Title>
 
 ## Functionality Feature File Header
 
-Header comment block at the top of every `features/functionalities/<feat-kebab>/func-<nnn>-<kebab>.feature` file.
+Header comment block at the top of every Functionality feature file —
+`<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (default `features/liv_doc_func/`).
 
 ```gherkin
 # =============================================================================
@@ -87,9 +162,11 @@ Header comment block at the top of every `features/functionalities/<feat-kebab>/
 #
 #   AC:FUNC-<nnn>-01 (v<version> - <State>)
 #     - <description in business language — no data-cy IDs in AC text>
+#     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed
 #
 #   AC:FUNC-<nnn>-02 (v<version> - <State>)
-#     - <description>
+#     - <description — may contain a {placeholder-name} for parameterised variants>
+#     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
 
 @FUNC_ID:FUNC-<nnn>
@@ -98,7 +175,8 @@ Feature: <Feature Name> — <Functionality Name>
   language. Present only when purpose adds context beyond the title.>   ← optional
 
   # No scenarios yet — uncovered ACs flagged by coverage_report.py.
-  # When adding scenarios: include both # AC:<id> comment and @AC:<id>[/param:value] tag above each Scenario.
+  # When adding scenarios: include # AC:<id> comment and @AC:<id> or @AC:<id>/<placeholder-name>:<value> tag above each Scenario.
+  # ACs with a {placeholder-name}: one scenario per declared value is required — partial coverage is a gap.
 ```
 
 **Header fields:**
@@ -286,123 +364,187 @@ A `status: candidate` surface is **not a permanent state**. The surface is known
 
 ---
 
-## ExplorationFixture
+## seed.yaml (Business Seed)
 
-An **ExplorationFixture** is a named set of field→value declarations attached to a specific route in `seed.yaml`. It tells the exploration agent how to fill forms so it can enter wizards, open dialogs, and discover UI surfaces that are otherwise unreachable by passive observation.
+`seed.yaml` lives at `<paths.bdd_artifacts>/seed.yaml` (default `.copilot/bdd/seed.yaml`). It is the
+durable, human-curated input to every scan session: app entry point, business domains → routes,
+known entities for parameterised routes, test-user roles, and pre-declared form values. **Re-read it
+in full at the start of every scan session.** The agent appends to it as it discovers entities.
 
-### value_class taxonomy
+```yaml
+# .copilot/bdd/seed.yaml
+# Business Seed — last verified <date> (app <version>)
 
-| Class | Meaning | How the agent sources it |
+app:
+  name: <App Name>
+  base_url: https://<host>
+  auth_entry_path: /auth/dashboard        # landing route after auth
+
+credentials_source: <path/to/.env>        # file holding TEST_USERID / TEST_PASSWORD etc.
+
+test_id_attribute: data-cy                # mirrors the Project Profile value
+
+business_domains:                         # business surface → route → Feature entity
+  - name: Authentication
+    route_prefix: /login
+    feature_id: FEAT-001
+  - name: Create Domain Wizard
+    route_prefix: /auth/all-domains/create-domain/about
+    feature_id: FEAT-006
+  - name: Edit Domain
+    route_prefix: /auth/all-domains/{domainId}/{version}/edit-domain
+    feature_id: FEAT-UNKNOWN              # no Feature yet — flagged for living-doc-create-feature
+    note: "RE-SCAN [<date>]. Reuses the shared stepper in edit mode."
+
+user_roles:
+  - role: standard_user
+    description: Default E2E test user — covers most flows
+    note: Items that do not navigate for this role
+
+# known_entities — real entity IDs observed during scans. Copyable values for
+# parameterised routes ({domainId}/{version}) and form fields. Never store prod IDs.
+known_entities:
+  domains:
+    - id: <uuid>
+      version: 1
+      name: "E2E Domain ..."
+      status: Draft
+      owner: <test-user>
+      note: "Primary owned domain for the test user."
+      next_scan_targets:                  # optional: queued sub-routes/tabs to scan next
+        - tab: Version management
+          url: /auth/all-domains/<uuid>/1/about
+          action: "Click 'Version management' tab — scan for data-cy elements."
+      data_feeds:                         # optional nested entities
+        - id: <uuid>
+          version: 1
+          name: "test csv"
+
+# form_fixtures — pre-declared field values for form/wizard traversal, keyed by route path.
+# The agent reads these before falling back to the sourcing cascade.
+form_fixtures:
+  /auth/all-domains/create-domain/about:
+    - field: domain-name
+      value: "E2E Test Domain"
+      source: seed_declared               # seed_declared | user_provided | agent_observed
+      note: "Append a timestamp suffix at runtime to avoid duplicate rejection."
+    - field: cost-center
+      value: "SA345678"
+      source: seed_declared
+      note: "HEALED [<date>] — format must be 2 alpha + 6 digits per component validator."
+```
+
+**Top-level keys:**
+
+| Key | Required | Purpose |
 |---|---|---|
-| `copyable` | Value can be reused verbatim across runs — taken from an existing entity in the app | Navigate to the entity list; read an actual field value; replay it |
-| `derived` | Must be transformed from an existing entity — e.g. append `-copy` to a domain name to avoid duplicate rejection | Read existing value; apply a known transformation rule |
-| `fake` | Any syntactically valid value — real-world existence not required (e.g. a description, an email address) | Generate locally from label + placeholder + field type |
-| `real-world` | Must exist in the real environment for submission to succeed (e.g. a Glue table name, a tenant ID, an AWS account ID) | Sourced from `seed.yaml form_fixtures` or user-provided via Source E pause |
+| `app` | Yes | `name`, `base_url`, `auth_entry_path` |
+| `credentials_source` | Yes | Path to the env file holding test credentials — **never inline literals** |
+| `test_id_attribute` | Yes | Mirrors the Project Profile (`data-cy` by default) |
+| `business_domains[]` | Yes | `name`, `route_prefix`, `feature_id` (+ optional `note`). Use `FEAT-UNKNOWN` when no Feature entity exists yet |
+| `user_roles[]` | Yes | `role`, `description` (+ optional `note`) |
+| `known_entities` | No | Real IDs harvested during scans for parameterised routes; `domains[]` with `id/version/name/status/owner/note`, optional `next_scan_targets[]` and nested `data_feeds[]` |
+| `form_fixtures` | No | Map of `route → [ {field, value, source, note?} ]`. `source`: `seed_declared` \| `user_provided` \| `agent_observed` |
 
-### Sourcing cascade (applied in priority order)
+**Credential rule:** credentials are referenced via `credentials_source` (an env file) or `env:VAR_NAME`
+placeholders. A literal credential value anywhere in `seed.yaml` is a **security violation** — refuse to
+proceed until it is replaced.
 
-1. **`seed.yaml form_fixtures`** — pre-declared by user or written by the agent in a prior session.
-2. **Existing app entities** — navigate to the entity list for this surface type; read a sample entity's actual field values; copy or derive.
-3. **Field context inference** — read label + placeholder + tooltip + adjacent validation hint text → infer a plausible `fake` value (`"Domain name"` → `"E2E Test Domain"`, `email` field → `"test@example.com"`).
-4. **User-assist pause** — none of the above is sufficient for a `real-world` field → show user the form, request the value, record it back to `form_fixtures` with `source: user_provided`.
+### form_fixtures sourcing cascade (how the agent resolves a field value)
+
+1. **`seed.yaml form_fixtures`** — pre-declared (`source: seed_declared`) or written in a prior session (`agent_observed`).
+2. **Existing app entities** — navigate to the entity list; read a real field value; copy it, or derive (e.g. append a suffix to avoid duplicate rejection).
+3. **Field context inference** — read label + placeholder + tooltip → infer a plausible value (`"Domain name"` → `"E2E Test Domain"`, `email` → `"test@example.com"`).
+4. **User-assist pause** — for a value that must exist in the real environment and none of the above suffices → show the user the form, request the value, record it back with `source: user_provided`.
+
+> **Optional advanced fields.** For complex forms a fixture entry may also carry `value_class`
+> (`copyable` / `derived` / `fake` / `real-world`), a `values[]` array of labelled traversal branches
+> (each `{label, value, source}`, `label: default` = happy path), or a `condition`
+> (`{when_field, when_value}`) that gates the fill. These are optional extensions to the base
+> `{field, value, source}` shape — omit them unless the form requires branch exploration or conditional fields.
 
 ### Input validation probing
 
-After a successful form fill and submission, the agent probes validation behaviour on each text input:
+After a successful form fill and submission, probe each text input and scan the form after each probe
+to capture error `data-cy` elements visible only in the invalid state:
 
 | Probe | Input | What to observe |
 |---|---|---|
 | Special characters | `<>'"&\` | Inline error, silent strip, or truncation |
-| Oversized input | 200+ random characters | Character counter, truncation at max length, or rejection message |
-| Wrong type | Alphabetic text in a numeric or date field | Inline validation message or field rejection |
-| Duplicate detection | Identical value to a known existing entity name | Duplicate-rejected error message and its `data-cy` |
+| Oversized input | 200+ characters | Character counter, truncation, or rejection message |
+| Wrong type | Text in a numeric/date field | Inline validation message or rejection |
+| Duplicate detection | A known existing entity name | Duplicate-rejected error and its `data-cy` |
 
-Scan the form after each probe to capture `data-cy` error messages, character counters, and validation banners that are only visible during invalid input. These become source material for `field_validation` Functionality stubs.
+Findings become source material for `field_validation` Functionality stubs and are recorded in the
+manifest route's optional `field_constraints[]` (see Manifest schema below).
 
-### seed.yaml schema
+---
 
-```yaml
-form_fixtures:
-  /auth/all-domains/create-domain/about:
+## manifest.json (Exploration Manifest)
 
-    # Simple single value
-    - field_data_cy: domain-name
-      value_class: fake
-      value: "E2E Exploration Domain"
-      source: inferred          # inferred | user_provided | env_var | existing_entity
-
-    # Multiple values — agent treats each as a separate traversal branch.
-    # The first (label: default) is used for the happy path; labelled alternates
-    # are explored afterwards and may open different form sections or sub-routes.
-    - field_data_cy: domain-type
-      value_class: copyable
-      values:
-        - label: default
-          value: "BATCH"
-          source: existing_entity
-        - label: streaming-path   # explores different form section
-          value: "STREAMING"
-          source: existing_entity
-
-    # Conditional field — only filled when another field holds a specific value.
-    - field_data_cy: stream-endpoint
-      value_class: real-world
-      value: env:TEST_STREAM_ENDPOINT
-      source: env_var
-      condition:
-        when_field: domain-type
-        when_value: STREAMING
-
-    # Real-world field resolved via user-assist pause
-    - field_data_cy: tenant-id
-      value_class: real-world
-      value: env:TEST_TENANT_ID
-      source: env_var
-```
-
-**Field reference:**
-
-| Key | Required | Purpose |
-|---|---|---|
-| `field_data_cy` | Yes | `data-cy` attribute of the target input element |
-| `value_class` | Yes | `copyable` / `derived` / `fake` / `real-world` |
-| `value` | One of `value` or `values` | Shorthand for a single fill value |
-| `values[]` | One of `value` or `values` | Array of labelled values; agent explores each as a separate traversal branch |
-| `values[].label` | Yes (when `values` used) | Branch identifier; `default` marks the happy-path value |
-| `values[].value` | Yes | The actual fill value |
-| `source` | Yes | `inferred` \| `user_provided` \| `env_var` \| `existing_entity` |
-| `condition` | No | Restricts the fill to a specific context |
-| `condition.when_field` | Yes (when `condition` used) | `data-cy` of the controlling field |
-| `condition.when_value` | Yes (when `condition` used) | Value the controlling field must hold |
-
-### manifest field_constraints schema
-
-Validation findings are stored per-field in the manifest `navigation_context.field_constraints` for the route:
+`manifest.json` lives at `<paths.bdd_artifacts>/manifest.json` (default `.copilot/bdd/manifest.json`).
+It is the machine record of every scanned surface. **`routes` is a JSON array** of route objects
+(profile `manifest_shape: array`). Load targeted entries by route during a session; load the full file
+only for a RE-SCAN.
 
 ```json
-"field_constraints": [
-  {
-    "field_data_cy": "domain-name",
-    "max_length": 100,
-    "special_chars": "rejected",
-    "duplicate": "rejected-with-error",
-    "duplicate_error_data_cy": "domain-name-duplicate-error"
-  },
-  {
-    "field_data_cy": "tenant-id",
-    "allowed_format": "alphanumeric",
-    "real_world_required": true
-  }
-]
+{
+  "generated": "2026-06-08T12:00:00Z",
+  "scan_version": "v1.9.2-36-g6660993",
+  "routes": [
+    {
+      "url": "/login",
+      "title": "App - Login",
+      "pageobject_path": "playwright/pages/LoginPage.ts",
+      "feature_id": "FEAT-001",
+      "last_scanned": "2026-05-28T13:32:00Z",
+      "note": "Optional scan provenance.",
+      "elements": [
+        { "data-cy": "input-username", "tag": "cps-input",  "label": "Username" },
+        { "data-cy": "btn-login",      "tag": "cps-button", "label": "Login", "note": "NEW [scan: ...]" }
+      ],
+      "coverage_gaps": [
+        { "tag": "button", "ariaLabel": "Collapse sidebar", "suggestedDataCy": "btn-collapse-sidebar", "note": "no data-cy" }
+      ],
+      "open_actions_menu": {
+        "owned_domain": ["View data feeds", "Grant access", "Edit domain"],
+        "note": "Optional — menu contents per context."
+      },
+      "navigation_context": "Default landing page after login.",
+      "field_constraints": [
+        { "field": "domain-name", "max_length": 100, "special_chars": "rejected", "duplicate": "rejected-with-error", "duplicate_error_data_cy": "domain-name-duplicate-error" }
+      ]
+    }
+  ]
+}
 ```
+
+**Route object fields:**
+
+| Field | Required | Purpose |
+|---|---|---|
+| `url` | Yes | Route path; use `{param}` for dynamic segments. `modal:<host-route>` for dialog-only surfaces |
+| `title` | Yes | Document/page title at scan time |
+| `pageobject_path` | Yes | Repo-relative path to the PageObject file |
+| `feature_id` | Yes | Living-doc Feature ID, or `FEAT-UNKNOWN` |
+| `last_scanned` | Yes | ISO 8601 timestamp; surfaces stale entries |
+| `elements[]` | Yes | Discovered test-id elements: `{ "data-cy": <id>, "tag": <html-tag>, "label": <text\|null>, "note"?: <scan note> }` |
+| `coverage_gaps[]` | Yes | Interactive elements lacking a test-id: `{ "tag", "text"\|"ariaLabel"\|"role"\|"type", "suggestedDataCy", "note"? }`. Empty array = fully instrumented |
+| `navigation_context` | Yes | **String** — how to reach the route (prose). Reused across sessions |
+| `note` | No | Scan provenance for the route as a whole |
+| `open_actions_menu` | No | Context-menu contents keyed by context (e.g. owned vs non-owned) |
+| `field_constraints[]` | No | Per-field validation findings: `{ field, max_length?, special_chars?, duplicate?, duplicate_error_data_cy?, allowed_format?, real_world_required? }` |
+
+> **Key casing:** element/gap keys use the literal attribute name `data-cy` and the camelCase
+> `suggestedDataCy`, matching the proven manifests. Do not snake_case them (`data_cy` / `suggested_data_cy`).
 
 ### Lifecycle
 
 | Event | What happens |
 |---|---|
-| First form encountered | Agent applies sourcing cascade; fills form using `default` values; explores labelled alternate branches for multi-value fields; probes validation |
-| `condition` field not yet visible | Agent skips the field until the controlling field holds the required `when_value` |
-| `real-world` field has no resolvable value | User-assist pause → user provides value → saved to `form_fixtures` with `source: user_provided` |
-| Validation probe discovers new `data-cy` | Added to manifest `elements`; flagged as candidate for `field_validation` Functionality |
-| Next scan session | Agent reads `form_fixtures` from `seed.yaml`; skips sourcing cascade for pre-declared fields |
-| Constraint changes (e.g. max length increased) | Agent detects mismatch on re-probe; updates `field_constraints`; flags in `breaking-changes.md` |
+| First form encountered | Agent applies the sourcing cascade; fills the form; probes validation |
+| `real-world` value missing | User-assist pause → value saved to `form_fixtures` with `source: user_provided` |
+| Validation probe finds a new `data-cy` | Added to the route `elements[]`; flagged as a `field_validation` Functionality candidate |
+| Next scan session | Agent reads `form_fixtures`; skips the cascade for pre-declared fields |
+| Constraint changes (e.g. max length) | Agent updates `field_constraints`; flags the change in `breaking-changes.md` |
+| Element missing on re-scan | Flag `BREAKING CHANGE`; never auto-delete the locator |

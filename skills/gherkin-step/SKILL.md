@@ -98,6 +98,24 @@ Given('I am on the Domain Detail page for a domain I own', async ({ page }) => {
 
 ---
 
+## Step type taxonomy
+
+Classify every step as one of four types. Naming patterns are project conventions — follow the
+Project Profile / existing step files; the patterns below match the reference (AUL) project.
+
+| Type | Keyword | Purpose | Convention |
+|---|---|---|---|
+| **Navigation Given** | `Given` | Move the browser to a URL via real `page.goto()` (directly or a PageObject `goto()`). One navigation per step. **Do not** add a `Then` just to assert the destination loaded. | starts with `I am on the …` / `the user is on the …` |
+| **Action When** | `When` | One atomic UI interaction (click, fill, select, toggle). Neutral text — no success/failure baked in. Expected values arrive as `{string}`/`{int}` params, never hardcoded. | `I click the …` / `the user fills in the …` |
+| **Compound Given (accelerator)** | `Given` | A setup shortcut that chains several actions (e.g. log in + navigate) to skip flow that is not under test. Used **only** in `Background` or as the first step of a scenario — never mid-scenario. No assertions. | lives in a `*.setup.steps.ts` file under `paths.steps`; JSDoc lists the atomic steps it replaces |
+| **Assertion Then** | `Then` | Verify a UI element or application state. Assertions only. | `the … should be …` / `the user should see …` |
+
+Keep page-action steps (Navigation Given, Action When, Assertion Then) in the domain step file
+(`<area>.steps.ts`); keep heavier compound accelerators in `<area>.setup.steps.ts` so setup concerns
+stay separate from page actions.
+
+---
+
 ## Function naming convention
 
 Name step functions after the business action, not the full step text:
@@ -149,7 +167,7 @@ def step_confirm_order(context):
 ## Encapsulate selectors in PageObjects
 
 Step definitions for domain-level scenarios must not contain CSS selectors, element IDs, or XPath.
-Encapsulate all selector logic in PageObjects (selector preference: `data-testid` > `aria-label`/role > CSS class).
+Encapsulate all selector logic in PageObjects (selector preference: `getByTestId()`, which resolves to the Project Profile `test_id_attribute` (default `data-cy`) > `aria-label`/role > CSS class).
 
 ```typescript
 // ✅ — PageObject hides selector details
