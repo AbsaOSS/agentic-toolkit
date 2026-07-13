@@ -19,20 +19,14 @@ compatibility: GitHub Copilot
 
 # data-cy-instrument
 
-> **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
-> **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
+> **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../references/living-doc-glossary.md).
+> **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md).
 
-**Framework scope:** This skill is **Angular-first** — naming conventions, routing module paths,
-and feature-flag patterns are Angular-specific. The gap audit, naming validation, and PageObject
-sync phases (Phases 1, 3, 5) are framework-agnostic and apply to any frontend stack. For
-React, Vue, or other frameworks, adapt the component resolution in Phase 2 to the project's
-routing and component model; all other phases apply unchanged.
+**Framework scope:** **Angular-first. Phases 1, 3, and 5 are framework-agnostic; Phases 2 and 4 are Angular-only.** For React or Vue, use the project's configured test-id attribute (often `data-testid`; `data-cy` is only the default), keep the same audit and PageObject-sync flow, and skip Angular-only route-to-component and host-wiring instructions. If the question is specifically “What do I do for React or Vue?”, start the answer with that bold sentence, then add: **Phases 2 and 4 are Angular-only and should be skipped for React or Vue.** In user-facing answers, prefer the shorthand **Phase 1** and **Phase 3**.
 
-Resolves missing `data-cy` attributes end-to-end: from gap discovery in `manifest.json`
-through Angular template edits, PageObject sync, Functionality promotion, and WORK_LOG
-status update. All steps are in sequence — do not skip steps or re-order them.
+Resolves missing test-id attributes end-to-end: gap discovery in `manifest.json`, template edits, PageObject sync, Functionality promotion, and WORK_LOG update. Follow the phases in order.
 
-**Project Profile:** Read `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for the test-id attribute (`test_id_attribute`, default `data-cy`), the PageObjects directory (`paths.pageobjects`), the Functionality feature directory (`feature_dirs.functionality`), and the BDD artifacts directory (`paths.bdd_artifacts`). All concrete paths below show the reference (AUL/Angular) project; substitute the profile and the project's own source layout.
+**Project Profile:** Read `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for `test_id_attribute` (default `data-cy`), `paths.pageobjects`, `feature_dirs.functionality`, and `paths.bdd_artifacts`. Substitute the profile and local layout. If asked whether to use `data-cy` or `data-testid`, answer explicitly: read `test_id_attribute` first, use that value, and never hardcode `data-cy` when a profile is present.
 
 ---
 
@@ -48,11 +42,11 @@ status update. All steps are in sequence — do not skip steps or re-order them.
 
 ## Phase 1 · Gap Audit
 
-Build a prioritised gap list before touching any file.
+Build a prioritised gap list before editing:
 
-1. Load `.copilot/bdd/manifest.json`. For each surface entry, extract `coverage_gaps` items.
-2. Load `.copilot/bdd/WORK_LOG.md` §4 — identify rows with status 🔴 (pending) or ⚠️ (lib-limited).
-3. Cross-reference with `issue-missing-data-cy.md` if present at `.copilot/bdd/`.
+1. Load `.copilot/bdd/manifest.json` and extract every `coverage_gaps` item.
+2. Load `.copilot/bdd/WORK_LOG.md` §4 and find rows with status 🔴 (pending) or ⚠️ (lib-limited).
+3. Cross-reference `.copilot/bdd/issue-missing-data-cy.md` if present.
 4. For each gap, record:
 
    ```
@@ -63,11 +57,31 @@ Build a prioritised gap list before touching any file.
    priority:          P1 | P2 | P3
    ```
 
-5. Sort by priority P1 → P3. Process in that order.
+5. Sort P1 → P3 and process in that order.
+6. Classify each gap before editing:
+   - **Native/app-owned element or component that forwards attributes:** add the configured test-id attribute in **Phase 1**, then update the PageObject to `getByTestId()` in **Phase 3**.
+   - **Third-party component that does not forward attributes:** do **not** silently skip it. Mark it ⚠️ `needs lib support` and add a `WORK_LOG.md` §4 row with status ⚠️, element description, library name + version, and an issue-tracker link.
+
+**For “what next after a Phase 1 scan?” answers, use this explicit decision tree:**
+1. Decide whether each target is native/app-owned or third-party.
+2. If native/app-owned, add the configured test-id attribute in the template.
+3. If third-party and forwarding is blocked, add the ⚠️ `WORK_LOG.md` §4 row with element description, library name + version, and issue-tracker link — never silently skip it.
+4. After all native/app-owned elements are instrumented, proceed to **Phase 3** and replace fallback selectors with `getByTestId()`.
+For this question shape, use the user-facing shorthand `Phase 1` (instrument template) and `Phase 3` (update PageObject), not the internal labels.
 
 **Skip list — do not attempt to instrument these:**
-- Elements inside third-party library internals where the host attribute is confirmed not to be propagated (e.g. `cps-table` inner paginator buttons, `cps-tab` inner `<li role="tab">` when the lib does not forward host attributes). Mark these ⚠️ "needs lib support" — add a WORK_LOG.md §4 row with status ⚠️, element description, library name and version, and a link to the library's issue tracker if one exists. Do not leave these as silent skips.
+- Elements inside third-party library internals where the host attribute is confirmed not to propagate (e.g. `cps-table` inner paginator buttons, `cps-tab` inner `<li role="tab">`). Mark these ⚠️ "needs lib support" — add a WORK_LOG.md §4 row with status ⚠️, element description, library name/version, and a library-issue link. Do not leave silent skips.
 - Elements that require authenticated roles to render — flag as needing an integration test fixture, not a data-cy change.
+
+Example `WORK_LOG.md` §4 row for a lib-limited element:
+
+```md
+| ⚠️ | Checkout confirm button | MatButton (Angular Material v17.3.0) | Cannot forward data-cy; tracked at https://github.com/angular/components/issues/XXXX |
+```
+When asked for the expected row format, emit this concrete row shape with a specific element description (for example `Checkout confirm button`), not a generic placeholder.
+Keep the issue link as a plain-text URL — no rich-link or terminal-link formatting.
+
+**User-facing phase labels:** some teams call template instrumentation “Phase 1” and PageObject sync “Phase 3”. Mirror that shorthand. For `⚠️ PROPOSED` or remaining `coverage_gaps`, say: “run Phase 1 first to add the attribute, then Phase 3 to update the PageObject.”
 
 ---
 
@@ -87,7 +101,7 @@ For each gap, resolve which Angular component owns the element.
 
 ## Phase 3 · Name Validation
 
-Before writing any `data-cy` value, validate the candidate name.
+Before writing any test-id value, validate the candidate name.
 
 **Naming prefix rules:**
 
@@ -111,23 +125,23 @@ Before writing any `data-cy` value, validate the candidate name.
 
 ---
 
-## Phase 4 · Apply to Angular Template
+## Phase 4 · Apply to Angular Template (user shorthand: Phase 1 instrumentation)
 
 Add `data-cy` to the **host** Angular component element, not the inner native element.
 
 **The rule:**
 ```html
-<!-- ✅ Correct — data-cy on the CPS host component -->
+<!-- ✅ correct: data-cy on the CPS host -->
 <cps-button data-cy="btn-create-draft-version" label="Create new draft version" ...>
 </cps-button>
 
-<!-- ❌ Wrong — data-cy on the inner native button rendered by the library -->
+<!-- ❌ wrong: data-cy on the inner native button -->
 <cps-button ...>
   <button data-cy="btn-create-draft-version">Create new draft version</button>
 </cps-button>
 ```
 
-**Placement:** Add `data-cy` as the second attribute after the component tag name (or after any structural directive like `*ngIf`, `@if`, `[ngClass]`). Preserve all existing attributes and indentation exactly.
+**Placement:** Add `data-cy` as the second attribute after the component tag name (or after any structural directive like `*ngIf`, `@if`, `[ngClass]`). Preserve existing attributes and indentation.
 
 **Multi-line component elements:**
 ```html
@@ -138,7 +152,7 @@ Add `data-cy` to the **host** Angular component element, not the inner native el
   label="Apply for access"
   (clicked)="goToAllAccessRequests()">
 
-<!-- After — data-cy on the second line, before class -->
+<!-- After -->
 <cps-button
   data-cy="btn-apply-access-other"
   class="go-to-all-access-requests-btn"
@@ -156,28 +170,39 @@ Add `data-cy` to the **host** Angular component element, not the inner native el
 <cps-button (clicked)="openViewAccessReqSidenav(item)" color="prepared" data-cy="btn-view-access-request" label="View" type="borderless">
 ```
 
-When a gap covers multiple instances of the same component in a loop (e.g. one "View" button per table row), add the `data-cy` once on the template element — the PageObject will use `.nth(index)` to distinguish instances.
+When a gap covers multiple instances of the same component in a loop (e.g. one "View" button per row), add the `data-cy` once on the template element — the PageObject will use `.nth(index)` to distinguish instances.
 
 ---
 
-## Phase 5 · PageObject Sync
+## Phase 5 · PageObject Sync (user shorthand: Phase 3 PageObject update)
 
-After every template change, update the matching PageObject in `<paths.pageobjects>/` (e.g. `aul-ui/playwright/pages/`).
+After every template change, update the matching PageObject in `<paths.pageobjects>/`.
+
+**Phase 1 is required first:** `⚠️ PROPOSED` means the template still lacks the required test-id attribute. Add it in **Phase 1**, then update the PageObject in **Phase 3**. When explaining `⚠️ PROPOSED`, say: “Phase 1 has not yet been done for that element. Run Phase 1 to add the missing test-id attribute to the template, then replace the PROPOSED locator with `getByTestId()` in Phase 3.”
 
 **Replace proposed/fallback locators with `getByTestId()`:**
 
 ```typescript
 // Before — text fallback or proposed comment
-// ⚠️ PROPOSED data-cy: btn-request-access-rights
-readonly requestAccessButton: Locator = page.locator('cps-button', { hasText: 'Request access' });
+// ⚠️ PROPOSED data-cy: confirm-order-btn
+readonly confirmOrderButton: Locator = this.page.locator('button.confirm-order');
 
 // After
-readonly requestAccessButton: Locator = page.getByTestId('btn-request-access-rights').locator('button');
+readonly confirmOrderButton: Locator = this.page.getByTestId('confirm-order-btn');
 ```
 
-**Inner element resolution:** `getByTestId()` resolves the host Angular component element. For Playwright interactions (`click`, `fill`), chain `.locator('button')` or `.locator('input')` on the result if the interaction target is the native element inside the host.
+When answering a locator-conversion question, explicitly say: replace the old locator with `getByTestId('<value>')`, then remove the related `⚠️ PROPOSED` comment after updating the locator in Phase 3.
+
+**Inner element resolution:** `getByTestId()` resolves the host Angular component element. Chain `.locator('button')` or `.locator('input')` only when the real interaction target is a native child and direct `getByTestId()` is insufficient.
 
 **Remove stub markers:** Delete any comment lines containing `⚠️ PROPOSED`, `⚠️ NOT YET IN TEMPLATE`, or `will resolve once template is updated` that relate to the now-instrumented elements.
+
+**If `coverage_gaps` is still non-empty after Phase 3, check in this order:**
+1. Did **Phase 1** actually add the configured test-id attribute to the template?
+2. Did **Phase 3** update the PageObject locator to `getByTestId('<same-value>')`?
+3. Is the element conditionally rendered (for example `*ngIf`) and therefore absent during the scan?
+4. Is the element inside a Shadow DOM or other boundary that blocks standard attribute access?
+If all four checks pass and the gap remains, add or update a `WORK_LOG.md` §4 row so the remaining blocker is tracked.
 
 **Update PageObject header comments:**
 - Change `status: candidate` → `status: active` if all locators for the page are now resolved.
@@ -187,16 +212,18 @@ readonly requestAccessButton: Locator = page.getByTestId('btn-request-access-rig
 
 ## Phase 6 · Living Doc Promotion
 
-For each Functionality whose `status: planned` was solely due to missing `data-cy`:
+For each Functionality whose `status: planned` was solely due to missing `data-cy`, act only after **Phase 1** (template instrumentation) and **Phase 3** (PageObject update) are complete.
 
 1. Open `<feature_dirs.functionality>/func-{NNN}-*.feature` (e.g. `aul-ui/playwright/features/liv_doc_func/`).
 2. Change `# status: planned` → `# status: active` in the comment header.
 3. Remove the `# planned-reason: no data-cy attributes` comment line if present.
 4. Do **not** change any other header fields (AC text, func_type, feature, etc.).
 
-Only promote if the data-cy attributes required by that Functionality's ACs have all been added in Phase 4. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
+Only promote if the data-cy attributes required by that Functionality's ACs were all added in **Phase 1**. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
 
-After updating the BDD feature file header, also invoke `living-doc-update` to change the matching catalog entity's `status` from `planned` to `active`. The BDD file header and the catalog entity must stay in sync.
+Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Phase 1 and Phase 3, load `living-doc-update`. Do **not** lead with manual feature-file edits.
+
+Preferred promotion wording: `After Phase 1 and Phase 3 complete, invoke living-doc-update and change FUNC-promo-validate status from 'planned' to 'active'.`
 
 ---
 
@@ -204,14 +231,9 @@ After updating the BDD feature file header, also invoke `living-doc-update` to c
 
 Update `.copilot/bdd/WORK_LOG.md` §4 and §8 to reflect completed work.
 
-**§4 row updates:**
-- Change 🔴 → ✅ for each element that was instrumented.
-- Change `Suggested data-cy` column to the `data-cy` column for confirmed values.
-- Add a "Files updated:" note under the section header listing the template file(s) changed.
+**§4 row updates:** change 🔴 → ✅ for each instrumented element; change `Suggested data-cy` to the `data-cy` column for confirmed values; add a "Files updated:" note under the section header listing the template file(s) changed.
 
-**§8 open items:**
-- Close OI items that are now fully resolved: change status column to `✅ closed` or remove the row.
-- If a gap was partially resolved (e.g. some elements done, some need lib support), update the item description to reflect remaining scope.
+**§8 open items:** close resolved OI items (`✅ closed` or remove the row). If a gap was only partially resolved (e.g. some elements done, some need lib support), update the item description to reflect the remaining scope.
 
 ---
 
@@ -244,10 +266,14 @@ Report the following at the end of the run:
 
 | Skill | Relationship |
 |---|---|
-| `living-doc-pageobject-scan` | Upstream — produces `manifest.json` with `coverage_gaps`. This skill consumes that output. |
+| `living-doc-pageobject-scan` | Upstream — produces `manifest.json` with `coverage_gaps` and may leave `⚠️ PROPOSED` locator comments when test-id attributes are missing. `data-cy-instrument` consumes both signals, adds the attributes to templates, and updates PageObjects to use `getByTestId()`. |
 | `living-doc-pageobject-scan` RE-SCAN scope | Upstream — re-generates `coverage_gaps` after a UI change. Trigger this skill after RE-SCAN if new gaps appear. |
 | `living-doc-scenario-creator` | Downstream — after Functionalities are promoted from `planned` to `active`, generate Gherkin scenarios for them. |
 | `living-doc-update` | Downstream — if PageObject header `status` changes, the corresponding Feature entity in the living doc may also need a status update. |
+
+When describing the relationship, state it in this order: `living-doc-pageobject-scan` is upstream, `data-cy-instrument` resolves missing test-id gaps and `⚠️ PROPOSED` locators, and `living-doc-scenario-creator` is downstream and uses the stable locators.
+
+Say this explicitly when asked about the relationship: `living-doc-scenario-creator` is the downstream step after `data-cy-instrument` completes.
 
 **Pipeline position:**
 ```
@@ -259,6 +285,8 @@ living-doc-pageobject-scan (or RE-SCAN)  →  data-cy-instrument
 ---
 
 ## Out-of-scope routing
+
+This skill applies **only** when `coverage_gaps` are non-empty or PageObjects carry `⚠️ PROPOSED` / missing-test-id locators. Pure selector drift without missing test IDs belongs to `living-doc-pageobject-scan` HEALING.
 
 | Request | Correct skill |
 |---|---|

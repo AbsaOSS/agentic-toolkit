@@ -19,32 +19,30 @@ compatibility: GitHub Copilot
 
 # Gherkin Step Definition Standards
 
-> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md).
 
-> **Framework scope:** This skill covers step definition idioms for **Python behave**, **Cucumber TypeScript**, **Cucumber Java**, and **Cucumber-Scala**. The PageObject ecosystem in this toolkit uses **Playwright + TypeScript** — Python or Java projects must adapt PageObject patterns to their own test framework. All BDD principles (thin steps, no selectors in steps, context object) apply regardless of language.
+> **Framework scope:** Covers **Python behave**, **Cucumber TypeScript**, **Cucumber Java**, and **Cucumber-Scala**. The toolkit's PageObject ecosystem is **Playwright + TypeScript**; Python or Java projects adapt the examples. The core rules — thin steps, no selectors in steps, shared state via context/World — apply everywhere.
 
 ## Respect the boundary with Gherkin text
 
-If the user asks to write or review a **Gherkin scenario / feature file**, do not draft the
-scenario here. Explain that this skill covers **step definition code** only, then route the user to
-`living-doc-scenario-creator` for the Gherkin text itself.
+If the user asks to write or review a **Gherkin scenario / feature file**, do not draft it here. This skill covers **step definition code** only; route Gherkin text requests to `living-doc-scenario-creator`.
 
 ---
 
 ## Context initialization — how PageObjects reach steps
 
-> **Prerequisite:** PageObject classes must exist before step definitions can reference them. If PageObjects have not yet been generated for the screens under test, use `living-doc-pageobject-scan` first to produce them.
+> **Prerequisite:** PageObjects must exist before step definitions can reference them. If they do not, use `living-doc-pageobject-scan` first.
 
-**Python behave:** Step definitions receive a fresh `context` object each scenario. Attach PageObjects in a `before_scenario` hook.
+**Python behave:** each scenario gets a fresh `context`, so state must not leak between scenarios. Attach PageObjects in `before_scenario`.
 
 ```python
-# ✅ — Before hook initialises the PageObject once per scenario
+# ✅ init per scenario
 @before_scenario
 def setup_pages(context):
     context.checkout_page = CheckoutPage(context.browser.new_page())
 ```
 
-**Cucumber TypeScript (Playwright):** Use a typed `World` class registered with `setWorldConstructor`.
+**Cucumber TypeScript (Playwright):** use a typed `World` class and show `setWorldConstructor(...)` explicitly before the hooks.
 
 ```typescript
 // world.ts
@@ -62,17 +60,27 @@ class AppWorldImpl extends World implements AppWorld {
   browser!: Browser;
   page!: Page;
   checkoutPage!: CheckoutPage;
-  constructor(options: IWorldOptions) { super(options); }
+  constructor(options: IWorldOptions & { browser: Browser }) {
+    super(options);
+    this.browser = options.browser;
+  }
 }
 setWorldConstructor(AppWorldImpl);
 ```
 
+Always show the registration call explicitly in setup answers: `setWorldConstructor(AppWorldImpl);`.
+
+Do not launch the browser inside the World constructor. Inject it into the World/test context; let `Before` create only the scenario's fresh page or browser context.
+
 ```typescript
 // hooks.ts
 Before(async function (this: AppWorld) {
-  this.browser = await chromium.launch();
   this.page   = await this.browser.newPage();
   this.checkoutPage = new CheckoutPage(this.page);
+});
+
+After(async function (this: AppWorld) {
+  await this.page?.close();
 });
 ```
 
@@ -81,124 +89,111 @@ Before(async function (this: AppWorld) {
 - Place under `playwright/steps/` (TS) or `features/steps/` (Python)
 - Never name a file `steps.ts` or `steps.py` — the name must identify the domain
 
-**Given precondition state — OGP-01:** `Given` preconditions that navigate to an arbitrary element using `.first()` (or any positional selector) without asserting the domain-specific state required by the scenario create false positives. If the scenario distinguishes between, for example, a domain the user owns versus one they do not own, supply fixture-provided IDs via the env fixture (`ownedDomainId`, `nonOwnedDomainId`) rather than picking the first element from a list.
+**Given precondition state — OGP-01:** A `Given` that uses `.first()` (or any positional selector) without asserting the required domain state creates false positives. If the scenario distinguishes owned from non-owned data, use fixture IDs (`ownedDomainId`, `nonOwnedDomainId`) instead of picking the first match.
 
 ```typescript
-// ✅ — uses fixture-provided ID to guarantee correct ownership state
+// ✅ fixture ID guarantees ownership state
 Given('I am on the Domain Detail page for a domain I own', async ({ page, env }) => {
   await page.goto(`/auth/domain/${env.ownedDomainId}`);
 });
 
-// ❌ — both "own" and "do not own" variants resolve to the same arbitrary domain
+// ❌ both variants pick the same arbitrary domain
 Given('I am on the Domain Detail page for a domain I own', async ({ page }) => {
   await page.goto('/auth/all-domains');
   await page.getByTestId('domain-name-link').first().click();
 });
 ```
 
----
-
 ## Step type taxonomy
 
-Classify every step as one of four types. Naming patterns are project conventions — follow the
-Project Profile / existing step files; the patterns below match the reference (AUL) project.
+Classify every step as one of four types. Follow the Project Profile / existing step files; the conventions below match the reference (AUL) project.
 
 | Type | Keyword | Purpose | Convention |
 |---|---|---|---|
-| **Navigation Given** | `Given` | Move the browser to a URL via real `page.goto()` (directly or a PageObject `goto()`). One navigation per step. **Do not** add a `Then` just to assert the destination loaded. | starts with `I am on the …` / `the user is on the …` |
-| **Action When** | `When` | One atomic UI interaction (click, fill, select, toggle). Neutral text — no success/failure baked in. Expected values arrive as `{string}`/`{int}` params, never hardcoded. | `I click the …` / `the user fills in the …` |
-| **Compound Given (accelerator)** | `Given` | A setup shortcut that chains several actions (e.g. log in + navigate) to skip flow that is not under test. Used **only** in `Background` or as the first step of a scenario — never mid-scenario. No assertions. | lives in a `*.setup.steps.ts` file under `paths.steps`; JSDoc lists the atomic steps it replaces |
+| **Navigation Given** | `Given` | Move to a URL via real `page.goto()` (directly or a PageObject `goto()`). One navigation per step; **do not** add a `Then` just to assert it loaded. | `I am on the …` / `the user is on the …` |
+| **Action When** | `When` | One atomic UI interaction (click, fill, select, toggle). Neutral text; expected values arrive as `{string}`/`{int}` params, never hardcoded. | `I click the …` / `the user fills in the …` |
+| **Compound Given (accelerator)** | `Given` | A setup shortcut that chains several actions (e.g. log in + navigate) to skip flow not under test. Use **only** in `Background` or as the first step of a scenario — never mid-scenario. No assertions. | lives in `*.setup.steps.ts`; JSDoc lists the atomic steps it replaces |
 | **Assertion Then** | `Then` | Verify a UI element or application state. Assertions only. | `the … should be …` / `the user should see …` |
 
-Keep page-action steps (Navigation Given, Action When, Assertion Then) in the domain step file
-(`<area>.steps.ts`); keep heavier compound accelerators in `<area>.setup.steps.ts` so setup concerns
-stay separate from page actions.
-
----
+Keep page-action steps (Navigation Given, Action When, Assertion Then) in `<area>.steps.ts`; keep compound accelerators in `<area>.setup.steps.ts`. Each accelerator JSDoc must list the atomic steps it replaces. If one appears mid-scenario, move it to `Background` / the first `Given`, or replace it with atomic steps.
 
 ## Function naming convention
 
 Name step functions after the business action, not the full step text:
 - `step_confirm_order` ✅ — concise, action-based
 - `step_customer_confirms_the_order` ❌ — verbatim transcription of the step
-
----
+The verbose full-phrase form is an anti-pattern: it duplicates Gherkin text, makes step files harder to scan, and truncates poorly in test output and stack traces.
 
 ## Keep step definitions thin
 
-Step definitions are bindings — they translate Gherkin text into calls to PageObjects, domain
-objects, or service clients. Business logic must not live in step definitions.
+Step definitions are bindings: they translate Gherkin text into PageObject, domain-object, or service-client calls. Business logic must not live in them.
 
 **Keyword rules:**
 - `Given` steps must not contain assertions — they set up preconditions only
 - `When` steps must not contain assertions — they perform actions only
 - Assertions belong exclusively in `Then` steps
-- A step body consisting only of comments is a no-op and is not permitted as a final implementation — NOP-01. If the system pre-establishes state externally, the step must assert that state is actually present rather than silently pass.
+- A step body consisting only of comments is a no-op and is not permitted as a final implementation — NOP-01. If the system pre-establishes state externally, the step must assert that state is present rather than silently pass.
 
 ```typescript
-// ✅ — pre-populated state is explicitly asserted
+// ✅ pre-populated state is asserted
 When('I select a domain', async ({ page }) => {
-  // Domain is pre-populated from context; assert selector shows a value
   await expect(page.getByTestId('domain-selector')).not.toBeEmpty();
 });
 
-// ❌ — comment-only body; regression goes undetected
+// ❌ comment-only body
 When('I select a domain', async ({ page }) => {
-  // Domain is pre-selected when navigated from within a domain context
-  // No additional action needed
+  // no additional action
 });
 ```
 
 ```python
-# ✅ — thin; delegates to PageObject
+# ✅ thin; delegates to PageObject
 @when('the customer confirms the order')
 def step_confirm_order(context):
     context.checkout_page.confirm_order()
 
-# ❌ — business logic embedded in the step
+# ❌ business logic in the step
 @when('the customer confirms the order')
 def step_confirm_order(context):
     context.cart.total *= (1 - context.discount / 100)
     context.order_status = "placed"
 ```
 
----
-
 ## Encapsulate selectors in PageObjects
 
 Step definitions for domain-level scenarios must not contain CSS selectors, element IDs, or XPath.
-Encapsulate all selector logic in PageObjects (selector preference: `getByTestId()`, which resolves to the Project Profile `test_id_attribute` (default `data-cy`) > `aria-label`/role > CSS class).
+Encapsulate all selector logic in PageObjects (selector preference: `getByTestId()` — resolves to the Project Profile `test_id_attribute`, default `data-cy` — > `aria-label`/role > CSS class).
 
 ```typescript
-// ✅ — PageObject hides selector details
+// ✅ PageObject hides selectors
 When("the customer submits the order", async function (this: OrderWorld) {
-  await this.checkoutPage.submitOrder();          // CheckoutPage owns the selector
+  await this.checkoutPage.submitOrder(this.orderId);
 });
 
-// ❌ — selector leaks into the step definition
+// ❌ selector leaks into the step
 When("the customer submits the order", async function (this: OrderWorld) {
   await this.page.click('[data-testid="submit-order-btn"]');
 });
 ```
 
-**Pending data-cy rule — SS-01:** Do not write CSS-class-OR-data-cy fallback combos (e.g. `'.modal, [data-cy="x"]'`) in step files or PageObjects. A fallback combo either always passes (the CSS class matches when the data-cy does not exist) or always fails (neither exists), both masking real failures. If the confirmed `data-cy` attribute does not yet exist in the template:
-1. Use the most stable interim selector available and mark it with `// @pending data-cy: <candidate-name>`.
+**Pending data-cy rule — SS-01:** Do not write CSS-class-OR-data-cy fallback combos (e.g. `'.modal, [data-cy="x"]'`) in step files or PageObjects. They either always pass (the CSS class matches when the data-cy does not exist) or always fail (neither exists), masking the gap. If the confirmed `data-cy` attribute does not yet exist in the template:
+1. Use the most stable interim selector available and mark it `// @pending data-cy: <candidate-name>`.
 2. Raise it as a gap in WORK_LOG.md §4 so it is tracked for instrumentation via `data-cy-instrument`.
 
 ```typescript
-// ✅ — interim selector clearly flagged
+// ✅ interim selector clearly flagged
 await expect(page.locator('[role="dialog"]')).toBeVisible(); // @pending data-cy: dialog-access-request
 
-// ❌ — fallback combo hides whether the real selector ever lands
+// ❌ fallback combo masks the real selector
 await expect(page.locator('[role="dialog"], .access-request-form')).toBeVisible();
 ```
 
----
+For Action `When` examples, always delegate to a PageObject method (for example
+`await this.checkoutPage.clickConfirmOrder()`) rather than clicking a selector directly in the step.
 
 ## Share state using the context / World object
 
-Never use global or module-level variables — they cause test contamination across scenarios.
-Use the framework-provided context object, which is instantiated fresh for each scenario.
+Never use global or module-level variables to share step state — they contaminate later scenarios. Use the framework-provided `context` / `World`, fresh per scenario and safe for cross-step or cross-file sharing within that scenario only. Say this explicitly in state-sharing answers.
 
 | Framework | State object | Pattern |
 |-----------|-------------|---------|
@@ -206,7 +201,7 @@ Use the framework-provided context object, which is instantiated fresh for each 
 | Cucumber (TypeScript) | `World` class | Extend `World`; access via `this` |
 
 ```python
-# ✅ behave — context carries state across steps
+# ✅ behave: context carries state across steps
 @given('a customer with a "{tier}" membership')
 def step_given_customer(context, tier):
     context.customer = Customer(tier=tier)
@@ -216,10 +211,10 @@ def step_assert_discount(context, rate):
     assert context.customer.discount_rate() == rate
 ```
 
-**Hardcoded assertion rule — HTA-01:** `Then` assertions must not contain string literals that were set in a preceding `When` step (magic constants). Pass the value through the World context or as a `{string}` Cucumber parameter, or assert a structural property instead.
+**Hardcoded assertion rule — HTA-01:** `Then` assertions must not contain string literals set in a preceding `When` step (magic constants). Pass the value through the World context or as a `{string}` Cucumber parameter, or assert a structural property instead.
 
 ```typescript
-// ✅ — domain name flows through World context
+// ✅ domain name flows through World context
 When('I import a domain named {string}', async function (this: AppWorld, name: string) {
   this.importedDomainName = name;
   await this.importDomainPage.importDomain(name);
@@ -228,55 +223,49 @@ Then('the imported domain is visible in the domain list', async function (this: 
   await expect(this.page.getByTestId('domain-name-link').getByText(this.importedDomainName)).toBeVisible();
 });
 
-// ❌ — hardcoded constant couples assertion to the When step's implementation detail
+// ❌ hardcoded constant couples the assertion to the When step
 Then('the imported domain is visible in the domain list', async ({ page }) => {
   await expect(page.getByTestId('domain-name-link').getByText('E2E Import Test')).toBeVisible();
 });
 ```
 
----
-
 ## Use typed parameters
 
-**PTM-01 — `{string}` over `{word}` for UI labels:** Use `{string}` (quoted) for any step parameter that could contain spaces — tab names, button labels, section headings, status values. `{word}` matches only a single token without spaces and will silently fail to match multi-word values, and having both `{word}` and `{string}` variants in the same file causes Cucumber ambiguity errors. Remove all `{word}` variants and consolidate on `{string}`.
+**PTM-01 — `{string}` over `{word}` for UI labels:** Use `{string}` (quoted) for any parameter that could contain spaces. `{word}` matches one token only, fails on multi-word values, and mixed `{word}`/`{string}` variants in one file cause Cucumber ambiguity errors. Remove all `{word}` variants and consolidate on `{string}`.
 
 ```typescript
-// ✅ — {string} matches "Version management", "Run history", "About"
+// ✅ {string} matches multi-word labels
 When('I click the {string} tab', async ({ domainDetailPage }, tab: string) => {
   await domainDetailPage.gotoTab(tab);
 });
 
-// ❌ — {word} silently fails for "Version management" and "Run history"
+// ❌ {word} fails for multi-word labels
 When('I click the {word} tab', async ({ domainDetailPage }, tab: string) => {
   await domainDetailPage.gotoTab(tab);
 });
 ```
 
 ```python
-# ✅ — :d casts to int automatically
+# ✅ :d casts to int automatically
 @when("the customer purchases {quantity:d} units")
 def step_purchase(context, quantity: int):
     context.cart.add_item(context.sku, quantity)
 ```
 
----
-
 ## Parse DataTable and DocString arguments
 
 ```python
-# ✅ — DataTable as list of dicts
+# ✅ DataTable as list of dicts
 @when("the customer adds the following items")
 def step_add_items(context):
     for row in context.table:
         context.cart.add_item(row["sku"], int(row["quantity"]))
 
-# ✅ — DocString as raw text
+# ✅ DocString as raw text
 @when("the system receives the following payload")
 def step_receive_payload(context):
     context.payload = json.loads(context.text)
 ```
-
----
 
 ## Configure hooks correctly
 
@@ -287,11 +276,7 @@ def step_receive_payload(context):
 | `before_all` / `BeforeAll` | Expensive one-time setup (start containers) | Per-test state |
 | `after_all` / `AfterAll` | Stop containers, close connections | Per-test cleanup |
 
-`before_scenario` runs before **every** scenario by default, so add a tag check when setup
-should only apply to a subset. When explaining this pattern, say explicitly that the hook still
-fires for every scenario; the `if "database" in context.tags` check only gates the expensive setup.
-
-Tag hooks to scope them to specific scenarios, and pair setup with matching cleanup:
+`before_scenario` runs before **every** scenario by default, so add a tag check when setup applies only to a subset. State this explicitly: `if "database" in context.tags` gates the expensive work; it does not stop the hook from firing. Tag hooks to scope setup and pair them with matching cleanup:
 
 ```python
 @before_scenario
@@ -305,30 +290,24 @@ def teardown_database(context):
         context.db.teardown()
 ```
 
----
-
 ## Wizard navigation rules
 
-Apply these rules when implementing step definitions for multi-step wizards. They detect
-"cheat steps" — steps that appear to navigate a wizard but exercise no real behaviour.
+Apply these rules to multi-step wizards. They detect "cheat steps" — steps that appear to navigate the wizard but exercise no real behaviour.
 
 ### CS-01 — Assert arrival at each wizard step
 
-Every wizard step navigation must verify arrival at the next step via a step-specific element
-assertion before the step completes. Blind `continueButton.click()` chains without an arrival
-assertion are forbidden: if the Continue button is disabled (validation failure), the click
-silently does nothing and the test continues with a false pass.
+Every wizard navigation step must verify arrival at the next step with a step-specific assertion before the step completes. Blind `continueButton.click()` chains are forbidden: if Continue is disabled, the click silently does nothing and the test can false-pass.
 
 ```typescript
-// ✅ — arrival at the Owner step is explicitly verified
+// ✅ arrival at the Owner step is verified
 When('I complete the About step', async ({ createDomainAboutPage, createDomainOwnerPage }) => {
   await createDomainAboutPage.fillDomainName('E2E Test Domain');
   await createDomainAboutPage.fillCostCenter('1234');
   await createDomainAboutPage.continueButton.click();
-  await expect(createDomainOwnerPage.ownersTable).toBeVisible(); // arrival assertion
+  await expect(createDomainOwnerPage.ownersTable).toBeVisible();
 });
 
-// ❌ — two blind clicks; no assertion that either step was actually reached
+// ❌ two blind clicks; no arrival assertion
 Given('I am on the Target dataset step', async ({ createDomainPage }) => {
   await createDomainPage.continueButton.click();
   await createDomainPage.continueButton.click();
@@ -337,15 +316,13 @@ Given('I am on the Target dataset step', async ({ createDomainPage }) => {
 
 ### CS-02 — Do not use `toHaveURL()` to detect wizard step progress in a scrolling stepper
 
-In a single-URL scrolling stepper the URL does not change between wizard steps. A
-`toHaveURL(/step-name/)` assertion always passes regardless of which step is active,
-giving false confidence. Assert the step-specific landmark element is visible instead.
+In a single-URL scrolling stepper, the URL does not change between steps. `toHaveURL(/step-name/)` therefore gives false confidence; assert the step-specific landmark element instead.
 
 ```typescript
-// ✅ — asserts the Owner step's landmark element is in view
+// ✅ asserts the Owner-step landmark
 await expect(createDomainOwnerPage.ownersTable).toBeVisible();
 
-// ❌ — URL never changes; assertion always passes
+// ❌ URL never changes; assertion always passes
 await expect(page).toHaveURL(/owner/i);
 ```
 
@@ -356,22 +333,17 @@ await expect(page.getByTestId('step-owner')).toBeVisible();
 
 ### CS-03 — Do not use `page.goBack()` inside an SPA wizard
 
-`page.goBack()` navigates the browser's URL history, not the wizard's internal state. Inside
-an Angular (or other SPA) wizard, this takes the user back to the *previous page* (e.g. All
-Domains), not to the previous wizard step. Use the wizard's own Back button or click the
-stepper step header to navigate backward.
+`page.goBack()` navigates browser history, not wizard state. In an SPA wizard it usually returns to the *previous page* (for example All Domains), not the previous step. Use the wizard's Back button or the stepper header instead.
 
 ```typescript
-// ✅ — uses the wizard's own back navigation
+// ✅ uses the wizard's own back navigation
 await createDomainWizardPage.backButton.click();
 await expect(createDomainAboutPage.domainNameInput).not.toBeEmpty();
 
-// ❌ — navigates away from the wizard entirely
+// ❌ navigates away from the wizard
 await page.goBack();
 await expect(createDomainPage.domainNameInput).not.toBeEmpty();
 ```
-
----
 
 ## Out-of-scope routing
 
