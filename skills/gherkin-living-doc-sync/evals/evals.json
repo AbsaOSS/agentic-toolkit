@@ -125,11 +125,12 @@
       "id": 10,
       "category": "happy-path",
       "prompt": "I want to run a full audit of all AC link headers across all feature files before starting a sync. How do I use scan_ac_links.py?",
-      "expected_output": "Run: 'python scripts/scan_ac_links.py features/ --catalog catalog.json'. The script scans all .feature files for '# AC:' comments and '@AC:' tags, validates each AC ID against the living doc catalog, and outputs a report listing: (1) missing # AC: comments (scenarios with no link header), (2) stale AC IDs (IDs not found in catalog), (3) mismatched comment/tag pairs (one present but not the other). Use this report as input to the sync workflow — address broken links first, then missing links, then mismatches.",
+      "expected_output": "Run: 'python skills/gherkin-living-doc-sync/scripts/scan_ac_links.py <features_dir> --us-dir <feature_dirs.user_story> --func-dir <feature_dirs.functionality> --catalog <catalog_path>'. The script scans the living-doc feature directories for '# AC:' comments and '@AC:' tags, validates each AC ID against the living doc catalog, and outputs a report listing: (1) missing # AC: comments (scenarios with no link header), (2) stale AC IDs (IDs not found in catalog), (3) mismatched comment/tag pairs (one present but not the other). The --us-dir and --func-dir flags accept the profile feature_dirs.user_story and feature_dirs.functionality values (defaults: features/liv_doc_us/ and features/liv_doc_func/). Use this report as input to the sync workflow — address broken links first, then missing links, then mismatches.",
       "files": [],
       "expectations": [
-        "Names the correct command: python scripts/scan_ac_links.py features/ --catalog catalog.json",
+        "Names the correct command with --us-dir and --func-dir flags (profile feature_dirs paths)",
         "Explains what the script reports: missing headers, stale IDs, mismatched pairs",
+        "Notes the living-doc directories are driven by the Project Profile (feature_dirs.*)",
         "Recommends repair order: broken links → missing links → mismatches",
         "Notes the script output drives the subsequent sync workflow"
       ]

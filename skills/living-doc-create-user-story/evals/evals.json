@@ -37,13 +37,14 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "The actor in my narrative is 'the system'. Is that OK?",
-      "expected_output": "No. 'The system' is not a valid actor — it is not a human user with a goal. An actor must be a named human role (e.g. 'registered customer', 'support agent', 'finance manager'). System-initiated flows belong in a Functionality or a background process, not a User Story. Ask: who triggers this? Who benefits?",
+      "expected_output": "Using a system actor is strongly discouraged but not strictly prohibited. The agent warns: 'Prefer naming the human role that triggers or benefits from the behavior — system actors make ACs harder to make observable and binary. If the flow is system-initiated with no direct human interaction, it is a better fit for a Functionality entity.' If the user insists on keeping a system actor, the agent ensures the 'so that' clause names a human beneficiary (e.g. 'so that the finance team receives timely reports'). For purely system-driven flows with no human outcome, the agent redirects to living-doc-create-functionality.",
       "files": [],
       "expectations": [
-        "Rejects 'the system' as an actor",
-        "Explains that actors must be human roles",
-        "Suggests asking 'who triggers this?' and 'who benefits?'",
-        "Notes system-initiated flows belong in a Functionality"
+        "Issues a soft warning — does not hard-reject the system actor",
+        "Recommends naming a human role that triggers or benefits from the behavior",
+        "Notes that purely system-initiated flows are better modelled as Functionality entities",
+        "If user insists, ensures the 'so that' clause names a human beneficiary",
+        "Redirects to living-doc-create-functionality only for purely system-driven flows with no human outcome"
       ]
     },
     {
@@ -201,6 +202,45 @@
         "Confirms the Functionalities should be linked",
         "Explains the ORPHAN_FUNCTIONALITY consequence if skipped",
         "Shows how to add them to the functionalities array in the entity"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Is this AC well-formed? 'The user should be able to reset their password via email.'",
+      "expected_output": "No — two problems. (1) 'The user' is generic; use the named actor from the narrative (e.g. 'a registered customer'). (2) 'Should be able to' is a non-binary modal — the AC cannot be decisively passed or failed. Replace with the correct modal: 'can' for user-initiated capability, or drop the modal for outcome statements. Rewrite: 'A registered customer can reset their password via email.' Also check for present-simple tense: 'will be able to' and 'should be shown' are predictions, not timeless contracts.",
+      "files": [],
+      "expectations": [
+        "Flags 'should' as non-binary — AC cannot be decisively passed or failed",
+        "Flags generic 'the user' — must use the named actor from the narrative",
+        "Provides a rewritten AC using 'can' for user capability in present simple tense",
+        "Notes that 'will be able to' / 'should be shown' are predictions not contracts"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "Is this AC outcome specific enough? 'When the customer confirms the order, a success is shown.'",
+      "expected_output": "No. 'A success is shown' is too vague to test. The AC outcome must be specific enough to write a deterministic assertion: state what the user actually experiences — e.g. 'a confirmation message is displayed with the order reference number' or 'the customer is redirected to the Order Confirmation page showing the order total'. Avoid both too vague ('success is shown', 'an error appears') and too specific (pixel dimensions, CSS class names, component internals).",
+      "files": [],
+      "expectations": [
+        "Flags 'a success is shown' as too vague to test",
+        "Provides a rewritten AC with a specific observable outcome",
+        "Warns against both vague ('success') and over-specific (visual/component) descriptions",
+        "Outcome must be specific enough for a deterministic test assertion"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "regression",
+      "prompt": "Is this AC in the correct voice and tense? 'After clicking Confirm, a confirmation email will be sent to the customer by the system.'",
+      "expected_output": "Two issues. (1) Future tense ('will be sent') — ACs are timeless contracts; use present simple ('a confirmation email is sent'). (2) Passive voice ('will be sent to the customer by the system') — use active voice ('the customer receives a confirmation email') to make the subject and action unambiguous. Rewrite: 'After the customer confirms the order, they receive a confirmation email.'",
+      "files": [],
+      "expectations": [
+        "Flags future tense — must use present simple (timeless contract)",
+        "Flags passive voice — must use active voice",
+        "Provides a rewritten AC in present simple active voice",
+        "Names 'active voice' and 'present simple tense' as the rules"
       ]
     }
   ]

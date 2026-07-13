@@ -241,7 +241,7 @@ State (written Title-case per the profile `ac_states`): `Planned | In Review | A
 
 **Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:
 ```gherkin
-# AC:US-1-01 (v1.0.0 - ACTIVE) — <description>
+# AC:US-1-01 (v1.0.0 - Active) — <description>
 @AC:US-1-01
 Scenario: ...
 ```

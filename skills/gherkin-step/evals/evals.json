@@ -179,6 +179,58 @@
         "Shows example: checkout.steps.ts, login.steps.ts",
         "Flags generic steps.ts as an anti-pattern"
       ]
+    },
+    {
+      "id": 15,
+      "category": "happy-path",
+      "prompt": "I need a step for 'Given the user is on the checkout page'. What step type is this and what should the implementation look like?",
+      "expected_output": "This is a Navigation Given step — it moves the browser to a specific URL via a real page.goto() call (directly or through a PageObject goto() method). The step text must start with 'I am on the …' or 'the user is on the …'. Implementation: Given('the user is on the checkout page', async function (this: AppWorld) { await this.checkoutPage.goto(); }). A Navigation Given does NOT assert that the page loaded — do not add a Then assertion inside the same step.",
+      "files": [],
+      "expectations": [
+        "Classifies as Navigation Given step type",
+        "Implementation calls a real page.goto() or PageObject goto()",
+        "Text follows the 'I am on the …' / 'the user is on the …' convention",
+        "Does not add an assertion inside the Navigation Given step"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "happy-path",
+      "prompt": "I need a step for 'When the user clicks the Confirm Order button'. What rules apply to Action When steps?",
+      "expected_output": "Action When steps represent one atomic UI interaction. Rules: (1) One action per step — do not chain click + fill in one When. (2) Neutral text — do not bake success or failure into the step name ('When the user successfully clicks' is wrong). (3) Expected values arrive as {string} or {int} parameters, never hardcoded. (4) Selector logic belongs in the PageObject — the step delegates: When('the user clicks the Confirm Order button', async function (this: AppWorld) { await this.checkoutPage.clickConfirmOrder(); }).",
+      "files": [],
+      "expectations": [
+        "Classifies as Action When step type",
+        "One atomic interaction per step (no chaining)",
+        "Neutral text — no success/failure baked in",
+        "Delegates to PageObject — no selectors in the step body"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "A developer placed a Compound Given (accelerator) step mid-scenario to fast-forward the UI state. Is this correct?",
+      "expected_output": "No. Compound Given / accelerator steps are permitted only in a Background block or as the very first step of a scenario — never mid-scenario. Placing an accelerator mid-scenario hides state transitions that are under test and makes the scenario harder to debug. Move the accelerator to Background (if it applies to all scenarios in the Feature) or to the very first Given in the scenario. Any subsequent state setup that involves actions under test must use individual atomic Given or When steps.",
+      "files": [],
+      "expectations": [
+        "Identifies mid-scenario accelerator as incorrect",
+        "States the rule: Compound Given allowed only in Background or as first Given",
+        "Explains the risk: hides state transitions, complicates debugging",
+        "Advises moving to Background or replacing mid-scenario with atomic steps"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "edge-case",
+      "prompt": "Where should Compound Given (accelerator) step definitions live — in the domain step file or somewhere else?",
+      "expected_output": "Compound Given / accelerator steps belong in a dedicated setup file: <area>.setup.steps.ts (e.g. checkout.setup.steps.ts), separate from the domain page-action steps in checkout.steps.ts. The JSDoc on each accelerator step must list the individual atomic steps it replaces so the intent remains legible. Keeping setup concerns in a separate file prevents the domain step file from becoming a mix of page-action and setup code.",
+      "files": [],
+      "expectations": [
+        "Accelerators live in <area>.setup.steps.ts, not the domain step file",
+        "JSDoc must list the atomic steps the accelerator replaces",
+        "Explains the separation: setup concerns vs. page-action steps",
+        "Names the file convention: <area>.setup.steps.ts"
+      ]
     }
   ]
 }

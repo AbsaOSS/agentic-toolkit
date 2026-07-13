@@ -200,6 +200,19 @@
         "Routes to living-doc-update to perform the append",
         "Mentions ORPHAN_FUNCTIONALITY gap type as the consequence of skipping"
       ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Is this Functionality AC well-formed? 'The system should validate that the discount code is not expired.'",
+      "expected_output": "No — two problems. (1) 'Should' is a non-binary modal: the AC cannot be decisively passed or failed. Use `must` for rules the system enforces ('The system must reject expired discount codes'), `returns` for calculations, `rejects`/`accepts` for validations. (2) The AC lacks an explicit outcome — 'validate' without a result is non-testable. Rewrite: 'When an expired discount code is submitted, the system rejects it and returns DISCOUNT_EXPIRED error.' Every Functionality AC must name an exact output, return value, or error code.",
+      "files": [],
+      "expectations": [
+        "Flags 'should' as non-binary — AC cannot be decisively passed or failed",
+        "Suggests 'must', 'returns', 'rejects', or 'accepts' as replacements",
+        "Flags lack of explicit outcome as non-testable",
+        "Provides a rewritten AC with an explicit error code"
+      ]
     }
   ]
 }
