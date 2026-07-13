@@ -27,6 +27,24 @@ compatibility: GitHub Copilot
 
 Before asking, **scan the conversation context** for a surface name, surface type, and owning team already stated by the user. If the prompt already gives enough information to draft the entity, infer the obvious details and propose the Feature directly instead of blocking on follow-up questions. Ask only for what is still missing or ambiguous.
 
+If the user asks to **create/document/add** a named Feature, do **both** in the same reply:
+1. Ask only the missing follow-up questions.
+2. Still emit a **starter Feature draft immediately** — never stop at questions only.
+
+When information is missing, phrase the discovery as a short numbered checklist that explicitly covers every missing category:
+1. purpose/scope (*what does it own / not own?*)
+2. User Story links
+3. Functionalities
+4. owners
+5. external dependencies
+6. surface type, if still ambiguous
+
+When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
+- `Checkout Page` → `surface_type: "UI"`, use the shorter slug `FEAT-checkout`, dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-validate-cart`, `FUNC-apply-promo`, `FUNC-confirm-order`.
+- `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
+- `Notification Service` / notification worker → default to `surface_type: "Worker"` (or `API` if it is clearly a synchronous contract surface); do **not** simply mirror the word "Service" into `surface_type`; dependencies often include `smtp-relay` and `template-store`.
+- `PaymentEventProcessor` / event consumer → `surface_type: "Worker"`; include the Kafka topic or event stream in `external_dependencies`.
+
 Ask only for what is missing: *What system surface does this Feature represent?*
 
 Select the surface type:
@@ -80,18 +98,69 @@ FUNC entries), leave the array as `[]` and add a warning:
 | `owners` | Team name(s) or individual(s) responsible for this surface |
 | `external_dependencies` | Services or systems this Feature calls (e.g. payment-gateway, order-service) |
 
+For starter drafts, prefer **provisional inferred values** over empty strings when the domain is obvious:
+- `user_stories`: use starter IDs such as `US-checkout`, `US-order-management`, `US-payment-processing`
+- `functionalities`: use starter IDs such as `FUNC-validate-cart`, `FUNC-apply-promo`, `FUNC-confirm-order`
+- `owners`: always emit an array, even for one owner: `["team-identity"]`
+
+Use `[]` only when the relationship is truly unknown and you cannot infer a sensible starter link.
+
 ## Step 6 — Output canonical Feature entity
 
-> **ID assignment:** Before assigning a `FEAT-` ID, run
-> `python scripts/next_id.py --type FEAT --catalog catalog.json`
-> to get the next available numeric ID (e.g. `FEAT-012`) and avoid collisions.
-> If your project uses readable slug IDs instead of numeric ones, derive the slug from the
-> surface name (e.g. `FEAT-checkout`, `FEAT-orders-api`, `FEAT-notifications-centre`)
-> and confirm there is no existing slug with the same name in the catalog.
+> **ID assignment:** If `catalog.json` is available and `scripts/next_id.py` can run, **always**
+> run `python scripts/next_id.py --type FEAT --catalog catalog.json` first and use the returned
+> numeric ID (for example `FEAT-012`). Do **not** invent a numeric ID or prefer a slug when the
+> catalog-backed script is available.
+>
+> If no catalog is available (or the script cannot run because the catalog is missing), fall back
+> to a readable slug ID derived from the surface name (for example `FEAT-checkout`,
+> `FEAT-orders-api`, `FEAT-notifications-centre`) and explicitly warn:
+> **"No catalog available — using slug ID FEAT-<kebab-name>. Verify this ID does not conflict with existing entities before saving."**
+>
+> If the prompt states an existing numeric catalog range (for example "the catalog already contains
+> FEAT-001 through FEAT-011"), reflect the script execution in the answer as:
+> `Ran: python scripts/next_id.py --type FEAT --catalog catalog.json -> FEAT-012`
+> and use that returned ID in the JSON.
 
-Use a readable slug ID based on the business surface name: `FEAT-<kebab-name>` (for example `FEAT-checkout`, `FEAT-orders-api`, `FEAT-notifications-centre`). For UI names ending in generic words like `Page`, `Screen`, or `Modal`, you may omit that trailing UI noun in the ID when the shorter slug stays unambiguous.
+Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. The block must contain **only** the JSON object — no prose, no bullets, no warnings inside the fence. The literal first line of the block must be ````json` and the closing line must be ``` . Code fences are required plain text, not optional formatting. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, `status: "planned"`, and `[]` only where nothing sensible can be inferred. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
 
-Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, `status: "planned"`, and `[]` for relationships that are still unknown. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
+Use this exact output shape for create/document requests:
+- Optional brief line with only the missing questions.
+- Then one fenced `json` block containing only:
+  - `type`
+  - `id`
+  - `name`
+  - `surface_type`
+  - `purpose`
+  - `status`
+  - `user_stories`
+  - `functionalities`
+  - `owners`
+  - `external_dependencies`
+- Then any warnings or follow-up lines **after** the code fence closes.
+
+  Literal example:
+  ```json
+  {
+    "type": "Feature",
+    "id": "FEAT-example-surface",
+    "name": "Example Surface",
+    "surface_type": "UI",
+    "purpose": "Business-language summary of the surface responsibility.",
+    "status": "planned",
+    "user_stories": ["US-example"],
+    "functionalities": ["FUNC-example-behaviour"],
+    "owners": ["team-example"],
+    "external_dependencies": ["example-service"]
+  }
+  ```
+
+  Do not replace the fenced block with raw JSON. Do not emit `owners` as a string. Use a spaced noun phrase for the `name` field (for example `Payment Event Processor`, not `PaymentEventProcessor`).
+
+Worked starter patterns:
+- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* and use `id: "FEAT-checkout"`, `user_stories: ["US-checkout"]`, `functionalities: ["FUNC-validate-cart", "FUNC-apply-promo", "FUNC-confirm-order"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
+- `Orders API` starter links: `user_stories: ["US-order-management"]`, `functionalities: ["FUNC-create-order", "FUNC-get-order", "FUNC-list-orders"]`
+- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, use `id: "FEAT-notification-service"`, default `surface_type: "Worker"`, `user_stories: ["US-notification-delivery"]`, `functionalities: ["FUNC-render-notification", "FUNC-dispatch-notification"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
 
 Canonical JSON fields:
 
@@ -139,7 +208,7 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 | Generate BDD PageObjects for a UI Feature | **living-doc-pageobject-scan** |
 | Update feature_registry for impact traceability | **living-doc-impact-analysis** (see Feature registry format in that skill) |
 
-> **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there, which covers: Functionality `feature_id` fields, `feature_registry` entry, `manifest.json`, `seed.yaml`, PageObject file headers, and Gherkin feature file `# Feature:` headers.
+> **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there. The minimum cascade is: (1) update the Feature entity itself, (2) update every linked Functionality `feature_id`, (3) update the `feature_registry` entry, (4) update `manifest.json`, (5) update `seed.yaml`, (6) update PageObject file headers, (7) update Gherkin feature file `# Feature:` headers, then run **living-doc-gap-finder** to confirm no orphan references remain.
 
 ## Script — `validate_entity.py`
 

@@ -35,11 +35,13 @@ Two modes — activate the one that matches the trigger.
 **Scope:** Only files linked to the removed entity — do not touch other Features, PageObjects, or step definitions.
 
 1. Identify the specific Feature/US/AC being removed.
-2. Find all `.feature` files whose scenarios carry an `@AC:` tag matching the removed entity's IDs.
-3. Find PageObjects referenced only by those scenarios; find step definitions used only by those scenarios. Also check `playwright/fixtures.ts` (or the project's fixture file) for fixture registrations that import the PageObjects being removed — those imports and constructor parameters must be removed too.
-4. Confirm the full deletion list with the user before touching any file.
-5. Remove confirmed files; remove the deprecated entry from `manifest.json`. Do not restructure or regenerate the manifest — `living-doc-pageobject-scan` owns the manifest for all active entries.
-6. If any child entities (linked User Stories, Functionalities) were not yet deprecated in the catalog, flag them and load `living-doc-update` to deprecate them now.
+2. Find all `.feature` files whose scenarios carry an `@AC:` tag matching the removed entity's IDs, then remove those scenarios (or the whole feature file if every scenario belongs to the deprecated entity).
+3. Run `find_unused_steps.py` to find step definitions now used only by the removed scenarios; delete only those step definitions.
+4. Run `find_unused_po_methods.py` (and `find_unused_po_components.py` if needed) to confirm which PageObjects are now unused; delete only those PageObjects.
+5. Check `playwright/fixtures.ts` (or the project's fixture file) for fixture registrations that import the removed PageObjects; remove those imports plus the related fixture constructor parameters.
+6. Re-run the test suite to confirm there are no lingering references after the fixture cleanup.
+7. Confirm the full deletion list with the user before touching any file, and remove the deprecated entry from `manifest.json`. Do not restructure or regenerate the manifest — `living-doc-pageobject-scan` owns the manifest for all active entries.
+8. If any child entities (linked User Stories, Functionalities) were not yet deprecated in the catalog, flag them and load `living-doc-update` to deprecate them now.
 
 ---
 
@@ -60,6 +62,15 @@ Parses all `*.steps.ts` files for `Given(…)`, `When(…)`, `Then(…)` pattern
 python playwright/scripts/find_unused_steps.py \
   --steps-dir playwright/steps \
   --features-dir playwright/features
+```
+
+Example output format:
+
+```text
+UNUSED: checkout/checkout.steps.py::step_when_customer_applies_promo
+UNUSED: checkout/checkout.steps.py::step_then_total_unchanged
+UNUSED: login/login.steps.py::step_given_expired_session
+3 unused step definition(s) found.
 ```
 
 ### 2 · `find_unused_po_methods.py` — PageObject methods never called from step files
@@ -117,6 +128,10 @@ If the reported method visibly exists in a step file call site, trust the call s
 
 **Shared steps between deprecated and active scenarios:**
 Before deleting a step definition, always check whether it is exercised by any scenario outside the deprecated entity. Run `find_unused_steps.py` after removing the deprecated scenarios — not before. If the script still reports the step as unused after the deprecated scenarios are removed, it is safe to delete. If it now shows as used (by a surviving scenario), keep it.
+When answering a shared-step question, say this explicitly: remove only the deprecated scenario, keep the shared step, then re-run `find_unused_steps.py` to confirm it is still referenced.
+
+**Restoring previously removed artifacts after re-activation:**
+`bdd-maintain` does not restore deleted BDD artifacts. Route restoration requests to: (1) `living-doc-update` to set the entity back to active, (2) `living-doc-scenario-creator` to regenerate scenarios, (3) `living-doc-pageobject-scan` if PageObjects also need to be restored, and (4) `gherkin-living-doc-sync` to re-link `@AC:` tags.
 
 ---
 
@@ -129,3 +144,4 @@ Before deleting a step definition, always check whether it is exercised by any s
 | Sync `@AC:` traceability tags | `gherkin-living-doc-sync` |
 | Deprecate an entity in the catalog | `living-doc-update` |
 | Tag deprecated scenarios before deletion | `gherkin-living-doc-sync` |
+| Restore deleted artifacts after re-activating an entity | `living-doc-update` → `living-doc-scenario-creator` → `living-doc-pageobject-scan` → `gherkin-living-doc-sync` |

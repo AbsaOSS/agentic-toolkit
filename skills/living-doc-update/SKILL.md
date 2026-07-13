@@ -25,6 +25,8 @@ compatibility: GitHub Copilot
 
 Ask: *Which entity is being updated, and what kind of change is this?*
 
+If the user says "update the story" but the substance is a newly discovered edge case, missing behavior, or new business rule, classify it explicitly as an **add a new AC** request before proceeding.
+
 | Change type | Entity | Update action |
 |---|---|---|
 | Add a new AC | User Story / Functionality | Append a new AC entry with the next sequential AC ID |
@@ -49,6 +51,10 @@ When adding a new AC to an existing User Story:
    - Alternative flows covered?
 4. Confirm whether the new AC requires new or updated tests — flag for the appropriate testing
    workflow if so
+5. Flag linked scenarios for `gherkin-living-doc-sync` so feature files can pick up the new or changed AC text and tags.
+6. Emit a change summary showing the new AC ID and its Given / When / Then content.
+
+Do not stop at workflow narration or ask for a fixture file before demonstrating the update shape. For add-AC requests, output the concrete change summary block immediately using the supplied entity ID and the new AC content.
 
 When modifying an existing AC **keep the AC ID stable** — changing the ID breaks traceability
 to linked tests. Only update the `description`, `given`, `when`, `then`, or
@@ -86,6 +92,8 @@ Warn if any invariant fails:
 > "User Story US-042 cannot be promoted from 'planned' to 'active': no error-path AC exists. Add at least one
 > AC for a failure or edge case before promoting."
 
+When promotion is blocked because only a happy-path AC exists, give a concrete example error/alternative AC in the reply (for example: `When the delivery address is outside the shipping zone, the order is rejected with a clear reason.`).
+
 After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC if they do not yet exist.
 
 ## Deprecate a Feature or Functionality
@@ -105,6 +113,7 @@ Rules:
 - Always deprecate — never delete entities (preserves audit trail)
 - Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
+- If a deprecated Feature owns Functionalities, flag every owned Functionality for deprecation review before closing the change.
 - Flag any tests linked to the deprecated entity for update or removal
 - If the deprecated entity has `ACTIVE` ACs with linked Gherkin scenarios, trigger
   `gherkin-living-doc-sync` to propagate `@deprecated` and `@review-needed` tags to those scenarios
@@ -137,6 +146,13 @@ When an AC is moved out of the current sprint but not permanently removed:
 - Add `future_release` field if the work is planned for a later sprint
 - Flag any linked Gherkin scenarios for `@wip` or `@pending` tagging via `gherkin-living-doc-sync`
 
+```
+
+For **business-rule changes to an ACTIVE AC**, first show the AC side-by-side for confirmation, then apply the version bump:
+
+```
+OLD: AC:US-042-01 (v1.0.0 - Active) — Minimum order value is £50.
+NEW: AC:US-042-01 (v1.1.0 - Active) — Minimum order value is £75.
 ```
 AC:US-042-03 (v1.2.0 – descoped)
    – Promo codes can be stacked and applied in defined priority order.
@@ -199,4 +215,18 @@ LIVING DOC UPDATE — 2026-05-15
         checkout.feature:41 — Scenario: Payment completes within SLA
   Downstream flags:
     Run living-doc-gap-finder to confirm coverage after update
+```
+
+For **added ACs**, use the same summary pattern rather than ending with validation only:
+
+```
+LIVING DOC UPDATE — 2026-05-15
+  Entity:  US-089 — Delivery restrictions
+  Changes:
+    + Added AC AC:US-089-04 (state: Planned)
+      GIVEN a customer enters an address outside the shipping zone
+      WHEN they place the order
+      THEN the order is blocked with SHIPPING_ZONE_EXCLUDED and a clear message
+  Downstream flags:
+    Run gherkin-living-doc-sync
 ```

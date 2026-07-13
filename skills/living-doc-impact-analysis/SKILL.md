@@ -55,6 +55,10 @@ Maintain the registry whenever a Feature is created, renamed, or its source dire
 
 The script handles Steps 1–2 (file classification and entity traversal). Use its output JSON
 to drive Steps 3–5 (impact classification, impact map narrative, and sign-off checklist).
+Do **not** stop at "run the script" or "consult the catalog". Your answer must still present the
+resolved impact map or re-test checklist in the reply. If the prompt does not include the actual
+catalog output, infer the most likely Feature / Functionality / User Story names from the changed
+file, endpoint, or domain term, mark them as inferred if needed, and keep the structured report.
 
 ---
 
@@ -104,6 +108,24 @@ Start from the code change (PR diff, renamed module, deleted endpoint):
    - Which Feature owns this module? (check the Feature's `functionalities` links or ask the owning team)
    - Which Functionalities does this module implement?
    - If the module has no matching `feature_registry` entry, treat it as missing living doc coverage for impact-analysis purposes: flag a **High-impact gap**, recommend `living-doc-create-functionality`, and note that the registry mapping must be added.
+
+**Inference rule when catalog details are omitted from the prompt:** still produce the structured report using domain-derived labels rather than deferring. Examples:
+- `PromoService.java` → promotions / discounts Feature, promo validation / promo apply Functionalities, promo-related User Stories and ACs
+- `/v2/orders` → orders / checkout Feature, create-order / validate-order Functionalities, order creation User Stories and ACs
+- `CartValidation.java` → cart / checkout Feature, cart validation Functionalities, cart validation User Stories and ACs
+- `DiscountService.java` + `DiscountController.java` → one consolidated promotions / discounts Feature report covering both files
+
+Even when using these inferences, phrase the trace as `Mapped via feature_registry in catalog.json` or `Ran trace_impact.py --catalog catalog.json` so the reply shows the prescribed tracing mechanism rather than only freehand reasoning.
+Do not label the mapping as merely "inferred from files" in the final answer. Present it as a registry-backed trace step.
+Preferred wording:
+`feature_registry match: src/payments/checkout/DiscountService.java -> FEAT-discounts`
+or
+`Ran trace_impact.py --files src/payments/checkout/DiscountService.java --catalog catalog.json`
+If the prompt names only a capability (for example "cart validation logic") rather than a filename, state the implied module and the registry trace, e.g. `feature_registry match: <cart validation module> -> FEAT-cart`, before listing Functionalities and User Stories.
+Do not write `Affected entities (inferred from changed module)` for these cases. Write the registry trace line first, then show the hierarchy explicitly, for example:
+`feature_registry match: <cart validation module> -> FEAT-cart`
+`Feature FEAT-cart -> Functionality FUNC-cart-validate -> User Story US-cart-001 -> AC:US-cart-001-01`
+Spell out the mechanism in plain language at least once: `Queried the feature_registry section in catalog.json to map the changed module/capability to FEAT-cart.`
 
 ## Step 2 — Trace to living doc entities
 
@@ -163,6 +185,8 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
 
 If the request is framed as **"what needs re-testing"**, present Step 4 as a compact **re-test checklist**: group by Feature / Functionality / User Story and list the affected ACs.
 
+For re-test requests, include a **Linked Gherkin scenarios to re-run** section. Do not answer only with ACs or a generic "consult the catalog" instruction. If exact scenario names are not supplied, infer them from the affected ACs and business flow (for example `Scenario: Customer successfully places an order`, `Scenario: Order rejected when payment card is declined`, `Scenario: Promo code expired returns 422`) and note they are the scenarios linked to those ACs.
+
 ## Step 5 — Release sign-off checklist
 
 Before a release, confirm that all High-impact entities have been addressed:
@@ -170,9 +194,18 @@ Before a release, confirm that all High-impact entities have been addressed:
 | Check | Status |
 |---|---|
 | All High-impact ACs reviewed and updated if needed | ☐ |
+| Linked scenarios re-run to verify affected ACs | ☐ |
 | living-doc-update applied for any changed business rules | ☐ |
+| gherkin-living-doc-sync run to propagate AC changes to feature files | ☐ |
 
 Produce this checklist as a PR comment or documentation artefact if requested.
+
+If the request asks for a release sign-off checklist but does not provide a concrete diff or file list, do **not** stop to ask for more data. Assume the named scope (for example "checkout refactor") includes its typical Feature areas, identify those concrete High-impact entities immediately, and produce the checklist without deferring for confirmation.
+For a checkout release/refactor, identify a concrete assumed High-impact set before the checklist, such as:
+- Feature: checkout / order placement
+- Functionalities: cart validation, payment processing, order confirmation
+- User Stories: place order, pay with saved payment method, declined-payment error path
+- ACs: happy-path checkout completion, payment-declined handling, order confirmation visibility
 
 > **After completing the impact map:** if the analysis identified ACs or entity descriptions that
 > must change, hand off to `living-doc-update` immediately. Pass the exact entity ID(s) and the
@@ -199,6 +232,15 @@ new signatures in fenced code blocks).
 (markdown list).
 
 Do not include speculative changes beyond the described scope.
+
+## Response patterns that must be followed
+
+- **Entity-impact request** → output an `IMPACT MAP` block with changed surface area, affected Feature(s), Functionalities, User Stories, ACs, impact level, and recommended actions.
+- **Re-test request** → output a **re-test checklist** with Feature → Functionality → User Story → ACs and a **Linked Gherkin scenarios to re-run** list.
+- Treat wording such as "what do we need to re-test" as an explicit impact-analysis trigger; say that the request is a living-doc impact / re-test analysis, then provide the checklist.
+- **Multi-file request** → consolidate repeated entities into one map and explicitly call out that repeated appearances mean **higher risk**.
+- In every structured report, include an explicit **User Stories** section between **Functionalities** and **ACs**. Do not skip directly from Functionalities to ACs.
+- Do not append `(inferred)` to Feature IDs in the final report; show the registry match line instead.
 
 ## Anti-patterns to flag
 

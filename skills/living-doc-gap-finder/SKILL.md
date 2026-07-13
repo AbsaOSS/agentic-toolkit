@@ -43,9 +43,11 @@ delegate the computation to the script rather than reproducing it through reason
 
 Before presenting the final report, normalise the script output against the taxonomy in this skill:
 - The first gap type (`UNTESTED_AC`) applies to **both User Story ACs and Functionality ACs**. If a Functionality has ACs and no linked tests, report those ACs as `UNTESTED_AC` **Blockers** (you may summarise as `FUNC-xyz has N ACs with no linked tests`) and do **not** leave the same root cause only as `UNDOCUMENTED_FUNCTIONALITY`.
+- Do **not** duplicate the same Functionality root cause as both `UNTESTED_AC` and `UNDOCUMENTED_FUNCTIONALITY` in one report. For example: `FUNC-apply-discount has 5 ACs with no linked tests` belongs under `UNTESTED_AC` only.
 - Report documentation coverage **separately** for User Story ACs and Functionality ACs, even if the raw script output gives a combined number.
 - For `UNDOCUMENTED_SURFACE`, treat a discovered screen/API as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning (for example `/account/orders` ↔ `Account Dashboard`, `/reports/legacy` ↔ `Legacy Report Screen`). Only raise `UNDOCUMENTED_SURFACE` when no plausible owning Feature exists.
 - **Always refer to gap types by their name** (e.g. `ORPHAN_TEST`, `UNTESTED_AC`) — never by an ordinal number (e.g. "Gap type 6"). The priority order below is for triage, not for labelling gaps in the report.
+- When a User Story has an empty `features` list, report a separate `ORPHAN_USER_STORY` finding even if other gaps already mention the same story.
 
 ---
 
@@ -132,7 +134,7 @@ For each Feature reachable via entity relationships
 **ORPHAN_USER_STORY:**
 ```
 For each User Story in entity graph
-  where user_story.features == []:
+  where user_story.features is missing OR user_story.features == []:
     GAP: ORPHAN_USER_STORY
 ```
 
@@ -170,9 +172,11 @@ For each Functionality reachable via Feature `functionalities` links
 **EMPTY_FEATURE:**
 ```
 For each Feature reachable via entity relationships
-  where functionalities == []:
+  where functionalities is missing OR functionalities == []:
     GAP: EMPTY_FEATURE
 ```
+
+`EMPTY_FEATURE` is independent of whether the Feature has linked User Stories. A Feature with linked User Stories but no Functionalities (for example `FEAT-account`) is still an `EMPTY_FEATURE`.
 
 ### Step 4 — Prioritise by risk
 
@@ -249,8 +253,17 @@ Coverage % = (ACs with at least one linked test) / (total ACs) × 100
 Report separately for:
 - User Story ACs (E2E coverage)
 - Functionality ACs (unit/integration coverage)
+- Overall AC coverage may be shown as an extra summary line, but it does **not** replace the separate User Story and Functionality coverage lines.
 
 A project with 100% documentation coverage has every AC backed by at least one test.
+
+**Classification reminders for final reports:**
+- If `US-007.features == []`, emit `ORPHAN_USER_STORY — US-007 has no linked Feature entity`.
+- If `FEAT-account.functionalities == []`, emit `EMPTY_FEATURE — FEAT-account has no Functionalities defined`.
+- If `FEAT-orphan.functionalities == []`, emit `EMPTY_FEATURE — FEAT-orphan has no Functionalities defined`.
+- If `FUNC-apply-discount` has ACs but no linked tests, list it only once under `UNTESTED_AC` Blockers — not again under `UNDOCUMENTED_FUNCTIONALITY`.
+- If a `.feature` file itself has no `@AC:` tag **and** one of its scenarios is also independently unlinked, report both orphan-test artifacts separately (for example `test_login_flow.feature` and `View paginated order history`).
+- Do not infer `EMPTY_FEATURE` from lack of User Stories; only emit it when `functionalities == []`. In the worked snapshot, `FEAT-promo` is an orphan Feature, while `FEAT-account` and `FEAT-orphan` are the empty Features.
 
 ## Large-scale analysis: batching guidance
 

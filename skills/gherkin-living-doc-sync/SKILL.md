@@ -30,6 +30,18 @@ comments before a full sync run. The script only checks the living-doc feature d
 (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults
 `features/liv_doc_us/` and `features/liv_doc_func/`; pass them via `--us-dir`/`--func-dir`) — other
 feature files are skipped.
+For a full audit, run:
+
+```bash
+python skills/gherkin-living-doc-sync/scripts/scan_ac_links.py <features_dir> \
+  --us-dir <feature_dirs.user_story> \
+  --func-dir <feature_dirs.functionality> \
+  --catalog <catalog_path>
+```
+
+The report should distinguish: (1) missing `# AC:` comments, (2) stale AC IDs not found in the
+catalog, and (3) mismatched `# AC:` / `@AC:` pairs where only one side or the aspect details differ.
+Use the report in this repair order: broken links first, then missing links, then mismatches.
 
 ---
 
@@ -102,6 +114,27 @@ SYNC ACTION: checkout.feature:14
   Confirm or select a different AC
 ```
 
+For each missing or mismatched `# AC:` comment, emit the same style of block and propose the full
+comment line:
+
+```text
+SYNC ACTION: checkout.feature:14 — Missing AC link header
+  Scenario: "Customer successfully places an order"
+  Proposed link: # AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+  Apply change? (y/n)
+```
+
+When multiple scenarios are affected, emit one `SYNC ACTION` block per scenario and identify each
+scenario by file path, line number, and title before proposing the `# AC:` line. Preserve every
+scenario — syncing missing headers never deletes or restructures the scenario itself.
+If the prompt states a concrete count (for example “3 scenarios”), say that all 3 scenarios are
+missing AC link headers, then emit 3 separate `SYNC ACTION` blocks and propose a matching AC for
+each scenario from the living doc catalog. Do not hedge with “for example” or generic placeholders
+in that answer — show the concrete proposed mappings directly in the blocks.
+
+If only one of `@AC:` or `# AC:` is present, that is still a sync issue — raise a SYNC ACTION and
+repair the missing side rather than treating the scenario as already synced.
+
 ## Step 3 — Detect step text drift
 
 When step text changes after a UI refactor, the step definition binding breaks:
@@ -119,6 +152,11 @@ DRIFT DETECTED: checkout.feature:17
 > **Scope boundary with `living-doc-pageobject-scan` HEALING:** This step corrects step text in `.feature` files and step definition pattern strings. If the underlying PageObject selector or method signature drifted (renamed in the DOM or PageObject class), use `living-doc-pageobject-scan` HEALING mode to fix the PageObject class first, then re-run this sync to align feature files.
 >
 > **Step definition code changes:** When a step definition regex pattern must be updated (not just the feature file wording), load `gherkin-step` to apply the code change correctly.
+>
+> **Output rule:** Always emit the full `DRIFT DETECTED` block header with file path, line number,
+> broken step text, previous matching definition, PageObject method, and the two fix options. Prefer
+> fixing the `.feature` file wording first because it is the lower-risk change when the existing step
+> definition and PageObject method still work.
 
 ---
 
@@ -127,13 +165,14 @@ DRIFT DETECTED: checkout.feature:17
 Apply the minimum necessary change per action:
 
 - **Add missing `@AC:` tag**: insert `@AC:<id>` above `Scenario:`
-- **Update stale AC reference**: update the file header's `# Acceptance Criteria:` block entry; the `@AC:` tag on the scenario stays unchanged. Show the exact change as `OLD:` and `NEW:` lines. If the revised AC intent changed materially, flag the linked step text for review instead of restructuring the scenario in the same sync action.
+- **Update stale AC reference**: this is **living doc → feature file** sync. Update the file header's `# Acceptance Criteria:` block entry; the `@AC:` tag on the scenario stays unchanged. Show the exact change as `OLD:` and `NEW:` lines, and mirror the current version/state text from the living doc in the `NEW:` line (for example `v1.0.0` → `v1.1.0` when the AC version changed). If the revised AC intent changed materially, add an explicit `Step text review:` note so the linked step wording can be checked before any scenario restructuring.
 - **Update scenario to match revised AC**: update step text; keep the `@AC:` tag unchanged
 - **Fix broken step text**: prefer updating the `.feature` file to match the existing step definition and PageObject method; only update the step definition regex when the business wording genuinely changed
 - **Mark deprecated scenarios**: add `@deprecated` and `@review-needed`, plus a comment with the date and reason. Emit one action per affected scenario with file and line number.
 - **Mark descoped scenarios**: add `@wip` or `@pending` and `@review-needed`, plus a comment with the descope reason and target-release reference. Preserve the scenario — never delete it — so it can be reinstated when the AC is promoted back to Active. Emit one SYNC ACTION per affected scenario.
 - **Broken AC reference**: never silently remove the `@AC:` tag. Either relink it to the correct AC ID, or create the missing living doc entity with `living-doc-create-user-story` / `living-doc-create-functionality`, then update the tag.
-- **AC split into multiple ACs**: update the existing scenario's `@AC:` tag to the primary AC; create new scenarios for additional ACs
+- **AC split into multiple ACs**: update the existing scenario's `@AC:` tag to the primary AC; emit a separate `SYNC ACTION` proposing each additional scenario, including the required `# AC:` header and `@AC:` tag for the new AC. Developer confirmation is still required before any new scenario is created.
+- **Aspect mismatch** (`@AC:.../aspect:...` present but comment missing the aspect): raise a SYNC ACTION and update the comment to include the human-readable `| aspect: ...` suffix. Confirm before applying.
 
 Never delete a scenario during sync — flag it with `@review-needed` for developer decision.
 
@@ -141,7 +180,10 @@ Never delete a scenario during sync — flag it with `@review-needed` for develo
 
 ## Step 5 — Output sync report
 
-Do **not** apply sync changes automatically. Report `DRIFT DETECTED` blocks first (tests fail), then `SYNC ACTION` blocks (traceability), and ask the developer to confirm each action before editing files.
+Do **not** apply sync changes automatically. Report `DRIFT DETECTED` blocks first (tests fail), then `SYNC ACTION` blocks (traceability), and ask the developer to confirm each action before editing files. List every affected scenario with file path and line number. This confirmation rule also applies to comment-only edits such as updating a `# AC:` description or adding an aspect suffix.
+Prioritise repair in this order: broken step bindings first because they cause immediate test
+failures, then stale / broken AC links because they create traceability gaps, then lower-risk
+comment/tag mismatches.
 
 ```
 DRIFT DETECTED: checkout.feature:17
@@ -167,6 +209,12 @@ SYNC ACTION: checkout.feature:32
 
 Summary: 2 missing AC links, 1 step text drift detected — apply changes? (y/n per action)
 ```
+
+For deprecated or descoped entities, emit one `SYNC ACTION` per affected scenario, each with its own
+file path and line number, plus the added tags/comments (`@deprecated` + `@review-needed`, or
+`@wip`/`@pending` + descope reason).
+For missing-link report examples, include the full proposed `# AC:` comment (ID, version, state,
+description, and aspect if relevant) — not just the `@AC:` tag.
 
 ---
 

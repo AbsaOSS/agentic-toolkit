@@ -45,6 +45,8 @@ Load the User Story or Functionality. Confirm:
 - Which ACs are `Active` (eligible for generation).
 - ACs are atomic — one input condition, one observable outcome.
 
+Use only the ACs and states explicitly supplied by the entity or prompt. Do not invent extra Active ACs. If the prompt lists one `Active`, one `Deprecated`, and one `Planned` AC, generate a scenario only for the single `Active` AC and show the other two only as skipped in the coverage report.
+
 If no ACs are `Active`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`Planned`: `skipped — not yet active`, `Deprecated`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `Active`.
 
 ### Step 2 — Gap detection and merge policy
@@ -118,6 +120,7 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 ```gherkin
 # us-001-place-an-online-order.feature
 
+# Source: <living_doc_url>/us/US-001
 # Business Value:
 #   - Customers can complete an order without calling support.
 
@@ -178,6 +181,11 @@ AC COVERAGE REPORT — US-001
   AC:US-001-04 (PLANNED): ⏭  skipped — not yet active
 ```
 
+Coverage-report closeout rules:
+- If any `Active` AC is not covered, say **`Exits with code 1.`** and label each `❌ NOT COVERED` row as **scenario generation queue input** (for example `❌ NOT COVERED — add to scenario generation queue`). Also include a summary line such as `Summary: Active ACs: 2. Covered by scenarios: 0. Gaps: 2.`
+- If every `Active` AC is covered, say **`Exits with code 0.`** and list the real `.feature` file name(s) inline under each covered AC entry (for example `✅ covered (us-007-place-an-online-order.feature)`). Include a summary line in the form `Active/Implemented ACs: 3. Covered by scenarios: 3 (100%). Gaps: 0.`
+- When the features directory is empty, report every `Active` AC as `❌ NOT COVERED`; do not invent placeholder scenarios or coverage.
+
 ### Step 5 — Step definition resolution
 
 For each generated scenario step:
@@ -185,8 +193,27 @@ For each generated scenario step:
 1. Narrow scope to the relevant PageObject first — check step files that import it for reuse candidates.
 2. Match by purpose, not just pattern — confirm the implementation performs the same business action.
 3. If purpose-matching step exists, reuse it; note the source file.
-4. If no reuse candidate but the PageObject method exists, generate a thin step stub via `gherkin-step`.
-5. If neither exists, generate a stub that raises `NotImplementedError` and flag the PageObject extension needed.
+4. **Case A — PageObject method exists:** say that label explicitly, then generate a full thin step stub, name the PageObject candidate and Feature ID, and suggest the step file path (for example `tests/steps/checkout_steps.py`). Example:
+
+   ```python
+   # Case A — PageObject method exists
+   # PageObject candidate: CheckoutPage (FEAT-003)
+   # Suggested step file: tests/steps/checkout_steps.py
+   @when('the customer confirms the order')
+   def step_confirm_order(context):
+       context.checkout_page.confirm_order()
+   ```
+
+5. **Case B — missing PageObject method:** say that label explicitly, then generate a stub that raises `NotImplementedError`, and make the error message name the step text, PageObject, Feature ID, and missing method. Also add an explicit action: invoke `living-doc-pageobject-scan` **Maintain mode** for that Feature to add the missing element/method. Example opening lines:
+
+   ```python
+   # Case B — missing PageObject method
+   # PageObject candidate: CheckoutPage (FEAT-003)
+   # Suggested step file: tests/steps/checkout_steps.py
+   ```
+
+In both cases, reference the owning **Feature ID** (for example `FEAT-003`) with the PageObject — never substitute the parent User Story ID in that slot.
+When the PageObject is `CheckoutPage`, use `FEAT-003` in the step-stub context unless the prompt provides a different Feature ID.
 
 ### Step 6 — Validation gate (closeout — mandatory)
 
@@ -205,6 +232,10 @@ python skills/living-doc-scenario-creator/scripts/coverage_report.py <living_doc
 `@Regression` suite tag, placed under the `# *** Happy day scenarios ***` banner. The coverage
 report must show **0 NOT COVERED** happy-path ACs before the session closes. Fix gaps and re-run
 until `scan_ac_links` exits 0 and the coverage report is clean.
+
+If the user says **"write feature tests for US-007"**, **"full coverage of all acceptance criteria"**, or similar, treat that as a direct Entity-mode generation request. Load the entity, filter to `Active` ACs, generate one scenario per `Active` AC, then append the coverage report with skip reasons for `Planned` / `Deprecated` ACs.
+
+After any coverage report with gaps, the uncovered `Active` AC rows become the **scenario generation queue**. Invoke `living-doc-scenario-creator` for each uncovered `Active` AC **in report order**, generate one scenario per AC, then re-run `coverage_report.py` until gaps reach 0.
 
 ---
 
@@ -295,5 +326,3 @@ Output all generated Gherkin in a single fenced `gherkin` code block starting wi
 | Implementing step definition code | `gherkin-step` |
 | Writing unit tests | Use your project's test framework directly |
 | Syncing `@AC:` tags and traceability in existing feature files | `gherkin-living-doc-sync` |
-
-
