@@ -52,8 +52,9 @@ from pathlib import Path
 # Matches an @AC: Cucumber tag with optional /param:value segments:
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input
 # Group 1 captures the AC ID only (params are ignored for coverage purposes).
+# Both uppercase and lowercase @AC: prefixes are matched; output is always uppercase.
 AC_TAG = re.compile(
-    r"@AC:((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})(?:/[a-z][\w-]*:[^\s/@]+)*",
+    r"@(?:AC):((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})(?:/[a-z][\w-]*:[^\s/@]+)*",
     re.IGNORECASE,
 )
 TAG_LINE = re.compile(r"^\s*@\S+")
@@ -65,15 +66,44 @@ SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*", re.IGNORECAS
 ACTIVE_STATES = {"active", "in_review"}
 
 
+def canonicalize_numeric_id(parent_type: str, num_str: str) -> str:
+    """
+    Canonicalize a numeric parent ID to zero-padded 3-digit format.
+    E.g., US-1-01 → US-001-01, US-10-01 → US-010-01, US-001-01 → US-001-01
+    For non-numeric IDs (e.g., FEAT-checkout-01), return as-is.
+    """
+    if num_str.isdigit():
+        return f"{parent_type}-{num_str.zfill(3)}"
+    return f"{parent_type}-{num_str}"
+
+
 def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
-    """Return all @AC: tag values from consecutive tag lines immediately above a scenario."""
+    """Return all @AC: tag values (canonicalized) from consecutive tag lines immediately above a scenario."""
     ac_ids: list[str] = []
     i = scenario_index - 1
     while i >= 0 and TAG_LINE.match(lines[i]):
         for m in AC_TAG.finditer(lines[i]):
-            ac_ids.append(m.group(1).upper())
+            raw_id = m.group(1).upper()
+            canonical_id = _canonicalize_ac_id(raw_id)
+            ac_ids.append(canonical_id)
         i -= 1
     return ac_ids
+
+
+def _canonicalize_ac_id(ac_id: str) -> str:
+    """
+    Canonicalize AC ID by zero-padding numeric parent IDs.
+    E.g., US-1-01 → US-001-01, FEAT-checkout-01 → FEAT-checkout-01 (no change)
+    """
+    # Match patterns like US-1-01, FEAT-checkout-01, FUNC-2-03
+    m = re.match(r"^(US|FEAT|FUNC)-((?:\d+)|(?:[a-z0-9]+(?:-[a-z0-9]+)*))-(\d{2})$", ac_id, re.IGNORECASE)
+    if m:
+        parent_type = m.group(1).upper()
+        parent_id = m.group(2)
+        seq = m.group(3)
+        canonical_parent = canonicalize_numeric_id(parent_type, parent_id)
+        return f"{canonical_parent}-{seq}"
+    return ac_id
 
 
 def collect_covered_ac_ids(features_dir: Path) -> dict[str, list[str]]:
@@ -111,16 +141,31 @@ def load_user_stories(living_doc_dir: Path) -> list[dict]:
 
 
 def normalise_ac_id(us_id: str, raw_id: str) -> str:
-    """Normalise AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01' or 'FEAT-checkout-01'."""
+    """Normalise and canonicalize AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01' or 'FEAT-checkout-01'."""
     raw = raw_id.strip().upper()
-    # Strip 'AC:' prefix if present (catalog fixtures store with prefix)
+    # Strip 'AC:' prefix if present (catalog fixtures store with prefix); ensure uppercase
     if raw.startswith("AC:"):
         raw = raw[3:]
+    elif raw.startswith("ac:"):
+        raw = raw[3:]
+    
+    # Full AC ID format: canonicalize it
     if re.match(r"^(US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", raw, re.IGNORECASE):
-        return raw
-    # Stored as just the suffix: '01' → 'US-001-01'
+        return _canonicalize_ac_id(raw)
+    
+    # Stored as just the suffix: '01' → 'US-001-01' (with parent ID canonicalized)
     if re.match(r"^\d{2}$", raw):
-        return f"{us_id.upper()}-{raw}"
+        # Extract parent type and ID from us_id, then canonicalize the numeric part
+        m = re.match(r"^(US|FEAT|FUNC)-(.+)$", us_id, re.IGNORECASE)
+        if m:
+            parent_type = m.group(1).upper()
+            parent_id = m.group(2)
+            canonical_parent = canonicalize_numeric_id(parent_type, parent_id)
+            return f"{canonical_parent}-{raw}"
+        else:
+            # us_id doesn't have the expected format, just use it as-is
+            return f"{us_id.upper()}-{raw}"
+    
     return raw
 
 

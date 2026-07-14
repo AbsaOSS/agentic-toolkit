@@ -141,7 +141,7 @@ description: >
 # BAD — talks about auto-triggering (agents use @-mention only)
 description: >
   Automatically activated when you describe BDD tasks.
-```
+
   Living documentation catalog (User Stories, Features, Functionalities, ACs, impact
   analysis, gap finding) and BDD automation (Playwright crawl/explore/scan, PageObjects
   create/heal, Gherkin scenarios/feature files/step definitions, living-doc sync,
