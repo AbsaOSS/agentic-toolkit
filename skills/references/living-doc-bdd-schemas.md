@@ -8,6 +8,11 @@ Templates and schemas for BDD automation files. Load this file when writing or v
 
 For entity definitions (IDs, status vocabulary, AC format, relationship diagram) see [living-doc-glossary](./living-doc-glossary.md).
 
+**Schema reference:** For JSON schema validation, see [schemas/](./schemas/) directory:
+- [project-profile.schema.json](./schemas/project-profile.schema.json) — Project Profile validation
+- [seed.schema.json](./schemas/seed.schema.json) — seed.yaml validation  
+- [manifest.schema.json](./schemas/manifest.schema.json) — manifest.json validation
+
 ---
 
 ## Project Profile (config-driven conventions)
@@ -79,7 +84,7 @@ Holds all US metadata and is mined during living documentation output generation
 # LIVING DOC — US-<n> · <US Title>
 # =============================================================================
 # source:          https://github.com/<org>/<repo>/issues/<n>    ← optional
-# status:          active        ← one of profile `ac_states`, lower-cased (active | planned | deprecated)
+# status:          active        ← one of profile `ac_states`, lower-cased (planned | in review | active | deprecated)
 # business_value:
 #   - <bullet describing the business outcome>
 # not_in_scope:                                                  ← optional

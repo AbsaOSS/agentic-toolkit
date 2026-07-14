@@ -18,7 +18,7 @@ No fixture files for this skill. All evals are conversational or reference live 
 | 8 | output-format | _(none)_ | Python CheckoutPage skeleton: ALL_CAPS constants, method stubs, living-doc header |
 | 9 | happy-path | _(none)_ | Create mode Step 5: Functionality stubs from discovered behaviors |
 | 10 | output-format | _(none)_ | TypeScript CheckoutPage: readonly Locators, async methods, living-doc header |
-| 11 | edge-case | _(none)_ | Maintain mode: multi-step auth route — navigation_context.navigation_steps |
+| 11 | edge-case | _(none)_ | Maintain mode: multi-step auth route — navigation_context string with sequential steps |
 
 ## Trigger eval summary
 

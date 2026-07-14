@@ -31,6 +31,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml  # noqa: E402 — required dependency, imported early for error handling
+
 ARTIFACT_SCHEMAS = {
     "profile": "project-profile.schema.json",
     "seed": "seed.schema.json",
@@ -52,7 +54,6 @@ def _default_schema_dir() -> Path:
 def _load_document(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     if path.suffix in (".yaml", ".yml"):
-        import yaml  # noqa: PLC0415 — optional dependency, only needed for YAML inputs
         return yaml.safe_load(text)
     return json.loads(text)
 
@@ -119,7 +120,7 @@ def main() -> None:
     try:
         document = _load_document(doc_path)
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError, ValueError) as exc:
+    except (json.JSONDecodeError, yaml.YAMLError, OSError, ValueError) as exc:
         print(f"Error reading input: {exc}", file=sys.stderr)
         sys.exit(2)
 

@@ -1,6 +1,6 @@
 # Living Doc BDD Copilot Agent
 
-`@living-doc-bdd-copilot` is the automation layer agent. It explores web applications, generates PageObjects, produces Gherkin scenarios and step definitions, and maintains the BDD automation suite across the full engineering pipeline.
+`@living-doc-bdd-copilot` is the unified living documentation agent. It handles both the catalog layer (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) and the automation layer (webapp exploration, PageObjects, Gherkin scenarios, step definitions, and BDD suite maintenance).
 
 ---
 
@@ -146,13 +146,13 @@ After exploration:
 
 | Skill | Purpose |
 |---|---|
-| `living-doc-pageobject-scan` | Discover, create, and maintain PageObject classes; Business Seed assembly and webapp crawl |
+| `living-doc-pageobject-scan` | Discover, create, and maintain PageObject classes; Business Seed assembly and webapp crawl; RE-SCAN and HEALING for selector drift |
 | `living-doc-scenario-creator` | Generate full Gherkin feature files (header + scenarios + step bodies) from ACs |
 | `living-doc-gap-finder` | Find catalog gaps (top-down) and ACs with no linked scenario (bottom-up) |
 | `gherkin-step` | Implement step definitions |
 | `gherkin-living-doc-sync` | Sync feature files and scenarios with living doc traceability links |
 | `data-cy-instrument` | Resolve missing `data-cy` attributes end-to-end |
-| `bdd-maintain` | RE-SCAN, HEALING, REMOVE modes |
+| `bdd-maintain` | Clean up deprecated features; dead code audit (unused steps, PageObject methods, components) |
 
 ---
 

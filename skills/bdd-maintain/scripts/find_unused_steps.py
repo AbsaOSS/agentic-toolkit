@@ -48,11 +48,7 @@ class StepDefinition:
 
 def cucumber_to_regex(pattern: str) -> re.Pattern:
     """Convert a Cucumber expression pattern to a Python compiled regex."""
-    escaped = re.escape(pattern)
-    # Restore the placeholder wildcards after escaping
-    # {string} → matches "..." or '...' → use non-greedy wildcard for simplicity
-    escaped = CUCUMBER_PLACEHOLDER_RE.sub(r".+?", re.escape(pattern))
-    # Actually redo: escape first, then replace placeholders
+    # Escape the pattern, then replace escaped Cucumber placeholders with non-greedy wildcard
     escaped = re.escape(pattern)
     escaped = re.sub(r"\\{(?:string|int|word|float|[^}]+)\\}", r".+?", escaped)
     return re.compile(rf"^\s*{escaped}\s*$", re.IGNORECASE)

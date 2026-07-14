@@ -22,10 +22,6 @@
 
 | Count | Triggers (should_trigger=true) | Non-triggers (should_trigger=false) |
 |-------|-------------------------------|--------------------------------------|
-| 24 total | 20 true | 4 false |
-
-False cases:
-- `write a unit test` → @sdet-copilot
-- `TypeScript quality gate` → @quality-gate-copilot (out of scope)
+| 44 total | 22 true | 22 false |
 
 > No fixture files — all evals use inline prompt/expected_output; agent behavior is assessed against the agent.md operating rules and skill definitions.

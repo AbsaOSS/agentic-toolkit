@@ -27,10 +27,10 @@ Expected User Story JSON structure:
     @AC:US-001-01
     Scenario: ...
 
-Only ACs with state Active or Implemented are included in the coverage check.
+Only ACs with state Active or In Review are included in the coverage check.
 Planned and Deprecated ACs are noted but not counted as gaps.
 
-Exit code: 0 if all active/implemented ACs are covered, 1 if gaps exist.
+Exit code: 0 if all active/in-review ACs are covered, 1 if gaps exist.
 
 Glossary reference: skills/references/living-doc-glossary.md
 """
@@ -50,8 +50,9 @@ AC_TAG = re.compile(
 TAG_LINE = re.compile(r"^\s*@\S+")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*", re.IGNORECASE)
 
-ACTIVE_STATES = {"active", "implemented"}
-SKIP_STATES = {"deprecated", "planned"}
+# AC states that count toward coverage: Active, In Review.
+# Planned and Deprecated ACs are skipped (not counted as gaps).
+ACTIVE_STATES = {"active", "in review"}
 
 
 def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
@@ -153,7 +154,7 @@ def main(living_doc_dir: str, features_dir: str) -> None:
 
             ac_id = normalise_ac_id(us_id, raw_id)
 
-            if ac_state in SKIP_STATES:
+            if ac_state not in ACTIVE_STATES:
                 print(f"  ⏭  {ac_id}  [{ac_state}]  — {ac_text}")
                 continue
 
@@ -176,9 +177,9 @@ def main(living_doc_dir: str, features_dir: str) -> None:
     print(f"\n{'=' * 60}")
     print(f"  COVERAGE SUMMARY")
     print(f"{'=' * 60}")
-    print(f"  Active / Implemented ACs : {total_active}")
-    print(f"  Covered by scenarios     : {total_covered}  ({pct}%)")
-    print(f"  Gaps (no scenario)       : {total_gaps}")
+    print(f"  Active / In Review ACs : {total_active}")
+    print(f"  Covered by scenarios                : {total_covered}  ({pct}%)")
+    print(f"  Gaps (no scenario)                  : {total_gaps}")
 
     sys.exit(0 if total_gaps == 0 else 1)
 

@@ -64,8 +64,8 @@
     },
     "manifest_shape": {
       "type": "string",
-      "enum": ["array"],
-      "description": "Proven manifests use a JSON array for routes."
+      "enum": ["object"],
+      "description": "Manifest is a JSON object with routes array (generated, scan_version, routes keys)."
     }
   }
 }

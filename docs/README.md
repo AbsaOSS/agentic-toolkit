@@ -34,7 +34,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 
 | Guide                               | Description                                                                        |
 |-------------------------------------|------------------------------------------------------------------------------------|
-| [PR Review](./guides/pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
 | [Token Saving](./guides/token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 ## Agent Guides
