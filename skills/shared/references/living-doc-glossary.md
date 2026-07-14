@@ -23,8 +23,8 @@ so that <business outcome>.
 - Name: short imperative title (e.g. "Customer Login")
 - Owns: end-to-end **Acceptance Criteria (AC)**
 - Links to: one or more **Features** (system surfaces the User Story touches)
-- Status: `PLANNED | IN_REVIEW | ACTIVE | DEPRECATED`
-- Deprecation metadata (set when `status: DEPRECATED`):
+- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: Deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)
@@ -47,8 +47,8 @@ A named system surface — the structural layer between User Stories and atomic 
 - Owns: one or more **Functionalities**
 - Links to: one or more **User Stories**
 - `owners`: team or person responsible for this Feature
-- Status: `PLANNED | IN_REVIEW | ACTIVE | DEPRECATED`
-- Deprecation metadata (set when `status: DEPRECATED`):
+- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: Deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)
@@ -158,8 +158,8 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
   Functionality, containing all AC-linked system-test scenarios once implemented.
   File name pattern: `func-<nnn>-<feature-name-kebab>-<behavior-kebab>.feature`
   e.g. `func-001-authentication-screen-credential-based-login.feature`
-- Status: `PLANNED | IN_REVIEW | ACTIVE | DEPRECATED`
-- Deprecation metadata (set when `status: DEPRECATED`):
+- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: Deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)

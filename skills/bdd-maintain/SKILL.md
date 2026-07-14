@@ -20,7 +20,7 @@ compatibility: GitHub Copilot
 # BDD Maintenance
 
 > **Glossary:** Feature, Functionality, User Story — see [living-doc-glossary](../../shared/references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/shared/references/living-doc-glossary.md)).
-> **BDD schemas:** manifest.json schema (routes, elements, coverage_gaps, navigation_context) — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
+> **BDD schemas:** manifest.json schema (routes, elements, coverage_gaps, navigation_context) — see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 Two modes — activate the one that matches the trigger.
 

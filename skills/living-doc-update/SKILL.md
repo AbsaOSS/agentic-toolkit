@@ -61,7 +61,7 @@ to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
 **AC versioning:** ACs carry a `(vMAJOR.MINOR.PATCH – state)` annotation.
-- Bump the **minor** version for any business-rule change to an `ACTIVE` AC (e.g. `v1.0.0 → v1.1.0`).
+- Bump the **minor** version for any business-rule change to an `Active` AC (e.g. `v1.0.0 → v1.1.0`).
 - Bump the **patch** version for a wording clarification that does not change the rule (e.g. `v1.0.0 → v1.0.1`).
 - The version must appear in the `# AC:` comment in linked Gherkin feature files — trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
 
@@ -94,7 +94,7 @@ Warn if any invariant fails:
 
 When promotion is blocked because only a happy-path AC exists, give a concrete example error/alternative AC in the reply (for example: `When the delivery address is outside the shipping zone, the order is rejected with a clear reason.`).
 
-After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `ACTIVE` AC if they do not yet exist.
+After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `Active` AC if they do not yet exist.
 
 ## Deprecate a Feature or Functionality
 

@@ -200,7 +200,7 @@ Every AC must carry:
 | `search/codebase` | Confirm code deletion before deprecating | Require negative result for at least two identifiers before assuming deleted. |
 | `search/textSearch` | Find `@AC:` annotations affected by an AC update | Run before writing AC changes to surface stale Gherkin links. |
 | `edit/createFile` | New entity files, PageObjects, feature files, step stubs | Run `search/fileSearch` first — never overwrite without reading. Confirm Storage Profile loaded for entity files. |
-| `edit/editFiles` | Update existing files | Show OLD vs NEW before writing `ACTIVE` AC changes. Read full target block first. |
+| `edit/editFiles` | Update existing files | Show OLD vs NEW before writing `Active` AC changes. Read full target block first. |
 
 ---
 
@@ -293,7 +293,7 @@ Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the singl
 
 **HEALING mode (catalog):** Verify deleted code via two negative repository searches before deprecating. Complete catalog changes, then run automation healing as a follow-up step.
 
-**PLAN mode:** Draft ACs → present for confirmation → create in `PLANNED` state only.
+**PLAN mode:** Draft ACs → present for confirmation → create in `Planned` state only.
 
 **Impact analysis:** Produce explicit impact map; recommend updates but do not change entity state without user confirmation.
 

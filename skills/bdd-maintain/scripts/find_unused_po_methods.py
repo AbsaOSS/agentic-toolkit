@@ -3,7 +3,7 @@
 find_unused_po_methods.py — Dead-code detector: PageObject methods never called from step files.
 
 Usage:
-    python skills/bdd-maintain/scripts/find_unused_po_methods.py [--pages-dir DIR] [--steps-dir DIR]
+    python playwright/scripts/find_unused_po_methods.py [--pages-dir DIR] [--steps-dir DIR]
 
 Exits with code 1 if any unused methods are found (useful in CI).
 """
@@ -59,8 +59,9 @@ def collect_po_methods(pages_dir: Path) -> list[MethodDef]:
 
         # Look for `async methodName(` or method-like declarations
         # Exclude control-flow keywords (if, for, while, switch, do, try, catch)
+        # Skip access modifiers (private, public, protected, readonly, static)
         for m in re.finditer(
-            r"^[ \t]+(?:async\s+)?(?!(?:if|for|while|switch|do|try|catch)\s*[\(\{])"
+            r"^[ \t]+(?:(?:private|public|protected|readonly|static)\s+)*(?:async\s+)?(?!(?:if|for|while|switch|do|try|catch)\s*[\(\{])"
             r"([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(",
             text,
             re.MULTILINE

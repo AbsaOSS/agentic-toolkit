@@ -135,7 +135,7 @@ Feature: <US Title>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED` |
+| `# status:` | Yes | `Planned` · `In Review` · `Active` · `Deprecated` (written Title-case per profile `ac_states`) |
 | `# business_value:` | Yes | Why this User Story exists (bullets) |
 | `# not_in_scope:` | Optional | Explicit exclusions |
 | `# preconditions:` | Optional | System-level state required before test execution |
@@ -189,7 +189,7 @@ Feature: <Feature Name> — <Functionality Name>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `PLANNED` · `IN_REVIEW` · `ACTIVE` · `DEPRECATED` |
+| `# status:` | Yes | `Planned` · `In Review` · `Active` · `Deprecated` (written Title-case per profile `ac_states`) |
 | `# parent:` | Yes | Parent Feature ID (`FEAT-<nnn>`) |
 | `# func_type:` | Yes | Category of behavior this Functionality represents (see table below) |
 | `# rationale:` | Optional | **Why** this FUNC is scoped the way it is — business context, a deliberate design decision, or a constraint that explains the boundary. Not for implementation notes. |

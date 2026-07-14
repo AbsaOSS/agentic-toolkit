@@ -78,7 +78,7 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
       - Raises ValueError if the collection contains any slug-based IDs (mixed conventions).
     
     Raises:
-        ValueError: If entity_type is unknown, or if FEAT collection contains slug-based IDs.
+        ValueError: If entity_type is unknown, collection is malformed, or FEAT has slug-based IDs.
     """
     if entity_type not in ENTITY_TYPE_MAP:
         raise ValueError(
@@ -86,12 +86,26 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
             f"Must be one of: {sorted(ENTITY_TYPE_MAP)}"
         )
     collection_key, pattern = ENTITY_TYPE_MAP[entity_type]
-    entities: list[dict] = catalog.get(collection_key, [])
-
+    entities = catalog.get(collection_key, [])
+    
+    # Validate collection is a list
+    if not isinstance(entities, list):
+        raise ValueError(
+            f"Catalog['{collection_key}'] must be a list, not {type(entities).__name__}. "
+            f"Catalog is malformed; expected format: {{'{collection_key}': [...]}}"
+        )
+    
     max_num = 0
     slug_ids = []
     
-    for entity in entities:
+    for i, entity in enumerate(entities):
+        # Validate each entity is a dict
+        if not isinstance(entity, dict):
+            raise ValueError(
+                f"Catalog['{collection_key}'][{i}] must be a dict, not {type(entity).__name__}. "
+                f"All entities must be JSON objects."
+            )
+        
         entity_id = entity.get("id", "")
         m = pattern.match(entity_id)
         if m:
@@ -120,6 +134,9 @@ def next_ac_id(catalog: dict, parent_id: str) -> str:
     AC format: AC:<parent_id>-<nn>  (two-digit zero-padded suffix)
 
     Scans the parent entity's acceptance_criteria list for the highest existing number.
+    
+    Raises:
+        ValueError: If parent_id prefix is invalid, collection is malformed, or parent not found.
     """
     prefix = parent_id.split("-")[0]
     collection_map = {"US": "user_stories", "FUNC": "functionalities"}
@@ -130,14 +147,48 @@ def next_ac_id(catalog: dict, parent_id: str) -> str:
             f"Prefix must be 'US' or 'FUNC'."
         )
 
-    entities: list[dict] = catalog.get(collection_key, [])
-    parent = next((e for e in entities if e.get("id") == parent_id), None)
+    entities = catalog.get(collection_key, [])
+    
+    # Validate collection is a list
+    if not isinstance(entities, list):
+        raise ValueError(
+            f"Catalog['{collection_key}'] must be a list, not {type(entities).__name__}. "
+            f"Catalog is malformed; expected format: {{'{collection_key}': [...]}}"
+        )
+    
+    parent = None
+    for i, entity in enumerate(entities):
+        # Validate each entity is a dict
+        if not isinstance(entity, dict):
+            raise ValueError(
+                f"Catalog['{collection_key}'][{i}] must be a dict, not {type(entity).__name__}. "
+                f"All entities must be JSON objects."
+            )
+        if entity.get("id") == parent_id:
+            parent = entity
+            break
+    
     if parent is None:
         raise ValueError(f"Entity '{parent_id}' not found in catalog")
 
+    ac_list = parent.get("acceptance_criteria", [])
+    
+    # Validate acceptance_criteria is a list
+    if not isinstance(ac_list, list):
+        raise ValueError(
+            f"Entity '{parent_id}' has acceptance_criteria of type {type(ac_list).__name__}, "
+            f"but it must be a list."
+        )
+    
     ac_pattern = re.compile(rf"^AC:{re.escape(parent_id)}-(\d+)$")
     max_num = 0
-    for ac in parent.get("acceptance_criteria", []):
+    for i, ac in enumerate(ac_list):
+        # Validate each AC is a dict
+        if not isinstance(ac, dict):
+            raise ValueError(
+                f"Entity '{parent_id}' acceptance_criteria[{i}] must be a dict, "
+                f"not {type(ac).__name__}. All ACs must be JSON objects."
+            )
         m = ac_pattern.match(ac.get("id", ""))
         if m:
             max_num = max(max_num, int(m.group(1)))

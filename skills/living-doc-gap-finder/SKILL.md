@@ -56,7 +56,7 @@ Before presenting the final report, normalise the script output against the taxo
 | Mode | When to use |
 |---|---|
 | **AUDIT mode** | Full catalog audit — runs the 9-type taxonomy top-down across all entities. Use after a sprint with entity changes or when the living doc hasn’t been reviewed recently. |
-| **PLAN mode** | Bootstrap new coverage — draft ACs from PageObject descriptions or discovered UI surfaces (bottom-up). Produces `PLANNED`-state AC drafts for user confirmation before creating entities. |
+| **PLAN mode** | Bootstrap new coverage — draft ACs from PageObject descriptions or discovered UI surfaces (bottom-up). Produces `Planned`-state AC drafts for user confirmation before creating entities. |
 
 Both modes use `compute_gaps.py` and the same gap taxonomy. AUDIT mode spans the full catalog; PLAN mode is scoped to the surfaces being bootstrapped.
 
@@ -68,7 +68,7 @@ Nine types of gaps are detected, in order of risk:
 
 | Priority | Gap type | Description |
 |---|---|---|
-| 1 — Blocker | **Untested AC** | An `ACTIVE` AC in a User Story or Functionality has no linked test. |
+| 1 — Blocker | **Untested AC** | An `Active` AC in a User Story or Functionality has no linked test. |
 | 2 — Important | **Undocumented UI surface** | A screen or API endpoint exists in the app with no Feature entity |
 | 3 — Important | **Orphan Feature** | A Feature entity exists with no linked User Story |
 | 4 — Important | **Orphan User Story** | A User Story exists with no linked Feature |
