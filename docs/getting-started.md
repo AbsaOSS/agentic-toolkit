@@ -184,7 +184,11 @@ Open Copilot Chat in VS Code and type `@` followed by the agent name:
 @living-doc-bdd-copilot HEALING mode
 ```
 
-The agent loads its skills on demand and follows its defined scope. See the [Agent Roster](../README.md#agent-roster) for the full list of available agents and their guides.
+The agent loads its skills on demand and follows its defined scope. 
+
+> ⚠️ **Agents are invoked only via `@-mention`** — the `description` field in an agent file is for documentation only, not an activation trigger (unlike skills). Type `@agent-name` explicitly in Copilot Chat to invoke the agent.
+
+See the [Agent Roster](../README.md#agent-roster) for the full list of available agents and their guides.
 
 ## Troubleshooting
 

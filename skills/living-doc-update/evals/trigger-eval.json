@@ -139,9 +139,9 @@
   },
   {
     "id": "t24-not-impact",
-    "query": "What does this PR affect in the living doc?",
+    "query": "Does PR #217 affect the living doc?",
     "should_trigger": false,
-    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+    "reason": "Impact analysis — routes to living-doc-impact-analysis (PR-number phrasing; complements t14)."
   },
   {
     "id": "t25-rename-feature",

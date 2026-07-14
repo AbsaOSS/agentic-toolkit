@@ -1,6 +1,6 @@
 # Agent Testing Guide
 
-This document describes how to test, evaluate, and tune `.agent.md` files — specifically how to use `skill-creator`'s eval methodology (for description trigger accuracy). This is the practical equivalent of [skill-testing.md](./skill-testing.md) applied to agents.
+This document describes how to test, evaluate, and tune `.agent.md` files by validating body output quality through manual testing. This is the practical equivalent of [skill-testing.md](./skill-testing.md) applied to agents, but simpler because agents are manually invoked (no auto-triggering to test).
 
 ---
 
@@ -8,24 +8,27 @@ This document describes how to test, evaluate, and tune `.agent.md` files — sp
 
 | Dimension | Skill | Agent |
 |---|---|---|
-| Trigger mechanism | `description:` field in SKILL.md YAML | `description:` field in `.agent.md` YAML |
-| Body loaded when? | When skill is activated by description match | When user addresses `@agent-name` or description matches |
-| What to tune | Description trigger keywords + body instructions | Description trigger keywords + body sections (scope, handoff, maintenance modes) |
-| Tool for eval loop | `skill-creator` (fully supported) | `skill-creator` (description eval loop applies directly) |
+| Trigger mechanism | `description:` field in SKILL.md YAML — auto-matched | `@agent-name` mention in Copilot Chat — manual |
+| Body loaded when? | When skill description matches your prompt | When user explicitly @-mentions the agent name |
+| What to tune | Description keywords for activation + body instructions | Body sections (scope, handoff, modes); description for documentation only |
+| Tool for eval loop | `skill-creator` (optimize trigger descriptions) | Manual testing (invoke with `@agent-name` and verify outputs) |
 
-The key insight: an agent's `description:` block is read by the same matching mechanism as a skill's `description:`. Everything `skill-creator` does to optimize skill descriptions applies 1-for-1 to agent descriptions.
+The key insight: an agent's `description:` is **documentation only** — it does not affect invocation. Unlike skills (auto-triggered by description match), agents require explicit `@agent-name` mention. Use the `description:` field to document the agent's purpose and scope for users.
 
 ---
 
 ## 1. Recommended workflow
 
-1. Create trigger eval cases in `.github/agents/evals/<agent-name>/trigger-eval.json`
-2. Create body eval cases in `.github/agents/evals/<agent-name>/evals.json`
-3. Start a Copilot Chat session from the repository root
-4. Ask Copilot to use the `skill-creator` skill, pointing it at the agent's eval files
-5. Review trigger accuracy and output quality
-6. Edit structural sections directly in the `.agent.md` file (tools list, scope, handoff, modes)
-7. Re-run evals; repeat until stable
+Since agents are invoked explicitly via `@agent-name` (not by description matching), skip trigger evals and focus on body quality:
+
+1. Create body eval cases in `.github/agents/evals/<agent-name>/evals.json`
+2. Start a Copilot Chat session from the repository root
+3. Invoke the agent with `@agent-name` and test the prompts from your evals
+4. Review output quality against expected results
+5. Edit structural sections directly in the `.agent.md` file (tools list, scope, handoff, modes)
+6. Re-run evals; repeat until stable
+
+> Note: The `description:` field in `.agent.md` is for documentation/help text only — it does not affect invocation. Update it to clearly state the agent's purpose and scope.
 
 ---
 
@@ -37,59 +40,9 @@ The key insight: an agent's `description:` block is read by the same matching me
     my-agent.agent.md          ← agent definition
     evals/
       my-agent/
-        trigger-eval.json      ← which prompts should (and should not) invoke the agent
         evals.json             ← body behavior tests
         files/                 ← fixture files referenced by evals
 ```
-
----
-
-## 3. Trigger eval format
-
-Store at `.github/agents/evals/<agent-name>/trigger-eval.json` as a **flat JSON array** (no wrapper object):
-
-```json
-[
-  {
-    "id": 1,
-    "query": "Scan the webapp at https://app.example.com and generate PageObjects",
-    "should_trigger": true,
-    "reason": "'scan webapp' + 'generate pageobjects' core phrase"
-  },
-  {
-    "id": 2,
-    "query": "Explore the app and map all the UI surfaces",
-    "should_trigger": true,
-    "reason": "'explore the app' maps to crawl/explore mode"
-  },
-  {
-    "id": 3,
-    "query": "Create a User Story for the loyalty points redemption feature",
-    "should_trigger": true,
-    "reason": "Catalog entity creation — living-doc layer"
-  },
-  {
-    "id": 4,
-    "query": "Write a unit test for the login validator",
-    "should_trigger": false,
-    "reason": "Unit test authoring — out of scope"
-  },
-  {
-    "id": 5,
-    "query": "Debug the null pointer exception in PaymentService.processOrder()",
-    "should_trigger": false,
-    "reason": "Application debugging — outside scope"
-  }
-]
-```
-
-Note: the field is `query` (not `prompt`). The `reason` field is for human documentation only — it is not used by the eval runner.
-
-Write at least **5 should-trigger** and **5 should-not-trigger** cases. Should-not-trigger cases are as important as the positive ones — they catch over-broad descriptions that shadow other agents.
-
----
-
-## 4. Body eval format
 
 Store at `.github/agents/evals/<agent-name>/evals.json`. Same schema as skill evals:
 
@@ -119,40 +72,29 @@ Store at `.github/agents/evals/<agent-name>/evals.json`. Same schema as skill ev
 }
 ```
 
----
+## 4. Running body evals
 
-## 5. Running the eval loop
-
-Point `skill-creator` at the agent files — it treats the `description:` block the same way it treats a skill description.
-
-### Trigger accuracy
+When testing your agent, manually invoke it with `@agent-name` using the prompts from `evals.json`:
 
 ```
-Use the skill-creator skill to optimize the description for .github/agents/my-agent.agent.md
-using the trigger evals at .github/agents/evals/my-agent/trigger-eval.json.
-Constraints: ≤ 1024 chars; structured domain nouns/verbs; include a NOT for: boundary clause.
-Report precision and recall scores for each candidate. Repeat until all trigger evals pass.
+@my-agent I want to set up BDD automation for our app at https://app.example.com. 
+The Angular router is at src/app/app-routing.module.ts.
 ```
 
-`skill-creator` will propose candidate descriptions, score them against the eval set, and iterate.
+Verify the output against the `expected_output` field. Repeat for each eval case until all pass.
 
-### Body quality
+**What to validate:**
 
-```
-Use the skill-creator skill to run the body evals for .github/agents/my-agent.agent.md
-using .github/agents/evals/my-agent/evals.json.
-Verify: (1) all body-referenced tools are present in the frontmatter tools: list,
-(2) mode dispatch routes to the correct skill for each intent,
-(3) scope boundaries match ## Scope and ## Does NOT, (4) handoff targets are correct.
-Only fix scope, tool, or handoff issues — do not rewrite unless fundamentally mis-scoped.
-Repeat until all evals pass.
-```
+1. All body-referenced tools are present in the frontmatter `tools:` list
+2. Mode dispatch (e.g., RE-SCAN, HEALING) activates correctly when mode keywords appear in the prompt
+3. Scope boundaries match the `## Scope` and `## Does NOT` sections
+4. Handoff targets are correct when the agent needs to delegate work
 
-Use the same with-skill / baseline comparison flow described in [skill-testing.md](./skill-testing.md).
+> Tip: If an eval expects a tool that's not available, add it to the `.agent.md` frontmatter `tools:` list. If scope is wrong, edit the relevant section (`## Scope`, `## Does NOT`, or a specific mode block).
 
 ---
 
-## 6. Structural edits
+## 5. Structural edits
 
 When body evals reveal a section is wrong (wrong scope, missing tool, bad handoff), edit the `.agent.md` file directly:
 
@@ -162,42 +104,44 @@ When body evals reveal a section is wrong (wrong scope, missing tool, bad handof
 
 ---
 
-## 7. What to tune — agent-specific checklist
-
-Beyond the standard skill tuning checklist, also verify:
+## 6. What to tune — agent-specific checklist
 
 | Check | Good signal | Bad signal |
 |---|---|---|
-| **Trigger precision** | Agent fires only for its domain | Fires for requests that belong to another agent |
-| **Trigger recall** | All domain phrases trigger it | Mis-fires to default agent for known phrases |
 | **Scope boundaries** | Refuses work outside its Does-NOT list | Silently attempts work outside its scope |
 | **Mode activation** | RE-SCAN / HEALING / REMOVE activate on correct triggers | Wrong mode fires, or modes don't activate |
 | **Handoff clarity** | Outputs correct hand-off message to the right agent | Hands off to wrong agent or swallows the work |
 | **Tool completeness** | All tools needed by the body are in the frontmatter `tools:` list | Body references a tool not in `tools:` — it will be unavailable |
+| **Description clarity** | Description field clearly explains agent purpose and usage | Description is vague or misleading about scope |
 
 ---
 
-## 8. Description anti-patterns
+## 7. Description best practices
 
-These are the most common description problems observed in agent files:
+Since the `description:` field is documentation-only (not an activation trigger), use it to communicate the agent's purpose, domain, and key scope boundaries to users:
 
-**Over-broad description** — causes the agent to shadow other agents:
+**Good pattern:**
+
 ```yaml
-# BAD — fires on almost everything
 description: >
-  Helps with testing, documentation, and web apps.
+  Lifecycle for living documentation and BDD automation.
+  Create/update User Stories, Features, Functionalities; generate Gherkin scenarios;
+  scan webapp for PageObjects; manage test artifacts.
+  Use @-mention: @living-doc-bdd-copilot COMMAND.
+  NOT for: unit tests, production code, security/perf review.
 ```
 
-**Under-specified triggers** — causes the agent to miss its domain:
-```yaml
-# BAD — won't fire on "crawl the UI" or "playwright scan"
-description: >
-  Generates BDD tests.
-```
+**Bad patterns:**
 
-**Good pattern** — minimalist semantic description with a `NOT for:` boundary:
 ```yaml
+# BAD — vague, doesn't explain domain or usage
 description: >
+  Helps with testing and documentation.
+
+# BAD — talks about auto-triggering (agents use @-mention only)
+description: >
+  Automatically activated when you describe BDD tasks.
+```
   Living documentation catalog (User Stories, Features, Functionalities, ACs, impact
   analysis, gap finding) and BDD automation (Playwright crawl/explore/scan, PageObjects
   create/heal, Gherkin scenarios/feature files/step definitions, living-doc sync,
