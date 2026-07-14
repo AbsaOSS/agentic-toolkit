@@ -1,0 +1,255 @@
+{
+  "skill_name": "pr-review",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Hey can you review this PR for me? It's a FastAPI backend change. The diff is in evals/files/api-rename.diff",
+      "expected_output": "Review identifies the field rename (user_id\u2192userId) as a breaking API contract change, flags it as Blocker, recommends a deprecation path. API contracts section is applied. Output is grouped Blocker/Important/Nit.",
+      "files": [
+        "evals/files/api-rename.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The rename of user_id to userId is flagged as a breaking change (Blocker)",
+        "A deprecation or migration path is recommended (e.g. alias, versioning, or phase-out notice)",
+        "The API contracts section was applied (not just the standard review)",
+        "Each comment includes What, Why, and How to fix",
+        "Elevated-risk overlay is NOT applied \u2014 the PR is a pure DTO rename with no auth, security, infra, or wide-refactor touches"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Please review this Terraform PR, the diff is at evals/files/iac-wildcard-iam.diff. Anything I should be worried about?",
+      "expected_output": "Review flags the wildcard Action=* Resource=* IAM policy as a Blocker. Also flags the hardcoded AWS account ID and region in variables as Important. Infrastructure section is applied.",
+      "files": [
+        "evals/files/iac-wildcard-iam.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The wildcard Action=* Resource=* IAM policy is flagged as a Blocker or Important",
+        "The hardcoded account ID (123456789012) or hardcoded region is flagged",
+        "The Infrastructure as code section was applied",
+        "Each comment includes What, Why, and How to fix"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "regression",
+      "prompt": "Can you sanity check this CI workflow change before I merge? diff is evals/files/ci-gate-bypass.diff",
+      "expected_output": "Review flags: (1) unit tests commented out as Blocker, (2) AWS credentials hardcoded in env as Blocker, (3) overly broad deploy trigger (now fires on any push, not just develop). CI/CD section is applied.",
+      "files": [
+        "evals/files/ci-gate-bypass.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The commented-out pytest step is flagged as a Blocker (quality gate bypassed)",
+        "The hardcoded AWS credentials (HARD_CODED_AWS_ACCESS_KEY_ID) are flagged as a Blocker",
+        "The broadened deploy trigger (was develop-only, now fires on any push) is flagged",
+        "The CI/CD section was applied"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "LGTM? Just want a quick review of this utility PR \u2014 evals/files/standard-clean-pr.diff",
+      "expected_output": "Review acknowledges the PR looks clean. Standard section is applied. Any findings are minor (Nit level at most). Tests are present and cover edge cases. No Blockers or Important issues.",
+      "files": [
+        "evals/files/standard-clean-pr.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "No Blocker issues are raised (the code is clean)",
+        "The review notes that tests are present and cover edge cases",
+        "Standard review section is applied (correctness, tests, maintainability checked)",
+        "The review is concise \u2014 it does not manufacture problems where none exist"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "happy-path",
+      "prompt": "Can you review these dependency updates? We bumped a few packages in requirements.txt \u2014 evals/files/dependency-bump-risk.diff",
+      "expected_output": "Review flags missing justification for bumps (Important), warns about transitive dependency upgrade risk for SQLAlchemy 1.4\u21922.0 (Important), and notes lack of stated reason for each bump. Dependency bumps section is applied.",
+      "files": [
+        "evals/files/dependency-bump-risk.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Lack of stated reason for bumps (CVE/feature/compat) is flagged as Important",
+        "SQLAlchemy major version bump (1.4\u21922.0) is flagged as a breaking change with transitive concerns",
+        "FastAPI major version bump is flagged as potentially breaking",
+        "Reviewer recommends testing matrix before merge or a stated justification",
+        "The dependency bumps section was applied (not generic standard review)"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "regression",
+      "prompt": "Please review this database migration before we apply it. evals/files/db-migration-risks.diff",
+      "expected_output": "Review flags: (1) Dropping phone_number column while code still references it (Blocker), (2) Adding non-nullable column to 100k rows with no default (Blocker), (3) No rollback/downgrade script (Important), (4) No online schema change tool for audit_log changes (Important). DB migrations section is applied.",
+      "files": [
+        "evals/files/db-migration-risks.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Dropping phone_number while code references it is flagged as Blocker",
+        "Adding non-nullable column without default to existing rows is flagged as Blocker (will fail)",
+        "Lack of downgrade path is flagged as Important",
+        "audit_log changes without online schema change tools on a large table is flagged as Blocker or Important",
+        "Each comment includes What, Why, and How to fix",
+        "The DB migrations section was applied (not generic standard review)"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "regression",
+      "prompt": "Can you review this wide auth refactor? There's a permission system change and some endpoint consolidation. evals/files/elevated-risk-auth-refactor.diff",
+      "expected_output": "Review applies elevated risk overlay on top of standard sections. Flags: (1) Hardcoded admin token in code (Blocker), (2) Inlined admin check breaks prior review feedback (Important), (3) Removing legacy_phone column while app still queries it (Blocker), (4) Wide refactor affects 40+ callers, tests incomplete (Important), (5) Permission logic refactored but only partial test coverage (Important). Elevated risk checks are applied.",
+      "files": [
+        "evals/files/elevated-risk-auth-refactor.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Hardcoded secret token 'super_secret_key_12345' is flagged as a Blocker security issue",
+        "Hardcoded user IDs [1, 2, 42] bypass for 'development speed' is flagged (Blocker or Important)",
+        "Inlined admin check (header-based admin role) is flagged as Blocker or Important",
+        "Removing legacy_phone while 40+ queries reference it is flagged as Blocker or Important",
+        "Auth/permission changes trigger the elevated risk overlay (not just standard review)",
+        "Permission logic refactor with partial test coverage is flagged as Important or elevated risk finding",
+        "Elevated risk section overlay is applied on top of standard + other applicable sections"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "edge-case",
+      "prompt": "Need feedback on this PR before merge. Diff: evals/files/large-pr-and-vague-desc.diff",
+      "expected_output": "Review flags the PR description as vague/incomplete (Nit). Reviewer notes they cannot fully assess intent and risk without knowing what the PR is intended to fix or change. Reviewers asks for more context in the description.",
+      "files": [
+        "evals/files/large-pr-and-vague-desc.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Lack of PR description or intent statement is flagged as a Nit",
+        "Reviewer explicitly notes they cannot assess intent and risk without PR context",
+        "Reviewer recommends adding description explaining what is being changed and why",
+        "The review still proceeds with file-based assessment, but notes the description gap clearly"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "negative",
+      "prompt": "Please draft release notes bullets from this diff only, do not do a PR review: evals/files/docs-release-notes.diff",
+      "expected_output": "Assistant does not force a PR review format for a non-review request. It either provides release-note bullets directly or asks a focused clarification, without inventing Blocker/Important/Nit findings.",
+      "files": [
+        "evals/files/docs-release-notes.diff"
+      ],
+      "expectations": [
+        "Assistant recognizes the user asked for release notes, not a PR review",
+        "Assistant does not fabricate review findings unrelated to the request",
+        "If clarification is needed, it asks a focused question instead of running a full review"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "paraphrase",
+      "prompt": "Could you sanity-check this backend PR diff for client breakage risks? File: evals/files/api-rename.diff",
+      "expected_output": "Same core behavior as test 1: review identifies the user_id\u2192userId rename as a breaking API contract change, marks it as Blocker, and suggests a deprecation/migration path.",
+      "files": [
+        "evals/files/api-rename.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The rename of user_id to userId is flagged as a breaking API contract issue",
+        "A concrete migration path is suggested"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "paraphrase",
+      "prompt": "Before I merge, can you do a quick pass for CI safety regressions on this workflow diff: evals/files/ci-gate-bypass.diff",
+      "expected_output": "Same core behavior as test 3: review flags the disabled unit tests and hardcoded AWS credentials as high-severity issues, and calls out broadened deploy triggers.",
+      "files": [
+        "evals/files/ci-gate-bypass.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Commented-out tests are flagged as a high-severity issue",
+        "Hardcoded AWS credentials are flagged as a security issue",
+        "Broadened deploy trigger scope is flagged"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "multi-section",
+      "prompt": "Review this PR \u2014 it touches DB migrations, the user API response schema, and CI config: evals/files/multi-section-risks.diff",
+      "expected_output": "Review identifies findings across all three sections: DB migration data-loss (add+drop without backfill, non-nullable column without default), API contract breakage (breaking field renames without backward-compat alias), and CI gate bypass (tests skipped, deploy trigger widened). Applied sections header lists Standard \u00b7 API contracts \u00b7 DB migrations \u00b7 CI/CD.",
+      "files": [
+        "evals/files/multi-section-risks.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "Applied sections header lists API contracts, DB migrations, and CI/CD",
+        "DB migration: adding contact_email and dropping email in same migration without backfill flagged as Blocker (data loss)",
+        "DB migration: notification_opt_in non-nullable column with no default flagged as Blocker or Important",
+        "API contracts: userId/contactEmail/createdAt rename flagged as breaking \u2014 no backward-compat alias provided",
+        "CI/CD: skipping test_user_api tests (-k flag) flagged as quality gate bypass (Blocker)",
+        "CI/CD: deploy trigger widened from branch-scoped to all pushes flagged",
+        "Elevated-risk overlay is NOT applied \u2014 PR has no auth/security/infra/wide-refactor touches despite touching multiple sections"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "Can you review this new skill PR before I merge? evals/files/skill-definition-clean.diff",
+      "expected_output": "Review applies the Skill definitions section. All checks pass: name is kebab-case matching the directory, description covers what it does and when to trigger with explicit keywords, body is under 500 lines, no hardcoded paths or secrets, and the bundled script is referenced in SKILL.md. No Blocker or Important findings.",
+      "files": [
+        "evals/files/skill-definition-clean.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied (listed in Applied sections header)",
+        "No Blocker or Important issues are raised — the skill is well-formed",
+        "Reviewer confirms name is kebab-case and matches the directory name",
+        "Reviewer confirms description includes explicit trigger keywords",
+        "Reviewer confirms the bundled script is referenced in SKILL.md",
+        "The review is concise — it does not manufacture problems where none exist"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Review this new skill before we add it to the toolkit. Diff: evals/files/skill-definition-violations.diff",
+      "expected_output": "Review applies the Skill definitions section and flags: (1) name 'DataTransformer' is PascalCase and does not match directory 'data-transformer' (Important), (2) description has no trigger keywords — vague prose only (Important), (3) hardcoded absolute path in skill body (Important), (4) scripts/run_transform.sh is not referenced in SKILL.md (Important).",
+      "files": [
+        "evals/files/skill-definition-violations.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied (listed in Applied sections header)",
+        "name 'DataTransformer' not being kebab-case or not matching directory 'data-transformer' is flagged",
+        "Missing trigger keywords in description is flagged",
+        "Hardcoded absolute path '/Users/john.doe/repos/internal-toolkit/...' in skill body is flagged",
+        "scripts/run_transform.sh not referenced from SKILL.md is flagged",
+        "Each comment includes What, Why, and How to fix"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "paraphrase",
+      "prompt": "Does this SKILL.md look right to you? Please check it follows our conventions. File: evals/files/skill-definition-violations.diff",
+      "expected_output": "Same core behaviour as test 14: review flags the name casing/mismatch, missing trigger keywords, hardcoded absolute path, and unreferenced script.",
+      "files": [
+        "evals/files/skill-definition-violations.diff"
+      ],
+      "expectations": [
+        "Output is grouped into Blocker / Important / Nit sections",
+        "The Skill definitions section is applied",
+        "name field violation (casing or directory mismatch) is flagged",
+        "Missing trigger keywords in description is flagged",
+        "Hardcoded absolute path is flagged",
+        "Unreferenced script is flagged"
+      ]
+    }
+  ]
+}

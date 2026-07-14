@@ -1,0 +1,135 @@
+[
+  {
+    "id": "t01-write-function-in-py-file",
+    "query": "Write a function that processes CSV files and returns aggregated results.",
+    "context": "User is editing src/etl/processor.py",
+    "should_trigger": true,
+    "reason": "User is in a .py file and asks to write a function - context-based trigger."
+  },
+  {
+    "id": "t02-review-module-quality",
+    "query": "Review this module for code quality and best practices.",
+    "context": "User is viewing src/handlers/auth.py",
+    "should_trigger": true,
+    "reason": "User is in a .py file and asks for quality review - context triggers the skill."
+  },
+  {
+    "id": "t03-refactor-tests",
+    "query": "Refactor these tests to follow better patterns and reduce duplication.",
+    "context": "User is editing tests/unit/test_auth.py",
+    "should_trigger": true,
+    "reason": "Editing a .py test file and asking to refactor - context-based trigger."
+  },
+  {
+    "id": "t04-conventions-question",
+    "query": "What are our coding conventions for type annotations and error handling?",
+    "context": "User is working in a Python project (pyproject.toml present)",
+    "should_trigger": true,
+    "reason": "Convention question inside a Python project - triggers on context + topic."
+  },
+  {
+    "id": "t05-new-service-class",
+    "query": "Create a service class that connects to Redis and handles caching with proper error handling.",
+    "context": "User is creating src/services/cache_service.py",
+    "should_trigger": true,
+    "reason": "Creating a new .py file - context is sufficient to trigger."
+  },
+  {
+    "id": "t06-fix-typing",
+    "query": "Add type annotations to this module and fix the mypy errors.",
+    "context": "User is editing src/utils/helpers.py",
+    "should_trigger": true,
+    "reason": "Working in .py file on type annotations - directly covered."
+  },
+  {
+    "id": "t07-logging-question",
+    "query": "How should I set up logging in this service? Is print() okay?",
+    "context": "User is editing src/services/notifier.py",
+    "should_trigger": true,
+    "reason": "Logging question while in a .py file - triggers on context + topic."
+  },
+  {
+    "id": "t08-async-function",
+    "query": "Write an async function that fetches data from multiple APIs concurrently.",
+    "context": "User is editing src/clients/multi_fetch.py",
+    "should_trigger": true,
+    "reason": "Writing async code in a .py file - skill covers async patterns."
+  },
+  {
+    "id": "t09-fix-bare-excepts",
+    "query": "Can you fix this file? It has bare excepts and mutable defaults everywhere.",
+    "context": "User is editing src/legacy/importer.py",
+    "should_trigger": true,
+    "reason": "Fixing code smells in a .py file - directly covered by the skill."
+  },
+  {
+    "id": "t10-add-dependency",
+    "query": "I'm adding httpx as a dependency. What's the right way to declare it?",
+    "context": "User is in a Python project with pyproject.toml",
+    "should_trigger": true,
+    "reason": "Dependency management in a Python project - covered by skill."
+  },
+  {
+    "id": "t11-explicit-python-mention",
+    "query": "Write a Python script that parses JSON logs and groups errors by type.",
+    "context": "No specific file open",
+    "should_trigger": true,
+    "reason": "Explicit 'Python' keyword in prompt - still triggers even without file context."
+  },
+  {
+    "id": "n01-javascript-function",
+    "query": "Write a TypeScript function that validates email addresses.",
+    "context": "User is editing src/validators/email.ts",
+    "should_trigger": false,
+    "reason": "TypeScript file context - not Python."
+  },
+  {
+    "id": "n02-review-pr",
+    "query": "Review this PR diff for breaking changes before we merge.",
+    "context": "User is viewing a GitHub PR",
+    "should_trigger": false,
+    "reason": "PR review request - routes to pr-review skill."
+  },
+  {
+    "id": "n03-create-issue",
+    "query": "Create a GitHub issue for the login timeout bug.",
+    "context": "No specific file open",
+    "should_trigger": false,
+    "reason": "Issue creation - routes to create-issue skill."
+  },
+  {
+    "id": "n04-kudos",
+    "query": "Give kudos to Martin for fixing the deployment pipeline.",
+    "context": "No specific file open",
+    "should_trigger": false,
+    "reason": "Kudos workflow - routes to kudos skill."
+  },
+  {
+    "id": "n05-sql-query",
+    "query": "Write a PostgreSQL query that joins users and orders tables.",
+    "context": "User is editing migrations/001_create_tables.sql",
+    "should_trigger": false,
+    "reason": "SQL file context - not Python."
+  },
+  {
+    "id": "n06-docker-setup",
+    "query": "Create a Dockerfile for this application.",
+    "context": "User is editing Dockerfile",
+    "should_trigger": false,
+    "reason": "Docker config task, not Python code."
+  },
+  {
+    "id": "n07-git-help",
+    "query": "How do I rebase my branch onto main and resolve conflicts?",
+    "context": "No specific file open",
+    "should_trigger": false,
+    "reason": "Git workflow question, not Python coding."
+  },
+  {
+    "id": "n08-crossall-update",
+    "query": "Generate the crossall update report for the last two weeks.",
+    "context": "No specific file open",
+    "should_trigger": false,
+    "reason": "Progress reporting - routes to crossall-changes skill."
+  }
+]

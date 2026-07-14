@@ -5,6 +5,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 ## Contents
 
 - [Setup & Repository Guides](#setup--repository-guides)
+- [Tools for Agentic Development](#tools-for-agentic-development)
 - [Skill Guides](#skill-guides)
 - [Agent Guides](#agent-guides)
 
@@ -19,10 +20,20 @@ Navigation hub for all guides in this repository. Browse by category below.
 | [Agent Testing](./testing/agent-testing.md) | Eval creation, trigger accuracy tuning, and body quality testing for `.agent.md` files |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues                               |
 
+## Tools for Agentic Development
+
+| Guide                       | Description                                                        |
+|-----------------------------|--------------------------------------------------------------------|
+| [Tools Overview](./tools/)    | Catalog of CLI-based AI coding agents and agentic development tools |
+| [Pi Coding Agent](./tools/pi.md) | Minimal BYOK terminal agent -- quickstart, extensions, troubleshooting |
+| [GitHub Copilot CLI](./tools/copilot-cli.md) | Multi-model agentic terminal agent with native GitHub integration |
+| [CodeBurn](./tools/codeburn.md) | Token usage, cost, and performance dashboard for 25+ AI coding tools |
+
 ## Skill Guides
 
 | Guide                               | Description                                                                        |
 |-------------------------------------|------------------------------------------------------------------------------------|
+| [PR Review](./guides/pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
 | [Token Saving](./guides/token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 ## Agent Guides

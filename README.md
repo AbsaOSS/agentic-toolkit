@@ -84,12 +84,12 @@ its purpose, trigger phrases, and full instructions.
 | **[living-doc-impact-analysis](./skills/living-doc-impact-analysis/)** | Trace which Features, Functionalities, User Stories, and Gherkin scenarios are affected by a code change or PR. |
 | **[living-doc-gap-finder](./skills/living-doc-gap-finder/)** | Identify undocumented behaviours, orphan tests, and untested ACs. Used by `@living-doc-bdd-copilot` top-down (catalog gaps) and bottom-up (scenario coverage). |
 | **[living-doc-pageobject-scan](./skills/living-doc-pageobject-scan/)** | Discover, create, and maintain PageObject classes from a live web application — bootstrapping from scratch and detecting selector drift after UI changes. |
-| **[bdd-explore](./skills/bdd-explore/)** | Assemble the Business Seed (`seed.yaml`) and iteratively crawl a web application via MCP Playwright — the first-time scan entry point for `@living-doc-bdd-copilot`. |
 | **[bdd-maintain](./skills/bdd-maintain/)** | RE-SCAN, HEALING, REMOVE, and DEAD CODE AUDIT modes for `@living-doc-bdd-copilot` — refresh the manifest after UI changes, fix selector drift, remove deprecated features, and audit unused steps or PageObject methods. |
 | **[data-cy-instrument](./skills/data-cy-instrument/)** | Resolve missing `data-cy` attributes in Angular component templates and sync PageObjects to use `getByTestId()` — run after a crawl when `coverage_gaps` are non-empty. |
 | **[living-doc-scenario-creator](./skills/living-doc-scenario-creator/)** | Generate full Gherkin feature files from User Story and Functionality ACs — feature file header, @AC:-tagged scenarios, complete Given/When/Then step bodies, coverage report, and step definition resolution. |
 | **[gherkin-step](./skills/gherkin-step/)** | Implement clean, reusable step definitions — behave (Python), Cucumber (Java, TypeScript, Scala), parameter types, DataTable, DocString, and hooks. |
 | **[gherkin-living-doc-sync](./skills/gherkin-living-doc-sync/)** | Synchronise Gherkin feature files with the living documentation catalog — fix missing AC traceability headers, step text drift, and stale scenario links. |
+| **[pr-review](./skills/pr-review/)**                 | Pull request code review — reviews diffs for risk, security issues, API contract changes, dependency bumps, CI/CD and infrastructure changes. Produces concise Blocker / Important / Nit comments. |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
 ## Agent Roster

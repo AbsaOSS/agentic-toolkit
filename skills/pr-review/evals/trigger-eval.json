@@ -1,0 +1,146 @@
+[
+  {
+    "id": "t01-review-pr-api-contract",
+    "query": "Review PR #42 for API contract changes before we merge.",
+    "should_trigger": true,
+    "reason": "Explicit PR review request with API-contract risk keywords."
+  },
+  {
+    "id": "t02-check-diff-ci",
+    "query": "Can you check this diff for CI/CD pipeline risks?",
+    "should_trigger": true,
+    "reason": "Direct diff review ask plus CI/CD domain trigger."
+  },
+  {
+    "id": "t03-lgtm-sanity-check",
+    "query": "LGTM? Please do a quick sanity check on these code changes.",
+    "should_trigger": true,
+    "reason": "Casual review signal — description cites 'LGTM?' as an example of informal requests that ALWAYS invoke the skill."
+  },
+  {
+    "id": "t04-terraform-pr-review",
+    "query": "Please review this Terraform PR for security and least-privilege issues.",
+    "should_trigger": true,
+    "reason": "PR review request with infrastructure/security context."
+  },
+  {
+    "id": "t05-db-migration-review",
+    "query": "Can you review this migration diff and call out rollback risks?",
+    "should_trigger": true,
+    "reason": "Asks for review of DB migration with risk assessment."
+  },
+  {
+    "id": "t06-auth-refactor-feedback",
+    "query": "Need feedback on this auth refactor PR, especially permissions and secrets handling.",
+    "should_trigger": true,
+    "reason": "Explicit request for PR feedback on an auth refactor; matches 'Invoke whenever: pre-merge approval feedback'. Note: the word 'refactor' describes the PR content, not a request for the model to refactor — the 'refactoring tasks' exclusion applies when the model is asked to do the refactoring, not when reviewing a PR that contains one."
+  },
+  {
+    "id": "t07-dependency-bump-review",
+    "query": "Review this dependency bump PR and tell me if any upgrades look dangerous.",
+    "should_trigger": true,
+    "reason": "PR review intent and dependency-bump risk language."
+  },
+  {
+    "id": "t08-pr-link-thoughts",
+    "query": "Here is the PR link, can you give review comments before I approve it?",
+    "should_trigger": true,
+    "reason": "Mentions PR link and asks for review comments directly."
+  },
+  {
+    "id": "t09-rename-field-risk",
+    "query": "Does this look right? I renamed a response field in an endpoint; please review for client breakage.",
+    "should_trigger": true,
+    "reason": "Paraphrased review ask with API-contract breakage concern."
+  },
+  {
+    "id": "t10-workflow-guardrails",
+    "query": "Can you sanity check this workflow file change for gate bypasses before merge?",
+    "should_trigger": true,
+    "reason": "Paraphrased PR review plus CI gate-bypass signal."
+  },
+  {
+    "id": "n01-implement-feature",
+    "query": "Implement OAuth login in FastAPI with refresh tokens and tests.",
+    "should_trigger": false,
+    "reason": "Writing new code — explicitly listed in 'Does NOT invoke for: writing new code'."
+  },
+  {
+    "id": "n02-write-unit-tests",
+    "query": "Write unit tests for src/utils/date_utils.py.",
+    "should_trigger": false,
+    "reason": "Writing new code — explicitly listed in 'Does NOT invoke for: writing new code'."
+  },
+  {
+    "id": "n03-generate-release-notes",
+    "query": "Generate release notes from this diff in bullet format.",
+    "should_trigger": false,
+    "reason": "Documentation summarization task, not review feedback."
+  },
+  {
+    "id": "n04-explain-error",
+    "query": "Why am I getting 'ModuleNotFoundError: psycopg2' in CI?",
+    "should_trigger": false,
+    "reason": "Debugging an error — explicitly listed in 'Does NOT invoke for: debugging errors'."
+  },
+  {
+    "id": "n05-open-issue",
+    "query": "Create a GitHub issue for flaky integration tests.",
+    "should_trigger": false,
+    "reason": "Issue creation request, should route to create-issue skill."
+  },
+  {
+    "id": "n06-refactor-function",
+    "query": "Refactor this function for readability and lower cyclomatic complexity.",
+    "should_trigger": false,
+    "reason": "Asking the model to do a refactor — explicitly listed in 'Does NOT invoke for: refactoring tasks'."
+  },
+  {
+    "id": "n07-kudos-message",
+    "query": "Give kudos to Sarah for helping with incident response.",
+    "should_trigger": false,
+    "reason": "Recognition workflow request, not code review."
+  },
+  {
+    "id": "n08-crossall-status",
+    "query": "Generate the crossall status update for this sprint from Jira.",
+    "should_trigger": false,
+    "reason": "Project status reporting task, unrelated to PR review."
+  },
+  {
+    "id": "n09-translate-text",
+    "query": "Translate this paragraph to French.",
+    "should_trigger": false,
+    "reason": "Language translation task; no overlap with PR review."
+  },
+  {
+    "id": "n10-math-help",
+    "query": "What is the derivative of x^3 * sin(x)?",
+    "should_trigger": false,
+    "reason": "General Q&A request; outside software review scope."
+  },
+  {
+    "id": "n11-release-notes-from-diff",
+    "query": "Please draft release notes bullets from this diff only, do not do a PR review",
+    "should_trigger": false,
+    "reason": "Explicit instruction NOT to do a PR review; generating release notes/changelogs from a diff is listed in 'Does NOT invoke for'."
+  },
+  {
+    "id": "t11-skill-md-pr-review",
+    "query": "Review this new skill PR before I merge it into the toolkit.",
+    "should_trigger": true,
+    "reason": "Explicit PR review request; when diff contains a SKILL.md, the Skill definitions conditional section fires."
+  },
+  {
+    "id": "t12-check-skill-conventions",
+    "query": "Can you check if this SKILL.md follows our naming and description conventions?",
+    "should_trigger": true,
+    "reason": "Asking for a review/check of a SKILL.md — maps to the Skill definitions conditional section within pr-review."
+  },
+  {
+    "id": "n12-apply-skill-to-context",
+    "query": "Load this updated SKILL.md into your context and use it going forward.",
+    "should_trigger": false,
+    "reason": "Instruction to apply or load a skill into context — no review feedback requested; not a PR or diff review."
+  }
+]
