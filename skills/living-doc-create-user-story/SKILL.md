@@ -204,7 +204,7 @@ Starter example for a create request:
 For password-reset stories, the starter JSON should already include error-path ACs such as unregistered contact detail and expired/already-used reset token or code.
 For a generic password-reset prompt with no channel specified, default the starter draft to `title: "Reset password"`, `features: ["FEAT-login"]`, and still emit the JSON immediately after the four questions.
 
-> **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `Active` AC.
+> **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `active` AC.
 
 ## Script — `validate_entity.py`
 

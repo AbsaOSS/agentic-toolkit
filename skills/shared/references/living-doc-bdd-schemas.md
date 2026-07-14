@@ -39,8 +39,8 @@ paths:
   pageobjects:    playwright/pages
   steps:          playwright/steps
 
-# AC state vocabulary as written inside `# AC:` blocks and feature-file headers (Title-case).
-ac_states: [Planned, In Review, Active, Deprecated]
+# AC state vocabulary as written inside `# AC:` blocks and feature-file headers (lowercase with underscores).
+ac_states: [planned, in_review, active, deprecated]
 
 # PageObject header `status:` vocabulary (lowercase).
 pageobject_statuses: [planned, candidate, active, deprecated]
@@ -62,14 +62,14 @@ manifest_shape: object         # manifest is an object with routes array (see Ma
 | `feature_dirs.functionality` | scenario-creator, pageobject-scan, gap-finder, scripts | `features/liv_doc_func` |
 | `paths.bdd_artifacts` | pageobject-scan, data-cy-instrument | `.copilot/bdd` |
 | `paths.pageobjects` / `paths.steps` | pageobject-scan, gherkin-step | `playwright/pages` / `playwright/steps` |
-| `ac_states` | all catalog skills, scenario-creator, gherkin-living-doc-sync | `Active` etc. (Title-case) |
+| `ac_states` | all catalog skills, scenario-creator, gherkin-living-doc-sync | `active` etc. (lowercase with underscores) |
 | `pageobject_statuses` | pageobject-scan | `active` etc. (lowercase) |
 | `scenario_conventions` | scenario-creator, gherkin-living-doc-sync | as shown |
 
-> **Casing rule:** AC states are **Title-case** inside `# AC:` blocks (`- Active`). PageObject header
-> `status:` is **lowercase** (`status: active`). These are two distinct fields — do not unify them.
+> **Casing rule:** AC states use **lowercase with underscores** inside `# AC:` blocks and entity files
+> (e.g. `- active`, `- in_review`). PageObject header `status:` is also lowercase (`status: active`).
 > Wherever this document or a skill shows `ACTIVE`/`PLANNED` in upper-case prose, it refers to the
-> *logical* state; the *written* form follows the profile vocabulary above.
+> *logical* state; the *written* form is always lowercase with underscores.
 
 ---
 
@@ -84,7 +84,7 @@ Holds all US metadata and is mined during living documentation output generation
 # LIVING DOC — US-<n> · <US Title>
 # =============================================================================
 # source:          https://github.com/<org>/<repo>/issues/<n>    ← optional
-# status:          active        ← one of profile `ac_states`, lower-cased (planned | in review | active | deprecated)
+# status:          active        ← one of profile `ac_states` (planned | in_review | active | deprecated)
 # business_value:
 #   - <bullet describing the business outcome>
 # not_in_scope:                                                  ← optional
@@ -135,7 +135,7 @@ Feature: <US Title>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `Planned` · `In Review` · `Active` · `Deprecated` (written Title-case per profile `ac_states`) |
+| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`) |
 | `# business_value:` | Yes | Why this User Story exists (bullets) |
 | `# not_in_scope:` | Optional | Explicit exclusions |
 | `# preconditions:` | Optional | System-level state required before test execution |
@@ -154,7 +154,7 @@ Header comment block at the top of every Functionality feature file —
 # LIVING DOC — FUNC-<nnn> · <Feature Name> — <Functionality Name>
 # =============================================================================
 # source:    https://github.com/<org>/<repo>/issues/<n>          ← optional
-# status:    PLANNED | IN_REVIEW | ACTIVE | DEPRECATED
+# status:    planned | in_review | active | deprecated
 # parent:    FEAT-<nnn>
 # func_type: component_state | component_action | button_action |
 #            field_validation | calculation | visibility | navigation_rule
@@ -189,7 +189,7 @@ Feature: <Feature Name> — <Functionality Name>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `Planned` · `In Review` · `Active` · `Deprecated` (written Title-case per profile `ac_states`) |
+| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`) |
 | `# parent:` | Yes | Parent Feature ID (`FEAT-<nnn>`) |
 | `# func_type:` | Yes | Category of behavior this Functionality represents (see table below) |
 | `# rationale:` | Optional | **Why** this FUNC is scoped the way it is — business context, a deliberate design decision, or a constraint that explains the boundary. Not for implementation notes. |

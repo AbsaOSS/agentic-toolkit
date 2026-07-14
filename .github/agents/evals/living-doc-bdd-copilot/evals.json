@@ -33,13 +33,13 @@
     {
       "id": 3,
       "category": "happy-path",
-      "prompt": "Generate Gherkin scenarios for US-007 — Place an Online Order. ACs: (1) Active — happy path: customer places order with saved payment. (2) Active — error: order rejected when card declined.",
-      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated — one per Active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 – Active) — ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
+      "prompt": "Generate Gherkin scenarios for US-007 — Place an Online Order. ACs: (1) active — happy path: customer places order with saved payment. (2) active — error: order rejected when card declined.",
+      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated — one per active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 – active) — ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
       "files": [],
       "expectations": [
         "Feature file named us-007-place-an-online-order.feature",
         "Each Scenario: immediately preceded by a # AC: traceability comment",
-        "Skips Planned and Deprecated ACs — only Active ACs drive generation",
+        "Skips planned and deprecated ACs — only active ACs drive generation",
         "Step text in domain language — no implementation details",
         "Case A stubs delegate to PageObject methods",
         "Case B stubs raise NotImplementedError and flag the missing PageObject method"
@@ -313,12 +313,12 @@
     {
       "id": 23,
       "category": "skill-dispatch",
-      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order. It has 3 Active ACs and 1 Planned AC.",
-      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios — one per Active AC. The Planned AC is skipped (not generated until Active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 – Active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
+      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order. It has 3 active ACs and 1 planned AC.",
+      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios — one per active AC. The planned AC is skipped (not generated until active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 – active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
       "files": [],
       "expectations": [
         "Loads living-doc-scenario-creator skill",
-        "Generates scenarios only for Active ACs — skips Planned",
+        "Generates scenarios only for active ACs — skips planned",
         "Each scenario preceded by # AC: traceability comment",
         "Applies merge policy decision table for existing scenarios",
         "Output is a named .feature file: us-007-place-an-online-order.feature"

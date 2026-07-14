@@ -183,7 +183,7 @@ Every AC must carry:
 
 | Field | Values |
 |---|---|
-| `state` | `Planned` / `In Review` / `Active` / `Deprecated` (written Title-case per the profile `ac_states`) |
+| `state` | `planned` / `in_review` / `active` / `deprecated` (lowercase with underscores per the profile `ac_states`) |
 | `version` | Semantic version string |
 | `pre-conditions` | Conditions that must hold before the AC can be tested |
 | `not_in_scope` | Explicit exclusion statement |
@@ -200,7 +200,7 @@ Every AC must carry:
 | `search/codebase` | Confirm code deletion before deprecating | Require negative result for at least two identifiers before assuming deleted. |
 | `search/textSearch` | Find `@AC:` annotations affected by an AC update | Run before writing AC changes to surface stale Gherkin links. |
 | `edit/createFile` | New entity files, PageObjects, feature files, step stubs | Run `search/fileSearch` first — never overwrite without reading. Confirm Storage Profile loaded for entity files. |
-| `edit/editFiles` | Update existing files | Show OLD vs NEW before writing `Active` AC changes. Read full target block first. |
+| `edit/editFiles` | Update existing files | Show OLD vs NEW before writing `active` AC changes. Read full target block first. |
 
 ---
 
@@ -236,12 +236,12 @@ Full model: [living-doc-glossary](https://raw.githubusercontent.com/AbsaOSS/agen
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 
-**AC reference format:** `AC:<parent-id>-<nn> (v<version> – <State>) — <description>`
-State (written Title-case per the profile `ac_states`): `Planned | In Review | Active | Deprecated`
+**AC reference format:** `AC:<parent-id>-<nn> (v<version> – <state>) — <description>`
+State: `planned | in_review | active | deprecated`
 
 **Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — <description>
+# AC:US-1-01 (v1.0.0 - active) — <description>
 @AC:US-1-01
 Scenario: ...
 ```
@@ -289,11 +289,11 @@ Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the singl
 
 **Entity creation:** Atomic ACs only — one condition + one observable outcome. Every AC needs `id`, `state`, `version`, `pre-conditions`, `not_in_scope`. Assign IDs via `scripts/next_id.py`.
 
-**Updates:** Show OLD vs NEW before writing any `ACTIVE` AC change. Keep AC IDs stable — changing breaks traceability.
+**Updates:** Show OLD vs NEW before writing any `active` AC change. Keep AC IDs stable — changing breaks traceability.
 
 **HEALING mode (catalog):** Verify deleted code via two negative repository searches before deprecating. Complete catalog changes, then run automation healing as a follow-up step.
 
-**PLAN mode:** Draft ACs → present for confirmation → create in `Planned` state only.
+**PLAN mode:** Draft ACs → present for confirmation → create in `planned` state only.
 
 **Impact analysis:** Produce explicit impact map; recommend updates but do not change entity state without user confirmation.
 

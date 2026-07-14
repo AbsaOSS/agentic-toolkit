@@ -56,7 +56,7 @@ Before presenting the final report, normalise the script output against the taxo
 | Mode | When to use |
 |---|---|
 | **AUDIT mode** | Full catalog audit — runs the 9-type taxonomy top-down across all entities. Use after a sprint with entity changes or when the living doc hasn’t been reviewed recently. |
-| **PLAN mode** | Bootstrap new coverage — draft ACs from PageObject descriptions or discovered UI surfaces (bottom-up). Produces `Planned`-state AC drafts for user confirmation before creating entities. |
+| **PLAN mode** | Bootstrap new coverage — draft ACs from PageObject descriptions or discovered UI surfaces (bottom-up). Produces `planned`-state AC drafts for user confirmation before creating entities. |
 
 Both modes use `compute_gaps.py` and the same gap taxonomy. AUDIT mode spans the full catalog; PLAN mode is scoped to the surfaces being bootstrapped.
 
@@ -68,13 +68,13 @@ Nine types of gaps are detected, in order of risk:
 
 | Priority | Gap type | Description |
 |---|---|---|
-| 1 — Blocker | **Untested AC** | An `Active` AC in a User Story or Functionality has no linked test. |
+| 1 — Blocker | **Untested AC** | An `active` AC in a User Story or Functionality has no linked test. |
 | 2 — Important | **Undocumented UI surface** | A screen or API endpoint exists in the app with no Feature entity |
 | 3 — Important | **Orphan Feature** | A Feature entity exists with no linked User Story |
 | 4 — Important | **Orphan User Story** | A User Story exists with no linked Feature |
 | 5 — Important | **Orphan Functionality** | A Functionality exists with no parent Feature |
 | 6 — Important | **Orphan test** | A test exists with no linked AC |
-| 7 — Important | **Stale reference** | An active test references a Deprecated AC |
+| 7 — Important | **Stale reference** | An active test references a deprecated AC |
 | 8 — Nit | **Undocumented Functionality** | A Functionality entity exists with no associated tests |
 | 9 — Nit | **Empty Feature** | A Feature entity exists with no Functionalities defined |
 
@@ -112,7 +112,7 @@ For each gap type:
 **UNTESTED_AC:**
 ```
 For each AC in (UserStory.ACs + Functionality.ACs)
-  where status == ACTIVE
+  where status == active
   where no linked test exists:
     GAP: UNTESTED_AC
 ```
@@ -155,7 +155,7 @@ For each test in inventory
 **STALE_REFERENCE:**
 ```
 For each test in inventory
-  where linked_ac.status == Deprecated:
+  where linked_ac.status == deprecated:
     GAP: STALE_REFERENCE
 ```
 
@@ -276,7 +276,7 @@ Use the following two-phase strategy:
 Before addressing any other gap type, guarantee minimum traceability across all User Stories:
 
 1. List all User Stories where **zero ACs** have a linked test.
-2. For each, identify the highest-priority AC (first Active AC, or the first AC if none is Active).
+2. For each, identify the highest-priority AC (first `active` AC, or the first AC if none is `active`).
 3. Create one test for that AC using the appropriate testing workflow.
 4. Repeat until every User Story has at least one covered AC.
 

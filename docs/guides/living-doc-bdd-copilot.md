@@ -116,7 +116,7 @@ If the agent hits an auth wall, multi-step wizard, CAPTCHA, or a form it cannot 
 
 After exploration:
 
-1. Uses `living-doc-gap-finder` (bottom-up mode) to find `Active` ACs with no linked Gherkin scenario.
+1. Uses `living-doc-gap-finder` (bottom-up mode) to find `active` ACs with no linked Gherkin scenario.
 2. Generates `.feature` files with `Given/When/Then` scenarios — one scenario per AC, each with a `# AC:` traceability tag.
 3. For each new step, checks for an existing reusable definition: first narrows scope to the relevant PageObject, then confirms the step's purpose matches (not just its text pattern). Reuses if it matches; writes a new stub only if no match exists.
 4. Extends the relevant PageObject with any new UI interactions required by the new stubs.

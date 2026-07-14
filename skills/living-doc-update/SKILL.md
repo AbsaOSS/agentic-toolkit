@@ -61,7 +61,7 @@ to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
 **AC versioning:** ACs carry a `(vMAJOR.MINOR.PATCH – state)` annotation.
-- Bump the **minor** version for any business-rule change to an `Active` AC (e.g. `v1.0.0 → v1.1.0`).
+- Bump the **minor** version for any business-rule change to an `active` AC (e.g. `v1.0.0 → v1.1.0`).
 - Bump the **patch** version for a wording clarification that does not change the rule (e.g. `v1.0.0 → v1.0.1`).
 - The version must appear in the `# AC:` comment in linked Gherkin feature files — trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
 
@@ -94,7 +94,7 @@ Warn if any invariant fails:
 
 When promotion is blocked because only a happy-path AC exists, give a concrete example error/alternative AC in the reply (for example: `When the delivery address is outside the shipping zone, the order is rejected with a clear reason.`).
 
-After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `Active` AC if they do not yet exist.
+After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `active` AC if they do not yet exist.
 
 ## Deprecate a Feature or Functionality
 
@@ -148,11 +148,11 @@ When an AC is moved out of the current sprint but not permanently removed:
 
 ```
 
-For **business-rule changes to an ACTIVE AC**, first show the AC side-by-side for confirmation, then apply the version bump:
+For **business-rule changes to an active AC**, first show the AC side-by-side for confirmation, then apply the version bump:
 
 ```
-OLD: AC:US-042-01 (v1.0.0 - Active) — Minimum order value is £50.
-NEW: AC:US-042-01 (v1.1.0 - Active) — Minimum order value is £75.
+OLD: AC:US-042-01 (v1.0.0 - active) — Minimum order value is £50.
+NEW: AC:US-042-01 (v1.1.0 - active) — Minimum order value is £75.
 ```
 AC:US-042-03 (v1.2.0 – descoped)
    – Promo codes can be stacked and applied in defined priority order.
@@ -207,7 +207,7 @@ new values clearly labelled, and list any linked tests that need updating:
 LIVING DOC UPDATE — 2026-05-15
   Entity:  US-042 — Customer applies a promotional discount
   Changes:
-    + Added AC AC:US-042-04 (state: Planned) — Promo code expired returns 422 with error message
+    + Added AC AC:US-042-04 (state: planned) — Promo code expired returns 422 with error message
     ~ Modified AC AC:US-042-01:
         OLD: "Payment must complete within 3 seconds under normal load (p99 SLA)"
         NEW: "Payment must complete within 2 seconds under normal load (p99 SLA)"
@@ -223,7 +223,7 @@ For **added ACs**, use the same summary pattern rather than ending with validati
 LIVING DOC UPDATE — 2026-05-15
   Entity:  US-089 — Delivery restrictions
   Changes:
-    + Added AC AC:US-089-04 (state: Planned)
+    + Added AC AC:US-089-04 (state: planned)
       GIVEN a customer enters an address outside the shipping zone
       WHEN they place the order
       THEN the order is blocked with SHIPPING_ZONE_EXCLUDED and a clear message

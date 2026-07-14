@@ -18,7 +18,7 @@ Expected User Story JSON structure:
         {
           "id": "AC:US-001-01",
           "text": "The login screen displays...",
-          "state": "Active"
+          "state": "active"
         }
       ]
     }
@@ -27,17 +27,13 @@ Expected User Story JSON structure:
     @AC:US-001-01
     Scenario: ...
 
-Only ACs with state ACTIVE or IN_REVIEW are included in the coverage check.
-AC state values are normalized to lowercase with underscores (e.g., "In Review" → "in_review").
-Planned and Deprecated ACs are noted but not counted as gaps.
+Only ACs with state active or in_review are included in the coverage check.
+planned and deprecated ACs are noted but not counted as gaps.
 
-Project Profile schema vocabulary (Title-case with spaces):
-  - "Active" → normalized to "active"
-  - "In Review" → normalized to "in_review"
-  - "Planned" → normalized to "planned"
-  - "Deprecated" → normalized to "deprecated"
+AC state vocabulary (lowercase with underscores per the Project Profile `ac_states`):
+  active | in_review | planned | deprecated
 
-Code recognizes states: "active", "in_review" (all lowercase with underscores).
+Code recognizes states: "active", "in_review" (lowercase with underscores).
 
 Exit code: 0 if all active/in-review ACs are covered, 1 if gaps exist.
 
@@ -205,8 +201,8 @@ def main(living_doc_dir: str, features_dir: str) -> None:
             raw_id = ac.get("id", "?")
             ac_text = (ac.get("text") or ac.get("description", "?"))[:70]
             # Normalize AC state: convert to lowercase and replace spaces with underscores
-            # (e.g., "In Review" → "in_review")
-            ac_state = ac.get("state", "Active").lower().replace(" ", "_")
+            # to handle both canonical lowercase and any legacy Title-case values
+            ac_state = ac.get("state", "active").lower().replace(" ", "_")
 
             ac_id = normalise_ac_id(us_id, raw_id)
 

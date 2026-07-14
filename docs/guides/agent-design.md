@@ -88,7 +88,7 @@ Add a table with one row per key tool:
 | Tool | When to use | Key guidance |
 |---|---|---|
 | `read/readFile` | Load entity files before updating | Always read before writing — never assume current values. |
-| `edit/editFiles` | Patch existing files | Read the full target block first. Show OLD vs NEW for `Active` entity changes. |
+| `edit/editFiles` | Patch existing files | Read the full target block first. Show OLD vs NEW for `active` entity changes. |
 | `search/codebase` | Confirm code deletion before deprecating | Require negative result for at least two identifiers before assuming deleted. |
 ```
 
@@ -220,10 +220,10 @@ All agents in this repository use the same four AC states. Never introduce alter
 
 | State | Meaning |
 |---|---|
-| `Planned` | Drafted; no implementation yet |
-| `In Review` | Implementation underway or in PR |
-| `Active` | Implemented and verified |
-| `Deprecated` | Superseded or deleted; requires `deprecated_at` and `deprecation_reason` |
+| `planned` | Drafted; no implementation yet |
+| `in_review` | Implementation underway or in PR |
+| `active` | Implemented and verified |
+| `deprecated` | Superseded or deleted; requires `deprecated_at` and `deprecation_reason` |
 
 ### Entity ID format
 
@@ -234,7 +234,7 @@ IDs are stable — never change an ID after creation. Bump the `version` field f
 ### Gherkin traceability tag format
 
 ```gherkin
-# AC:US-007-01 (v1.0.0 - Active) — <description>
+# AC:US-007-01 (v1.0.0 - active) — <description>
 @AC:US-007-01
 Scenario: ...
 ```

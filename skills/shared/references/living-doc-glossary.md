@@ -23,8 +23,8 @@ so that <business outcome>.
 - Name: short imperative title (e.g. "Customer Login")
 - Owns: end-to-end **Acceptance Criteria (AC)**
 - Links to: one or more **Features** (system surfaces the User Story touches)
-- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
-- Deprecation metadata (set when `status: Deprecated`):
+- Status: `planned | in_review | active | deprecated` (lowercase with underscores per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)
@@ -47,8 +47,8 @@ A named system surface — the structural layer between User Stories and atomic 
 - Owns: one or more **Functionalities**
 - Links to: one or more **User Stories**
 - `owners`: team or person responsible for this Feature
-- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
-- Deprecation metadata (set when `status: Deprecated`):
+- Status: `planned | in_review | active | deprecated` (lowercase with underscores per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)
@@ -158,8 +158,8 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
   Functionality, containing all AC-linked system-test scenarios once implemented.
   File name pattern: `func-<nnn>-<feature-name-kebab>-<behavior-kebab>.feature`
   e.g. `func-001-authentication-screen-credential-based-login.feature`
-- Status: `Planned | In Review | Active | Deprecated` (Title-case per the Project Profile `ac_states`)
-- Deprecation metadata (set when `status: Deprecated`):
+- Status: `planned | in_review | active | deprecated` (lowercase with underscores per the Project Profile `ac_states`)
+- Deprecation metadata (set when `status: deprecated`):
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity (optional)
@@ -203,13 +203,13 @@ AC:<parent-id>-<nn> (v<version> - <State>)
    - Rationale: <business context, policy reference, or design decision>  ← optional
 ```
 
-State values: `Planned | In Review | Active | Deprecated` (written Title-case per the Project Profile `ac_states`; `PLANNED`/`ACTIVE` etc. in prose refer to the same logical states).
+State values: `planned | in_review | active | deprecated` (lowercase with underscores per the Project Profile `ac_states`).
 
 **Scenario traceability:** living-doc scenarios (US and Functionality feature files) carry two
 complementary annotations — a human-readable `# AC:` comment and a machine-readable `@AC:` tag:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
   ...
@@ -219,7 +219,7 @@ When a scenario covers only **one aspect** of a multi-aspect AC, encode the aspe
 the `@AC:` tag using the `/param:value` param syntax, and mirror it in the comment:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - active) — displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
   ...
@@ -228,8 +228,8 @@ Scenario: Login form shows the username input field
 Multiple ACs — one comment + tag pair per AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
-# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
+# AC:US-1-01 (v1.0.0 - active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - active) — account lockout after 3 failed attempts
 @AC:US-1-01
 @AC:US-1-02
 @Regression
@@ -272,15 +272,15 @@ AC:<parent-id>-<nn> (v<version> – PLANNED)
 **User Story AC examples** (in the `# Acceptance Criteria:` file header block):
 
 ```
-AC:US-001-01 (v1.0.0 - Active)
+AC:US-001-01 (v1.0.0 - active)
    - The login screen displays {required field}.
    - Required field: username input, password input, login button
    - Rationale: Accessibility standard — all interactive controls must be visible on load.
 
-AC:US-001-02 (v1.1.0 - Active)
+AC:US-001-02 (v1.1.0 - active)
    - An inline field validation message is shown when invalid credentials are submitted.
 
-AC:US-001-03 (v2.1.0 - Deprecated - removal planned v3.0.0)
+AC:US-001-03 (v2.1.0 - deprecated - removal planned v3.0.0)
    - A "Remember me" checkbox retains the session across browser restarts.
    - Rationale: Deprecated due to security policy change in v2.0 — persistent sessions no longer permitted.
 ```
@@ -288,15 +288,15 @@ AC:US-001-03 (v2.1.0 - Deprecated - removal planned v3.0.0)
 **Functionality AC examples** (in the `# Acceptance Criteria:` file header block):
 
 ```
-AC:FUNC-001-01 (v1.0.0 - Active)
+AC:FUNC-001-01 (v1.0.0 - active)
    - Returns valid=true when the password satisfies all complexity rules.
 
-AC:FUNC-001-02 (v1.0.0 - Active)
+AC:FUNC-001-02 (v1.0.0 - active)
    - Raises {error code} when the credential check fails.
    - Error code: INVALID_PASSWORD, USER_NOT_FOUND, ACCOUNT_LOCKED
    - Rationale: Distinct error codes per failure reason, required by the global auth error contract.
 
-AC:FUNC-001-03 (v1.0.0 - Active)
+AC:FUNC-001-03 (v1.0.0 - active)
    - Rejects passwords shorter than 8 characters.
 ```
 

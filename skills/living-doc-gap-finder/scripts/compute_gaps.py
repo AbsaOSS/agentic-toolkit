@@ -120,7 +120,7 @@ def compute_gaps(snapshot: dict) -> list[dict]:
     # Deprecated ACs from explicit list + link metadata
     deprecated_ac_ids: set[str] = set(snapshot.get("deprecated_acs", []))
     for ac_id, link in known_test_links.items():
-        if isinstance(link, dict) and link.get("ac_status") == "deprecated":
+        if isinstance(link, dict) and link.get("ac_status", "").lower() == "deprecated":
             deprecated_ac_ids.add(ac_id)
 
     # ── Gap 1 — UNTESTED_AC ────────────────────────────────────────────────────

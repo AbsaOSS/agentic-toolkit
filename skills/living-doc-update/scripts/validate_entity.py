@@ -25,7 +25,7 @@ import sys
 
 VALID_STATUSES = {"planned", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
-# AC state vocabulary — all lowercase with underscores (matches JSON vocabulary).
+# AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
 # Override at runtime with --profile to read the project's own ac_states list.
 VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
 
@@ -244,11 +244,11 @@ def _validate_ac(
         )
     if not ac.get("description"):
         error_fn(f"{field_prefix}.description", "AC is missing a 'description'")
-    ac_status = ac.get("status", "")
+    ac_status = ac.get("state", "")
     if ac_status and ac_status not in VALID_AC_STATUSES:
         warning_fn(
-            f"{field_prefix}.status",
-            f"Unrecognised AC status '{ac_status}'. "
+            f"{field_prefix}.state",
+            f"Unrecognised AC state '{ac_status}'. "
             f"Expected one of: {sorted(VALID_AC_STATUSES)}",
         )
 

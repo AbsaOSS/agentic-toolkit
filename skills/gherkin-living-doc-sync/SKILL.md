@@ -68,7 +68,7 @@ Use the report in this repair order: broken links first, then missing links, the
 **Required traceability format** for living-doc feature files (from the glossary):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
 ```
@@ -76,7 +76,7 @@ Scenario: Customer successfully places an order
 With aspect param — when the scenario covers only one aspect of a multi-aspect AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - active) — displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
 ```
@@ -101,7 +101,7 @@ build the list of affected scenarios before running the standard checklist:
 1. Does every `Scenario:` / `Scenario Outline:` in living-doc files have at least one `@AC:` tag?
 2. Is the corresponding `# AC:` comment present and matching the tag's AC ID?
 3. Does the referenced AC ID exist in the living documentation?
-4. Does the AC state match (logically `Active` — not `Deprecated`, `Planned`, or `In Review`, per the profile `ac_states`)?
+4. Does the AC state match (logically `active` — not `deprecated`, `planned`, or `in_review`, per the profile `ac_states`)?
 5. Does the AC description (in the file header) match the scenario intent?
 
 For each missing or mismatched tag:
@@ -120,7 +120,7 @@ comment line:
 ```text
 SYNC ACTION: checkout.feature:14 — Missing AC link header
   Scenario: "Customer successfully places an order"
-  Proposed link: # AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+  Proposed link: # AC:US-001-01 (v1.0.0 - active) — customer places an order with a saved payment method
   Apply change? (y/n)
 ```
 
@@ -169,7 +169,7 @@ Apply the minimum necessary change per action:
 - **Update scenario to match revised AC**: update step text; keep the `@AC:` tag unchanged
 - **Fix broken step text**: prefer updating the `.feature` file to match the existing step definition and PageObject method; only update the step definition regex when the business wording genuinely changed
 - **Mark deprecated scenarios**: add `@deprecated` and `@review-needed`, plus a comment with the date and reason. Emit one action per affected scenario with file and line number.
-- **Mark descoped scenarios**: add `@wip` or `@pending` and `@review-needed`, plus a comment with the descope reason and target-release reference. Preserve the scenario — never delete it — so it can be reinstated when the AC is promoted back to Active. Emit one SYNC ACTION per affected scenario.
+- **Mark descoped scenarios**: add `@wip` or `@pending` and `@review-needed`, plus a comment with the descope reason and target-release reference. Preserve the scenario — never delete it — so it can be reinstated when the AC is promoted back to `active`. Emit one SYNC ACTION per affected scenario.
 - **Broken AC reference**: never silently remove the `@AC:` tag. Either relink it to the correct AC ID, or create the missing living doc entity with `living-doc-create-user-story` / `living-doc-create-functionality`, then update the tag.
 - **AC split into multiple ACs**: update the existing scenario's `@AC:` tag to the primary AC; emit a separate `SYNC ACTION` proposing each additional scenario, including the required `# AC:` header and `@AC:` tag for the new AC. Developer confirmation is still required before any new scenario is created.
 - **Aspect mismatch** (`@AC:.../aspect:...` present but comment missing the aspect): raise a SYNC ACTION and update the comment to include the human-readable `| aspect: ...` suffix. Confirm before applying.

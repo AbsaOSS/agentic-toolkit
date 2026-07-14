@@ -23,7 +23,7 @@ compatibility: GitHub Copilot
 
 **Project Profile:** Read `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for feature directories (`feature_dirs.*`), the AC state vocabulary (`ac_states`), and scenario tag conventions. All paths and tags below show the reference-project defaults; profile values win.
 
-**AC states:** written Title-case per the profile `ac_states` (`Active`, `Planned`, `In Review`, `Deprecated`). Only `Active` ACs drive scenario generation.
+**AC states:** lowercase with underscores per the profile `ac_states` (`active`, `planned`, `in_review`, `deprecated`). Only `active` ACs drive scenario generation.
 
 ---
 
@@ -42,16 +42,16 @@ compatibility: GitHub Copilot
 
 Load the User Story or Functionality. Confirm:
 - ID follows `US-<nnn>` or `FUNC-<nnn>` format.
-- Which ACs are `Active` (eligible for generation).
+- Which ACs are `active` (eligible for generation).
 - ACs are atomic — one input condition, one observable outcome.
 
-Use only the ACs and states explicitly supplied by the entity or prompt. Do not invent extra Active ACs. If the prompt lists one `Active`, one `Deprecated`, and one `Planned` AC, generate a scenario only for the single `Active` AC and show the other two only as skipped in the coverage report.
+Use only the ACs and states explicitly supplied by the entity or prompt. Do not invent extra active ACs. If the prompt lists one `active`, one `deprecated`, and one `planned` AC, generate a scenario only for the single `active` AC and show the other two only as skipped in the coverage report.
 
-If no ACs are `Active`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`Planned`: `skipped — not yet active`, `Deprecated`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `Active`.
+If no ACs are `active`, do not generate empty scenarios. Output a coverage report with state-specific skip reasons (`planned`: `skipped — not yet active`, `deprecated`: `skipped — deprecated AC`) and advise the user to re-run when an AC becomes `active`.
 
 ### Step 2 — Gap detection and merge policy
 
-An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `Active` ACs with no linked scenario before writing new files.
+An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap-finder` (bottom-up mode) to identify `active` ACs with no linked scenario before writing new files.
 
 **If a scenario already exists for an AC**, apply this policy:
 
@@ -64,7 +64,7 @@ An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap
 
 ### Step 3 — Generate feature file
 
-For each `Active` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and full Given/When/Then step bodies. Emit scenarios in **ascending AC-id order**, grouped under section banners (happy day before negative), so re-generation is byte-stable.
+For each `active` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and full Given/When/Then step bodies. Emit scenarios in **ascending AC-id order**, grouped under section banners (happy day before negative), so re-generation is byte-stable.
 
 **Scenario title by AC type:**
 - `happy_path` → `Scenario: <positive outcome>`
@@ -74,7 +74,7 @@ For each `Active` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and
 **Traceability format** (authoritative — `gherkin-living-doc-sync` validates against this definition):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - active) — customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
   Given the customer has items in their cart
@@ -85,7 +85,7 @@ Scenario: Customer successfully places an order
 Aspect variant (when one scenario covers only one aspect of a multi-aspect AC):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - active) — displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
 ```
@@ -93,8 +93,8 @@ Scenario: Login form shows the username input field
 Multiple ACs per scenario — one comment + tag pair per AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - Active) — invalid credentials show an error message
-# AC:US-1-02 (v1.0.0 - Active) — account lockout after 3 failed attempts
+# AC:US-1-01 (v1.0.0 - active) — invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - active) — account lockout after 3 failed attempts
 @AC:US-1-01
 @AC:US-1-02
 @Regression
@@ -125,8 +125,8 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 #   - Customers can complete an order without calling support.
 
 # Acceptance Criteria:
-#   AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method.
-#   AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined.
+#   AC:US-001-01 (v1.0.0 - active) — customer places an order with a saved payment method.
+#   AC:US-001-02 (v1.0.0 - active) — order is rejected when the payment card is declined.
 
 @US_ID:US-001
 @domain_orders
@@ -137,7 +137,7 @@ Feature: Place an online order
 
   # *** Happy day scenarios ***
 
-  # AC:US-001-01 (v1.0.0 - Active) — customer places an order with a saved payment method
+  # AC:US-001-01 (v1.0.0 - active) — customer places an order with a saved payment method
   @AC:US-001-01
   @Regression
   Scenario: Customer successfully places an order
@@ -147,7 +147,7 @@ Feature: Place an online order
 
   # *** Negative scenarios ***
 
-  # AC:US-001-02 (v1.0.0 - Active) — order is rejected when the payment card is declined
+  # AC:US-001-02 (v1.0.0 - active) — order is rejected when the payment card is declined
   @AC:US-001-02
   Scenario: Order rejected when payment card is declined
     Given the customer has items in their cart
@@ -161,7 +161,7 @@ Feature: Place an online order
 @FUNC_ID:FUNC-001
 Feature: Login Page — Validate Password Strength
 
-  # AC:FUNC-001-01 (v1.0.0 - Active) — returns valid=true when password satisfies all rules
+  # AC:FUNC-001-01 (v1.0.0 - active) — returns valid=true when password satisfies all rules
   @AC:FUNC-001-01
   Scenario: Password meets all complexity rules
     Given a password with at least 8 characters, one uppercase, one lowercase, and one number
@@ -175,16 +175,16 @@ Run `scripts/coverage_report.py <living_doc_dir> <features_dir>` for a full repo
 
 ```
 AC COVERAGE REPORT — US-001
-  AC:US-001-01 (ACTIVE): ✅ covered
-  AC:US-001-02 (ACTIVE): ✅ covered
-  AC:US-001-03 (ACTIVE): ❌ NOT COVERED
-  AC:US-001-04 (PLANNED): ⏭  skipped — not yet active
+  AC:US-001-01 (active): ✅ covered
+  AC:US-001-02 (active): ✅ covered
+  AC:US-001-03 (active): ❌ NOT COVERED
+  AC:US-001-04 (planned): ⏭  skipped — not yet active
 ```
 
 Coverage-report closeout rules:
-- If any `Active` AC is not covered, say **`Exits with code 1.`** and label each `❌ NOT COVERED` row as **scenario generation queue input** (for example `❌ NOT COVERED — add to scenario generation queue`). Also include a summary line such as `Summary: Active ACs: 2. Covered by scenarios: 0. Gaps: 2.`
-- If every `Active` AC is covered, say **`Exits with code 0.`** and list the real `.feature` file name(s) inline under each covered AC entry (for example `✅ covered (us-007-place-an-online-order.feature)`). Include a summary line in the form `Active/Implemented ACs: 3. Covered by scenarios: 3 (100%). Gaps: 0.`
-- When the features directory is empty, report every `Active` AC as `❌ NOT COVERED`; do not invent placeholder scenarios or coverage.
+- If any `active` AC is not covered, say **`Exits with code 1.`** and label each `❌ NOT COVERED` row as **scenario generation queue input** (for example `❌ NOT COVERED — add to scenario generation queue`). Also include a summary line such as `Summary: Active ACs: 2. Covered by scenarios: 0. Gaps: 2.`
+- If every `active` AC is covered, say **`Exits with code 0.`** and list the real `.feature` file name(s) inline under each covered AC entry (for example `✅ covered (us-007-place-an-online-order.feature)`). Include a summary line in the form `Active/Implemented ACs: 3. Covered by scenarios: 3 (100%). Gaps: 0.`
+- When the features directory is empty, report every `active` AC as `❌ NOT COVERED`; do not invent placeholder scenarios or coverage.
 
 ### Step 5 — Step definition resolution
 
@@ -223,19 +223,19 @@ Before reporting done, prove traceability with the scripts — do not finish whi
 # AC link health (missing/malformed @AC: tags, missing # AC: comments, duplicate links):
 python skills/gherkin-living-doc-sync/scripts/scan_ac_links.py <features_dir> \
   --us-dir <feature_dirs.user_story> --func-dir <feature_dirs.functionality>
-# AC coverage (every Active AC mapped to a scenario):
+# AC coverage (every active AC mapped to a scenario):
 python skills/living-doc-scenario-creator/scripts/coverage_report.py <living_doc_dir> <features_dir>
 ```
 
 **Regression-coverage rule:** for the goal of covering every User Story's happy-day path, each
-`Active` `happy_path` AC must have exactly one scenario carrying both its `@AC:<id>` tag and a
+`active` `happy_path` AC must have exactly one scenario carrying both its `@AC:<id>` tag and a
 `@Regression` suite tag, placed under the `# *** Happy day scenarios ***` banner. The coverage
 report must show **0 NOT COVERED** happy-path ACs before the session closes. Fix gaps and re-run
 until `scan_ac_links` exits 0 and the coverage report is clean.
 
-If the user says **"write feature tests for US-007"**, **"full coverage of all acceptance criteria"**, or similar, treat that as a direct Entity-mode generation request. Load the entity, filter to `Active` ACs, generate one scenario per `Active` AC, then append the coverage report with skip reasons for `Planned` / `Deprecated` ACs.
+If the user says **"write feature tests for US-007"**, **"full coverage of all acceptance criteria"**, or similar, treat that as a direct Entity-mode generation request. Load the entity, filter to `active` ACs, generate one scenario per `active` AC, then append the coverage report with skip reasons for `planned` / `deprecated` ACs.
 
-After any coverage report with gaps, the uncovered `Active` AC rows become the **scenario generation queue**. Invoke `living-doc-scenario-creator` for each uncovered `Active` AC **in report order**, generate one scenario per AC, then re-run `coverage_report.py` until gaps reach 0.
+After any coverage report with gaps, the uncovered `active` AC rows become the **scenario generation queue**. Invoke `living-doc-scenario-creator` for each uncovered `active` AC **in report order**, generate one scenario per AC, then re-run `coverage_report.py` until gaps reach 0.
 
 ---
 
