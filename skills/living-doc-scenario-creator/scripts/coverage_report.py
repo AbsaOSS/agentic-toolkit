@@ -27,7 +27,7 @@ Expected User Story JSON structure:
     @AC:US-001-01
     Scenario: ...
 
-Only ACs with state Active or In Review are included in the coverage check.
+Only ACs with state ACTIVE or IN_REVIEW are included in the coverage check.
 Planned and Deprecated ACs are noted but not counted as gaps.
 
 Exit code: 0 if all active/in-review ACs are covered, 1 if gaps exist.
@@ -50,9 +50,9 @@ AC_TAG = re.compile(
 TAG_LINE = re.compile(r"^\s*@\S+")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*", re.IGNORECASE)
 
-# AC states that count toward coverage: Active, In Review.
+# AC states that count toward coverage: ACTIVE, IN_REVIEW.
 # Planned and Deprecated ACs are skipped (not counted as gaps).
-ACTIVE_STATES = {"active", "in review"}
+ACTIVE_STATES = {"active", "in_review"}
 
 
 def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
@@ -177,7 +177,7 @@ def main(living_doc_dir: str, features_dir: str) -> None:
     print(f"\n{'=' * 60}")
     print(f"  COVERAGE SUMMARY")
     print(f"{'=' * 60}")
-    print(f"  Active / In Review ACs : {total_active}")
+    print(f"  ACTIVE / IN_REVIEW ACs : {total_active}")
     print(f"  Covered by scenarios                : {total_covered}  ({pct}%)")
     print(f"  Gaps (no scenario)                  : {total_gaps}")
 

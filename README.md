@@ -100,7 +100,7 @@ Agents are pre-configured AI personas that orchestrate multiple skills for a spe
 
 | Agent | Description |
 |---|---|
-| **[@living-doc-bdd-copilot](./.github/agents/living-doc-bdd-copilot.agent.md)** | The unified living documentation agent — handles both catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) and BDD automation (webapp exploration, PageObjects, Gherkin scenarios, step definitions, BDD suite maintenance). This is the single agent for all living documentation workflows. |
+| **[@living-doc-bdd-copilot](./.github/agents/living-doc-bdd-copilot.agent.md)** | Living documentation and BDD automation — catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) and automation (webapp exploration, PageObjects, Gherkin scenarios, step definitions, BDD suite maintenance). |
 
 ## Finding More Skills
 

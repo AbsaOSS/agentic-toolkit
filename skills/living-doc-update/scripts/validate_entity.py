@@ -25,9 +25,9 @@ import sys
 
 VALID_STATUSES = {"planned", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
-# AC state vocabulary — defaults mirror the Project Profile `ac_states` (Title-case).
+# AC state vocabulary — all lowercase with underscores (matches JSON vocabulary).
 # Override at runtime with --profile to read the project's own ac_states list.
-VALID_AC_STATUSES = {"Planned", "In Review", "Active", "Deprecated"}
+VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
 
 ID_PATTERNS: dict[str, re.Pattern] = {
     "User Story": re.compile(r"^US-\d{3,}$"),

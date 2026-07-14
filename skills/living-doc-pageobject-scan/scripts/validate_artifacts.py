@@ -40,9 +40,10 @@ ARTIFACT_SCHEMAS = {
 }
 
 # Inline credential literals are a security violation in seed.yaml.
+# Negative lookaheads allow safe patterns (env:, ${, <, ~, null) both quoted and unquoted.
 CREDENTIAL_LEAK_RE = re.compile(
     r"^\s*(password|passwd|pwd|secret|token|api_?key|client_secret)\s*:\s*"
-    r"(?!env:)(?!\$\{)(?!<)(?!\s*$)(?!null\b)(?!~\s*$)\S",
+    r"(?![\"']?env:)(?![\"']?\$\{)(?![\"']?<)(?![\"']?~)(?!null\b)(?!\s*$)\S",
     re.IGNORECASE | re.MULTILINE,
 )
 

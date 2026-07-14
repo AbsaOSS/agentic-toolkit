@@ -1,6 +1,6 @@
 # Living Doc BDD Copilot Agent
 
-`@living-doc-bdd-copilot` is the unified living documentation agent. It handles both the catalog layer (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) and the automation layer (webapp exploration, PageObjects, Gherkin scenarios, step definitions, and BDD suite maintenance).
+`@living-doc-bdd-copilot` orchestrates living documentation and BDD automation tasks — catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) and automation (webapp exploration, PageObjects, Gherkin scenarios, step definitions, and BDD suite maintenance).
 
 ---
 
