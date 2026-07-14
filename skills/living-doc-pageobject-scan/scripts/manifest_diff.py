@@ -42,10 +42,14 @@ def load_manifest(path: Path) -> list[dict]:
         sys.exit(1)
     with path.open(encoding="utf-8") as f:
         data = json.load(f)
-    if not isinstance(data, list):
-        print(f"Error: manifest must be a JSON array. Found: {type(data).__name__}")
+    if not isinstance(data, dict):
+        print(f"Error: manifest must be a JSON object. Found: {type(data).__name__}")
         sys.exit(1)
-    return data
+    routes = data.get("routes")
+    if not isinstance(routes, list):
+        print(f"Error: manifest.routes must be a JSON array. Found: {type(routes).__name__}")
+        sys.exit(1)
+    return routes
 
 
 def find_pageobject_files(root: Path) -> set[str]:
@@ -108,7 +112,7 @@ def main() -> None:
         print(f"{'=' * 60}")
         for po_path in stale:
             entry = path_to_entry.get(po_path, {})
-            print(f"  Feature : {entry.get('feature', '(unknown)')}")
+            print(f"  Feature : {entry.get('feature_id', '(unknown)')}") 
             print(f"  URL     : {entry.get('url', '(unknown)')}")
             print(f"  PO path : {po_path}")
             print(f"  → Action: update path in manifest.json, or run RE-SCAN mode")

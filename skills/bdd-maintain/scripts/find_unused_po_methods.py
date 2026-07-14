@@ -84,7 +84,13 @@ def collect_po_methods(pages_dir: Path) -> list[MethodDef]:
         lines = text.splitlines()
 
         # Look for `async methodName(` or method-like declarations
-        for m in re.finditer(r"^[ \t]+(?:async\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(", text, re.MULTILINE):
+        # Exclude control-flow keywords (if, for, while, switch, do, try, catch)
+        for m in re.finditer(
+            r"^[ \t]+(?:async\s+)?(?!(?:if|for|while|switch|do|try|catch)\s*[\(\{])"
+            r"([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(",
+            text,
+            re.MULTILINE
+        ):
             name = m.group(1)
             if name in EXCLUDED_NAMES:
                 continue

@@ -48,8 +48,8 @@ The agent uses two persistent files:
 
 These files can live anywhere in the repository. On each session start, the agent searches for them automatically:
 
-1. Searches for `seed.yaml` containing a `base_url:` key.
-2. Searches for `manifest.json` containing an array with `pageobject_path` entries.
+1. Searches for `seed.yaml` containing an `app:` object with a `base_url` key.
+2. Searches for `manifest.json` containing an object with a `routes` array.
 3. If found, loads both files and resumes from the last known state — no re-crawl needed.
 4. If not found, creates them at a sensible location (alongside your existing living doc catalog directory, or `.copilot/bdd/` if no catalog is present).
 
@@ -64,15 +64,24 @@ These files can live anywhere in the repository. On each session start, the agen
 **Credential safety:** Credentials in `seed.yaml` must always use `env:VAR_NAME` — never literal values.
 
 ```yaml
-base_url: https://your-app.example.com
-credentials:
-  username: env:BDD_USERNAME
-  password: env:BDD_PASSWORD
-known_routes:
-  - path: /login
-    feature: Authentication
-  - path: /dashboard
-    feature: Dashboard
+app:
+  name: My Application
+  base_url: https://your-app.example.com
+  auth_entry_path: /login
+credentials_source: env:BDD_CREDENTIALS  # or .env.test file path
+test_id_attribute: data-cy
+business_domains:
+  - name: Authentication
+    route_prefix: /auth
+    feature_id: FEAT-001
+  - name: Dashboard
+    route_prefix: /dashboard
+    feature_id: FEAT-002
+user_roles:
+  - role: Admin
+    description: Full access to all features
+  - role: User
+    description: Standard user access
 guided_steps: []  # populated during guided traversal
 ```
 

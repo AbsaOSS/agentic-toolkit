@@ -101,7 +101,7 @@ def scan_file(path: Path) -> list[dict]:
 
         for tag in ac_tags:
             # Extract AC ID and optional /param:value segments
-            m = AC_TAG.match(tag.lstrip("@"))
+            m = AC_TAG.match(tag)
             if not m:
                 issues.append({
                     "file": str(path),
@@ -152,6 +152,7 @@ def scan_file(path: Path) -> list[dict]:
                 "line": lines_found,
                 "scenario": None,
                 "issue": "duplicate_ac_link",
+                "severity": "error",
                 "detail": (
                     f"AC '{ac_id}' is linked from {len(lines_found)} scenarios "
                     f"at lines {lines_found}. Each AC should map to at most one scenario."

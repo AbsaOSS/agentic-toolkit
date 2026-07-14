@@ -43,11 +43,6 @@ Navigation hub for all guides in this repository. Browse by category below.
 |-----------------------------------------------|-------------------------------------------------------------------------|
 | [Living Doc BDD Copilot](./guides/living-doc-bdd-copilot.md) | The unified living documentation agent: catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) plus BDD automation (webapp exploration, PageObjects, Gherkin, step definitions, maintenance) |
 
-| Guide | Description |
-|----|----|
-| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
-| [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
-
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 
 See also the [main README](../README.md) for the skill catalog, scope, and FAQ.

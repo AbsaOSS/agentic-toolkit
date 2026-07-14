@@ -102,6 +102,9 @@ def load_user_stories(living_doc_dir: Path) -> list[dict]:
 def normalise_ac_id(us_id: str, raw_id: str) -> str:
     """Normalise AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01'."""
     raw = raw_id.strip().upper()
+    # Strip 'AC:' prefix if present (catalog fixtures store with prefix)
+    if raw.startswith("AC:"):
+        raw = raw[3:]
     if re.match(r"^(US|FEAT|FUNC)-\d+-\d{2}$", raw):
         return raw
     # Stored as just the suffix: '01' → 'US-001-01'
