@@ -48,7 +48,7 @@ CREDENTIAL_LEAK_RE = re.compile(
 
 
 def _default_schema_dir() -> Path:
-    return (Path(__file__).resolve().parent / ".." / ".." / "references" / "schemas").resolve()
+    return (Path(__file__).resolve().parent / ".." / ".." / "shared" / "references" / "schemas").resolve()
 
 
 def _load_document(path: Path) -> dict:

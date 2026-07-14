@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/references/schemas/seed.schema.json",
+  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/shared/references/schemas/seed.schema.json",
   "title": "Business Seed (seed.yaml)",
   "description": "Canonical machine contract for .copilot/bdd/seed.yaml. See living-doc-bdd-schemas.md > seed.yaml (Business Seed). Credential literals are forbidden and enforced by validate_artifacts.py, not by this schema.",
   "type": "object",

@@ -35,7 +35,7 @@ ID_WIDTH = 3
 
 def load_catalog(path: str) -> dict:
     """Load and normalize a catalog JSON file."""
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         raw = json.load(f)
     # Support both {"catalog": {...}} and flat {"user_stories": [...]} formats
     return raw.get("catalog", raw)

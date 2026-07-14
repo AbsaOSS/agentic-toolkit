@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/references/schemas/project-profile.schema.json",
+  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/shared/references/schemas/project-profile.schema.json",
   "title": "Project Profile",
   "description": "Config-driven conventions loaded by the living-doc-bdd agent at session start. Canonical machine contract for .copilot/bdd/.project-profile.yaml. See living-doc-bdd-schemas.md > Project Profile.",
   "type": "object",
