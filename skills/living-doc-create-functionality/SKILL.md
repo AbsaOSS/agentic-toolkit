@@ -44,7 +44,7 @@ Express the Functionality `name` as a **verb phrase only** — one atomic respon
 
 Ask: *Which Feature (system surface) owns this behavior?* only if it is not already obvious from the prompt.
 
-A Functionality must belong to at least one Feature. If the user clearly names the surface or domain (for example checkout, basket, login, pricing), infer a provisional `feature_id` such as `FEAT-checkout` and proceed. Do **not** stop at "create the Feature first" when the parent is obvious — emit the Functionality JSON now with the inferred `feature_id`, then note that the Feature must be formally created/confirmed. If the Feature truly does not yet exist and cannot be inferred, suggest creating it with `living-doc-create-feature` first.
+A Functionality must belong to at least one Feature. If the user clearly names the surface or domain (for example checkout, basket, login, pricing), infer a provisional `feature_id` by asking for the catalog to look up the numeric ID. If the catalog is not available, note that the Feature must be created formally via `living-doc-create-feature` first (which will assign a numeric ID). Do **not** invent a slug-based Feature ID; all Feature IDs are numeric and catalog-assigned.
 
 ## Step 3 — Elicit Functionality-level Acceptance Criteria
 
@@ -169,7 +169,7 @@ Fallback example when the prompt explicitly says the catalog is missing:
   "id": "FUNC-PENDING",
   "name": "Validate discount code expiry",
   "description": "Rejects expired discount codes before they are applied to the order.",
-  "feature_id": "FEAT-checkout",
+  "feature_id": "FEAT-001",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
     "When the discount code is expired, validation returns INVALID with code DISCOUNT_EXPIRED."
@@ -188,8 +188,8 @@ Fallback example when the prompt explicitly says the catalog is missing:
 Common create requests that should produce JSON immediately:
 - cart validation rule ("Validate cart contains at least one in-stock item") → explicitly ask: *What happens when the cart is empty? when all items are out of stock? when only some items are in stock? when an item has zero quantity?* Then emit JSON with those cases covered, including an explicit zero-quantity error such as `INVALID_QUANTITY`; keep all ACs as `unit` when validating an already-provided cart snapshot
 - discount rule ("Apply 20% discount to gold member orders over £50") → infer `feature_id: "FEAT-pricing"` or the named parent Feature, ask about non-gold members, exactly £50, under £50, and promo-code stacking, then emit the full JSON **including a stacking/precedence AC in the `acceptance_criteria` array**
-- voucher calculation rule ("Deduct voucher discount before tax is calculated") → infer `feature_id: "FEAT-checkout"` or `FEAT-basket` from context and emit the full JSON
-- checkout stock rule ("Reject order when all items are out of stock") → infer `feature_id: "FEAT-checkout"` and emit the full JSON even if the Feature still needs formal catalog creation
+- voucher calculation rule ("Deduct voucher discount before tax is calculated") → ask which Feature (checkout/pricing) owns this, or ask for the catalog to look up the Feature ID, then emit the full JSON
+- checkout stock rule ("Reject order when all items are out of stock") → ask which Feature (checkout) owns this, or ask for the catalog to look up the Feature ID, then emit the full JSON
 
 For the gold-member discount pattern, first write a short `Completeness checklist:` line that explicitly mentions non-gold members, exactly £50, under £50, and promo-code stacking, then end with the full JSON artifact, not a sentence saying to output JSON later.
 
@@ -200,7 +200,7 @@ Gold-member discount starter draft example:
   "id": "FUNC-003",
   "name": "Apply gold member discount on qualifying orders",
   "description": "Applies the gold-member discount when an order meets the qualifying threshold.",
-  "feature_id": "FEAT-pricing",
+  "feature_id": "FEAT-001",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
     "When the customer is a gold member and the order total is greater than £50, a 20% discount is applied to the order subtotal.",

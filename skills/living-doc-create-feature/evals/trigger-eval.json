@@ -157,8 +157,8 @@
   },
   {
     "id": 27,
-    "query": "I need to rename FEAT-checkout to FEAT-checkout-v2 — what are all the cascade steps?",
+    "query": "I need to rename a Feature because the domain structure changed — what are all the cascade steps?",
     "should_trigger": true,
-    "reason": "Renaming a Feature — create-feature owns the Feature schema and triggers rename guidance via living-doc-update"
+    "reason": "Feature renaming guidance — create-feature owns the Feature schema and triggers rename/update guidance via living-doc-update"
   }
 ]

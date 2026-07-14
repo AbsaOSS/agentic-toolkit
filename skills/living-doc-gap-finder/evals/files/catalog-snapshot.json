@@ -7,21 +7,21 @@
       {"id": "US-007", "title": "Apply a promotional discount", "status": "ready", "ac_count": 4}
     ],
     "features": [
-      {"id": "FEAT-checkout", "name": "Checkout Page", "user_stories": ["US-001"]},
-      {"id": "FEAT-account", "name": "Account Dashboard", "user_stories": ["US-002"]},
-      {"id": "FEAT-promo", "name": "Promotions Module", "user_stories": []},
-      {"id": "FEAT-orphan", "name": "Legacy Report Screen", "user_stories": [], "functionalities": []}
+      {"id": "FEAT-001", "name": "Checkout Page", "user_stories": ["US-001"]},
+      {"id": "FEAT-002", "name": "Account Dashboard", "user_stories": ["US-002"]},
+      {"id": "FEAT-003", "name": "Promotions Module", "user_stories": []},
+      {"id": "FEAT-004", "name": "Legacy Report Screen", "user_stories": [], "functionalities": []}
     ],
     "functionalities": [
       {
         "id": "FUNC-001",
-        "parent_feature": "FEAT-checkout",
+        "parent_feature": "FEAT-001",
         "ac_count": 3,
         "linked_tests": ["test_validate_cart.py::test_empty_cart"]
       },
       {
         "id": "FUNC-002",
-        "parent_feature": "FEAT-promo",
+        "parent_feature": "FEAT-003",
         "ac_count": 5,
         "linked_tests": []
       }

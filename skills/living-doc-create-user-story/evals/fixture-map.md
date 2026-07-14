@@ -17,7 +17,7 @@
 | 5 | negative | _(none)_ | Routing: atomic behavior → living-doc-create-functionality |
 | 6 | paraphrase | _(none)_ | SMS password reset — full elicitation with happy path + error paths |
 | 7 | edge-case | _(none)_ | Two actors for same capability → two separate User Stories |
-| 8 | output-format | _(none)_ | Canonical UserStory JSON: as_a/i_want/so_that, US-<nnn>-AC-<n> format |
+| 8 | output-format | _(none)_ | Canonical UserStory JSON: as_a/i_want/so_that, AC:US-<nnn>-<nn> format |
 | 9 | regression | _(none)_ | Anti-pattern: 'I want' clause with 'and' — two capabilities bundled |
 | 10 | regression | _(none)_ | Anti-pattern: single-value placeholder {error type} |
 | 11 | regression | _(none)_ | Anti-pattern: non-observable outcome (background job) |

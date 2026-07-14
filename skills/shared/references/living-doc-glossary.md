@@ -97,7 +97,7 @@ The PageObject **header block and class JSDoc are living-doc contracts** — the
 |---|---|---|
 | Missing `data-cy` attributes discovered during a scan | `manifest.json` → `coverage_gaps[]` | Header or class JSDoc |
 | Reason a surface is not yet fully instrumented | Header field `stub-reason:` (one or two lines) | Free-text NOTE block |
-| Proposed `data-cy` names for missing elements | `manifest.json` → `coverage_gaps[].suggestedDataCy` | Header or class body |
+| Proposed test-id names for missing elements | `manifest.json` → `coverage_gaps[].suggested_test_id` (normalized; maps to root `test_id_attribute`) | Header or class body |
 | Open issue reference (e.g. OI-08, P1) | `manifest.json` → `coverage_gaps[].note` | Header or class JSDoc |
 | Scan date or scan session tag | `manifest.json` → `last_scanned` | Header or class JSDoc |
 | `@stub` / `@pending` JSDoc tags on the class | — (use `status: candidate` + `stub-reason:`) | Class JSDoc |

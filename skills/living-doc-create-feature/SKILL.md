@@ -40,7 +40,7 @@ When information is missing, phrase the discovery as a short numbered checklist 
 6. surface type, if still ambiguous
 
 When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
-- `Checkout Page` → `surface_type: "UI"`, use the shorter slug `FEAT-checkout`, dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
+- `Checkout Page` → `surface_type: "UI"`; dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
 - `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
 - `Notification Service` / notification worker → default to `surface_type: "Worker"` (or `API` if it is clearly a synchronous contract surface); do **not** simply mirror the word "Service" into `surface_type`; dependencies often include `smtp-relay` and `template-store`.
 - `PaymentEventProcessor` / event consumer → `surface_type: "Worker"`; include the Kafka topic or event stream in `external_dependencies`.
@@ -107,15 +107,16 @@ Use `[]` only when the relationship is truly unknown and you cannot infer a sens
 
 ## Step 6 — Output canonical Feature entity
 
-> **ID assignment:** If `catalog.json` is available and `scripts/next_id.py` can run, **always**
-> run `python scripts/next_id.py --type FEAT --catalog catalog.json` first and use the returned
-> numeric ID (for example `FEAT-012`). Do **not** invent a numeric ID or prefer a slug when the
-> catalog-backed script is available.
+> **ID assignment:** Feature IDs must be numeric and assigned from the catalog using
+> `scripts/next_id.py`. Always run:
+> ```bash
+> python scripts/next_id.py --type FEAT --catalog catalog.json
+> ```
+> and use the returned ID (for example `FEAT-012`) in the Feature entity.
 >
-> If no catalog is available (or the script cannot run because the catalog is missing), fall back
-> to a readable slug ID derived from the surface name (for example `FEAT-checkout`,
-> `FEAT-orders-api`, `FEAT-notifications-centre`) and explicitly warn:
-> **"No catalog available — using slug ID FEAT-<kebab-name>. Verify this ID does not conflict with existing entities before saving."**
+> If no catalog is available or the script cannot run, ask the user for the catalog path or
+> defer Feature creation until the catalog is accessible. Slug-based Feature IDs
+> (e.g. `FEAT-checkout`, `FEAT-orders-api`) are **not** supported by the ID auto-assigner.
 >
 > If the prompt states an existing numeric catalog range (for example "the catalog already contains
 > FEAT-001 through FEAT-011"), reflect the script execution in the answer as:
@@ -143,7 +144,7 @@ Use this exact output shape for create/document requests:
   ```json
   {
     "type": "Feature",
-    "id": "FEAT-example-surface",
+    "id": "FEAT-001",
     "name": "Example Surface",
     "surface_type": "UI",
     "purpose": "Business-language summary of the surface responsibility.",
@@ -158,16 +159,16 @@ Use this exact output shape for create/document requests:
   Do not replace the fenced block with raw JSON. Do not emit `owners` as a string. Use a spaced noun phrase for the `name` field (for example `Payment Event Processor`, not `PaymentEventProcessor`).
 
 Worked starter patterns:
-- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* and use `id: "FEAT-checkout"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
+- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* Run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
 - `Orders API` starter links: `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`
-- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, use `id: "FEAT-notification-service"`, default `surface_type: "Worker"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
+- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `surface_type: "Worker"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
 
 Canonical JSON fields:
 
 | Field | Required | Value |
 |---|---|---|
 | `type` | Yes | `Feature` |
-| `id` | Yes | `FEAT-<kebab-name>` |
+| `id` | Yes | `FEAT-NNN` (zero-padded numeric ID from catalog, e.g. `FEAT-001`) |
 | `name` | Yes | Noun phrase (e.g. "Login Page") |
 | `surface_type` | Yes | `UI` \| `API` \| `Service` \| `Worker` \| `Module` \| `Library` |
 | `purpose` | Yes | One-to-two sentence description in business language |

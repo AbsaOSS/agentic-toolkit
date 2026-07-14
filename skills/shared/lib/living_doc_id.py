@@ -6,9 +6,15 @@ Scans the living documentation and computes the next available ID for a given en
 Used by multiple skills: living-doc-create-user-story, living-doc-create-feature,
 living-doc-create-functionality.
 
+ID Convention:
+  - US: Numeric only (US-001, US-002, ...)
+  - FEAT: Numeric only (FEAT-001, FEAT-002, ...) assigned from catalog via next_id.py
+  - FUNC: Numeric only (FUNC-001, FUNC-002, ...)
+
 Functions:
   - load_catalog(path: str) -> dict
   - next_entity_id(catalog: dict, entity_type: str) -> str
+    Raises ValueError if FEAT collection contains slug-based IDs.
   - next_ac_id(catalog: dict, parent_id: str) -> str
   - cli_main(argv: list[str] | None = None) -> int
 
@@ -65,6 +71,14 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
     """
     Return the next sequential ID for US, FEAT, or FUNC entities.
     Scans the matching collection for the highest existing numeric suffix.
+    
+    For FEAT entities:
+      - Numeric IDs (FEAT-001) are auto-incrementable.
+      - Slug-based IDs (FEAT-checkout) are manual assignments and cannot be auto-incremented.
+      - Raises ValueError if the collection contains any slug-based IDs (mixed conventions).
+    
+    Raises:
+        ValueError: If entity_type is unknown, or if FEAT collection contains slug-based IDs.
     """
     if entity_type not in ENTITY_TYPE_MAP:
         raise ValueError(
@@ -75,12 +89,27 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
     entities: list[dict] = catalog.get(collection_key, [])
 
     max_num = 0
+    slug_ids = []
+    
     for entity in entities:
-        m = pattern.match(entity.get("id", ""))
+        entity_id = entity.get("id", "")
+        m = pattern.match(entity_id)
         if m:
             num_part = m.group(1)
             if num_part is not None:
+                # Numeric ID: extract and track max
                 max_num = max(max_num, int(num_part))
+            elif entity_type == "FEAT":
+                # Slug-based ID detected for FEAT; collect for error reporting
+                slug_ids.append(entity_id)
+    
+    # FEAT entities with slug-based IDs cannot use auto-increment
+    if slug_ids and entity_type == "FEAT":
+        raise ValueError(
+            f"Cannot auto-generate next {entity_type} ID: catalog contains slug-based IDs {slug_ids}. "
+            f"Slug-based Feature IDs (e.g., FEAT-checkout, FEAT-orders-api) must be assigned manually. "
+            f"Either use numeric IDs exclusively, or provide the next ID explicitly."
+        )
 
     return f"{entity_type}-{max_num + 1:0{ID_WIDTH}d}"
 

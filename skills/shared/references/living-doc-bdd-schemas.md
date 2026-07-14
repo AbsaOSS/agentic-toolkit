@@ -492,10 +492,14 @@ It is the machine record of every scanned surface. The manifest is a JSON object
 (profile `manifest_shape: object`). Load targeted entries by route during a session; load the full file
 only for a RE-SCAN.
 
+The manifest uses **normalized test_id keys** (not attribute-specific). The root-level `test_id_attribute` metadata
+tells downstream generators (PageObject, data-cy-instrument) how to map these normalized keys to the actual HTML attribute.
+
 ```json
 {
   "generated": "2026-06-08T12:00:00Z",
   "scan_version": "v1.9.2-36-g6660993",
+  "test_id_attribute": "data-cy",
   "routes": [
     {
       "url": "/login",
@@ -505,11 +509,11 @@ only for a RE-SCAN.
       "last_scanned": "2026-05-28T13:32:00Z",
       "note": "Optional scan provenance.",
       "elements": [
-        { "data-cy": "input-username", "tag": "cps-input",  "label": "Username" },
-        { "data-cy": "btn-login",      "tag": "cps-button", "label": "Login", "note": "NEW [scan: ...]" }
+        { "test_id": "input-username", "tag": "cps-input",  "label": "Username" },
+        { "test_id": "btn-login",      "tag": "cps-button", "label": "Login", "note": "NEW [scan: ...]" }
       ],
       "coverage_gaps": [
-        { "tag": "button", "ariaLabel": "Collapse sidebar", "suggestedDataCy": "btn-collapse-sidebar", "note": "no data-cy" }
+        { "tag": "button", "ariaLabel": "Collapse sidebar", "suggested_test_id": "btn-collapse-sidebar", "note": "no test-id" }
       ],
       "open_actions_menu": {
         "owned_domain": ["View data feeds", "Grant access", "Edit domain"],
@@ -517,7 +521,7 @@ only for a RE-SCAN.
       },
       "navigation_context": "Default landing page after login.",
       "field_constraints": [
-        { "field": "domain-name", "max_length": 100, "special_chars": "rejected", "duplicate": "rejected-with-error", "duplicate_error_data_cy": "domain-name-duplicate-error" }
+        { "field": "domain-name", "max_length": 100, "special_chars": "rejected", "duplicate": "rejected-with-error", "duplicate_error_test_id": "domain-name-duplicate-error" }
       ]
     }
   ]
@@ -533,15 +537,18 @@ only for a RE-SCAN.
 | `pageobject_path` | Yes | Repo-relative path to the PageObject file |
 | `feature_id` | Yes | Living-doc Feature ID, or `FEAT-UNKNOWN` |
 | `last_scanned` | Yes | ISO 8601 timestamp; surfaces stale entries |
-| `elements[]` | Yes | Discovered test-id elements: `{ "data-cy": <id>, "tag": <html-tag>, "label": <text\|null>, "note"?: <scan note> }` |
-| `coverage_gaps[]` | Yes | Interactive elements lacking a test-id: `{ "tag", "text"\|"ariaLabel"\|"role"\|"type", "suggestedDataCy", "note"? }`. Empty array = fully instrumented |
+| `elements[]` | Yes | Discovered test-id elements: `{ "test_id": <id>, "tag": <html-tag>, "label": <text\|null>, "note"?: <scan note> }`. `test_id` is normalized and maps to root `test_id_attribute` downstream. |
+| `coverage_gaps[]` | Yes | Interactive elements lacking a test-id: `{ "tag", "text"\|"ariaLabel"\|"role"\|"type", "suggested_test_id", "note"? }`. Empty array = fully instrumented. `suggested_test_id` is normalized. |
 | `navigation_context` | Yes | **String** — how to reach the route (prose). Reused across sessions |
 | `note` | No | Scan provenance for the route as a whole |
 | `open_actions_menu` | No | Context-menu contents keyed by context (e.g. owned vs non-owned) |
-| `field_constraints[]` | No | Per-field validation findings: `{ field, max_length?, special_chars?, duplicate?, duplicate_error_data_cy?, allowed_format?, real_world_required? }` |
+| `field_constraints[]` | No | Per-field validation findings: `{ field, max_length?, special_chars?, duplicate?, duplicate_error_test_id?, allowed_format?, real_world_required? }` |
 
-> **Key casing:** element/gap keys use the literal attribute name `data-cy` and the camelCase
-> `suggestedDataCy`, matching the proven manifests. Do not snake_case them (`data_cy` / `suggested_data_cy`).
+> **Normalized test_id keys:** The manifest uses `test_id` (not `data-cy`) and `suggested_test_id` (not `suggestedDataCy`)
+> as fixed, attribute-agnostic keys. The root-level `test_id_attribute` (mirrors Project Profile) tells downstream
+> generators what HTML attribute these keys map to (e.g., `data-cy`, `data-testid`, or a custom attribute).
+> PageObject generators read this metadata and emit the correct attribute; the manifest shape remains consistent
+> regardless of the configured attribute.
 
 ### Lifecycle
 

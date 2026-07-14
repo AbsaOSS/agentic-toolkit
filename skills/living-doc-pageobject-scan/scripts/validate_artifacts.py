@@ -64,7 +64,7 @@ def _schema_errors(document: dict, schema: dict) -> list[str]:
 
     validator = Draft7Validator(schema)
     errors = []
-    for err in sorted(validator.iter_errors(document), key=lambda e: list(e.path)):
+    for err in sorted(validator.iter_errors(document), key=lambda e: tuple(str(p) for p in e.path)):
         location = "/".join(str(p) for p in err.path) or "<root>"
         errors.append(f"{location}: {err.message}")
     return errors
@@ -87,9 +87,9 @@ def _canonicalize_manifest(document: dict, path: Path) -> None:
     if isinstance(routes, list):
         for route in routes:
             if isinstance(route.get("elements"), list):
-                route["elements"].sort(key=lambda e: str(e.get("data-cy", "")))
+                route["elements"].sort(key=lambda e: str(e.get("test_id", "")))
             if isinstance(route.get("coverage_gaps"), list):
-                route["coverage_gaps"].sort(key=lambda g: str(g.get("suggestedDataCy", "")))
+                route["coverage_gaps"].sort(key=lambda g: str(g.get("suggested_test_id", "")))
         routes.sort(key=lambda r: str(r.get("url", "")))
     path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

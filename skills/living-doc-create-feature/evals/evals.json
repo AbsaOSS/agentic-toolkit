@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to document the Checkout Page as a Feature entity.",
-      "expected_output": "Agent identifies surface type as UI. Asks for: purpose and scope (what user interactions it owns), linked User Stories, known Functionalities, owners, external dependencies. Outputs a canonical Feature JSON with id=FEAT-checkout, surface_type=UI, at least one US link, at least two Functionality references, owners, and external_dependencies including payment-gateway and order-service.",
+      "expected_output": "Agent identifies surface type as UI. Asks for: purpose and scope (what user interactions it owns), linked User Stories, known Functionalities, owners, external dependencies. Runs next_id.py to get the next Feature ID from the catalog. Outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=UI, at least one US link, at least two Functionality references, owners, and external_dependencies including payment-gateway and order-service.",
       "files": [],
       "expectations": [
         "Identifies surface_type as UI for a web page",
@@ -13,7 +13,7 @@
         "Asks for User Story links",
         "Asks for Functionalities owned by this Feature",
         "Asks for owners and external dependencies",
-        "Outputs valid canonical Feature JSON with all fields populated",
+        "Runs next_id.py to get numeric Feature ID from catalog",
         "Notes: 1 Feature ≈ 1 PageObject"
       ]
     },
@@ -21,7 +21,7 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "I want to document the Orders API as a Feature.",
-      "expected_output": "Agent identifies surface_type as API. Asks for endpoint group description, linked User Stories, owned Functionalities, team owners, and external dependencies (e.g. order-db, notification-service). Outputs Feature JSON with id=FEAT-orders-api, surface_type=API.",
+      "expected_output": "Agent identifies surface_type as API. Asks for endpoint group description, linked User Stories, owned Functionalities, team owners, and external dependencies (e.g. order-db, notification-service). Runs next_id.py to get the next Feature ID from the catalog. Outputs Feature JSON with id=FEAT-002 (or next numeric ID), surface_type=API.",,
       "files": [],
       "expectations": [
         "surface_type is API",
@@ -68,7 +68,7 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "I want to add the Notification Service to the living doc as a system component. Where do I start?",
-      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: what type of surface is it (API, Worker, UI)? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? Outputs a canonical Feature JSON for FEAT-notification-service with surface_type=Worker or API, at least one User Story link, owners, and external_dependencies.",
+      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: what type of surface is it (API, Worker, UI)? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? Runs next_id.py to get the numeric ID from the catalog. Outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker or API, at least one User Story link, owners, and external_dependencies.",
       "files": [],
       "expectations": [
         "Identifies this as a Feature creation request despite 'system component' phrasing",
@@ -94,12 +94,12 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a Feature entity for the 'User Profile' screen in our banking app. It is owned by team-identity and depends on the customer-service API.",
-      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field follows the FEAT-<kebab-name> convention. The surface_type value is one of: UI, API, Service, Module. No prose appears inside the JSON code block.",
+      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",,
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
         "All required fields present: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies",
-        "id follows FEAT-<kebab-name> convention",
+        "id is a numeric ID from the catalog (FEAT-001, FEAT-002, etc.)",
         "surface_type is one of UI/API/Service/Worker/Module/Library",
         "No prose inside the code block"
       ]
@@ -109,13 +109,13 @@
       "category": "file-based",
       "description": "Create a Feature entity from rough notes provided as a markdown file.",
       "prompt": "Read evals/files/raw-feature-notes.md and produce a canonical Feature entity JSON from the notes.",
-      "expected_output": "Agent extracts the surface type, purpose, owners, and dependencies from the notes and produces a Feature entity JSON in a fenced ```json block. The id follows FEAT-<kebab> convention derived from the feature name in the notes. The surface_type, owners, and external_dependencies fields are populated from the file content. user_stories and functionalities are empty arrays with a warning that they must be linked.",
+      "expected_output": "Agent extracts the surface type, purpose, owners, and dependencies from the notes and produces a Feature entity JSON in a fenced ```json block. Runs next_id.py to get the numeric ID from the catalog. The id is a numeric ID (e.g. FEAT-001). The surface_type, owners, and external_dependencies fields are populated from the file content. user_stories and functionalities are empty arrays with a warning that they must be linked.",,
       "files": [
         "evals/files/raw-feature-notes.md"
       ],
       "expectations": [
         "Feature entity JSON in fenced ```json block",
-        "id follows FEAT-<kebab> from the notes",
+        "id is a numeric ID from catalog (FEAT-001, etc.), not derived from name",
         "surface_type, owners, external_dependencies populated from file",
         "user_stories and functionalities are empty arrays with a linking warning"
       ]
@@ -150,7 +150,7 @@
       "id": 12,
       "category": "happy-path",
       "prompt": "Document a Feature for our PaymentEventProcessor — an asynchronous worker that listens on a Kafka topic and processes payment events in the background.",
-      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Outputs Feature JSON with id=FEAT-payment-event-processor, surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",
+      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Runs next_id.py to get the numeric ID from the catalog. Outputs Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",,
       "files": [],
       "expectations": [
         "Identifies surface_type as Worker",
@@ -163,7 +163,7 @@
     {
       "id": 13,
       "category": "regression",
-      "prompt": "I have these candidate behaviors for FEAT-checkout: 'validate cart', 'apply promo', 'confirm order'. Should I add them to the functionalities field right now?",
+      "prompt": "I have these candidate behaviors for a Feature: 'validate cart', 'apply promo', 'confirm order'. Should I add them to the functionalities field right now?",
       "expected_output": "No. Candidate Functionalities that have not yet been formally defined as FUNC-<nnn> entities must not be listed in the functionalities array. The functionalities field only accepts formally registered FUNC-<nnn> IDs. While these are still informal notes, leave functionalities as [] and note the candidates externally. Use living-doc-create-functionality to formally define each one before linking it here.",
       "files": [],
       "expectations": [
@@ -190,7 +190,7 @@
       "id": 16,
       "category": "regression",
       "prompt": "Create a new Feature entity for the 'Notifications Centre' screen. The catalog already contains FEAT-001 through FEAT-011.",
-      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FEAT --catalog catalog.json. The script returns FEAT-012. The agent assigns id='FEAT-012' (or the slug 'FEAT-notifications-centre' if the project uses slug IDs). The agent does NOT invent an ID, reuse an existing ID, or leave the id field as a placeholder such as FEAT-XXX or FEAT-<nnn>. The final JSON contains a fully populated id field before being presented to the user.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FEAT --catalog catalog.json. The script returns FEAT-012. The agent assigns id='FEAT-012'. The agent does NOT invent an ID, reuse an existing ID, or leave the id field as a placeholder such as FEAT-XXX or FEAT-<nnn>. The final JSON contains a fully populated numeric id field before being presented to the user.",
       "files": [],
       "expectations": [
         "Runs next_id.py --type FEAT before assigning the ID",
@@ -204,11 +204,11 @@
       "id": 17,
       "category": "regression",
       "prompt": "Create a Feature entity for the 'Payment Page'. The catalog file is not present — next_id.py cannot be run. What should the agent do?",
-      "expected_output": "Agent cannot auto-assign a numeric ID. It uses the slug convention instead: id='FEAT-payment-page' derived from the surface name in kebab-case. The agent explicitly states: 'No catalog available — using slug ID FEAT-payment-page. Verify this ID does not conflict with existing entities before saving.' It does NOT invent a numeric ID such as FEAT-001 or FEAT-999 without catalog evidence.",
+      "expected_output": "Agent cannot auto-assign a numeric ID without a catalog. It asks the user: 'The catalog file is missing. Please provide the path to catalog.json or explicitly specify which numeric ID should be assigned (e.g., FEAT-001).' The agent does NOT fall back to slug IDs or invent numeric IDs.",,
       "files": [],
       "expectations": [
-        "Falls back to slug ID when catalog is unavailable",
-        "Slug is derived from the surface name in kebab-case",
+        "Falls back to asking for catalog path or explicit ID, does not invent a slug",
+        "Does not fall back to slug IDs like FEAT-payment-page",
         "Warns the user to verify no collision before saving",
         "Does not invent a numeric ID without catalog evidence"
       ]
@@ -216,12 +216,12 @@
     {
       "id": 15,
       "category": "regression",
-      "prompt": "I need to rename the Feature FEAT-checkout to FEAT-checkout-v2 because we split the checkout domain. What steps do I need to follow?",
-      "expected_output": "Renaming a Feature requires a cascade: (1) Update the entity file (id and name fields). (2) Update feature_id in all linked Functionality entities. (3) Update feature_registry. (4) Update manifest.json / seed.yaml. (5) Update PageObject file headers. (6) Update Gherkin # Feature: headers. (7) Run living-doc-gap-finder to confirm no orphan references remain. Load living-doc-update and follow the 'Rename a Feature' workflow.",
+      "prompt": "I need to rename a Feature ID because the domain split. What steps do I need to follow?",,
+      "expected_output": "Renaming a Feature numeric ID is not recommended after creation — numeric IDs are stable catalog identifiers. If the Feature name must change (e.g. 'Checkout Page' → 'Checkout & Payments'), update only the 'name' field, not the 'id'. The 'id' field should remain FEAT-001 (for example). Updating the name requires: (1) Update the entity file (name field only). (2) Update feature_registry to reflect the new name under the existing numeric ID. (3) Update manifest.json / seed.yaml. (4) Update PageObject file headers. (5) Update Gherkin # Feature: headers. (6) Run living-doc-gap-finder to confirm no broken references. Load living-doc-update and follow the 'Update Feature name' workflow.",,
       "files": [],
       "expectations": [
-        "Lists all 7 cascade steps for a Feature rename",
-        "Mentions living-doc-update as the skill that owns the rename workflow",
+        "Notes that numeric IDs are stable and should not change",
+        "Directs to update 'name' field only, not the 'id' field",
         "Notes feature_registry and Functionality.feature_id must be updated",
         "Recommends gap-finder run at the end to confirm clean state"
       ]

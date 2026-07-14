@@ -145,8 +145,8 @@
   },
   {
     "id": "t25-rename-feature",
-    "query": "I need to rename FEAT-checkout to FEAT-checkout-v2 — walk me through all the cascade steps",
+    "query": "I need to update a Feature's name because the domain split — walk me through all the cascade steps",
     "should_trigger": true,
-    "reason": "Feature rename cascade — living-doc-update owns the 7-step rename workflow"
+    "reason": "Feature update cascade — living-doc-update owns the workflow for renaming/updating Features"
   }
 ]

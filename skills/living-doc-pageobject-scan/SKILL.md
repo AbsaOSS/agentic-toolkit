@@ -291,10 +291,10 @@ After confirming changes: set `last_scanned`, update `elements`, `coverage_gaps`
 
 ## Manifest schema
 
-`manifest.json` `routes` is a **JSON array** of route objects. Each entry uses literal `data-cy` for elements, `suggestedDataCy` for gaps, and a **string** `navigation_context`. The authoritative schema (route fields, `coverage_gaps[]`, optional `open_actions_menu`, `field_constraints[]`) lives in [living-doc-bdd-schemas — manifest.json](../references/living-doc-bdd-schemas.md#manifestjson-exploration-manifest). Do not emit object-keyed routes, `data_cy` / `suggested_data_cy`, or object `navigation_context`.
+`manifest.json` `routes` is a **JSON array** of route objects. Each entry uses normalized `test_id` for elements, `suggested_test_id` for gaps, and a **string** `navigation_context`. Root-level `test_id_attribute` metadata maps these keys to the configured HTML attribute. The authoritative schema (route fields, `coverage_gaps[]`, optional `open_actions_menu`, `field_constraints[]`) lives in [living-doc-bdd-schemas — manifest.json](../references/living-doc-bdd-schemas.md#manifestjson-exploration-manifest). Do not emit object-keyed routes, `test_id_*` snake-case variants, or object `navigation_context`.
 
 ```json
-{"routes":[{"elements":[{"data-cy":"confirm-order-btn"}],"coverage_gaps":[{"suggestedDataCy":"promo-info"}],"navigation_context":"log in, open checkout"}]}
+{"test_id_attribute":"data-cy","routes":[{"elements":[{"test_id":"confirm-order-btn"}],"coverage_gaps":[{"suggested_test_id":"promo-info"}],"navigation_context":"log in, open checkout"}]}
 ```
 
 Before closeout, validate and canonicalize with `python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize`.

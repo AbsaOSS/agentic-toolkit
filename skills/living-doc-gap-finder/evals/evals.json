@@ -168,7 +168,7 @@
     },
     {
       "id": 13,
-      "prompt": "A Feature entity FEAT-checkout exists in the living doc but its functionalities list is empty — no Functionality entities are linked to it. What gap type is this and what is the priority?",
+      "prompt": "A Feature entity (e.g., FEAT-001 Checkout Page) exists in the living doc but its functionalities list is empty — no Functionality entities are linked to it. What gap type is this and what is the priority?",
       "expected_output": "Gap type EMPTY_FEATURE (not \"Gap type 9\"). Priority: Nit. Guidance: define Functionality entities for the behaviors this Feature owns using living-doc-create-functionality.",
       "files": [],
       "category": "edge-case",
@@ -181,7 +181,7 @@
     },
     {
       "id": 14,
-      "prompt": "FEAT-checkout is linked to no User Stories at all. What gap type is this?",
+      "prompt": "A Feature (e.g., FEAT-001 Checkout Page) is linked to no User Stories at all. What gap type is this?",,
       "expected_output": "Gap type ORPHAN_FEATURE (not \"Gap type 3\"). Priority: Important. Guidance: link at least one User Story to give the Feature traceable business value.",
       "files": [],
       "category": "edge-case",

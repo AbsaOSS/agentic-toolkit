@@ -154,37 +154,22 @@ The `NOT for:` clause is as important as the positive terms — it prevents the 
 
 ---
 
-## 9. Regression-first loop
+## 9. Body eval iteration loop
 
-Same as skill testing — run the full trigger-eval set, fix the largest failure cluster, re-run:
+Repeat until all body evals pass:
 
-1. Run full trigger-eval and body-eval sets; save baseline scores
-2. Identify largest failure cluster (e.g. 4 should-not-trigger cases fire)
-3. Make one description change
-4. Re-run trigger-eval only
-5. Review delta
-6. Run full suite
-7. Keep or revert
-8. Repeat until all trigger evals pass and body eval delta is positive or neutral
+1. Invoke the agent with `@agent-name` using a prompt from `evals.json`
+2. Review output against the `expected_output` field
+3. If output doesn't match, identify the root cause:
+   - **Wrong tool?** — add the missing tool to the `tools:` list in the frontmatter
+   - **Wrong scope?** — update the `## Scope` or `## Does NOT` section
+   - **Mode didn't activate?** — fix the mode dispatch logic (e.g., RE-SCAN, HEALING keywords)
+   - **Bad handoff?** — correct the `## Handoff` section
+4. Edit the `.agent.md` file directly with the fix
+5. Re-run that eval case
+6. Move to the next eval case; repeat until all pass
 
----
-
-## 10. Minimal session
-
-```
-VS Code Copilot Chat (or gh copilot):
-→ "Use the skill-creator skill to test the agent at .github/agents/my-agent.agent.md
-   using the evals at .github/agents/evals/my-agent/.
-   Report trigger precision/recall and body eval pass rate."
-→ inspect trigger accuracy report and body output diffs;
-  classify each change as improvement, regression, or neutral
-→ edit the `.agent.md` file directly to fix structural issues
-  (scope, tools: list, mode dispatch, handoff)
-→ "Use the skill-creator skill to optimize the description for .github/agents/my-agent.agent.md
-   using .github/agents/evals/my-agent/trigger-eval.json.
-   Keep ≤ 1024 chars; include a NOT for: boundary clause. Repeat until all evals pass."
-→ re-run full eval suite; keep or revert each change; repeat until stable
-```
+**Tip:** Run body evals in order (easiest first) to catch missing tools early before diving into scope or mode issues.
 
 ---
 

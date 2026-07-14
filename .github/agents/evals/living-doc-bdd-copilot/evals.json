@@ -173,8 +173,8 @@
     {
       "id": 13,
       "category": "regression",
-      "prompt": "During seed assembly, the living doc catalog at docs/living-doc/ has FEAT-checkout mapped to route /checkout and FEAT-account mapped to route /account/orders. No sitemap.xml exists. How should known_routes in seed.yaml be populated?",
-      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-checkout → /checkout and FEAT-account → /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent — no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
+      "prompt": "During seed assembly, the living doc catalog at docs/living-doc/ has FEAT-001 (Checkout Page) mapped to route /checkout and FEAT-002 (Account Dashboard) mapped to route /account/orders. No sitemap.xml exists. How should known_routes in seed.yaml be populated?",
+      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-001 → /checkout and FEAT-002 → /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent — no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
       "files": [],
       "expectations": [
         "Source A: Feature-to-route mappings extracted from the living doc catalog",

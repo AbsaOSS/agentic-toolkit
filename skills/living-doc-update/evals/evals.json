@@ -207,8 +207,8 @@
     {
       "id": 16,
       "category": "regression",
-      "prompt": "I need to rename FEAT-checkout to FEAT-checkout-v2. Walk me through every change required.",
-      "expected_output": "Feature rename cascade — 7 steps: (1) Update the Feature entity file: change 'id' and 'name' fields. (2) Update feature_id in all linked Functionality entities. (3) Update feature_registry.json: replace the old key with the new feature id. (4) Update manifest.json / seed.yaml: update the Feature name/id entry. (5) Update PageObject file headers: change '# Feature: FEAT-checkout' to '# Feature: FEAT-checkout-v2'. (6) Update Gherkin feature file headers: change '# Feature: checkout' references. (7) Run living-doc-gap-finder to confirm no orphan references remain.",
+      "prompt": "I need to rename FEAT-001 (Checkout Page). What are the cascade steps?",
+      "expected_output": "Feature rename cascade — 7 steps: (1) Update the Feature entity file: change 'name' field. (Note: numeric 'id' should not be changed after creation.) (2) Update all references in Functionality entities that link to this Feature. (3) Update feature_registry.json: replace the old name with the new name under the numeric key. (4) Update manifest.json / seed.yaml: update the Feature name entry. (5) Update PageObject file headers: change '# Feature: FEAT-001' marker if it includes the human-readable name. (6) Update Gherkin feature file headers with the new name. (7) Run living-doc-gap-finder to confirm no orphan references remain.",
       "files": [],
       "expectations": [
         "Lists all 7 cascade steps",

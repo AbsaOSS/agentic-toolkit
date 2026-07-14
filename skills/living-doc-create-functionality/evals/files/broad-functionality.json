@@ -2,7 +2,7 @@
   "type": "Functionality",
   "id": "FUNC-001",
   "name": "Handle checkout",
-  "parent_feature": "FEAT-checkout",
+  "parent_feature": "FEAT-001",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
     {

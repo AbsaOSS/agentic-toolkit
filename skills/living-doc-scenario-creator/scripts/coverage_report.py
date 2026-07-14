@@ -70,7 +70,7 @@ def canonicalize_numeric_id(parent_type: str, num_str: str) -> str:
     """
     Canonicalize a numeric parent ID to zero-padded 3-digit format.
     E.g., US-1-01 → US-001-01, US-10-01 → US-010-01, US-001-01 → US-001-01
-    For non-numeric IDs (e.g., FEAT-checkout-01), return as-is.
+    (Feature IDs are always numeric, so this returns a padded version.)
     """
     if num_str.isdigit():
         return f"{parent_type}-{num_str.zfill(3)}"
@@ -93,9 +93,9 @@ def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
 def _canonicalize_ac_id(ac_id: str) -> str:
     """
     Canonicalize AC ID by zero-padding numeric parent IDs.
-    E.g., US-1-01 → US-001-01, FEAT-checkout-01 → FEAT-checkout-01 (no change)
+    E.g., US-1-01 → US-001-01, FEAT-1-01 → FEAT-001-01
     """
-    # Match patterns like US-1-01, FEAT-checkout-01, FUNC-2-03
+    # Match patterns like US-1-01, FEAT-1-01, FUNC-2-03
     m = re.match(r"^(US|FEAT|FUNC)-((?:\d+)|(?:[a-z0-9]+(?:-[a-z0-9]+)*))-(\d{2})$", ac_id, re.IGNORECASE)
     if m:
         parent_type = m.group(1).upper()
@@ -141,7 +141,7 @@ def load_user_stories(living_doc_dir: Path) -> list[dict]:
 
 
 def normalise_ac_id(us_id: str, raw_id: str) -> str:
-    """Normalise and canonicalize AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01' or 'FEAT-checkout-01'."""
+    """Normalise and canonicalize AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01' or 'FEAT-1-01'."""
     raw = str(raw_id).strip()
     # Strip 'AC:' prefix if present (case-insensitive); catalog fixtures may store with prefix
     if raw.startswith("AC:") or raw.startswith("ac:"):

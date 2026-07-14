@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to document the atomic behavior: validate that a cart contains at least one in-stock item before checkout.",
-      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Links to FEAT-checkout. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON.",
+      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with feature_id set to the numeric Feature ID.",
       "files": [],
       "expectations": [
         "Name is a verb phrase (not a noun)",
@@ -126,13 +126,13 @@
       "id": 10,
       "category": "happy-path",
       "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
-      "expected_output": "Agent infers a provisional feature_id of FEAT-checkout from the 'checkout domain' context. Forms the verb-phrase name: 'Reject order when all items are out of stock'. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that FEAT-checkout must be created via living-doc-create-feature if it does not yet exist. Outputs canonical Functionality JSON with feature_id: 'FEAT-checkout'.",
+      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID.",,
       "files": [],
       "expectations": [
-        "Infers feature_id as FEAT-checkout from 'checkout domain' context",
+        "Asks for the parent Feature ID (numeric, from catalog) instead of inventing a slug",
         "Forms a verb-phrase name",
         "Runs completeness checklist: all out of stock vs. partial",
-        "Notes that FEAT-checkout must be created if it doesn't exist",
+        "Notes that the parent Feature must already exist in the catalog with a numeric ID",
         "Outputs valid Functionality JSON with feature_id populated"
       ]
     },
