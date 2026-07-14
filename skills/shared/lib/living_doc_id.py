@@ -58,7 +58,9 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
     for entity in entities:
         m = pattern.match(entity.get("id", ""))
         if m:
-            max_num = max(max_num, int(m.group(1)))
+            num_part = m.group(1)
+            if num_part is not None:
+                max_num = max(max_num, int(num_part))
 
     return f"{entity_type}-{max_num + 1:0{ID_WIDTH}d}"
 
