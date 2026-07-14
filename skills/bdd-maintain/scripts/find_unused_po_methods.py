@@ -3,7 +3,7 @@
 find_unused_po_methods.py — Dead-code detector: PageObject methods never called from step files.
 
 Usage:
-    python playwright/scripts/find_unused_po_methods.py [--pages-dir DIR] [--steps-dir DIR]
+    python skills/bdd-maintain/scripts/find_unused_po_methods.py [--pages-dir DIR] [--steps-dir DIR]
 
 Exits with code 1 if any unused methods are found (useful in CI).
 """

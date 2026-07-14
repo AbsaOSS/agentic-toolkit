@@ -3,7 +3,7 @@
 find_unused_steps.py — Dead-code detector: step definitions unused in any .feature file.
 
 Usage:
-    python playwright/scripts/find_unused_steps.py [--steps-dir DIR] [--features-dir DIR]
+    python skills/bdd-maintain/scripts/find_unused_steps.py [--steps-dir DIR] [--features-dir DIR]
 
 Exits with code 1 if any unused steps are found (useful in CI).
 """
@@ -33,7 +33,7 @@ DECORATOR_RE = re.compile(
     re.DOTALL,
 )
 
-# Convert a Cucumber expression / simple regex pattern to a Python regex
+# Convert a Cucumber expression pattern to a Python regex
 # Cucumber expression placeholders: {string}, {int}, {word}, {float}
 
 

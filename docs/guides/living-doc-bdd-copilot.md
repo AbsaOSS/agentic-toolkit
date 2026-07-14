@@ -164,8 +164,8 @@ For concerns outside this agent's scope:
 
 | Concern | Owner |
 |---|---|
-| Unit and integration tests | `@sdet-copilot` |
-| CI quality gates and linting | `@quality-gate-copilot` |
+| Unit and integration tests | Your project's existing test tooling / test owners (not provided by this toolkit) |
+| CI quality gates and linting | Your project's CI pipeline (not provided by this toolkit) |
 
 ---
 

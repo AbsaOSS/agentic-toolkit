@@ -43,9 +43,9 @@
   },
   {
     "id": 8,
-    "query": "@bdd-copilot scan the dashboard and generate scenarios",
+    "query": "@living-doc-bdd-copilot scan the dashboard and generate scenarios",
     "should_trigger": true,
-    "reason": "'bdd copilot' trigger phrase — explicit agent invocation"
+    "reason": "Explicit agent invocation"
   },
   {
     "id": 9,

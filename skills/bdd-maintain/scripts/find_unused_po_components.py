@@ -3,7 +3,7 @@
 find_unused_po_components.py — Dead-code detector: PageObject classes never imported in step files.
 
 Usage:
-    python playwright/scripts/find_unused_po_components.py [--pages-dir DIR] [--steps-dir DIR]
+    python skills/bdd-maintain/scripts/find_unused_po_components.py [--pages-dir DIR] [--steps-dir DIR]
 
 Exits with code 1 if any unused PageObject classes are found (useful in CI).
 """
