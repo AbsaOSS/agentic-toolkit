@@ -13,7 +13,7 @@ For every Scenario: / Scenario Outline: line found in living-doc files, checks t
   - At least one '@AC:<id>' Cucumber tag appears on a tag line immediately above it (error)
   - A matching '# AC:<id>' human-readable comment is also present (warning)
   - The AC ID follows the canonical format: AC:<parent-id>-<nn>
-    e.g. AC:US-001-01, AC:US-1-01, AC:FEAT-003-02, AC:FUNC-001-03
+    e.g. AC:US-001-01, AC:US-1-01, AC:FUNC-001-01
   - No two scenarios in the same file reference the same AC ID (duplicate check)
 
 Exit code: 0 if all checks pass, 1 if any errors are found (warnings do not fail).
@@ -28,13 +28,13 @@ from pathlib import Path
 # Matches a @AC: Cucumber tag with optional /param:value segments:
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
 AC_TAG = re.compile(
-    r"@AC:((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
+    r"@AC:((?:US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
     re.IGNORECASE,
 )
-# Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FEAT-checkout-01 or # AC:FEAT-001-01 (...)
-AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})", re.IGNORECASE)
+# Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FUNC-001-01 (...)
+AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})", re.IGNORECASE)
 # Canonical AC ID only (no params): AC:<parent>-<nn>
-AC_ID_FORMAT = re.compile(r"^AC:(US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", re.IGNORECASE)
+AC_ID_FORMAT = re.compile(r"^AC:(US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", re.IGNORECASE)
 TAG_LINE = re.compile(r"^\s*@\S+")
 COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)

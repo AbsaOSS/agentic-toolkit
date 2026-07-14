@@ -52,7 +52,7 @@ scenario_conventions:
   suite_tags:         ["@Regression"]   # additional scenario-level tags allowed beside @AC:
   section_banners:    true     # "# *** Happy day scenarios ***" / "# *** Negative scenarios ***"
 
-manifest_shape: array          # routes is a JSON array of {url, ...} objects (see Manifest schema)
+manifest_shape: object         # manifest is an object with routes array (see Manifest schema)
 ```
 
 | Field | Used by | Default (AUL) |
@@ -488,8 +488,8 @@ manifest route's optional `field_constraints[]` (see Manifest schema below).
 ## manifest.json (Exploration Manifest)
 
 `manifest.json` lives at `<paths.bdd_artifacts>/manifest.json` (default `.copilot/bdd/manifest.json`).
-It is the machine record of every scanned surface. **`routes` is a JSON array** of route objects
-(profile `manifest_shape: array`). Load targeted entries by route during a session; load the full file
+It is the machine record of every scanned surface. The manifest is a JSON object; **`routes` is a JSON array** of route objects
+(profile `manifest_shape: object`). Load targeted entries by route during a session; load the full file
 only for a RE-SCAN.
 
 ```json
