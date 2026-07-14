@@ -58,8 +58,7 @@ Three standalone Python scripts live in `scripts`:
 Parses all `*.steps.ts` files for `Given(…)`, `When(…)`, `Then(…)` pattern strings, then scans every `.feature` file for matching step usages (Cucumber expression placeholders resolved to regex wildcards). Reports any step definition that is never exercised.
 
 ```bash
-# Run from aul-ui/
-python playwright/scripts/find_unused_steps.py \
+python skills/bdd-maintain/scripts/find_unused_steps.py \
   --steps-dir playwright/steps \
   --features-dir playwright/features
 ```
@@ -67,10 +66,13 @@ python playwright/scripts/find_unused_steps.py \
 Example output format:
 
 ```text
-UNUSED: checkout/checkout.steps.py::step_when_customer_applies_promo
-UNUSED: checkout/checkout.steps.py::step_then_total_unchanged
-UNUSED: login/login.steps.py::step_given_expired_session
-3 unused step definition(s) found.
+⚠️  3 UNUSED step definition(s) found:
+
+  playwright/steps/checkout/checkout.steps.ts
+    line   42  'the customer applies promo code {string}'
+    line   67  'the total price remains unchanged'
+  playwright/steps/login/login.steps.ts
+    line  103  'the user has an expired session'
 ```
 
 ### 2 · `find_unused_po_methods.py` — PageObject methods never called from step files
@@ -78,7 +80,7 @@ UNUSED: login/login.steps.py::step_given_expired_session
 Parses every `playwright/pages/*.ts` for public method declarations (`async name(` / `name(`), then scans all step files for `.name(` call sites. Reports methods that are defined but never invoked from any step.
 
 ```bash
-python playwright/scripts/find_unused_po_methods.py \
+python skills/bdd-maintain/scripts/find_unused_po_methods.py \
   --pages-dir playwright/pages \
   --steps-dir playwright/steps
 ```
@@ -88,7 +90,7 @@ python playwright/scripts/find_unused_po_methods.py \
 Scans all exported `class` names from `playwright/pages/*.ts`, then checks every `*.steps.ts` and `fixtures.ts` for import statements. Reports classes that are defined but never imported.
 
 ```bash
-python playwright/scripts/find_unused_po_components.py \
+python skills/bdd-maintain/scripts/find_unused_po_components.py \
   --pages-dir playwright/pages \
   --steps-dir playwright/steps
 ```

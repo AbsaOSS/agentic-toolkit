@@ -16,7 +16,7 @@ Expected User Story JSON structure:
       "status": "active",
       "acceptance_criteria": [
         {
-          "id": "US-001-01",
+          "id": "AC:US-001-01",
           "text": "The login screen displays...",
           "state": "Active"
         }
