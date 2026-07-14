@@ -20,10 +20,10 @@ compatibility: GitHub Copilot
 
 # Living Doc — PageObject Scan & Webapp Exploration
 
-> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md).
-> **BDD schemas:** Project Profile, seed.yaml, manifest.json, PageObject file header — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md). Machine-readable contracts: [schemas/](../references/schemas/).
+> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../shared/references/living-doc-glossary.md).
+> **BDD schemas:** Project Profile, seed.yaml, manifest.json, PageObject file header — see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md). Machine-readable contracts: [schemas/](../shared/references/schemas/).
 
-**Scope:** UI Features only. API surfaces such as `/api/orders` use **Functionality** entities, not PageObjects — route them to `living-doc-create-functionality`. Before any mode, load `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for the test-id attribute, paths, and state vocabularies; create it from the [Project Profile schema](../references/living-doc-bdd-schemas.md#project-profile-config-driven-conventions) on first run. Default paths or `data-cy` yield to the profile. **Selector preference:** `getByTestId()` (profile `test_id_attribute`, default `data-cy`) > `aria-label`/role > CSS class; positional selectors are `FRAGILE`.
+**Scope:** UI Features only. API surfaces such as `/api/orders` use **Functionality** entities, not PageObjects — route them to `living-doc-create-functionality`. Before any mode, load `<bdd_artifacts_dir>/.project-profile.yaml` (default `.copilot/bdd/.project-profile.yaml`) for the test-id attribute, paths, and state vocabularies; create it from the [Project Profile schema](../shared/references/living-doc-bdd-schemas.md#project-profile-config-driven-conventions) on first run. Default paths or `data-cy` yield to the profile. **Selector preference:** `getByTestId()` (profile `test_id_attribute`, default `data-cy`) > `aria-label`/role > CSS class; positional selectors are `FRAGILE`.
 
 ## Two modes
 
@@ -70,7 +70,7 @@ Collect seed content from any available source:
 | **D — Existing PageObjects** | Load current `manifest.json`; treat known surfaces as already discovered. |
 | **E — Guided traversal** | See [Guided Traversal Protocol](#guided-traversal-protocol-source-e) below. |
 
-**Rules:** Never store credential literals in `seed.yaml` — use `credentials_source` or `env:VAR_NAME`. For the full Business Seed shape (`app`, `business_domains`, `known_entities`, `user_roles`, `form_fixtures`) see [living-doc-bdd-schemas — seed.yaml](../references/living-doc-bdd-schemas.md#seedyaml-business-seed); do not invent another shape. If `seed.yaml` exists and `manifest.json` does not, treat it as first run: start from `base_url` and assume nothing is discovered.
+**Rules:** Never store credential literals in `seed.yaml` — use `credentials_source` or `env:VAR_NAME`. For the full Business Seed shape (`app`, `business_domains`, `known_entities`, `user_roles`, `form_fixtures`) see [living-doc-bdd-schemas — seed.yaml](../shared/references/living-doc-bdd-schemas.md#seedyaml-business-seed); do not invent another shape. If `seed.yaml` exists and `manifest.json` does not, treat it as first run: start from `base_url` and assume nothing is discovered.
 
 ### Step 1 — Crawl
 
@@ -91,7 +91,7 @@ Repeat until coverage plateau — no new surfaces in the last full iteration.
 
 ### Step 3 — Form traversal (deep exploration)
 
-Resolve field values using the **ExplorationFixture sourcing cascade** (see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md#explorationfixture)): (1) `seed.yaml form_fixtures`; (2) copied/derived value from an existing entity; (3) inferred `fake` value from label + placeholder + tooltip; (4) user-assist pause for `real-world` fields and record `source: user_provided`.
+Resolve field values using the **ExplorationFixture sourcing cascade** (see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md#explorationfixture)): (1) `seed.yaml form_fixtures`; (2) copied/derived value from an existing entity; (3) inferred `fake` value from label + placeholder + tooltip; (4) user-assist pause for `real-world` fields and record `source: user_provided`.
 
 Skip `condition`-gated fields until the controlling field has the required value. After submit, probe each text input for special characters (`<>'"&\``), oversized input (200+ chars), wrong type, and duplicate value; after each probe, run the core scan to capture error elements (in the profile `test_id_attribute`) visible only in error state and record them in `field_constraints[]`.
 
@@ -113,7 +113,7 @@ After interacting with a required field (e.g. `cps-radio-group`), re-check wheth
 
 ### Step 4 — Generate PageObject skeleton
 
-Create one class per screen named `<ScreenName>Page`. Every PageObject file starts with the full living-doc header block (`surface_type`, `route`, `owners`, `status`, `purpose`, `user_stories`, `functionalities`, `external_dependencies`, `page-object`) — see [living-doc-bdd-schemas — PageObject File Header](../references/living-doc-bdd-schemas.md#pageobject-file-header). Secondary files sharing one Feature use the cross-reference header. Locators use `getByTestId()`.
+Create one class per screen named `<ScreenName>Page`. Every PageObject file starts with the full living-doc header block (`surface_type`, `route`, `owners`, `status`, `purpose`, `user_stories`, `functionalities`, `external_dependencies`, `page-object`) — see [living-doc-bdd-schemas — PageObject File Header](../shared/references/living-doc-bdd-schemas.md#pageobject-file-header). Secondary files sharing one Feature use the cross-reference header. Locators use `getByTestId()`.
 
 For starter bootstrap answers, say **Create mode** and emit real code, not pseudocode. For `/checkout`, materialise concrete members/methods for the promo input, confirm-order button, and error banner (`enterPromoCode` / `enter_promo_code`, `confirmOrder` / `confirm_order`, `assertErrorVisible` / `assert_error_visible`) in the class body — never as TODOs. If no matching Feature exists in the catalog, explicitly propose drafting it via `living-doc-create-feature`.
 
@@ -291,7 +291,7 @@ After confirming changes: set `last_scanned`, update `elements`, `coverage_gaps`
 
 ## Manifest schema
 
-`manifest.json` `routes` is a **JSON array** of route objects. Each entry uses normalized `test_id` for elements, `suggested_test_id` for gaps, and a **string** `navigation_context`. Root-level `test_id_attribute` metadata maps these keys to the configured HTML attribute. The authoritative schema (route fields, `coverage_gaps[]`, optional `open_actions_menu`, `field_constraints[]`) lives in [living-doc-bdd-schemas — manifest.json](../references/living-doc-bdd-schemas.md#manifestjson-exploration-manifest). Do not emit object-keyed routes, `test_id_*` snake-case variants, or object `navigation_context`.
+`manifest.json` `routes` is a **JSON array** of route objects. Each entry uses normalized `test_id` for elements, `suggested_test_id` for gaps, and a **string** `navigation_context`. Root-level `test_id_attribute` metadata maps these keys to the configured HTML attribute. The authoritative schema (route fields, `coverage_gaps[]`, optional `open_actions_menu`, `field_constraints[]`) lives in [living-doc-bdd-schemas — manifest.json](../shared/references/living-doc-bdd-schemas.md#manifestjson-exploration-manifest). Do not emit object-keyed routes, `test_id_*` snake-case variants, or object `navigation_context`.
 
 ```json
 {"test_id_attribute":"data-cy","routes":[{"elements":[{"test_id":"confirm-order-btn"}],"coverage_gaps":[{"suggested_test_id":"promo-info"}],"navigation_context":"log in, open checkout"}]}

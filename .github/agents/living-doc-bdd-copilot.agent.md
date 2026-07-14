@@ -149,7 +149,7 @@ Do not skip steps or run them out of order. Complete catalog changes (step 1) be
 
 **Manifest loading rule:** Use targeted line ranges for the current route(s). Load full manifest only for RE-SCAN. `seed.yaml`: always load in full. When PageObject generation discovers a route with no linked Feature entity, set `feature_id: FEAT-UNKNOWN`, flag the route as needing a Feature entity, and cross-load `living-doc-create-feature` to create it before continuing.
 
-**living-doc-bdd-schemas:** Load [remotely](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
+**living-doc-bdd-schemas:** Load [remotely](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
 
 ---
 
@@ -232,7 +232,7 @@ Plan: Loading `living-doc-gap-finder` (top-down). First action: create session s
 
 ## Living Doc Conventions
 
-Full model: [living-doc-glossary](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-glossary.md) — load only if creating or validating entities.
+Full model: [living-doc-glossary](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-glossary.md) — load only if creating or validating entities.
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 

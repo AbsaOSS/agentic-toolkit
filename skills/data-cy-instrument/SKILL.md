@@ -19,8 +19,8 @@ compatibility: GitHub Copilot
 
 # data-cy-instrument
 
-> **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../references/living-doc-glossary.md).
-> **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md).
+> **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../shared/references/living-doc-glossary.md).
+> **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md).
 
 **Framework scope:** **Angular-first. Phases 1, 3, and 5 are framework-agnostic; Phases 2 and 4 are Angular-only.** For React or Vue, use the project's configured test-id attribute (often `data-testid`; `data-cy` is only the default), keep the same audit and PageObject-sync flow, and skip Angular-only route-to-component and host-wiring instructions. If the question is specifically “What do I do for React or Vue?”, start the answer with that bold sentence, then add: **Phases 2 and 4 are Angular-only and should be skipped for React or Vue.** In user-facing answers, prefer the shorthand **Phase 1** and **Phase 3**.
 

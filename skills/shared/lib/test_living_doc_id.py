@@ -3,12 +3,9 @@
 Quick test to verify next_entity_id() behavior with slug-based Feature IDs.
 """
 
-import json
 import sys
-import tempfile
-from pathlib import Path
 
-from living_doc_id import next_entity_id, load_catalog
+from living_doc_id import next_entity_id
 
 
 def test_numeric_feat_ids():

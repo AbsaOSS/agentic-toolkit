@@ -19,7 +19,7 @@ compatibility: GitHub Copilot
 
 # Gherkin Step Definition Standards
 
-> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../references/living-doc-glossary.md).
+> **Glossary:** Feature, PageObject, Functionality — see [living-doc-glossary](../shared/references/living-doc-glossary.md).
 
 > **Framework scope:** Covers **Python behave**, **Cucumber TypeScript**, **Cucumber Java**, and **Cucumber-Scala**. The toolkit's PageObject ecosystem is **Playwright + TypeScript**; Python or Java projects adapt the examples. The core rules — thin steps, no selectors in steps, shared state via context/World — apply everywhere.
 
