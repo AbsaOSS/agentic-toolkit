@@ -35,7 +35,6 @@ DECORATOR_RE = re.compile(
 
 # Convert a Cucumber expression / simple regex pattern to a Python regex
 # Cucumber expression placeholders: {string}, {int}, {word}, {float}
-CUCUMBER_PLACEHOLDER_RE = re.compile(r"\{(?:string|int|word|float|[^}]+)\}")
 
 
 @dataclass

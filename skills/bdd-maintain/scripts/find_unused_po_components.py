@@ -28,8 +28,6 @@ IMPORT_BRACE_RE = re.compile(r"import\s*\{([^}]+)\}\s*from")
 # Match default imports: `import Foo from './...'`
 IMPORT_DEFAULT_RE = re.compile(r"import\s+([A-Z][a-zA-Z0-9_$]*)\s+from")
 
-# Match TypeScript type usage: e.g. param: FooPage, variable: FooPage, extends FooPage
-TYPE_USE_RE = re.compile(r"\b([A-Z][a-zA-Z0-9_$]*)\b")
 
 
 @dataclass
@@ -52,9 +50,7 @@ def collect_imported_names(steps_dir: Path) -> set[str]:
     """Collect all identifiers imported or used in step files and fixtures."""
     names: set[str] = set()
     # Also scan fixtures.ts at the parent of steps_dir or sibling file
-    scan_dirs = [steps_dir]
-    parent = steps_dir.parent
-    fixtures_file = parent / "fixtures.ts"
+    fixtures_file = steps_dir.parent / "fixtures.ts"
     extra_files: list[Path] = []
     if fixtures_file.exists():
         extra_files.append(fixtures_file)

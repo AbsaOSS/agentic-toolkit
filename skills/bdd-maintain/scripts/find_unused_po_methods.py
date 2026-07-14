@@ -20,32 +20,6 @@ from dataclasses import dataclass
 # Patterns
 # ---------------------------------------------------------------------------
 
-# Public method definitions in TypeScript classes:
-#   async methodName(       methodName(
-# Exclude: constructor, private/protected (prefixed with modifier word)
-# Match only on lines that look like method declarations (not calls)
-METHOD_DEF_RE = re.compile(
-    r"""
-    ^[ \t]*                              # leading indent
-    (?!private|protected|readonly|static|get |set )  # not a modifier-only line
-    (?:async\s+)?                        # optional async
-    ([a-zA-Z_$][a-zA-Z0-9_$]*)          # method name
-    \s*\(                                # opening paren
-    (?!.*:\s*Promise|\s*\{)             # exclude constructor-like and block-only lines
-    """,
-    re.VERBOSE | re.MULTILINE,
-)
-
-# Simpler fallback: any `async name(` or `name(` at line start with content
-# We'll collect both and deduplicate
-SIMPLE_METHOD_RE = re.compile(
-    r"""^[ \t]+(?:async\s+)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(""",
-    re.MULTILINE,
-)
-
-# TypeScript getter shorthand — these are locators, not callable methods
-GETTER_RE = re.compile(r"^[ \t]+get\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(", re.MULTILINE)
-
 # Method calls from step files: `.methodName(`  or  `fixture.methodName(`
 # Capture any `.identifier(` occurrence
 CALL_RE = re.compile(r"\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(")

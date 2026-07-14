@@ -3,7 +3,7 @@
 validate_artifacts.py — BDD artifact validator (profile / seed / manifest)
 
 Validates a Project Profile, Business Seed, or Exploration Manifest against the
-canonical JSON Schemas in skills/references/schemas/. This moves shape enforcement
+canonical JSON Schemas in skills/shared/references/schemas/. This moves shape enforcement
 out of the model and into a deterministic check, so re-runs are reproducible.
 
 Usage:

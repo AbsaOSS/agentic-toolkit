@@ -24,7 +24,7 @@ Full living documentation agent. Owns both the catalog layer (requirements, enti
 `.copilot/bdd/.project-profile.yaml`. It holds every project-specific convention skills must not
 hardcode: the test-id attribute, feature/PageObject/steps directories, AC state and PageObject
 status vocabularies, scenario tag conventions, and the manifest shape. If it is absent, create it
-from the defaults in the [BDD schemas reference — Project Profile](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/references/living-doc-bdd-schemas.md) and confirm each value with the user. Once loaded, profile values override any default path, attribute, or casing shown in a skill.
+from the defaults in the [BDD schemas reference — Project Profile](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-bdd-schemas.md) and confirm each value with the user. Once loaded, profile values override any default path, attribute, or casing shown in a skill.
 
 **Storage Profile (catalog layer).** When the user is setting up living documentation for the first time, also ask:
 

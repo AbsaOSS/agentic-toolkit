@@ -40,6 +40,12 @@ skills/
 | `assets/`     | Template files, example inputs/outputs, icons — anything the skill produces or consumes                                                  |
 | `evals/`      | Test prompts and assertions to verify skill behavior and trigger accuracy. See [skill-testing.md](./docs/testing/skill-testing.md)               |
 
+#### `references/` — shared vs. skill-specific
+
+- **`skills/<skill>/references/`** — skill-specific docs loaded only by that skill's instructions
+- **`skills/shared/references/`** — shared docs used by multiple skills (e.g., schemas, glossaries, common API specs)
+
+If a reference file is used by 2+ skills, place it in `skills/shared/references/` instead of duplicating it. See [living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) and [living-doc-glossary.md](skills/shared/references/living-doc-glossary.md) for examples.
 ---
 
 ## 2. Frontmatter schema
@@ -176,6 +182,21 @@ should be run") — it is clearer and easier for the agent to follow.
 ### Bundle reusable scripts
 
 If every test run of your skill independently writes the same helper script (a formatter, a validator, a transformer), bundle it in `scripts/` and reference it from `SKILL.md`. This saves every future invocation from reinventing the wheel.
+
+### Shared utilities and assets across multiple skills
+
+**Pattern:** If code, references, or assets are used by 2+ skills, place them in `skills/shared/`:
+
+- **`skills/shared/lib/`** for shared Python modules → each skill has a wrapper
+- **`skills/shared/references/`** for shared documentation → skills link directly
+- **`skills/shared/assets/`** for shared templates/data → skills reference relative paths
+
+Examples:
+- `skills/shared/lib/living_doc_id.py` — shared by three living-doc skills
+- `skills/shared/references/living-doc-glossary.md` — shared by multiple living-doc skills
+- See [skills/shared/lib/README.md](skills/shared/lib/README.md) for implementation details
+
+**Benefits:** Single source of truth, prevents drift, easier maintenance, each skill remains independently deployable.
 
 ### Format conventions
 

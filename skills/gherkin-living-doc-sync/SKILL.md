@@ -19,7 +19,7 @@ compatibility: GitHub Copilot
 
 # Gherkin ↔ Living Doc Sync
 
-> **Glossary:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-glossary.md)).
+> **Glossary:** Feature, Functionality, User Story, AC — see [living-doc-glossary](../../shared/references/living-doc-glossary.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/shared/references/living-doc-glossary.md)).
 > **BDD schemas:** US and Functionality feature file headers, `# Acceptance Criteria:` block format — see [living-doc-bdd-schemas](../references/living-doc-bdd-schemas.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/references/living-doc-bdd-schemas.md)).
 
 Sync runs in three directions: (1) feature file to living doc, (2) living doc AC to feature file,

@@ -15,7 +15,7 @@ Defaults:
 
 Exit code: 0 if manifest and disk are in sync, 1 if drift is detected.
 
-Glossary reference: skills/references/living-doc-glossary.md
+Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
 import argparse
@@ -112,7 +112,7 @@ def main() -> None:
         print(f"{'=' * 60}")
         for po_path in stale:
             entry = path_to_entry.get(po_path, {})
-            print(f"  Feature : {entry.get('feature_id', '(unknown)')}") 
+            print(f"  Feature : {entry.get('feature_id', '(unknown)')}")
             print(f"  URL     : {entry.get('url', '(unknown)')}")
             print(f"  PO path : {po_path}")
             print(f"  → Action: update path in manifest.json, or run RE-SCAN mode")

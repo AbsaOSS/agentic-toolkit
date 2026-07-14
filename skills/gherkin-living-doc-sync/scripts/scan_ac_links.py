@@ -18,7 +18,7 @@ For every Scenario: / Scenario Outline: line found in living-doc files, checks t
 
 Exit code: 0 if all checks pass, 1 if any errors are found (warnings do not fail).
 
-Glossary reference: skills/references/living-doc-glossary.md
+Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
 import re

@@ -32,7 +32,7 @@ Planned and Deprecated ACs are noted but not counted as gaps.
 
 Exit code: 0 if all active/in-review ACs are covered, 1 if gaps exist.
 
-Glossary reference: skills/references/living-doc-glossary.md
+Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
 import json
