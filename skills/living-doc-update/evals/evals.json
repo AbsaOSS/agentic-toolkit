@@ -54,7 +54,7 @@
     {
       "id": 5,
       "category": "regression",
-      "prompt": "After the sprint review, the product owner clarified the wording of US-042-AC-1. How do I update it without breaking traceability?",
+      "prompt": "After the sprint review, the product owner clarified the wording of AC:US-042-01. How do I update it without breaking traceability?",
       "expected_output": "Agent keeps the AC ID stable — never changes the ID. Only updates the description, given, when, and then fields. Flags for gherkin-living-doc-sync if the linked scenario step text needs updating to match the revised wording.",
       "files": [],
       "expectations": [
@@ -104,7 +104,7 @@
     {
       "id": 9,
       "category": "edge-case",
-      "prompt": "We decided during the sprint to descope US-042-AC-3 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
+      "prompt": "We decided during the sprint to descope AC:US-042-03 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
       "expected_output": "Agent sets the AC status to 'descoped' — does not delete the AC. Adds descoped_at and descoped_reason fields. Adds a future_release reference if the work is planned for a later sprint. Flags any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync.",
       "files": [],
       "expectations": [

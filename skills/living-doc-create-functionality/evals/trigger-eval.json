@@ -193,7 +193,7 @@
   },
   {
     "id": 33,
-    "query": "I just created FUNC-promo-validate — how do I add it to the parent Feature's functionalities array?",
+    "query": "I just created FUNC-001 — how do I add it to the parent Feature's functionalities array?",
     "should_trigger": true,
     "reason": "Parent Feature sync after creating a Functionality — living-doc-create-functionality owns this step"
   }

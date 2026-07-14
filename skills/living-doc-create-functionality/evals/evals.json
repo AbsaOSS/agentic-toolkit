@@ -192,8 +192,8 @@
     {
       "id": 13,
       "category": "regression",
-      "prompt": "I just saved FUNC-promo-validate to the living doc. What else do I need to do to make it fully linked?",
-      "expected_output": "After saving the Functionality entity, load living-doc-update and append 'FUNC-promo-validate' to the parent Feature's 'functionalities' array. An unlinked Functionality will be flagged as ORPHAN_FUNCTIONALITY by living-doc-gap-finder. The link must be added to the Feature entity — the Functionality alone is not sufficient.",
+      "prompt": "I just saved FUNC-001 to the living doc. What else do I need to do to make it fully linked?",
+      "expected_output": "After saving the Functionality entity, load living-doc-update and append 'FUNC-001' to the parent Feature's 'functionalities' array. An unlinked Functionality will be flagged as ORPHAN_FUNCTIONALITY by living-doc-gap-finder. The link must be added to the Feature entity — the Functionality alone is not sufficient.",
       "files": [],
       "expectations": [
         "Identifies the required parent Feature update step",

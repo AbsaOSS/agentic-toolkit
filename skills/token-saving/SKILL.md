@@ -1,17 +1,11 @@
 ---
 name: token-saving
 description: >
-  Always-active response formatting rules — invoke for every reply without exception: coding
-  questions, code generation, debugging, explanations, comparisons, reviews, diffs, PR updates,
-  recaps, summaries, workflow tasks, non-technical requests, and anything else. Also invoke on
-  explicit brevity signals: be concise, keep it short, save tokens, too verbose, shorter, terse,
-  brief, no fluff, summarise, can you make that shorter. Rules: no filler openers (Certainly!,
-  Great question!, Happy to help!); no closing platitudes (Let me know if you have questions!);
-  concise within line limits; skip restating prior context; prefer tables/bullets over prose;
-  append What changed / Why / How to verify footer only for code-output responses, not Q&A,
-  reviews, or planning. NOT for (full-detail override): when user explicitly requests full detail,
-  deep dive, complete explanation, or says "don't hold back", length rules suspend — respond
-  fully. Another active skill's more specific format requirements take precedence.
+  **Response discipline and formatting**: apply concise-by-default rules (minimize filler,
+  skip preamble, prefer structured output). Activate on every request and explicit brevity
+  signals. Rules: cap answers to shortest form, no closing filler, structure with bullets/tables,
+  append change-footer only for code output. NOT for: explicit verbosity requests ("full detail",
+  "deep dive", "don't hold back") or when another active skill's format takes precedence.
 ---
 
 # Token-Saving

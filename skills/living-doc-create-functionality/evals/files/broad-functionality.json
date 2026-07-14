@@ -1,12 +1,12 @@
 {
   "type": "Functionality",
-  "id": "FUNC-checkout-draft",
+  "id": "FUNC-001",
   "name": "Handle checkout",
   "parent_feature": "FEAT-checkout",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
     {
-      "id": "FUNC-checkout-draft-AC-1",
+      "id": "AC:FUNC-001-01",
       "description": "Checkout works correctly",
       "when": "the customer goes through the checkout process",
       "then": "the order is placed and everything works",
@@ -14,7 +14,7 @@
       "test_type": "unit"
     },
     {
-      "id": "FUNC-checkout-draft-AC-2",
+      "id": "AC:FUNC-001-02",
       "description": "Error handling works",
       "when": "something goes wrong during checkout",
       "then": "the system handles it appropriately",

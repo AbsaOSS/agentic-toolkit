@@ -40,7 +40,7 @@ When information is missing, phrase the discovery as a short numbered checklist 
 6. surface type, if still ambiguous
 
 When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
-- `Checkout Page` → `surface_type: "UI"`, use the shorter slug `FEAT-checkout`, dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-validate-cart`, `FUNC-apply-promo`, `FUNC-confirm-order`.
+- `Checkout Page` → `surface_type: "UI"`, use the shorter slug `FEAT-checkout`, dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
 - `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
 - `Notification Service` / notification worker → default to `surface_type: "Worker"` (or `API` if it is clearly a synchronous contract surface); do **not** simply mirror the word "Service" into `surface_type`; dependencies often include `smtp-relay` and `template-store`.
 - `PaymentEventProcessor` / event consumer → `surface_type: "Worker"`; include the Kafka topic or event stream in `external_dependencies`.
@@ -100,7 +100,7 @@ FUNC entries), leave the array as `[]` and add a warning:
 
 For starter drafts, prefer **provisional inferred values** over empty strings when the domain is obvious:
 - `user_stories`: use starter IDs such as `US-checkout`, `US-order-management`, `US-payment-processing`
-- `functionalities`: use starter IDs such as `FUNC-validate-cart`, `FUNC-apply-promo`, `FUNC-confirm-order`
+- `functionalities`: use starter IDs such as `FUNC-001`, `FUNC-002`, `FUNC-003`
 - `owners`: always emit an array, even for one owner: `["team-identity"]`
 
 Use `[]` only when the relationship is truly unknown and you cannot infer a sensible starter link.
@@ -149,7 +149,7 @@ Use this exact output shape for create/document requests:
     "purpose": "Business-language summary of the surface responsibility.",
     "status": "planned",
     "user_stories": ["US-example"],
-    "functionalities": ["FUNC-example-behaviour"],
+    "functionalities": ["FUNC-001"],
     "owners": ["team-example"],
     "external_dependencies": ["example-service"]
   }
@@ -158,9 +158,9 @@ Use this exact output shape for create/document requests:
   Do not replace the fenced block with raw JSON. Do not emit `owners` as a string. Use a spaced noun phrase for the `name` field (for example `Payment Event Processor`, not `PaymentEventProcessor`).
 
 Worked starter patterns:
-- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* and use `id: "FEAT-checkout"`, `user_stories: ["US-checkout"]`, `functionalities: ["FUNC-validate-cart", "FUNC-apply-promo", "FUNC-confirm-order"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
-- `Orders API` starter links: `user_stories: ["US-order-management"]`, `functionalities: ["FUNC-create-order", "FUNC-get-order", "FUNC-list-orders"]`
-- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, use `id: "FEAT-notification-service"`, default `surface_type: "Worker"`, `user_stories: ["US-notification-delivery"]`, `functionalities: ["FUNC-render-notification", "FUNC-dispatch-notification"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
+- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* and use `id: "FEAT-checkout"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
+- `Orders API` starter links: `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`
+- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, use `id: "FEAT-notification-service"`, default `surface_type: "Worker"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
 
 Canonical JSON fields:
 

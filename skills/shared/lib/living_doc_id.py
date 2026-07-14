@@ -34,11 +34,31 @@ ID_WIDTH = 3
 
 
 def load_catalog(path: str) -> dict:
-    """Load and normalize a catalog JSON file."""
+    """Load and normalize a catalog JSON file.
+    
+    Raises:
+        ValueError: if the JSON is not a dict, or if "catalog" exists but is not a dict.
+    """
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
+    
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Catalog must be a JSON object (dict), not {type(raw).__name__}. "
+            f"Expected format: {{'catalog': {{...}}}} or {{'user_stories': [...], ...}}"
+        )
+    
     # Support both {"catalog": {...}} and flat {"user_stories": [...]} formats
-    return raw.get("catalog", raw)
+    if "catalog" in raw:
+        catalog = raw["catalog"]
+        if not isinstance(catalog, dict):
+            raise ValueError(
+                f"'catalog' key must be a JSON object (dict), not {type(catalog).__name__}. "
+                f"Expected format: {{'catalog': {{'user_stories': [...], ...}}}}"
+            )
+        return catalog
+    
+    return raw
 
 
 def next_entity_id(catalog: dict, entity_type: str) -> str:

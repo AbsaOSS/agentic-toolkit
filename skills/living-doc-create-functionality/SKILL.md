@@ -122,8 +122,8 @@ Use this canonical shape:
     "When <condition>, <observable outcome>"
   ],
   "test_coverage": [
-    {"ac": "AC-1", "test_type": "unit", "justification": "Pure validation rule"},
-    {"ac": "AC-2", "test_type": "unit", "justification": "Pure validation rule"}
+    {"ac": "AC:FUNC-001-01", "test_type": "unit", "justification": "Pure validation rule"},
+    {"ac": "AC:FUNC-001-02", "test_type": "unit", "justification": "Pure validation rule"}
   ],
   "status": "planned"
 }
@@ -143,20 +143,20 @@ Starter example for a normal draft:
 ```json
 {
   "type": "Functionality",
-  "id": "FUNC-apply-gold-member-discount",
+  "id": "FUNC-001",
   "name": "Apply gold member discount on qualifying orders",
   "description": "Applies the gold-member discount when the order satisfies the minimum qualifying threshold.",
   "feature_id": "FEAT-pricing",
-  "user_stories": ["US-pricing"],
+  "user_stories": ["US-001"],
   "acceptance_criteria": [
     "When the customer is a gold member and the order total is greater than £50, the discount applied is 20% of the subtotal.",
     "When the order total is exactly £50, no gold-member discount is applied.",
     "When the customer is not a gold member, no gold-member discount is applied."
   ],
   "test_coverage": [
-    {"ac": "AC-1", "test_type": "unit", "justification": "Pure pricing rule"},
-    {"ac": "AC-2", "test_type": "unit", "justification": "Boundary threshold rule"},
-    {"ac": "AC-3", "test_type": "unit", "justification": "Eligibility rule"}
+    {"ac": "AC:FUNC-001-01", "test_type": "unit", "justification": "Pure pricing rule"},
+    {"ac": "AC:FUNC-001-02", "test_type": "unit", "justification": "Boundary threshold rule"},
+    {"ac": "AC:FUNC-001-03", "test_type": "unit", "justification": "Eligibility rule"}
   ],
   "status": "planned"
 }
@@ -170,12 +170,12 @@ Fallback example when the prompt explicitly says the catalog is missing:
   "name": "Validate discount code expiry",
   "description": "Rejects expired discount codes before they are applied to the order.",
   "feature_id": "FEAT-checkout",
-  "user_stories": ["US-discount-code"],
+  "user_stories": ["US-001"],
   "acceptance_criteria": [
     "When the discount code is expired, validation returns INVALID with code DISCOUNT_EXPIRED."
   ],
   "test_coverage": [
-    {"ac": "AC-1", "test_type": "unit", "justification": "Pure date comparison rule"}
+    {"ac": "AC:FUNC-002-01", "test_type": "unit", "justification": "Pure date comparison rule"}
   ],
   "status": "planned"
 }
@@ -197,11 +197,11 @@ Gold-member discount starter draft example:
 ```json
 {
   "type": "Functionality",
-  "id": "FUNC-apply-gold-member-discount",
+  "id": "FUNC-003",
   "name": "Apply gold member discount on qualifying orders",
   "description": "Applies the gold-member discount when an order meets the qualifying threshold.",
   "feature_id": "FEAT-pricing",
-  "user_stories": ["US-pricing"],
+  "user_stories": ["US-001"],
   "acceptance_criteria": [
     "When the customer is a gold member and the order total is greater than £50, a 20% discount is applied to the order subtotal.",
     "When the customer is a gold member and the order total is exactly £50, the threshold outcome is applied exactly as specified by the business rule.",
@@ -210,11 +210,11 @@ Gold-member discount starter draft example:
     "When a promo code is combined with the gold-member discount, the stacking or precedence rule is applied exactly as specified."
   ],
   "test_coverage": [
-    {"ac": "AC-1", "test_type": "unit", "justification": "Pure pricing rule"},
-    {"ac": "AC-2", "test_type": "unit", "justification": "Boundary threshold rule"},
-    {"ac": "AC-3", "test_type": "unit", "justification": "Below-threshold rule"},
-    {"ac": "AC-4", "test_type": "unit", "justification": "Eligibility rule"},
-    {"ac": "AC-5", "test_type": "unit", "justification": "Discount interaction rule"}
+    {"ac": "AC:FUNC-003-01", "test_type": "unit", "justification": "Pure pricing rule"},
+    {"ac": "AC:FUNC-003-02", "test_type": "unit", "justification": "Boundary threshold rule"},
+    {"ac": "AC:FUNC-003-03", "test_type": "unit", "justification": "Below-threshold rule"},
+    {"ac": "AC:FUNC-003-04", "test_type": "unit", "justification": "Eligibility rule"},
+    {"ac": "AC:FUNC-003-05", "test_type": "unit", "justification": "Discount interaction rule"}
   ],
   "status": "planned"
 }

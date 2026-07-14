@@ -195,7 +195,7 @@
     {
       "id": 13,
       "category": "happy-path",
-      "prompt": "I'm creating US-015 for the promo stacking feature. FUNC-promo-validate and FUNC-promo-stack already exist in the living doc. Should I link them?",
+      "prompt": "I'm creating US-001 for the promo stacking feature. FUNC-001 and FUNC-002 already exist in the living doc. Should I link them?",
       "expected_output": "Yes — link both Functionalities in the User Story's 'functionalities' array. Asking about existing Functionalities during US creation prevents ORPHAN_FUNCTIONALITY gaps and makes the entity graph traversable from US down to test coverage. If the Functionalities are relevant, they must be linked.",
       "files": [],
       "expectations": [

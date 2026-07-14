@@ -5,15 +5,15 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
-      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — US-001-AC-2 and US-001-AC-3 have no linked tests; Blocker — US-002-AC-1 and US-002-AC-2 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-apply-discount has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-account, /reports/legacy ↔ FEAT-orphan are already documented); Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — AC:US-001-02 and AC:US-001-03 have no linked tests; Blocker — AC:US-002-01 and AC:US-002-02 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-002 has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-account, /reports/legacy ↔ FEAT-orphan are already documented); Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
       "files": [
         "evals/files/catalog-snapshot.json"
       ],
       "expectations": [
-        "Identifies US-001-AC-2 and US-001-AC-3 as untested (Blockers)",
-        "Identifies US-002-AC-1 and US-002-AC-2 as untested (Blockers)",
+        "Identifies AC:US-001-02 and AC:US-001-03 as untested (Blockers)",
+        "Identifies AC:US-002-01 and AC:US-002-02 as untested (Blockers)",
         "Identifies all 4 US-007 ACs as untested (Blockers)",
-        "Identifies FUNC-apply-discount ACs as untested (Blocker, not Nit — Gap type 1 applies to Functionality ACs)",
+        "Identifies FUNC-002 ACs as untested (Blocker, not Nit — Gap type 1 applies to Functionality ACs)",
         "Identifies /account/preferences as undocumented surface (Important)",
         "Identifies FEAT-promo as orphan Feature (Important)",
         "Identifies FEAT-orphan as orphan Feature (Important)",
@@ -143,8 +143,8 @@
     {
       "id": 11,
       "category": "happy-path",
-      "prompt": "A Functionality entity FUNC-promo-validate exists in the catalog but has no parent Feature linked. What gap type is this and what should I do?",
-      "expected_output": "This is an orphan Functionality (ORPHAN_FUNCTIONALITY (Important)). A Functionality with no parent Feature is untraceable — it cannot be reached via the entity hierarchy and is missed in impact analyses. Resolution: identify or create the owning Feature and add FUNC-promo-validate to its functionalities list. If tests reference this Functionality's ACs, resolve those first (ORPHAN_TEST takes priority) before removing the Functionality.",
+      "prompt": "A Functionality entity FUNC-001 exists in the catalog but has no parent Feature linked. What gap type is this and what should I do?",
+      "expected_output": "This is an orphan Functionality (ORPHAN_FUNCTIONALITY (Important)). A Functionality with no parent Feature is untraceable — it cannot be reached via the entity hierarchy and is missed in impact analyses. Resolution: identify or create the owning Feature and add FUNC-001 to its functionalities list. If tests reference this Functionality's ACs, resolve those first (ORPHAN_TEST takes priority) before removing the Functionality.",
       "files": [],
       "expectations": [
         "Classifies as ORPHAN_FUNCTIONALITY",

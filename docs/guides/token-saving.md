@@ -54,18 +54,31 @@ If another active skill specifies its own output format (e.g. a review skill wit
 
 ---
 
-## Installation
+## Workspace Setup
 
-The skill is installed along with the rest of the toolkit:
+This skill is **always active** in this repository via [`.github/copilot-instructions.md`](../../.github/copilot-instructions.md). No explicit invocation is needed — the rules apply to every response automatically.
 
-```bash
-npx skills add https://github.com/AbsaOSS/agentic-toolkit -g
+### For other repositories
+
+To enable token-saving in another workspace, create `.github/copilot-instructions.md` with:
+
+```markdown
+## Always Active
+
+The **token-saving** skill is always active in this workspace. Every response applies 
+concise formatting rules and removes noise (no filler, no closing platitudes, structured output).
+
+See [Token-Saving Skill](link/to/skill/guide) for details and override behavior.
 ```
 
-To install only this skill:
+Then install the skill globally or project-scoped:
 
 ```bash
+# Global
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill token-saving
+
+# Project-scoped
+npx skills add https://github.com/AbsaOSS/agentic-toolkit --skill token-saving
 ```
 
 See [Getting Started](../getting-started.md) for the full install guide.

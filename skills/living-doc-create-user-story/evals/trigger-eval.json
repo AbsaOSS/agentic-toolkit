@@ -157,7 +157,7 @@
   },
   {
     "id": 27,
-    "query": "When creating this User Story, should I link the existing Functionality FUNC-promo-validate?",
+    "query": "When creating this User Story, should I link the existing Functionality FUNC-001?",
     "should_trigger": true,
     "reason": "Linking existing Functionalities during US creation — living-doc-create-user-story owns this"
   }

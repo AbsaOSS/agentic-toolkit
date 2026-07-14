@@ -53,8 +53,8 @@
     {
       "id": 5,
       "category": "happy-path",
-      "prompt": "FUNC-promo-validate has status 'planned' because the data-cy attributes are missing. After Phase 1 and Phase 3 are complete, what do I do to promote it?",
-      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-promo-validate status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
+      "prompt": "FUNC-001 has status 'planned' because the data-cy attributes are missing. After Phase 1 and Phase 3 are complete, what do I do to promote it?",
+      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-001 status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
       "files": [],
       "expectations": [
         "Routes to living-doc-update for status promotion",

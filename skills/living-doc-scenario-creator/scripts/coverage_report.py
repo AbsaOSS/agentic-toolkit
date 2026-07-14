@@ -142,7 +142,7 @@ def load_user_stories(living_doc_dir: Path) -> list[dict]:
 
 def normalise_ac_id(us_id: str, raw_id: str) -> str:
     """Normalise and canonicalize AC IDs that may be stored as '01' or 'US-001-01' or 'US-1-01' or 'FEAT-checkout-01'."""
-    raw = raw_id.strip()
+    raw = str(raw_id).strip()
     # Strip 'AC:' prefix if present (case-insensitive); catalog fixtures may store with prefix
     if raw.startswith("AC:") or raw.startswith("ac:"):
         raw = raw[3:]

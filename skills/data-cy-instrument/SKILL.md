@@ -223,7 +223,7 @@ Only promote if the data-cy attributes required by that Functionality's ACs were
 
 Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Phase 1 and Phase 3, load `living-doc-update`. Do **not** lead with manual feature-file edits.
 
-Preferred promotion wording: `After Phase 1 and Phase 3 complete, invoke living-doc-update and change FUNC-promo-validate status from 'planned' to 'active'.`
+Preferred promotion wording: `After Phase 1 and Phase 3 complete, invoke living-doc-update and change FUNC-001 status from 'planned' to 'active'.`
 
 ---
 

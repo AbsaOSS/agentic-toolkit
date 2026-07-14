@@ -124,7 +124,7 @@ or
 If the prompt names only a capability (for example "cart validation logic") rather than a filename, state the implied module and the registry trace, e.g. `feature_registry match: <cart validation module> -> FEAT-cart`, before listing Functionalities and User Stories.
 Do not write `Affected entities (inferred from changed module)` for these cases. Write the registry trace line first, then show the hierarchy explicitly, for example:
 `feature_registry match: <cart validation module> -> FEAT-cart`
-`Feature FEAT-cart -> Functionality FUNC-cart-validate -> User Story US-cart-001 -> AC:US-cart-001-01`
+`Feature FEAT-001 -> Functionality FUNC-001 -> User Story US-001 -> AC:US-001-01`
 Spell out the mechanism in plain language at least once: `Queried the feature_registry section in catalog.json to map the changed module/capability to FEAT-cart.`
 
 ## Step 2 — Trace to living doc entities
@@ -134,9 +134,9 @@ Walk the entity hierarchy from Feature, Functionality, to User Story:
 ```
 Changed module: src/payments/checkout/PromoService.java
   Feature:          FEAT-promotions
-  Functionalities:  FUNC-promo-validate, FUNC-promo-apply
-  User Stories:     US-042 (apply promo), US-067 (expired promo error)
-  ACs affected:     AC:US-042-01, AC:US-042-03, AC:US-067-02
+  Functionalities:  FUNC-001, FUNC-002
+  User Stories:     US-001 (apply promo), US-002 (expired promo error)
+  ACs affected:     AC:US-001-01, AC:US-001-03, AC:US-002-02
 ```
 
 Repeat for every changed module. Consolidate entities that appear more than once — they are
@@ -168,7 +168,7 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
 
   Affected entities:
     Feature:          FEAT-promotions (owner: team-payments)
-    Functionalities:  FUNC-promo-validate, FUNC-promo-apply
+    Functionalities:  FUNC-001, FUNC-002
     User Stories:     US-042 (high impact), US-067 (high impact), US-089 (medium impact)
 
   ACs requiring review:

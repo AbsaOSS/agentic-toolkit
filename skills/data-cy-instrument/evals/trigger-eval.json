@@ -55,7 +55,7 @@
   },
   {
     "id": 10,
-    "query": "FUNC-promo-validate has status planned because there are no data-cy attributes — fix it",
+    "query": "FUNC-001 has status planned because there are no data-cy attributes — fix it",
     "should_trigger": true,
     "reason": "data-cy-instrument trigger — Functionality.status planned due to missing test IDs"
   },
