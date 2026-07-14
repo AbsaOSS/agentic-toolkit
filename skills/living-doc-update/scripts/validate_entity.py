@@ -31,7 +31,7 @@ VALID_AC_STATUSES = {"Planned", "In Review", "Active", "Deprecated"}
 
 ID_PATTERNS: dict[str, re.Pattern] = {
     "User Story": re.compile(r"^US-\d{3,}$"),
-    "Feature": re.compile(r"^FEAT-\d{3,}$"),
+    "Feature": re.compile(r"^FEAT-(\d{3,}|[a-z0-9]+(?:-[a-z0-9]+)*)$"),
     "Functionality": re.compile(r"^FUNC-\d{3,}$"),
 }
 

@@ -32,7 +32,7 @@
         "url": { "type": "string", "minLength": 1 },
         "title": { "type": "string" },
         "pageobject_path": { "type": "string", "minLength": 1 },
-        "feature_id": { "type": "string", "pattern": "^FEAT-(\\d{3,}|UNKNOWN)$" },
+        "feature_id": { "type": "string", "pattern": "^FEAT-(\\d{3,}|[a-z0-9]+(?:-[a-z0-9]+)*|UNKNOWN)$" },
         "last_scanned": { "type": "string", "minLength": 1 },
         "note": { "type": "string" },
         "navigation_context": {

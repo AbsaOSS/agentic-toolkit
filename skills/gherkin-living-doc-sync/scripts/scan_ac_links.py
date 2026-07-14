@@ -28,13 +28,13 @@ from pathlib import Path
 # Matches a @AC: Cucumber tag with optional /param:value segments:
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
 AC_TAG = re.compile(
-    r"@AC:((?:US|FEAT|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
+    r"@AC:((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
     re.IGNORECASE,
 )
-# Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:US-1-01 (...)
-AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FEAT|FUNC)-\d+-\d{2})", re.IGNORECASE)
+# Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FEAT-checkout-01 or # AC:FEAT-001-01 (...)
+AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})", re.IGNORECASE)
 # Canonical AC ID only (no params): AC:<parent>-<nn>
-AC_ID_FORMAT = re.compile(r"^AC:(US|FEAT|FUNC)-\d+-\d{2}$", re.IGNORECASE)
+AC_ID_FORMAT = re.compile(r"^AC:(US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", re.IGNORECASE)
 TAG_LINE = re.compile(r"^\s*@\S+")
 COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)

@@ -25,7 +25,7 @@ import sys
 # Maps entity type token → (catalog collection key, ID regex with capture group for the number)
 ENTITY_TYPE_MAP: dict[str, tuple[str, re.Pattern]] = {
     "US": ("user_stories", re.compile(r"^US-(\d+)$")),
-    "FEAT": ("features", re.compile(r"^FEAT-(\d+)$")),
+    "FEAT": ("features", re.compile(r"^FEAT-(?:(\d+)|[a-z0-9]+(?:-[a-z0-9]+)*)$")),
     "FUNC": ("functionalities", re.compile(r"^FUNC-(\d+)$")),
 }
 
