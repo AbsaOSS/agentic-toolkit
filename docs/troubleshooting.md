@@ -7,7 +7,8 @@ Fixes for known setup issues, plus setup guides for specific skills.
 ## Skill not activating
 
 The `description` field is the **sole activation signal** — the agent never reads a skill's body until it decides
-the description matches the current task.
+the description matches the current task (see [What Is a Skill?](./getting-started.md#what-is-a-skill) for the
+loading model).
 
 Steps to diagnose:
 

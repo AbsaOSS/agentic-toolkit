@@ -15,6 +15,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 |-----------------------------------------|-------------------------------------------------------------------------------------|
 | [Getting Started](./getting-started.md) | What skills are, how to install them, Copilot CLI usage                             |
 | [Contributing](../CONTRIBUTING.md)  | Skill folder layout, frontmatter, description writing, body guidelines, PR process |
+| [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 | [Agent Design Best Practices](./guides/agent-design.md) | Core principles, file structure, context management, tool guidance, examples, and stopping conditions for `.agent.md` files |
 | [Skill Testing](./testing/skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization    |
 | [Agent Testing](./testing/agent-testing.md) | Eval creation, trigger accuracy tuning, and body quality testing for `.agent.md` files |
@@ -41,6 +42,11 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide                                         | Description                                                                              |
 |-----------------------------------------------|-------------------------------------------------------------------------|
 | [Living Doc BDD Copilot](./guides/living-doc-bdd-copilot.md) | The unified living documentation agent: catalog management (User Stories, Features, Functionalities, AC updates, impact analysis, gap finding) plus BDD automation (webapp exploration, PageObjects, Gherkin, step definitions, maintenance) |
+
+| Guide | Description |
+|----|----|
+| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 

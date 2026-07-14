@@ -17,10 +17,10 @@ content progressively:
 | **Activation** | When your task matches a skill's description, the agent reads the full `SKILL.md` into context            |
 | **Execution**  | The agent follows the skill's instructions, optionally loading reference files or running bundled scripts |
 
-> ⚠️ **The `description` field is the sole activation signal.** If a skill isn't firing, your prompt likely doesn't
-> match its description keywords. Rephrase your message to include relevant trigger terms from the skill's description.
-> Inside a Copilot CLI session, run `/skills list` to inspect loaded descriptions.
-> Outside the CLI, you can run `npx skills list -g` to see all the installed skills.
+> ⚠️ **The `description` field is the sole activation signal** — the agent matches your prompt against it to decide
+> whether to load the skill. Inspect loaded descriptions with `/skills list` inside a Copilot CLI session, or
+> `npx skills list -g` outside it. If a skill isn't firing, see
+> [Skill not activating](./troubleshooting.md#skill-not-activating).
 
 ## Prerequisites: Install Copilot CLI
 
