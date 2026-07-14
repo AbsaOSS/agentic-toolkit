@@ -75,7 +75,7 @@ def collect_covered_ac_ids(features_dir: Path) -> dict[str, list[str]]:
             if not SCENARIO_LINE.match(line):
                 continue
             for ac_id in get_ac_tags_above(lines, i):
-                covered.setdefault(ac_id, []).append(feature_file.name)
+                covered.setdefault(ac_id, []).append(feature_file.relative_to(features_dir).as_posix())
     return covered
 
 

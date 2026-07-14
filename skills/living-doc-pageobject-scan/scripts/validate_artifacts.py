@@ -14,7 +14,7 @@ Usage:
     python validate_artifacts.py manifest  manifest.json --json           # machine-readable output
 
 Schema location is auto-detected relative to this script
-(../../references/schemas/) or overridden with --schema-dir.
+(../../shared/references/schemas/) or overridden with --schema-dir.
 
 Extra checks beyond the schema:
   * seed     — rejects inline credential literals (security gate).

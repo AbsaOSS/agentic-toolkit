@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/shared/references/schemas/manifest.schema.json",
   "title": "Exploration Manifest (manifest.json)",
-  "description": "Canonical machine contract for .copilot/bdd/manifest.json. routes is a JSON array. Element/gap keys use literal 'data-cy' and camelCase 'suggestedDataCy' — snake_case is rejected via additionalProperties:false. See living-doc-bdd-schemas.md > manifest.json.",
+  "description": "Canonical machine contract for .copilot/bdd/manifest.json. routes is a JSON array. Element and coverage_gap objects enforce strict schemas: 'data-cy' and camelCase 'suggestedDataCy' with additionalProperties:false prevent snake_case at object level. Route and manifest levels allow additional properties. See living-doc-bdd-schemas.md > manifest.json.",
   "type": "object",
   "required": ["generated", "scan_version", "routes"],
   "additionalProperties": true,
