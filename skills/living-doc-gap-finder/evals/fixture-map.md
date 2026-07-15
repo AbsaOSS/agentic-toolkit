@@ -22,7 +22,7 @@
 | 9 | regression | _(none)_ | STALE_REFERENCE (Gap type 7): active test linked to deprecated AC |
 | 10 | edge-case | _(none)_ | Two-phase strategy for 50+ orphan tests and untested ACs |
 | 11 | happy-path | _(none)_ | ORPHAN_FUNCTIONALITY (Gap type 5): Functionality with no parent Feature |
-| 12 | regression | `catalog-snapshot.json` | Normalisation: /reports/legacy ↔ FEAT-orphan — not an UNDOCUMENTED_SURFACE |
+| 12 | regression | `catalog-snapshot.json` | Normalisation: /reports/legacy ↔ FEAT-008 — not an UNDOCUMENTED_SURFACE |
 
 ## Trigger eval summary
 

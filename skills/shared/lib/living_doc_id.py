@@ -74,7 +74,7 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
     
     For FEAT entities:
       - Numeric IDs (FEAT-001) are auto-incrementable.
-      - Slug-based IDs (FEAT-checkout) are manual assignments and cannot be auto-incremented.
+      - Slug-based IDs (e.g. numeric-only) are auto-incremented. Non-numeric formats must be assigned manually.
       - Raises ValueError if the collection contains any slug-based IDs (mixed conventions).
     
     Raises:
@@ -107,8 +107,14 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
             )
         
         entity_id = entity.get("id", "")
-        m = pattern.match(entity_id)
-        if m:
+        if entity_id:  # Non-empty ID must match pattern
+            m = pattern.match(entity_id)
+            if not m:
+                raise ValueError(
+                    f"Catalog['{collection_key}'][{i}] has malformed ID '{entity_id}'. "
+                    f"Expected format: {entity_type}-nnn (e.g., {entity_type}-001). "
+                    f"All non-empty entity IDs must match the pattern."
+                )
             num_part = m.group(1)
             if num_part is not None:
                 # Numeric ID: extract and track max
@@ -121,7 +127,7 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
     if slug_ids and entity_type == "FEAT":
         raise ValueError(
             f"Cannot auto-generate next {entity_type} ID: catalog contains slug-based IDs {slug_ids}. "
-            f"Slug-based Feature IDs (e.g., FEAT-checkout, FEAT-orders-api) must be assigned manually. "
+            f"Slug-based Feature IDs (e.g., FEAT-010, FEAT-011) must be assigned manually. "
             f"Either use numeric IDs exclusively, or provide the next ID explicitly."
         )
 

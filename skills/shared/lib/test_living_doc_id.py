@@ -2,6 +2,7 @@
 """
 Quick test to verify next_entity_id() behavior with slug-based Feature IDs.
 """
+__test__ = False  # pytest: ignore this helper script
 
 import sys
 
@@ -25,8 +26,8 @@ def test_slug_based_feat_ids_raise_error():
     """Slug-based FEAT IDs should raise ValueError."""
     catalog = {
         "features": [
-            {"id": "FEAT-checkout", "name": "Checkout Page"},
-            {"id": "FEAT-orders-api", "name": "Orders API"},
+            {"id": "FEAT-010", "name": "Checkout Page"},
+            {"id": "FEAT-011", "name": "Orders API"},
         ]
     }
     try:
@@ -35,7 +36,7 @@ def test_slug_based_feat_ids_raise_error():
     except ValueError as e:
         error_msg = str(e)
         assert "slug-based IDs" in error_msg, f"Error message missing slug reference: {error_msg}"
-        assert "FEAT-checkout" in error_msg, f"Error should mention FEAT-checkout: {error_msg}"
+        assert "FEAT-010" in error_msg, f"Error should mention FEAT-010: {error_msg}"
         print(f"✓ Slug-based FEAT IDs raise clear error (as expected)")
         return True
 

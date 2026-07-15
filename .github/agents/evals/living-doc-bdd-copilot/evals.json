@@ -201,7 +201,7 @@
       "id": 15,
       "category": "skill-dispatch",
       "prompt": "What living doc entities does PR #217 affect? It modifies PromoService.java and DiscountController.java.",
-      "expected_output": "Agent loads the `living-doc-impact-analysis` skill. Traces PromoService.java and DiscountController.java through the feature_registry. PromoService maps to FEAT-promo (domain logic — High impact). DiscountController maps to FEAT-discount (API contract — High impact). Output lists: affected Features, affected Functionalities, ACs requiring re-test, and Gherkin scenarios needing re-run. Produces a release sign-off checklist for both impacted Features.",
+      "expected_output": "Agent loads the `living-doc-impact-analysis` skill. Traces PromoService.java and DiscountController.java through the feature_registry. PromoService maps to FEAT-004 (domain logic — High impact). DiscountController maps to FEAT-006 (API contract — High impact). Output lists: affected Features, affected Functionalities, ACs requiring re-test, and Gherkin scenarios needing re-run. Produces a release sign-off checklist for both impacted Features.",
       "files": [],
       "expectations": [
         "Loads living-doc-impact-analysis skill",
@@ -256,8 +256,8 @@
     {
       "id": 19,
       "category": "skill-dispatch",
-      "prompt": "Delete all BDD artifacts linked to the deprecated FEAT-legacy-promo feature — clean up feature files, step definitions, and PageObjects.",
-      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose # AC: tags reference FEAT-legacy-promo User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
+      "prompt": "Delete all BDD artifacts linked to the deprecated FEAT-012 feature — clean up feature files, step definitions, and PageObjects.",
+      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose # AC: tags reference FEAT-012 User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
       "files": [],
       "expectations": [
         "Loads bdd-maintain skill",
@@ -284,14 +284,14 @@
     {
       "id": 21,
       "category": "skill-dispatch",
-      "prompt": "Document the atomic behavior: apply a 20% discount to all cart items for Gold tier customers. Parent Feature is FEAT-discount.",
-      "expected_output": "Agent loads the `living-doc-create-functionality` skill. Assigns the next FUNC-nnn ID via next_id.py. Creates a Functionality entity with: id, name ('Apply Gold Tier Discount'), parent feature_id ('FEAT-discount'), status ('planned'), and at least two ACs — a happy-path AC and an error-path AC. After saving, prompts to load living-doc-update to append FUNC-<id> to FEAT-discount's functionalities array — otherwise the entity will be flagged as ORPHAN_FUNCTIONALITY.",
+      "prompt": "Document the atomic behavior: apply a 20% discount to all cart items for Gold tier customers. Parent Feature is FEAT-004.",
+      "expected_output": "Agent loads the `living-doc-create-functionality` skill. Assigns the next FUNC-nnn ID via next_id.py. Creates a Functionality entity with: id, name ('Apply Gold Tier Discount'), parent feature_id ('FEAT-004'), status ('planned'), and at least two ACs — a happy-path AC and an error-path AC. After saving, prompts to load living-doc-update to append FUNC-<id> to FEAT-004's functionalities array — otherwise the entity will be flagged as ORPHAN_FUNCTIONALITY.",
       "files": [],
       "expectations": [
         "Loads living-doc-create-functionality skill",
         "Assigns next FUNC-nnn ID via next_id.py",
         "Creates Functionality with happy-path and error-path ACs",
-        "Prompts to update parent FEAT-discount.functionalities array via living-doc-update",
+        "Prompts to update parent FEAT-004.functionalities array via living-doc-update",
         "Warns that skipping the parent link causes ORPHAN_FUNCTIONALITY gap"
       ]
     },

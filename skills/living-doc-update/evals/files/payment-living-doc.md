@@ -1,5 +1,5 @@
 # Payment Flow — Living Documentation
-# Feature: FEAT-payment-flow
+# Feature: FEAT-002
 # User Story: US-021 — Make a payment
 # Used by: living-doc-update file-based eval
 

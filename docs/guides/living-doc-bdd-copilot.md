@@ -22,17 +22,16 @@
 ## How to trigger it
 
 ```
-scan webapp
-generate pageobjects for the login screen
-explore the app at https://...
-generate scenarios for US-42
-heal pageobjects
-sync gherkin to living doc
-crawl the UI
-living doc bdd copilot
-BDD pipeline
-create page objects
-generate feature file from user story
+@living-doc-bdd-copilot scan webapp
+@living-doc-bdd-copilot generate pageobjects for the login screen
+@living-doc-bdd-copilot explore the app at https://...
+@living-doc-bdd-copilot generate scenarios for US-42
+@living-doc-bdd-copilot heal pageobjects
+@living-doc-bdd-copilot sync gherkin to living doc
+@living-doc-bdd-copilot crawl the UI
+@living-doc-bdd-copilot BDD pipeline
+@living-doc-bdd-copilot create page objects
+@living-doc-bdd-copilot generate feature file from user story
 ```
 
 ---

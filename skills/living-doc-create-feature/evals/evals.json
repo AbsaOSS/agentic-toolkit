@@ -208,7 +208,7 @@
       "files": [],
       "expectations": [
         "Falls back to asking for catalog path or explicit ID, does not invent a slug",
-        "Does not fall back to slug IDs like FEAT-payment-page",
+        "Uses only numeric IDs like FEAT-001, FEAT-002, etc.",
         "Warns the user to verify no collision before saving",
         "Does not invent a numeric ID without catalog evidence"
       ]

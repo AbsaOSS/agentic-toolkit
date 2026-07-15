@@ -116,11 +116,13 @@
       "id": 10,
       "category": "output-format",
       "prompt": "Show me the expected output of find_unused_steps.py for a suite with 3 unused step definitions.",
-      "expected_output": "Output lists each unused step definition file path and function name, e.g.:\n  UNUSED: checkout/checkout.steps.py::step_when_customer_applies_promo\n  UNUSED: checkout/checkout.steps.py::step_then_total_unchanged\n  UNUSED: login/login.steps.py::step_given_expired_session\nSummary line: '3 unused step definition(s) found.'",
+      "expected_output": "Output groups unused step definitions by *.steps.ts file and prints line numbers + step patterns, e.g.:\n\n⚠️ 3 UNUSED step definition(s) found:\n\n playwright/steps/checkout/checkout.steps.ts\n line 42 'the customer applies promo code {string}'\n line 67 'the total price remains unchanged'\n playwright/steps/login/login.steps.ts\n line 103 'the user has an expired session'\n",
       "files": [],
       "expectations": [
-        "Shows file path + function name format",
-        "Shows summary count line",
+        "Shows *.steps.ts file path",
+        "Shows line numbers for each unused step",
+        "Shows step pattern text",
+        "Shows summary count line with warning symbol",
         "Does not show false positives for steps used by active scenarios"
       ]
     }

@@ -116,7 +116,7 @@ Use `[]` only when the relationship is truly unknown and you cannot infer a sens
 >
 > If no catalog is available or the script cannot run, ask the user for the catalog path or
 > defer Feature creation until the catalog is accessible. Slug-based Feature IDs
-> (e.g. `FEAT-checkout`, `FEAT-orders-api`) are **not** supported by the ID auto-assigner.
+> (e.g. `FEAT-010`, `FEAT-011`) are **not** supported by the ID auto-assigner.
 >
 > If the prompt states an existing numeric catalog range (for example "the catalog already contains
 > FEAT-001 through FEAT-011"), reflect the script execution in the answer as:

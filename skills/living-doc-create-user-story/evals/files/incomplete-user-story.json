@@ -8,7 +8,7 @@
     "i_can": "reset my password using my email address",
     "so_that": "I can regain access to my account if I forget my password"
   },
-  "features": ["FEAT-login"],
+  "features": ["FEAT-001"],
   "acceptance_criteria": [
     {
       "id": "AC:US-042-01",

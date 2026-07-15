@@ -168,7 +168,7 @@
       "expectations": [
         "Classifies DiscountService.java as domain logic — High impact",
         "Classifies DiscountController.java as API contract — High impact",
-        "Traces both files to the owning Feature (e.g. FEAT-promotions) via feature_registry",
+        "Traces both files to the owning Feature (e.g. FEAT-007 promotions) via feature_registry",
         "Traces Feature → Functionalities → User Stories → ACs for both changed files",
         "Consolidates entities appearing more than once — higher risk",
         "Outputs a single consolidated impact map covering both changed files"

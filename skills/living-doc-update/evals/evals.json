@@ -149,13 +149,13 @@
       "id": 12,
       "type": "happy-path",
       "description": "Developer deprecates a Feature that has been superseded by a new Feature.",
-      "prompt": "The 'Legacy Payment Widget' (FEAT-legacy-payment-widget) has been replaced by the new 'Payment Page' (FEAT-payment-page). How do I deprecate the old Feature in the living doc?",
-      "expected_output": "Set status: deprecated on FEAT-legacy-payment-widget. Add deprecated_at (today's date), deprecation_reason (e.g. 'Replaced by FEAT-payment-page'), and superseded_by: 'FEAT-payment-page'. Never delete the entity — deprecation preserves the audit trail. Flag any Functionalities owned by FEAT-legacy-payment-widget for deprecation review. Flag any tests linked to those Functionalities for update or removal.",
+      "prompt": "The 'Legacy Payment Widget' (FEAT-003) has been replaced by the new 'Payment Page' (FEAT-002). How do I deprecate the old Feature in the living doc?",
+      "expected_output": "Set status: deprecated on FEAT-003. Add deprecated_at (today's date), deprecation_reason (e.g. 'Replaced by FEAT-002'), and superseded_by: 'FEAT-002'. Never delete the entity — deprecation preserves the audit trail. Flag any Functionalities owned by FEAT-003 for deprecation review. Flag any tests linked to those Functionalities for update or removal.",
       "files": [],
       "expectations": [
         "Sets status: deprecated — never deletes the entity",
         "Adds deprecated_at, deprecation_reason, and superseded_by fields",
-        "superseded_by points to FEAT-payment-page",
+        "superseded_by points to FEAT-002",
         "Flags owned Functionalities for deprecation review",
         "Flags linked tests for update or removal"
       ],

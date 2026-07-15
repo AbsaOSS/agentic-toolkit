@@ -176,7 +176,7 @@ For each Feature reachable via entity relationships
     GAP: EMPTY_FEATURE
 ```
 
-`EMPTY_FEATURE` is independent of whether the Feature has linked User Stories. A Feature with linked User Stories but no Functionalities (for example `FEAT-account`) is still an `EMPTY_FEATURE`.
+`EMPTY_FEATURE` is independent of whether the Feature has linked User Stories. A Feature with linked User Stories but no Functionalities (for example `FEAT-005`) is still an `EMPTY_FEATURE`.
 
 ### Step 4 — Prioritise by risk
 
@@ -259,11 +259,11 @@ A project with 100% documentation coverage has every AC backed by at least one t
 
 **Classification reminders for final reports:**
 - If `US-007.features == []`, emit `ORPHAN_USER_STORY — US-007 has no linked Feature entity`.
-- If `FEAT-account.functionalities == []`, emit `EMPTY_FEATURE — FEAT-account has no Functionalities defined`.
-- If `FEAT-orphan.functionalities == []`, emit `EMPTY_FEATURE — FEAT-orphan has no Functionalities defined`.
+- If `FEAT-005.functionalities == []`, emit `EMPTY_FEATURE — FEAT-005 has no Functionalities defined`.
+- If `FEAT-008.functionalities == []`, emit `EMPTY_FEATURE — FEAT-008 has no Functionalities defined`.
 - If `FUNC-002` has ACs but no linked tests, list it only once under `UNTESTED_AC` Blockers — not again under `UNDOCUMENTED_FUNCTIONALITY`.
 - If a `.feature` file itself has no `@AC:` tag **and** one of its scenarios is also independently unlinked, report both orphan-test artifacts separately (for example `test_login_flow.feature` and `View paginated order history`).
-- Do not infer `EMPTY_FEATURE` from lack of User Stories; only emit it when `functionalities == []`. In the worked snapshot, `FEAT-promo` is an orphan Feature, while `FEAT-account` and `FEAT-orphan` are the empty Features.
+- Do not infer `EMPTY_FEATURE` from lack of User Stories; only emit it when `functionalities == []`. In the worked snapshot, `FEAT-004` is an orphan Feature, while `FEAT-005` and `FEAT-008` are the empty Features.
 
 ## Large-scale analysis: batching guidance
 

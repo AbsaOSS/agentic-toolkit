@@ -28,7 +28,7 @@ Before asking, **scan the conversation context** for an actor, capability, or bu
 When the user asks to **create**, **document**, or **draft** a User Story, do not stop at elicitation questions alone. Ask the missing questions first as three distinct numbered questions (**Who? What? Why?**), then explicitly ask **Which Feature(s) does this story touch?**, then emit a starter User Story JSON draft in the same reply. For bare prompts like *"Create a new User Story for password reset"* or *"I want to create a new User Story for the password reset capability"*, do **not** wait for confirmation before drafting — assume a sensible starter narrative and output the JSON immediately after the questions.
 
 If the user names a common capability but leaves some details implicit, infer a sensible starter draft instead of blocking. Common patterns:
-- password reset → actor usually `registered customer`; likely Feature `FEAT-login`; ask the three narrative questions plus the Feature question, then still output starter JSON immediately with at least one happy-path AC and 2 error-path ACs
+- password reset → actor usually `registered customer`; likely Feature `FEAT-001` (login); ask the three narrative questions plus the Feature question, then still output starter JSON immediately with at least one happy-path AC and 2 error-path ACs
 - password reset via SMS → add `[NEW: SMS Authentication]` or the known SMS/login Feature if not yet created
 - customer service agent views customer order history → actor `customer service agent`; likely Feature `FEAT-order-management`; include customer-not-found and permission error ACs
 - two different actors in one narrative → split into two separate User Stories and call out that shared Functionalities can be linked to both
@@ -146,7 +146,7 @@ When creating a new User Story, output **one fenced `json` code block** using th
   "as_a": "registered customer",
   "i_want": "reset my password via SMS",
   "so_that": "I can regain access even when I cannot use email",
-  "features": ["FEAT-login"],
+  "features": ["FEAT-001"],
   "acceptance_criteria": [
     {
       "id": "AC:US-001-01",
@@ -182,7 +182,7 @@ Starter example for a create request:
   "as_a": "registered customer",
   "i_want": "reset my password via SMS",
   "so_that": "I can regain access even when I cannot use email",
-  "features": ["FEAT-login", "[NEW: SMS Authentication]"],
+  "features": ["FEAT-001", "[NEW: SMS Authentication (FEAT-007)]"],
   "acceptance_criteria": [
     {
       "id": "AC:US-001-01",
@@ -202,7 +202,7 @@ Starter example for a create request:
 ```
 
 For password-reset stories, the starter JSON should already include error-path ACs such as unregistered contact detail and expired/already-used reset token or code.
-For a generic password-reset prompt with no channel specified, default the starter draft to `title: "Reset password"`, `features: ["FEAT-login"]`, and still emit the JSON immediately after the four questions.
+For a generic password-reset prompt with no channel specified, default the starter draft to `title: "Reset password"`, `features: ["FEAT-001"]`, and still emit the JSON immediately after the four questions.
 
 > **Next steps after creation:** The User Story is created with `status: "planned"`. When all ACs are finalised and at least one Feature is linked, use `living-doc-update` to promote it to `active`. After promotion, use `living-doc-scenario-creator` to generate BDD feature files for each `active` AC.
 

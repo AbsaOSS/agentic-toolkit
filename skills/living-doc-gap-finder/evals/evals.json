@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Run a gap analysis on our living documentation. File: evals/files/catalog-snapshot.json",
-      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — AC:US-001-02 and AC:US-001-03 have no linked tests; Blocker — AC:US-002-01 and AC:US-002-02 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-002 has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-account, /reports/legacy ↔ FEAT-orphan are already documented); Important — FEAT-promo and FEAT-orphan each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-account and FEAT-orphan have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
+      "expected_output": "Agent analyzes the snapshot and produces a gap report with: Blocker — AC:US-001-02 and AC:US-001-03 have no linked tests; Blocker — AC:US-002-01 and AC:US-002-02 have no linked tests; Blocker — all 4 ACs of US-007 have no linked tests; Blocker — FUNC-002 has 5 ACs with no linked tests (Gap type 1 applies to Functionality ACs — report as UNTESTED_AC Blocker, not UNDOCUMENTED_FUNCTIONALITY); Important — /account/preferences screen discovered in webapp with no Feature entity (after normalisation: /account/orders ↔ FEAT-005, /reports/legacy ↔ FEAT-008 are already documented); Important — FEAT-004 and FEAT-008 each have no linked User Stories (orphan Features); Important — US-007 has no linked Feature (orphan User Story); Important — test_order_history.py, test_login_flow.feature, and the 'View paginated order history' BDD scenario have no linked ACs (orphan tests); Nit — FEAT-005 and FEAT-008 have no Functionalities defined (empty Features). Documentation coverage reported separately for US ACs and Functionality ACs.",
       "files": [
         "evals/files/catalog-snapshot.json"
       ],
@@ -15,11 +15,11 @@
         "Identifies all 4 US-007 ACs as untested (Blockers)",
         "Identifies FUNC-002 ACs as untested (Blocker, not Nit — Gap type 1 applies to Functionality ACs)",
         "Identifies /account/preferences as undocumented surface (Important)",
-        "Identifies FEAT-promo as orphan Feature (Important)",
-        "Identifies FEAT-orphan as orphan Feature (Important)",
+        "Identifies FEAT-004 (promo) as orphan Feature (Important)",
+        "Identifies FEAT-008 (orphan) as orphan Feature (Important)",
         "Identifies test_order_history.py and test_login_flow.feature as orphan tests (Important)",
         "Identifies 'View paginated order history' BDD scenario as orphan test (Important)",
-        "Identifies FEAT-account and FEAT-orphan as empty Features (Nit — no Functionalities)",
+        "Identifies FEAT-005 and FEAT-008 as empty Features (Nit — no Functionalities)",
         "Identifies US-007 as orphan User Story (Important — no linked Feature)",
         "Normalises undocumented surfaces: only /account/preferences is truly undocumented after matching existing Features",
         "Calculates documentation coverage percentage separately for US ACs and Functionality ACs"
@@ -156,13 +156,13 @@
     {
       "id": 12,
       "category": "regression",
-      "prompt": "The gap-finder script reports /reports/legacy as an UNDOCUMENTED_SURFACE but there is already a Feature entity 'Legacy Report Screen' (FEAT-orphan) in the catalog. Should this be reported as a gap?",
-      "expected_output": "No. After normalisation, /reports/legacy is already documented — FEAT-orphan (Legacy Report Screen) clearly owns that surface by name and domain meaning. The skill instructs to treat a discovered screen as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning. Remove this item from the gap report. FEAT-orphan still has other gaps (orphan Feature, empty Feature) but UNDOCUMENTED_SURFACE is not one of them.",
+      "prompt": "The gap-finder script reports /reports/legacy as an UNDOCUMENTED_SURFACE but there is already a Feature entity 'Legacy Report Screen' (FEAT-008) in the catalog. Should this be reported as a gap?",
+      "expected_output": "No. After normalisation, /reports/legacy is already documented — FEAT-008 (Legacy Report Screen) clearly owns that surface by name and domain meaning. The skill instructs to treat a discovered screen as already documented when an existing Feature clearly owns the same surface by path, name, or domain meaning. Remove this item from the gap report. FEAT-008 still has other gaps (orphan Feature, empty Feature) but UNDOCUMENTED_SURFACE is not one of them.",
       "files": [],
       "expectations": [
         "Removes /reports/legacy from UNDOCUMENTED_SURFACE gaps after normalisation",
         "Explains normalisation rule: surface matches by name/domain meaning",
-        "Notes FEAT-orphan still has ORPHAN_FEATURE and EMPTY_FEATURE gaps",
+        "Notes FEAT-008 still has ORPHAN_FEATURE and EMPTY_FEATURE gaps",
         "Distinguishes raw script output from normalised report"
       ]
     },

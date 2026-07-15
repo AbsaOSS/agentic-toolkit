@@ -104,16 +104,16 @@
       "id": "GAP-013",
       "type": "ORPHAN_FEATURE",
       "severity": "Important",
-      "entity": "FEAT-orphan",
-      "description": "Feature 'FEAT-orphan' (Legacy Report Screen) has no linked User Stories",
+      "entity": "FEAT-008",
+      "description": "Feature 'FEAT-008' (Legacy Report Screen) has no linked User Stories",
       "proposed_action": "Link to an existing User Story or confirm with the product owner whether to deprecate"
     },
     {
       "id": "GAP-012",
       "type": "ORPHAN_FEATURE",
       "severity": "Important",
-      "entity": "FEAT-promo",
-      "description": "Feature 'FEAT-promo' (Promotions Module) has no linked User Stories",
+      "entity": "FEAT-004",
+      "description": "Feature 'FEAT-004' (Promotions Module) has no linked User Stories",
       "proposed_action": "Link to an existing User Story or confirm with the product owner whether to deprecate"
     },
     {
@@ -160,16 +160,16 @@
       "id": "GAP-019",
       "type": "EMPTY_FEATURE",
       "severity": "Nit",
-      "entity": "FEAT-account",
-      "description": "Feature 'FEAT-account' (Account Dashboard) has no Functionalities defined",
+      "entity": "FEAT-005",
+      "description": "Feature 'FEAT-005' (Account Dashboard) has no Functionalities defined",
       "proposed_action": "Create Functionalities for known behaviors using living-doc-create-functionality"
     },
     {
       "id": "GAP-020",
       "type": "EMPTY_FEATURE",
       "severity": "Nit",
-      "entity": "FEAT-orphan",
-      "description": "Feature 'FEAT-orphan' (Legacy Report Screen) has no Functionalities defined",
+      "entity": "FEAT-008",
+      "description": "Feature 'FEAT-008' (Legacy Report Screen) has no Functionalities defined",
       "proposed_action": "Create Functionalities for known behaviors using living-doc-create-functionality"
     }
   ]

@@ -118,7 +118,7 @@ Start from the code change (PR diff, renamed module, deleted endpoint):
 Even when using these inferences, phrase the trace as `Mapped via feature_registry in catalog.json` or `Ran trace_impact.py --catalog catalog.json` so the reply shows the prescribed tracing mechanism rather than only freehand reasoning.
 Do not label the mapping as merely "inferred from files" in the final answer. Present it as a registry-backed trace step.
 Preferred wording:
-`feature_registry match: src/payments/checkout/DiscountService.java -> FEAT-discounts`
+`feature_registry match: src/payments/checkout/DiscountService.java -> FEAT-004`
 or
 `Ran trace_impact.py --files src/payments/checkout/DiscountService.java --catalog catalog.json`
 If the prompt names only a capability (for example "cart validation logic") rather than a filename, state the implied module and the registry trace, e.g. `feature_registry match: <cart validation module> -> FEAT-cart`, before listing Functionalities and User Stories.
@@ -133,7 +133,7 @@ Walk the entity hierarchy from Feature, Functionality, to User Story:
 
 ```
 Changed module: src/payments/checkout/PromoService.java
-  Feature:          FEAT-promotions
+  Feature:          FEAT-007
   Functionalities:  FUNC-001, FUNC-002
   User Stories:     US-001 (apply promo), US-002 (expired promo error)
   ACs affected:     AC:US-001-01, AC:US-001-03, AC:US-002-02
@@ -167,7 +167,7 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
                 src/payments/checkout/PromoController.java (API contract — High)
 
   Affected entities:
-    Feature:          FEAT-promotions (owner: team-payments)
+    Feature:          FEAT-007 (owner: team-payments)
     Functionalities:  FUNC-001, FUNC-002
     User Stories:     US-042 (high impact), US-067 (high impact), US-089 (medium impact)
 

@@ -91,7 +91,7 @@
   },
   {
     "id": "t16-superseded-by",
-    "query": "Mark FEAT-legacy-payment-widget as deprecated and point to FEAT-payment-page as the replacement.",
+    "query": "Mark FEAT-003 as deprecated and point to FEAT-002 as the replacement.",
     "should_trigger": true,
     "reason": "'mark feature deprecated' and 'deprecate feature' trigger phrases; superseded_by field is set as part of deprecation."
   },

@@ -31,7 +31,7 @@
   },
   {
     "id": 6,
-    "query": "BDD cleanup after deprecating FEAT-legacy-payment-widget",
+    "query": "BDD cleanup after deprecating FEAT-003",
     "should_trigger": true,
     "reason": "REMOVE mode — bdd cleanup keyword"
   },
