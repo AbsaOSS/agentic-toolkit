@@ -39,7 +39,7 @@ class PageObjectClass:
 def collect_po_classes(pages_dir: Path) -> list[PageObjectClass]:
     """Extract exported class names from all PageObject .ts files."""
     classes: list[PageObjectClass] = []
-    for ts_file in sorted(pages_dir.glob("*.ts")):
+    for ts_file in sorted(pages_dir.rglob("*.ts")):
         text = ts_file.read_text(encoding="utf-8")
         for m in CLASS_DEF_RE.finditer(text):
             classes.append(PageObjectClass(m.group(1), ts_file))

@@ -53,7 +53,7 @@ def collect_po_methods(pages_dir: Path) -> list[MethodDef]:
     methods: list[MethodDef] = []
     seen: set[tuple[Path, str]] = set()
 
-    for ts_file in sorted(pages_dir.glob("*.ts")):
+    for ts_file in sorted(pages_dir.rglob("*.ts")):
         text = ts_file.read_text(encoding="utf-8")
         lines = text.splitlines()
 
