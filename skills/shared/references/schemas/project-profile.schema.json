@@ -41,7 +41,7 @@
       "type": "array",
       "minItems": 1,
       "items": { "type": "string", "minLength": 1 },
-      "description": "AC state vocabulary, lowercase with underscores inside '# AC:' blocks and entity files, e.g. [planned, in_review, active, deprecated]."
+      "description": "AC state vocabulary. Canonical form is lowercase with underscores (e.g. planned, in_review, active, deprecated). Legacy Title Case values (e.g. 'In Review') are normalized on load by scripts such as coverage_report.py."
     },
     "pageobject_statuses": {
       "type": "array",

@@ -18,7 +18,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 | [Agent Design Best Practices](./guides/agent-design.md) | Core principles, file structure, context management, tool guidance, examples, and stopping conditions for `.agent.md` files |
 | [Skill Testing](./testing/skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization    |
-| [Agent Testing](./testing/agent-testing.md) | Eval creation, trigger accuracy tuning, and body quality testing for `.agent.md` files |
+| [Agent Testing](./testing/agent-testing.md) | Eval creation and body quality testing for `.agent.md` files — agents are invoked by @-mention, not auto-triggered |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues                               |
 
 ## Tools for Agentic Development

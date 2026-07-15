@@ -31,8 +31,7 @@ def test_slug_based_feat_ids_raise_error():
     }
     try:
         next_entity_id(catalog, "FEAT")
-        print("✗ Expected ValueError for slug-based FEAT IDs, but none was raised")
-        return False
+        raise AssertionError("Expected ValueError for slug-based FEAT IDs, but none was raised")
     except ValueError as e:
         error_msg = str(e)
         assert "slug-based IDs" in error_msg, f"Error message missing slug reference: {error_msg}"

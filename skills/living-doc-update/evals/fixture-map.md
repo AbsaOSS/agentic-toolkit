@@ -10,7 +10,7 @@
 | 6 | negative | *(no file — create US redirect to living-doc-create-user-story)* |
 | 7 | negative | *(no file — gap-finding redirect to living-doc-gap-finder)* |
 | 8 | paraphrase | *(no file — add AC phrased as "update the story")* |
-| 9 | edge-case | *(no file — descope AC mid-sprint: status=descoped, do not delete)* |
+| 9 | edge-case | *(no file — descope AC mid-sprint: state=deprecated, descoped_at/descoped_reason metadata preserved, AC not deleted)* |
 | 10 | output-format | *(no file — AC text change: OLD/NEW diff + linked scenario list)* |
 | 11 | file-based | `payment-living-doc.md` | AC-2 SLA change from 3 s to 1 s (p99) |
 | 12 | happy-path | *(no file — Feature deprecation with superseded_by field)* |
