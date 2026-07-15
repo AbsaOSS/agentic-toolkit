@@ -26,8 +26,8 @@ def test_slug_based_feat_ids_raise_error():
     """Slug-based FEAT IDs should raise ValueError."""
     catalog = {
         "features": [
-            {"id": "FEAT-010", "name": "Checkout Page"},
-            {"id": "FEAT-011", "name": "Orders API"},
+            {"id": "FEAT-checkout-page", "name": "Checkout Page"},
+            {"id": "FEAT-orders-api", "name": "Orders API"},
         ]
     }
     try:
@@ -35,8 +35,9 @@ def test_slug_based_feat_ids_raise_error():
         raise AssertionError("Expected ValueError for slug-based FEAT IDs, but none was raised")
     except ValueError as e:
         error_msg = str(e)
-        assert "slug-based IDs" in error_msg, f"Error message missing slug reference: {error_msg}"
-        assert "FEAT-010" in error_msg, f"Error should mention FEAT-010: {error_msg}"
+        assert "non-numeric" in error_msg, f"Error message missing 'non-numeric': {error_msg}"
+        assert "Slug-based Feature IDs" in error_msg, f"Error should mention slug-based IDs: {error_msg}"
+        assert "FEAT-checkout-page" in error_msg, f"Error should mention FEAT-checkout-page: {error_msg}"
         print(f"✓ Slug-based FEAT IDs raise clear error (as expected)")
         return True
 
