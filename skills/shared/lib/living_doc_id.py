@@ -70,15 +70,16 @@ def load_catalog(path: str) -> dict:
 def next_entity_id(catalog: dict, entity_type: str) -> str:
     """
     Return the next sequential ID for US, FEAT, or FUNC entities.
-    Scans the matching collection for the highest existing numeric suffix.
+    Scans the matching collection for the highest existing numeric suffix and returns the next ID.
+    Only numeric IDs (e.g., FEAT-001, FEAT-002) are allowed; slug-based IDs (e.g., FEAT-checkout) are forbidden.
     
     For FEAT entities:
-      - Numeric IDs (FEAT-001) are auto-incrementable.
-      - Slug-based IDs (e.g. numeric-only) are auto-incremented. Non-numeric formats must be assigned manually.
-      - Raises ValueError if the collection contains any slug-based IDs (mixed conventions).
+      - Numeric IDs (FEAT-001, FEAT-002, ...) are auto-incrementable.
+      - Slug-based IDs (e.g., FEAT-checkout-page) are not permitted in the catalog.
+      - Raises ValueError if the collection contains any non-numeric IDs (mixed conventions not allowed).
     
     Raises:
-        ValueError: If entity_type is unknown, collection is malformed, or FEAT has slug-based IDs.
+        ValueError: If entity_type is unknown, collection is malformed, or contains non-numeric IDs.
     """
     if entity_type not in ENTITY_TYPE_MAP:
         raise ValueError(
@@ -123,12 +124,13 @@ def next_entity_id(catalog: dict, entity_type: str) -> str:
                 # Slug-based ID detected for FEAT; collect for error reporting
                 slug_ids.append(entity_id)
     
-    # FEAT entities with slug-based IDs cannot use auto-increment
+    # FEAT entities with slug-based IDs violate the numeric-only convention
     if slug_ids and entity_type == "FEAT":
         raise ValueError(
-            f"Cannot auto-generate next {entity_type} ID: catalog contains slug-based IDs {slug_ids}. "
-            f"Slug-based Feature IDs (e.g., FEAT-010, FEAT-011) must be assigned manually. "
-            f"Either use numeric IDs exclusively, or provide the next ID explicitly."
+            f"Catalog contains non-numeric {entity_type} IDs (not allowed): {slug_ids}. "
+            f"Only numeric IDs are permitted (e.g., FEAT-001, FEAT-002). "
+            f"Slug-based Feature IDs (e.g., FEAT-checkout-page) are forbidden. "
+            f"Update the catalog to use numeric-only IDs."
         )
 
     return f"{entity_type}-{max_num + 1:0{ID_WIDTH}d}"

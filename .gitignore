@@ -2,3 +2,4 @@
 **/.DS_Store
 skills-eval-workspace/*
 agents-eval-workspace/*
+.playwright-mcp/*
