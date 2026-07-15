@@ -21,6 +21,10 @@ Functions:
 Catalog JSON must contain one of:
   - Top-level keys: "user_stories", "features", "functionalities"
   - Or nested under a "catalog" key: {"catalog": {"user_stories": [...], ...}}
+
+Note: Slug-based FEAT IDs are rejected at auto-increment time. For AC tag validation
+in BDD feature files, see scan_ac_links.py which enforces numeric-only parent IDs
+in @AC: tags (e.g., @AC:FEAT-001-01, never @AC:FEAT-checkout-01).
 """
 
 import argparse

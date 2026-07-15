@@ -24,6 +24,8 @@ def test_numeric_feat_ids():
 
 def test_slug_based_feat_ids_raise_error():
     """Slug-based FEAT IDs should raise ValueError."""
+    # Contrived slug-based FEAT IDs to stress-test validation.
+    # Production catalogs must use numeric IDs only (FEAT-001, FEAT-002, ...)
     catalog = {
         "features": [
             {"id": "FEAT-checkout-page", "name": "Checkout Page"},

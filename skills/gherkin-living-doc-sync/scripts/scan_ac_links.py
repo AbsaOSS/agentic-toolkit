@@ -18,6 +18,10 @@ For every Scenario: / Scenario Outline: line found in living-doc files, checks t
 
 Exit code: 0 if all checks pass, 1 if any errors are found (warnings do not fail).
 
+Constraint: Parent IDs in @AC: tags must be numeric only (US-001, FUNC-042).
+Slug-based Feature IDs (e.g., FEAT-checkout-page) are not permitted in AC tag references;
+see living_doc_id.py for the corresponding catalog-level constraint.
+
 Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
@@ -27,14 +31,16 @@ from pathlib import Path
 
 # Matches a @AC: Cucumber tag with optional /param:value segments:
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
+#   Parent ID segment must be numeric only (US-001, not US-checkout);
+#   slug-based FEAT IDs like FEAT-login-page are not permitted in AC tags.
 AC_TAG = re.compile(
-    r"@AC:((?:US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
+    r"@AC:((?:US|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
     re.IGNORECASE,
 )
 # Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FUNC-001-01 (...)
-AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})", re.IGNORECASE)
+AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FUNC)-\d+-\d{2})", re.IGNORECASE)
 # Canonical AC ID only (no params): AC:<parent>-<nn>
-AC_ID_FORMAT = re.compile(r"^AC:(US|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", re.IGNORECASE)
+AC_ID_FORMAT = re.compile(r"^AC:(US|FUNC)-\d+-\d{2}$", re.IGNORECASE)
 TAG_LINE = re.compile(r"^\s*@\S+")
 COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)
@@ -74,7 +80,18 @@ def get_ac_comments_above(lines: list[str], scenario_index: int) -> set[str]:
 
 def scan_file(path: Path) -> list[dict]:
     issues = []
-    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError as e:
+        issues.append({
+            "file": str(path),
+            "line": 0,
+            "scenario": None,
+            "issue": "encoding_error",
+            "severity": "error",
+            "detail": f"File contains invalid UTF-8 encoding: {e}",
+        })
+        return issues
     seen: dict[str, list[int]] = {}
 
     for i, line in enumerate(lines):
@@ -130,7 +147,11 @@ def scan_file(path: Path) -> list[dict]:
                 })
                 continue
             plain_id = m.group(1).upper()  # e.g. US-1-01
-            seen.setdefault(ac_id_raw.upper(), []).append(lineno)
+            # Include /param:value suffixes in duplicate tracking to allow multi-aspect tagging.
+            # Scenarios with @AC:US-1-01/aspect:username-input and @AC:US-1-01/aspect:password-input
+            # are distinct and should not be flagged as duplicates.
+            full_ac_key = (ac_id_raw + (m.group(2) or "")).upper()
+            seen.setdefault(full_ac_key, []).append(lineno)
             # Warn if the human-readable # AC: comment is missing for this tag
             if plain_id not in {c.upper() for c in ac_comments}:
                 issues.append({
@@ -195,7 +216,13 @@ def main(features_dir: str, living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS
     for issue in all_issues:
         by_type.setdefault(issue["issue"], []).append(issue)
 
-    print(f"Found {len(errors)} error(s) and {len(warnings)} warning(s) in {len(feature_files)} living-doc feature file(s):\n")
+    plural_e = "error" if len(errors) == 1 else "errors"
+    plural_w = "warning" if len(warnings) == 1 else "warnings"
+    print(f"Found {len(errors)} {plural_e} and {len(warnings)} {plural_w} in {len(feature_files)} living-doc feature file(s).")
+    if errors:
+        print(f"Exit code 1: {len(errors)} {plural_e} must be fixed.\n")
+    else:
+        print()
 
     labels = {
         "missing_ac_tag": "[ERROR] MISSING @AC: TAG",
