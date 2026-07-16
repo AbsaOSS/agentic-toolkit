@@ -66,7 +66,9 @@ A named system surface — the structural layer between User Stories and atomic 
 | `purpose` | One sentence: what this step or sub-surface does, in business language — no FEAT IDs, no internal references |
 | `page-object` | Filename of this PageObject |
 
-The following fields are **intentionally omitted** from the cross-reference header — they belong only on the primary Feature file: `surface_type`, `user_stories`, `functionalities`, `external_dependencies`.
+The following fields are **intentionally omitted** from the cross-reference header — they belong only on the primary Feature file: `surface_type`, `user_stories`, `external_dependencies`.
+
+**Optional inclusion of `functionalities`:** You may list this field in a cross-reference header to scope step-specific atomic behaviors to that sub-page. Use this when a step implements distinct Functionalities not shared across the entire Feature. If the sub-page's Functionality list is identical to the parent Feature's, omit this field to avoid duplication and keep the primary Feature as the authoritative source.
 
 **Cross-reference header example:**
 
@@ -77,13 +79,14 @@ The following fields are **intentionally omitted** from the cross-reference head
  * This file implements Step 1 (Profile) of the Account Setup Wizard.
  * The authoritative Feature header is in AccountSetupWizardPage.ts.
  *
- * parent-feat:  FEAT-042
- * route:        /app/accounts/setup  (wizard stays on this URL)
- * owners:       Platform Team
- * status:       active
- * purpose:      Step 1 (Profile) — user profile fields: display name, email address,
- *               and role selection.
- * page-object:  AccountSetupWizardProfilePage.ts
+ * parent-feat:     FEAT-042
+ * route:           /app/accounts/setup  (wizard stays on this URL)
+ * owners:          Platform Team
+ * status:          active
+ * functionalities: FUNC-005              ← Step 1 (Profile) implements profile-specific field validation
+ * purpose:         Step 1 (Profile) — user profile fields: display name, email address,
+ *                  and role selection.
+ * page-object:     AccountSetupWizardProfilePage.ts
  * ============================================================================= */
 ```
 
