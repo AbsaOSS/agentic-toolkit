@@ -84,6 +84,13 @@ Classify findings as **Blocker**, **Important**, or **Nit**.
 
 For Blocker or Important findings, propose a split into smaller Functionalities where needed and show rewritten AC examples with exact `When` / `Then` outcomes and explicit error codes.
 
+**System-level constraints** (optional, but ask if relevant):
+When the Functionality has preconditions or explicit exclusions that apply across all ACs, document them at the FUNC level in the feature file header:
+- **`preconditions:`** — System state required before ANY AC in this FUNC can be tested (e.g. "User is logged in", "Feature flag enabled"). All ACs inherit these; individual ACs can extend them if needed.
+- **`not_in_scope:`** — Explicit exclusions or boundaries at the FUNC level (e.g. "Does not cover multi-factor authentication", "Does not apply to bulk orders"). All ACs inherit these; individual ACs can extend them if needed.
+
+Ask: *Are there any system-level preconditions (required states before any scenario can run) or explicit exclusions (things this FUNC deliberately does not cover)?* If yes, note them for the feature file header — they will be incorporated when `living-doc-scenario-creator` generates the Gherkin.
+
 ## Step 4 — Flag reuse candidates
 
 Before creating, check whether an identical behavior already exists under any Feature. **Compare ACs, not names** — the same verb phrase in a different Feature context often produces a legitimately different contract.

@@ -288,6 +288,26 @@ Scenario Outline: Discount applied correctly for each membership tier
 
 Use only when every scenario in the file shares the precondition. Keep to 3 steps or fewer. If only 2–3 scenarios share a precondition, duplicate the `Given` step — prefer clarity over abstraction. `Background` must use only `Given` steps.
 
+When the feature-level `preconditions:` block is present, use it as the `Background` — one `Given` step per bullet. If an individual AC has AC-level `preconditions:`, extend the Background with those additional `Given` steps **only for that scenario** — do not apply AC-level preconditions to other scenarios in the file. This keeps scenarios independent and makes AC-level constraints visible in the scenario itself rather than the file-wide Background.
+
+**Example:** Feature-level preconditions (Background for all scenarios):
+```gherkin
+# preconditions:
+#   - User is logged in
+
+Background:
+  Given the user is logged in
+
+# AC:FUNC-001-01 (v1.0 - active)
+#   preconditions:
+#     - User has admin role
+Scenario: Admin can create a new user
+  Given the user is logged in              ← inherited from Background (feature-level)
+  Given the user has admin role            ← extends feature-level preconditions (AC-level)
+  When they submit the create user form
+  Then a new user is created
+```
+
 ### Anti-patterns
 
 | Anti-pattern | Fix |

@@ -113,6 +113,13 @@ Warn if only happy-path ACs are present:
 > Consider creating a Functionality entity for this behavior with
 > living-doc-create-functionality."
 
+**System-level constraints** (optional, but ask if relevant):
+When the User Story has preconditions or explicit exclusions that apply across all ACs, document them at the US level in the feature file header:
+- **`preconditions:`** — System state required before ANY AC in this US can be tested (e.g. "User is logged in", "Payment method on file"). All ACs inherit these; individual ACs can extend them if needed.
+- **`not_in_scope:`** — Explicit exclusions or boundaries at the US level (e.g. "Does not cover multi-factor authentication", "International transactions out of scope"). All ACs inherit these; individual ACs can extend them if needed.
+
+Ask: *Are there any system-level preconditions (required states before any scenario can run) or explicit exclusions (things this US deliberately does not cover)?* If yes, note them for the feature file header — they will be incorporated when `living-doc-scenario-creator` generates the Gherkin.
+
 ## Step 4 — Validate and output
 
 > **ID assignment:** before assigning a `US-nnn` ID, run

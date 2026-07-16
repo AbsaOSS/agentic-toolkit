@@ -87,21 +87,26 @@ Holds all US metadata and is mined during living documentation output generation
 # status:          active        ← one of profile `ac_states` (planned | in_review | active | deprecated)
 # business_value:
 #   - <bullet describing the business outcome>
-# not_in_scope:                                                  ← optional
-#   - <item excluded from this US>
-# preconditions:                                                 ← optional
+# preconditions:                                                 ← optional; inherited by all ACs
 #   - <system state required before test>
+# not_in_scope:                                                  ← optional; inherited by all ACs
+#   - <item excluded from this US>
 #
 # acceptance_criteria:
 #
 #   AC:US-<n>-01 (v<version> - <State>)
 #     - <description of the AC>
 #     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed in AC text
+#     preconditions:                      ← optional; extends feature-level preconditions for this AC only
+#       - <AC-specific precondition>
+#     not_in_scope:                       ← optional; extends feature-level not_in_scope for this AC only
+#       - <AC-specific exclusion>
 #
 #   AC:US-<n>-02 (v<version> - <State>)
 #     - <description of the AC with optional {placeholder-name} for parameterised variants>
 #     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
+```
 
 @US_ID:US-<n>
 Feature: <US Title>
@@ -137,9 +142,9 @@ Feature: <US Title>
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
 | `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`) |
 | `# business_value:` | Yes | Why this User Story exists (bullets) |
-| `# not_in_scope:` | Optional | Explicit exclusions |
-| `# preconditions:` | Optional | System-level state required before test execution |
-| `# acceptance_criteria:` | Yes | Full AC listing with IDs, versions, and states |
+| `# preconditions:` | Optional | System-level state required before test execution; inherited and extended by all ACs |
+| `# not_in_scope:` | Optional | Explicit exclusions at US level; inherited and extended by all ACs |
+| `# acceptance_criteria:` | Yes | Full AC listing with IDs, versions, and states; each AC may extend inherited preconditions and not_in_scope |
 | `@US_ID:US-<n>` tag | Yes | Machine-parseable User Story ID (feature-level tag) |
 
 ---
@@ -160,7 +165,9 @@ Header comment block at the top of every Functionality feature file —
 #            field_validation | calculation | visibility | navigation_rule
 # rationale:                                                     ← optional
 #   - <why this FUNC is scoped this way — business or design decision context>
-# not_in_scope:                                                  ← optional
+# preconditions:                                                 ← optional; inherited by all ACs
+#   - <system state required before test>
+# not_in_scope:                                                  ← optional; inherited by all ACs
 #   - <exclusion>
 #
 # acceptance_criteria:
@@ -168,11 +175,16 @@ Header comment block at the top of every Functionality feature file —
 #   AC:FUNC-<nnn>-01 (v<version> - <State>)
 #     - <description in business language — no data-cy IDs in AC text>
 #     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed
+#     preconditions:                      ← optional; extends feature-level preconditions for this AC only
+#       - <AC-specific precondition>
+#     not_in_scope:                       ← optional; extends feature-level not_in_scope for this AC only
+#       - <AC-specific exclusion>
 #
 #   AC:FUNC-<nnn>-02 (v<version> - <State>)
 #     - <description — may contain a {placeholder-name} for parameterised variants>
 #     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
+```
 
 @FUNC_ID:FUNC-<nnn>
 Feature: <Feature Name> — <Functionality Name>
@@ -193,8 +205,9 @@ Feature: <Feature Name> — <Functionality Name>
 | `# parent:` | Yes | Parent Feature ID (`FEAT-<nnn>`) |
 | `# func_type:` | Yes | Category of behavior this Functionality represents (see table below) |
 | `# rationale:` | Optional | **Why** this FUNC is scoped the way it is — business context, a deliberate design decision, or a constraint that explains the boundary. Not for implementation notes. |
-| `# not_in_scope:` | Optional | Explicit exclusions |
-| `# acceptance_criteria:` | Yes | Full AC listing in business language — do not include `data-cy` IDs or implementation names in AC text |
+| `# preconditions:` | Optional | System-level state required before test execution; inherited and extended by all ACs |
+| `# not_in_scope:` | Optional | Explicit exclusions at FUNC level; inherited and extended by all ACs |
+| `# acceptance_criteria:` | Yes | Full AC listing in business language — do not include `data-cy` IDs or implementation names in AC text; each AC may extend inherited preconditions and not_in_scope |
 | `@FUNC_ID:FUNC-<nnn>` tag | Yes | Machine-parseable Functionality ID (feature-level tag) |
 | Feature description (below `Feature:`) | Optional | One-to-two sentence purpose in business language. Use when the title alone is not self-explanatory. |
 

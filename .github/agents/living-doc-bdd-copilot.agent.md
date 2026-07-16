@@ -185,8 +185,10 @@ Every AC must carry:
 |---|---|
 | `state` | `planned` / `in_review` / `active` / `deprecated` (lowercase with underscores per the profile `ac_states`) |
 | `version` | Semantic version string |
-| `pre-conditions` | Conditions that must hold before the AC can be tested |
-| `not_in_scope` | Explicit exclusion statement |
+| `preconditions` (inherited) | System-level state required before the AC can be tested; inherited from parent US/FUNC feature-level `preconditions:` |
+| `not_in_scope` (inherited) | Explicit exclusion statement; inherited from parent US/FUNC feature-level `not_in_scope:` |
+| `preconditions` (AC-level extension) | Optional: extends feature-level preconditions with AC-specific ones; cumulative with feature level |
+| `not_in_scope` (AC-level extension) | Optional: extends feature-level not_in_scope with AC-specific exclusions; cumulative with feature level |
 
 ---
 
@@ -287,7 +289,7 @@ Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the singl
 
 **Routing:** Route by request type using Mode Dispatch above. If a request spans catalog and automation (e.g. "create a US and generate its feature file"), complete the catalog step first, then proceed to the automation step within the same session.
 
-**Entity creation:** Atomic ACs only — one condition + one observable outcome. Every AC needs `id`, `state`, `version`, `pre-conditions`, `not_in_scope`. Assign IDs via `scripts/next_id.py`.
+**Entity creation:** Atomic ACs only — one condition + one observable outcome. Every AC needs `id`, `state`, `version`. Feature-level (US/FUNC) `preconditions:` and `not_in_scope:` are inherited by all ACs; extend at AC level if this AC adds additional preconditions or exclusions. Assign IDs via `scripts/next_id.py`.
 
 **Updates:** Show OLD vs NEW before writing any `active` AC change. Keep AC IDs stable — changing breaks traceability.
 
