@@ -77,6 +77,7 @@ its purpose, trigger phrases, and full instructions.
 
 | Skill                                                | Description                                                                                                                         |
 |------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[create-repository](./skills/create-repository/)** | Creates and configures a GitHub repository under AbsaOSS (open source) or absa-group (internal). Runs a short interview, then shows an annotated `gh` command plan and executes it on confirmation — visibility, naming, admins, CODEOWNERS, labels, merge settings, and project links. |
 | **[pr-review](./skills/pr-review/)**                 | Pull request code review — reviews diffs for risk, security issues, API contract changes, dependency bumps, CI/CD and infrastructure changes. Produces concise Blocker / Important / Nit comments. |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 

@@ -1,0 +1,23 @@
+{
+  "skill_name": "create-repository",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to create a new open-source repo under AbsaOSS for storing Aqua security scan results. Call it aquasec-scan-results. It's mainly a Python project. I should be the admin (my GitHub handle is jdoe) and also the code owner. Link it to absa-group project 17.",
+      "expected_output": "An annotated gh command plan that creates AbsaOSS/aquasec-scan-results as public from the cps-repository-template, adds the Apache-2.0 LICENSE, grants jdoe admin, sets CODEOWNERS with jdoe, clones the ABSA label taxonomy from the template, applies the Core Branches ruleset, sets auto-delete branches, and shows that the absa-group project link cannot be applied to an OSS repo (cross-org) — shown for confirmation before execution.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Make me a new internal repository called EventGate. Admins should be asmith and bnguyen.",
+      "expected_output": "The skill flags EventGate as not kebab-case and offers event-gate, targets absa-group as private, creates it from the cps-repository-template, collects asmith and bnguyen as admins, offers to reuse them as code owners, and walks through labels/settings/project steps before showing an annotated plan.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Set up a private repo under absa-group named schema-standards. Admin and code owner is myteammate1. No project link needed. Just the standard labels and auto-delete branches. No particular technology.",
+      "expected_output": "An annotated plan creating absa-group/schema-standards as private from the cps-repository-template with no license (internal), granting myteammate1 admin, CODEOWNERS with myteammate1, the ABSA label taxonomy cloned from the template, the Core Branches ruleset, auto-delete branches, and no project link call.",
+      "files": []
+    }
+  ]
+}
