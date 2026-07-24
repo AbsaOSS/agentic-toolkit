@@ -37,7 +37,8 @@ rulesets, repository settings, collaborators, or a license — those remain expl
 
 Run `gh auth status`. If it exits non-zero, **stop immediately** and tell the user:
 
-> This skill needs an authenticated GitHub CLI with org-admin permissions for AbsaOSS / absa-group.
+> This skill needs an authenticated GitHub CLI, logged in as a member of AbsaOSS / absa-group with
+> permission to create repositories in that organization.
 > Set a `GITHUB_TOKEN` (or run `gh auth login`) with the right scopes, then re-run.
 
 Do not probe individual scopes — permission problems surface on the specific call at execution time.
@@ -113,10 +114,11 @@ Ask: "Who should be the code owners?" Options:
 - `Same people as the admins (@admin1, @admin2)`
 - `Write a different set of code owners`
 
-If the `Write a different set of code owners` option is chosen, ask: "Enter the GitHub usernames for
-the code owners."
+If the `Write a different set of code owners` option is chosen, ask: "Enter the GitHub usernames and/or
+teams for the code owners." Individual users are written as `@username`; teams are written as
+`@absa-group/team-slug`.
 
-A single global `CODEOWNERS` rule covers all files. Individuals only — no teams.
+A single global `CODEOWNERS` rule covers all files, listing every entry the user provided.
 
 ### 5. Labels (recommended)
 
@@ -261,6 +263,7 @@ Repository `cps-test-repo` successfully created via /create-repository skill
 | Auto-delete branches on merge | ✓                                             |
 
 Template: https://github.com/absa-group/cps-repository-template
+Files copied from the template: README, CONTRIBUTING, appid.json, .github/ (workflows, dependabot, issue/PR templates, CODEOWNERS)
 ```
 
 For internal repos, there is no CODEOWNERS row (that step is OSS-only); instead add a Link to project row
