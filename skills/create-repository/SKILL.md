@@ -29,7 +29,7 @@ Keep the whole skill simple and explicit so it runs reliably even on smaller mod
 commands, no clever scripts, no helper languages, no temp files.
 
 The repo is created **from the shared template** `absa-group/cps-repository-template`. Templating copies only
-the files on the template's default branch — README, CONTRIBUTING, `appid.json`, and the `.github/` folder
+the files on the template's default branch — README, CONTRIBUTING, and the `.github/` folder
 (GitHub workflows, dependabot, issue/PR templates, and an **empty** CODEOWNERS). It does **not** copy labels,
 rulesets, repository settings, collaborators, or a license — those remain explicit steps.
 
@@ -165,8 +165,7 @@ Plan for repository `{owner}/{name}` creation ({OSS|internal})
 
 The repository will be created based on the CPS repo template (https://github.com/absa-group/cps-repository-template),
 which also brings the standard scaffolding: README, CONTRIBUTING, the GitHub workflows, the PR and issue
-templates, the dependabot config, and appid.json (update appid.json with its repo's own Support
-contact and AppIds before deploying).
+templates, and the dependabot config.
 
 1. Create the {public|private} repo from the template.
 ```
@@ -207,7 +206,12 @@ gh api -X POST repos/{owner}/{name}/rulesets --input {skill-dir}/assets/rulesets
 gh api -X PATCH repos/{owner}/{name} -F delete_branch_on_merge=true
 ```
 
-8. Link the repository to project number {number} (https://github.com/orgs/absa-group/projects/{number}).  ← private repos only (one block per project); omit otherwise
+8. Set the required org custom properties to placeholder values. ← private repos only; omit the whole step otherwise
+```
+gh api -X PATCH repos/{owner}/{name}/properties/values --input {skill-dir}/assets/custom-properties.json
+```
+
+9. Link the repository to project number {number} (https://github.com/orgs/absa-group/projects/{number}).  ← private repos only (one block per project); omit otherwise
 ```
 REPO_ID=$(gh api repos/absa-group/{name} --jq .node_id)
 PROJ_ID=$(gh api graphql -f query='query{organization(login:"absa-group"){projectV2(number:{number}){id}}}' --jq '.data.organization.projectV2.id')
@@ -224,7 +228,8 @@ On confirmation, run **exactly the commands shown in the approved plan, verbatim
 contract. The user only agreed to what they saw, so don't run anything extra or surprising:
 
 - **No helper languages or scripts** — no `python`/`python3 -c`, no `node`, no bash loops, no reading assets
-  at runtime beyond the `--input {skill-dir}/assets/rulesets.json` already in the plan. Don't use `/tmp`.
+  at runtime beyond the `--input {skill-dir}/assets/...` files already in the plan (the ruleset and custom
+  properties). Don't use `/tmp`.
 - **No added output filters or parsing** — don't tack on `--jq`, `| grep`, `| head`, or similar that weren't
   in the planned command. Run each `gh` line as-is.
 - **No extra read-back / verification calls** — don't call `.../collaborators/{u}/permission`, re-`GET` the
@@ -263,9 +268,9 @@ Repository `cps-test-repo` successfully created via /create-repository skill
 | Auto-delete branches on merge | ✓                                             |
 
 Template: https://github.com/absa-group/cps-repository-template
-Files copied from the template: README, CONTRIBUTING, appid.json, .github/ (workflows, dependabot, issue/PR templates, CODEOWNERS)
+Files copied from the template: README, CONTRIBUTING, .github/ (workflows, dependabot, issue/PR templates, CODEOWNERS)
 ```
 
-For internal repos, there is no CODEOWNERS row (that step is OSS-only); instead add a Link to project row
-e.g. `| Linked project | ✓ project 203 |`. If a
-step failed, show ✗ with a short reason on that row so the user can fix it manually.
+For internal repos, there is no CODEOWNERS row (that step is OSS-only); instead add a Custom properties row
+and a Link to project row: `| Custom properties | ✓ CPS values set — Update before deploying |` and
+`| Linked project | ✓ project 203 |`. If a step failed, show ✗ with a short reason on that row so the user can fix it manually.
