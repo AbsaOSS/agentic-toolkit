@@ -24,7 +24,8 @@ Navigation hub for all guides in this repository. Browse by category below.
 
 | Guide | Description |
 |----|----|
-| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [Create Repository](./create-repository.md) | Creating a new AbsaOSS/absa-group repo from the template with standard guardrails |
+| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it    |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 | [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 

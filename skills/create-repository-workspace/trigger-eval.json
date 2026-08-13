@@ -1,0 +1,18 @@
+[
+  {"query": "spin up a new github repo under AbsaOSS for our new data-gateway service, public, I'll be admin", "should_trigger": true},
+  {"query": "I need a new project/codebase set up in absa-group for internal billing reconciliation", "should_trigger": true},
+  {"query": "make me a repo called schema-standards and add the standard ABSA labels", "should_trigger": true},
+  {"query": "scaffold a repository for the aquasec scan results, open source", "should_trigger": true},
+  {"query": "we're starting a new microservice, can you create the github repo and set codeowners + auto-delete branches", "should_trigger": true},
+  {"query": "new internal repo, link it to absa-group project 88 and make asmith admin", "should_trigger": true},
+  {"query": "create a repository for EventGate under our org", "should_trigger": true},
+  {"query": "set up a fresh repo with our recommended label taxonomy and an admin", "should_trigger": true},
+  {"query": "create an issue for the login bug in our api repo", "should_trigger": false},
+  {"query": "open a pull request from my feature branch", "should_trigger": false},
+  {"query": "create a new branch called feature/auth in this repo", "should_trigger": false},
+  {"query": "clone the absa-group/data-platform repo locally", "should_trigger": false},
+  {"query": "add a new label called hotfix to this existing repo", "should_trigger": false},
+  {"query": "init a git repo in my current local folder", "should_trigger": false},
+  {"query": "give bob admin access to our existing payments repo", "should_trigger": false},
+  {"query": "create a new GitHub Actions workflow file in the repo", "should_trigger": false}
+]

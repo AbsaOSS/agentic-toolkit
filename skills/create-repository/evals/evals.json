@@ -18,6 +18,12 @@
       "prompt": "Set up a private repo under absa-group named schema-standards. Admin and code owner is myteammate1. No project link needed. Just the standard labels and auto-delete branches. No particular technology.",
       "expected_output": "An annotated plan creating absa-group/schema-standards as private from the cps-repository-template with no license (internal), granting myteammate1 admin, CODEOWNERS with myteammate1, the ABSA label taxonomy cloned from the template, the Core Branches ruleset, auto-delete branches, and no project link call.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Can you spin up a repo for me? Open source, under AbsaOSS, called telemetry-exporter. I'm the admin and code owner, handle is kdlambda.",
+      "expected_output": "The skill activates on the 'spin up a repo' phrasing and produces an annotated gh command plan that creates AbsaOSS/telemetry-exporter as public from the cps-repository-template, adds the Apache-2.0 LICENSE, grants kdlambda admin, sets CODEOWNERS with kdlambda, clones the ABSA label taxonomy from the template, applies the Core Branches ruleset, and sets auto-delete branches — shown for confirmation before execution, with no project-link step (OSS repo).",
+      "files": []
     }
   ]
 }

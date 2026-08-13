@@ -4,7 +4,7 @@ description: >
   Creates and configures a brand-new GitHub repository under the Absa organizations: AbsaOSS (open source)
   or absa-group (internal). Runs a short interactive interview, then an annotated gh command plan that
   creates the repo from the shared cps-repository-template (copies file structure) and, as part of that setup,
-  adds theApache-2.0 license and populated CODEOWNERS file (open source repos), the standard Absa
+  adds the Apache-2.0 license and populated CODEOWNERS file (open source repos), the standard Absa
   label taxonomy (cloned from the template), the ruleset, and auto-delete-branches, plus project
   links for internal repos. Use this whenever someone wants to create, spin up, scaffold, or
   set up a new repository, project, codebase, or service repo under AbsaOSS or absa-group. Even if they don't
@@ -147,8 +147,11 @@ If yes, one PATCH sets `delete_branch_on_merge=true` on the repository.
 owned by a different org, and all Absa projects live under `absa-group`.
 So an OSS (`AbsaOSS`) repo can never link to them — **skip this step entirely for OSS repos**, don't even ask.
 
-For internal repos, ask: "Which absa-group project(s) should this be linked to? Enter project number(s),
-or press Enter to skip." Empty → skip.
+For internal repos, ask: "Which absa-group project(s) should this be linked to? Enter project number(s), or type `skip`
+to link none"
+
+An empty answer, `skip`, `none`, or `no` all mean to skip! If the user types the number(s) take them as an input;
+otherwise skip this step entirely.
 
 ## Build and confirm the plan
 
@@ -160,7 +163,6 @@ command(s) in a fenced code block underneath. **Do not** write the descriptions 
 code — the sentence goes above the block, the command goes in the block. Keep each description to one short
 sentence; the user will ask if something is unclear.
 
-```
 Plan for repository `{owner}/{name}` creation ({OSS|internal})
 
 The repository will be created based on the CPS repo template (https://github.com/absa-group/cps-repository-template),
@@ -248,11 +250,19 @@ the LICENSE `content=` base64, and the project-link `REPO_ID`/`PROJ_ID`); everyt
   collision or a permissions problem).
 - Everything after creation is independent. Use **best-effort**: if a call fails, keep going and collect the
   failure. `gh label clone` already skips labels that exist; a ruleset that already exists (HTTP 422) is fine.
+- **Rate limits:** if a call fails with an HTTP 429 / rate-limit / secondary-limit message, wait 2 seconds and
+  re-run that exact same command once. If it still fails, record it as a failed step and move on.
+- **SSO / SAML abort — never restart the interview.** If a call fails because the token isn't SSO-authorized
+  for the org, stop configuring further steps, but do **not** send the user back to question 1.
+  Re-print the **full approved plan verbatim** (it already bakes in every interview answer as concrete commands).
+  Then add a short note: which step failed, and that they can say **continue** to resume from the failed step.
+  No answer from the user is lost.
 
 End with **exactly** the block below and nothing else — no leading line like "All steps succeeded", no
 trailing commentary, no summary sentence before or after it. Output only the title line, a blank line, the
 results table listing **only the steps that ran** (no skipped rows), a blank line, then the template link, in
-that literal order, every time. For example (an OSS repo — no project-link row):
+that literal order, every time. **The one exception is failures** (see below): if any step failed, add the
+manual-finish note as shown below. Good day scenario example (an OSS repo — no project-link row):
 
 ```
 Repository `cps-test-repo` successfully created via /create-repository skill
@@ -273,4 +283,13 @@ Files copied from the template: README, CONTRIBUTING, .github/ (workflows, depen
 
 For internal repos, there is no CODEOWNERS row (that step is OSS-only); instead add a Custom properties row
 and a Link to project row: `| Custom properties | ✓ CPS values set — Update before deploying |` and
-`| Linked project | ✓ project 203 |`. If a step failed, show ✗ with a short reason on that row so the user can fix it manually.
+`| Linked project | ✓ project 203 |`. If a step failed, show ✗ with a short reason on that row.
+
+**When one or more steps failed, help the user finish manually.** Under the results block, add following block
+based on the step failing:
+> "Auto-delete branches" step failed. To finish it manually, run:
+> ```
+> gh api -X PATCH repos/{owner}/{name} -F delete_branch_on_merge=true
+> ```
+
+Then the Template link and next sentence follows.
