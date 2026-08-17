@@ -1,0 +1,94 @@
+[
+  {
+    "query": "Implement this feature using TDD.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the tests first, then we can implement the parser.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to implement a retry mechanism for our API client.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let's do red-green-refactor for the new billing module.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add test coverage for the discount service before I add the new feature.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write failing tests first for the authentication middleware.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix the tax calculation bug in the order service.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a rate limiter function to the API gateway.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can we write unit tests before coding the new export feature?",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a CSV export utility for the reporting module.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let's do this the right way — spec it out and write tests before touching the code.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let me identify all the edge cases and boundary conditions for this authentication module before writing code.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to document our design decisions for the cache invalidation strategy before we implement.",
+    "should_trigger": true
+  },
+  {
+    "query": "What test cases do we need to cover for the file upload feature?",
+    "should_trigger": true
+  },
+  {
+    "query": "What's the difference between unit tests and integration tests?",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you review my existing test suite for gaps?",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain TDD to me with an example.",
+    "should_trigger": false
+  },
+  {
+    "query": "Refactor this function to reduce nesting. All tests already pass.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design the service layer for a payment processing module.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to document design decisions for the cache invalidation strategy before we build it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add test coverage to the checkout flow before the sprint release.",
+    "should_trigger": true
+  },
+  {
+    "query": "What does TDD stand for and when should I use it?",
+    "should_trigger": false
+  },
+  {
+    "query": "Analyze my test suite and tell me if I have good coverage.",
+    "should_trigger": false
+  }
+]
