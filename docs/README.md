@@ -25,6 +25,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide | Description |
 |----|----|
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [TDD Workflow](./tdd-workflow.md)       | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 | [Unit Test Standards](./test-unit-standards.md)  | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
 | [Unit Test Writer](./test-unit-write.md)         | Generate complete unit tests from scratch following language-specific standards |
