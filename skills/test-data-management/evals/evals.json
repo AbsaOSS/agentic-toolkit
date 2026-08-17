@@ -1,0 +1,144 @@
+{
+  "skill_name": "test-data-management",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "The first six tests in evals/files/separate-variation-tests.py all test the same apply_tax() behaviour with different rate values. How should I restructure this?",
+      "expected_output": "Recommend collapsing the six separate test functions into a single @pytest.mark.parametrize test with a data table: @pytest.mark.parametrize('amount,rate,expected', [(Decimal('100.00'), 0, Decimal('100.00')), (Decimal('100.00'), 5, Decimal('105.00')), ...]). The two failure-path tests at the bottom test distinct failure logic and should remain as separate named tests.",
+      "files": [
+        "evals/files/separate-variation-tests.py"
+      ],
+      "expectations": [
+        "Parametrize is recommended as the restructuring approach",
+        "The data table includes all six rate variations",
+        "Parametrize syntax is correct for pytest",
+        "The two failure-path tests are identified as exceptions that should stay separate",
+        "Explanation of why to use vs not use parametrize is given"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "regression",
+      "prompt": "Review the test data setup in evals/files/copy-paste-data-setup.py. The Package construction is repeated everywhere — how do I fix this?",
+      "expected_output": "Recommend a make_package() factory function with keyword overrides for the fields that vary per test. Place it in conftest.py as a fixture or in a shared factories.py module. Each test then calls make_package(weight_kg=10.0) and only specifies the field under test. Also flag the non-deterministic datetime.now() in test_shipping_audit_log_timestamp — it should be patched to a fixed value.",
+      "files": [
+        "evals/files/copy-paste-data-setup.py"
+      ],
+      "expectations": [
+        "Factory function pattern is recommended",
+        "Factory function signature uses keyword overrides with sensible defaults",
+        "Placement in conftest.py or factories.py is mentioned",
+        "Each test example only overrides the relevant field",
+        "Non-deterministic datetime.now() is flagged",
+        "Fixed clock / patched datetime is recommended as the fix"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Can I use an export of production customer records as test data? It's anonymised.",
+      "expected_output": "No. Must never use real production data in tests — not even anonymised exports. Generate synthetic data instead using a factory function or a generator script that produces data with the same shape and constraints. If a realistic dataset is needed, write and commit the generator script, not the generated data.",
+      "files": [],
+      "expectations": [
+        "Production data — even anonymised — is explicitly prohibited",
+        "Synthetic data generation is recommended as the alternative",
+        "Generator script pattern (commit the generator, not the data) is mentioned"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "How should I handle timestamps in my test data? My tests keep breaking because the expected 'placed_at' value changes every run.",
+      "expected_output": "Inject a fixed clock or patch datetime.now() to a deterministic value. Show the mocker.patch pattern for pytest, fixing the datetime to a constant like FIXED_NOW = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc). Assert the exact isoformat value instead of checking is not None.",
+      "files": [],
+      "expectations": [
+        "Root cause identified: non-deterministic datetime.now() in production code",
+        "mocker.patch or monkeypatch recommended for pytest",
+        "FIXED_NOW constant pattern demonstrated",
+        "Assertion on exact timestamp value (not is-not-None) shown",
+        "Clock injection as a design alternative is mentioned"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Should I use a mock or a stub for the payment gateway?",
+      "expected_output": "This is a test double selection question — out of scope for test-data-management. Response should redirect to a mocking/test-doubles guide and not provide factory or parametrize advice.",
+      "files": [],
+      "expectations": [
+        "Skill correctly identifies this as a mocking question",
+        "Response defers to a mocking/test-doubles guide, not test-data-management"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "All my tests use the same hardcoded order data. When I change one test, it breaks others. How do I fix this?",
+      "expected_output": "Agent identifies the root cause as shared mutable test data or shared hardcoded values. Recommends the factory function pattern: create a make_order() factory with sensible defaults and keyword overrides. Each test calls make_order(status='PENDING') and only overrides the fields it cares about. Hardcoded data shared across tests causes cross-test coupling — a change to the shared dict/object breaks all tests that reference it. Place the factory in conftest.py.",
+      "files": [],
+      "expectations": [
+        "Identifies shared hardcoded data as the root cause",
+        "Recommends factory function with keyword overrides",
+        "Explains cross-test coupling as the failure mechanism",
+        "Notes conftest.py placement"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "My test factory creates an order with an embedded Customer object. The Customer itself has an embedded Address. How deep should the factory defaults go?",
+      "expected_output": "Factories should be composable: create a make_address() factory and a make_customer(address=make_address()) factory, then make_order(customer=make_customer()). This allows any test to override at any level: make_order(customer=make_customer(address=make_address(country='ZA'))). Do not hardcode nested objects as deeply-nested dict literals — they are hard to override and impossible to reuse. Each factory owns its own level of the object graph.",
+      "files": [],
+      "expectations": [
+        "Recommends composable nested factories",
+        "Shows override at any level of nesting",
+        "Warns against deeply-nested dict literals",
+        "Notes each factory owns one level of the object graph"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me the factory pattern for creating test Order objects with sensible defaults and override support.",
+      "expected_output": "The factory function is in a single fenced ```python code block. The function is named make_order() and accepts keyword arguments with defaults. It returns a dict or dataclass with at least: order_id, user_id, sku, quantity, status. A usage example showing override syntax (make_order(status='CANCELLED')) follows in the same or a second code block. No test assertions appear in the factory definition.",
+      "files": [],
+      "expectations": [
+        "Factory in fenced ```python code block",
+        "Named make_order() with keyword defaults",
+        "Returns dict or dataclass with order_id, user_id, sku, quantity, status",
+        "Usage example with override syntax shown",
+        "No assertions in the factory body"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "happy-path",
+      "prompt": "My integration tests are leaving records in the database. How do I clean up after each test?",
+      "expected_output": "Recommend at least two cleanup strategies from: (1) wrap each test in a transaction and roll back after, (2) truncate tables in afterEach/teardown, (3) use test containers with per-test teardown, (4) use a unique run-scoped ID/prefix for all created records so cleanup is targeted. State that unit tests do not need cleanup. Warn that failing to clean up causes test pollution and non-deterministic failures.",
+      "files": [],
+      "expectations": [
+        "At least two cleanup strategies named",
+        "Transaction rollback is mentioned as an option",
+        "Test containers or afterEach teardown mentioned",
+        "Run-scoped prefix/ID strategy mentioned",
+        "States unit tests do not need cleanup",
+        "Test pollution / non-determinism risk is explained"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "edge-case",
+      "prompt": "I'm writing tests in TypeScript with Jest. How do I parametrize a test that checks the same discount calculation with five different discount rates?",
+      "expected_output": "Recommend Jest test.each with an inline data table. Show the test.each([[rate, input, expected], ...]) syntax and the it/test function signature receiving the parameters. Mention that this is the TypeScript/Jest equivalent of pytest.mark.parametrize and xUnit Theory. The five rate variations should collapse into a single test block.",
+      "files": [],
+      "expectations": [
+        "Jest test.each is recommended",
+        "Correct test.each([[...], ...]) syntax shown",
+        "Test function signature using destructured or positional params shown",
+        "Equivalence to pytest.mark.parametrize or xUnit Theory noted",
+        "All five rate variations collapse into one test block"
+      ]
+    }
+  ]
+}
