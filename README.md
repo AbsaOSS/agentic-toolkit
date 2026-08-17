@@ -78,6 +78,7 @@ its purpose, trigger phrases, and full instructions.
 | Skill                                                | Description                                                                                                                         |
 |------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | **[pr-review](./skills/pr-review/)**                 | Pull request code review — reviews diffs for risk, security issues, API contract changes, dependency bumps, CI/CD and infrastructure changes. Produces concise Blocker / Important / Nit comments. |
+| **[test-data-management](./skills/test-data-management/)** | Test data setup and management — factory functions, parametrised tests, deterministic seeds, fixture reuse, and production-data rules for unit and integration tests. |
 | **[tdd-workflow](./skills/tdd-workflow/)**           | Test-driven development: upfront SPEC.md planning + confirmation gate (avoids batch design), then vertical-sliced implementation (one test → one code cycle at a time, not all tests then all code). |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
 
