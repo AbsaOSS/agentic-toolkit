@@ -8,6 +8,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 |----|----|
 | [Getting Started](./getting-started.md) | What skills are, how to install them, Copilot CLI usage |
 | [Contributing](../CONTRIBUTING.md)  | Skill folder layout, frontmatter, description writing, body guidelines, PR process |
+| [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 | [Skill Testing](./skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues |
 
@@ -25,7 +26,12 @@ Navigation hub for all guides in this repository. Browse by category below.
 | Guide | Description |
 |----|----|
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
+| [TDD Workflow](./tdd-workflow.md)       | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
+| [Test Data Management](./test-data-management.md)   | How the test-data-management skill works, what it covers, and when it fires |
 | [Test Mocking Patterns](./test-mocking-patterns.md) | Double selection, patching strategies, cleanup, and language-specific guidance |
+| [Unit Test Standards](./test-unit-standards.md)  | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
+| [Unit Test Writer](./test-unit-write.md)         | Generate complete unit tests from scratch following language-specific standards |
+| [Unit Test Reviewer](./test-unit-review.md)      | Systematically audit unit tests and report findings by severity |
 | [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.

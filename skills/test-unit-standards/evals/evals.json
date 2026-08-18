@@ -1,0 +1,138 @@
+{
+  "skill_name": "test-unit-standards",
+  "evals": [
+    {
+      "id": 1,
+      "category": "reference",
+      "prompt": "What are our unit test standards? Give me the checklist before I start writing tests.",
+      "expected_output": "Agent summarises the six standards categories from the skill: isolation (no real I/O, mock all boundaries, independent tests), scope (one unit, public interface only, no private access), naming/structure (scenario-stating names, one behavior per test, docstring required), assertions (return values/exceptions/logs, success + ≥1 failure path, boundaries and null/empty), and fixtures (idiomatic location, reuse not copy-paste, documented). It presents these as reference guidance, not as an audit of any specific file.",
+      "files": [],
+      "expectations": [
+        "All six categories are described: isolation, scope, naming/structure, assertions, coverage, fixtures",
+        "Response is reference guidance, not a file audit",
+        "No specific test file is assumed or reviewed",
+        "Does not fabricate violations or apply Blocker/Important/Nit findings to non-existent code"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "reference",
+      "prompt": "What's the rule on accessing private members in unit tests?",
+      "expected_output": "Agent explains the scope rule: tests should verify behaviour through the public interface only and must not call private methods or read private attributes directly. It explains why — private members are implementation details that change without affecting the contract, so tests coupled to them are brittle. It points to the language reference for the specific convention. No file is reviewed.",
+      "files": [],
+      "expectations": [
+        "States that tests should use the public interface only",
+        "States that private methods/attributes should not be accessed directly",
+        "Explains the rationale (implementation details, brittleness)",
+        "Does not audit a specific file"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "reference",
+      "prompt": "What naming convention should our unit test functions follow, and how many assertions per test?",
+      "expected_output": "Agent states test names must state the scenario following the language-reference format (e.g. test_<unit>_<condition>_<expected>), and that each test should cover one logical behaviour — multiple asserts are acceptable only when they collectively confirm a single outcome. It also notes a docstring stating the scenario is required and loose comments between methods are discouraged. Reference guidance only.",
+      "files": [],
+      "expectations": [
+        "Names must state the scenario (test_<unit>_<condition>_<expected> or language-reference format)",
+        "One logical behaviour per test; multiple asserts OK only if confirming a single outcome",
+        "Docstring stating the scenario is required",
+        "No specific file is reviewed"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "reference",
+      "prompt": "What are the rules for failure-path and boundary coverage in our unit tests?",
+      "expected_output": "Agent explains the assertion/coverage standard: every behaviour needs success plus at least one failure path, plus boundary values and empty/null inputs. Assertions must be specific (return values, exceptions, contract-sensitive log messages, exit codes) rather than generic truthy or is-not-None checks. Reference guidance only — no file audit.",
+      "files": [],
+      "expectations": [
+        "Requires success plus at least one failure path per behaviour",
+        "Requires boundary values and empty/null input coverage",
+        "Requires specific assertions over generic truthy/is-not-None checks",
+        "Does not audit a specific file"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "reference",
+      "prompt": "Where should pytest fixtures live and how should they be documented?",
+      "expected_output": "Agent states fixtures belong in a framework-idiomatic location (for pytest, conftest.py), must be reused across tests rather than copy-pasted into each test, and must be documented with their purpose and any side effects. Reference guidance only.",
+      "files": [],
+      "expectations": [
+        "Fixtures placed in idiomatic location (pytest: conftest.py)",
+        "Reuse across tests, no copy-pasted setup",
+        "Document purpose and side effects",
+        "No specific file is reviewed"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "edge-case",
+      "prompt": "A test uses pytest's tmp_path fixture to write a file and then reads it back. Is using a real file system in a unit test a violation of our standards?",
+      "expected_output": "Yes, but it is a borderline case worth explaining. The standard says no real I/O in unit tests. tmp_path is an in-process temporary directory that does touch the real file system, so strictly it violates the isolation rule. However, if the function under test explicitly takes a file path and its core logic is the file handling, the choice is: (1) refactor to accept a file-like object (preferred — allows full in-memory testing); (2) accept tmp_path as a pragmatic exception only when refactoring is disproportionate. Flag it as Important with the refactoring suggestion as the preferred fix.",
+      "files": [],
+      "expectations": [
+        "Identifies tmp_path as real file system I/O — a standards violation",
+        "Notes the borderline nature of the case",
+        "Recommends refactoring to accept a file-like object as the preferred fix",
+        "Acknowledges tmp_path as a pragmatic exception only when refactoring is disproportionate",
+        "Flags as Important, not Nit"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "Is it OK for a single unit test to have several assert statements, or should it be one assert per test?",
+      "expected_output": "Agent explains the one-logical-behaviour-per-test rule: multiple assert statements are acceptable when they collectively confirm a single outcome (e.g. asserting several fields of one returned object), but a test asserting several unrelated behaviours should be split so a failure points to a single invariant. Reference guidance, not a file audit.",
+      "files": [],
+      "expectations": [
+        "States one logical behaviour per test, not strictly one assert",
+        "Multiple asserts OK when confirming a single outcome",
+        "Unrelated behaviours should be split into separate tests",
+        "Explains the rationale (failure localisation)"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "negative",
+      "prompt": "Can you write a docstring for the UserProfileService class? I don't need tests right now.",
+      "expected_output": "Assistant writes a docstring for the class without applying unit test standards. It does not flag test coverage gaps, enforce test naming, or cite isolation rules — because no test code was provided and none was requested.",
+      "files": [],
+      "expectations": [
+        "Assistant produces a docstring, not unit tests",
+        "Skill does not apply test naming, isolation, or assertion rules to a non-test request",
+        "No test coverage gaps, fixture requirements, or boundary coverage are cited",
+        "The docstring output is idiomatic and useful if produced"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "negative",
+      "prompt": "The calculate() method in evals/files/mixed-source-and-tests.py uses a chain of if/elif blocks. Can you refactor it to use a cleaner lookup structure? The test file is there for reference — don't change the tests.",
+      "expected_output": "Assistant refactors the calculate() method (e.g. replacing the if/elif weight tiers with a sorted lookup table). It does NOT apply unit test standards to the test portion of the file, flag test names, assert coverage gaps, or cite isolation rules — because the request is a source-code refactor, not a test review.",
+      "files": [
+        "evals/files/mixed-source-and-tests.py"
+      ],
+      "expectations": [
+        "Assistant refactors the calculate() method as requested",
+        "Skill does not flag the test functions for naming or assertion issues",
+        "No test coverage gaps, fixture requirements, or isolation rules are cited",
+        "The existing passing tests are left unchanged",
+        "Scope note behaviour is correctly applied: task is non-test so standards are not enforced"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "negative",
+      "prompt": "Can you review these unit tests and tell me what's wrong with them? evals/files/some-tests.py",
+      "expected_output": "This is a review/audit request for a specific file, which routes to test-unit-review — not the standards reference layer. The standards skill provides the rules that the review skill applies; it does not itself perform file audits. If handled here, it should defer to test-unit-review for the audit.",
+      "files": [],
+      "expectations": [
+        "Skill does not perform a file-by-file audit itself",
+        "Skill defers reviewing/auditing an existing file to test-unit-review",
+        "Reference layer boundary is respected (standards informs, review audits)"
+      ]
+    }
+  ]
+}
