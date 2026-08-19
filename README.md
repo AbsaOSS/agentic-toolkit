@@ -12,6 +12,9 @@ Tomorrow the scope may expand to agents, MCP servers, and plugins as agentic too
 **Who is this for?** Anyone who uses AI for AI-assisted engineering. The primary audience is technical: engineers, tech
 leads, architects, or anyone on a technical team.
 
+
+
+
 ## Table of Contents
 
 - [Scope](#scope)
