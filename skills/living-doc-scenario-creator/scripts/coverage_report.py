@@ -37,6 +37,11 @@ Code recognizes states: "active", "in_review" (lowercase with underscores).
 
 Exit code: 0 if all active/in-review ACs are covered, 1 if gaps exist.
 
+Tag grammar and tag-line-walking are shared with scan_ac_links.py via
+skills/shared/lib/ac_tag.py so the two tools cannot disagree on what a valid @AC: tag
+is — previously this script accepted FEAT and slug-parent tags that scan_ac_links.py
+rejected as malformed, so the same tag was "covered" here and "malformed" there.
+
 Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
@@ -45,19 +50,11 @@ import re
 import sys
 from pathlib import Path
 
-# Matches an @AC: Cucumber tag with optional /param:value segments:
-#   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input
-# Group 1 captures the AC ID only (params are ignored for coverage purposes).
-# Both uppercase and lowercase @AC: prefixes are matched; output is always uppercase.
-# \d{2} is followed by a negative lookahead (?!\d) so a trailing extra digit —
-# @AC:US-1-011 — fails to match at all (finditer has no line-level $ anchor to lean
-# on, since multiple tags can share a line) instead of silently matching a truncated
-# @AC:US-1-01 and canonicalizing the malformed tag as if it were valid.
-AC_TAG = re.compile(
-    r"@(?:AC):((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}(?!\d))(?:/[a-z][\w-]*:[^\s/@]+)*",
-    re.IGNORECASE,
-)
-TAG_LINE = re.compile(r"^\s*@\S+")
+# Resolve the shared library path relative to this script
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+
+from ac_tag import canonicalize_ac_id, get_tag_lines_above, iter_ac_tags
+
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*", re.IGNORECASE)
 
 # AC states that count toward coverage: ACTIVE, IN_REVIEW (normalized to lowercase with underscores).
@@ -80,30 +77,10 @@ def canonicalize_numeric_id(parent_type: str, num_str: str) -> str:
 def get_ac_tags_above(lines: list[str], scenario_index: int) -> list[str]:
     """Return all @AC: tag values (canonicalized) from consecutive tag lines immediately above a scenario."""
     ac_ids: list[str] = []
-    i = scenario_index - 1
-    while i >= 0 and TAG_LINE.match(lines[i]):
-        for m in AC_TAG.finditer(lines[i]):
-            raw_id = m.group(1).upper()
-            canonical_id = _canonicalize_ac_id(raw_id)
-            ac_ids.append(canonical_id)
-        i -= 1
+    for line in get_tag_lines_above(lines, scenario_index):
+        for m in iter_ac_tags(line):
+            ac_ids.append(canonicalize_ac_id(m.group(1).upper()))
     return ac_ids
-
-
-def _canonicalize_ac_id(ac_id: str) -> str:
-    """
-    Canonicalize AC ID by zero-padding numeric parent IDs.
-    E.g., US-1-01 → US-001-01, FEAT-1-01 → FEAT-001-01
-    """
-    # Match patterns like US-1-01, FEAT-1-01, FUNC-2-03
-    m = re.match(r"^(US|FEAT|FUNC)-((?:\d+)|(?:[a-z0-9]+(?:-[a-z0-9]+)*))-(\d{2})$", ac_id, re.IGNORECASE)
-    if m:
-        parent_type = m.group(1).upper()
-        parent_id = m.group(2)
-        seq = m.group(3)
-        canonical_parent = canonicalize_numeric_id(parent_type, parent_id)
-        return f"{canonical_parent}-{seq}"
-    return ac_id
 
 
 def collect_covered_ac_ids(features_dir: Path) -> dict[str, list[str]]:
@@ -148,9 +125,13 @@ def normalise_ac_id(us_id: str, raw_id: str) -> str:
         raw = raw[3:]
     raw = raw.upper()
     
-    # Full AC ID format: canonicalize it
+    # Full AC ID format: canonicalize it. canonicalize_ac_id() only normalises US|FUNC
+    # (the canonical AC-parent grammar) and returns anything else — e.g. a stray
+    # FEAT-prefixed catalog entry — unchanged; such an entry can never have a matching
+    # Gherkin @AC: tag (same shared grammar there) and will correctly surface as a
+    # coverage gap rather than being silently accepted.
     if re.match(r"^(US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}$", raw, re.IGNORECASE):
-        return _canonicalize_ac_id(raw)
+        return canonicalize_ac_id(raw)
     
     # Stored as just the suffix: '01' → 'US-001-01' (with parent ID canonicalized)
     if re.match(r"^\d{2}$", raw):

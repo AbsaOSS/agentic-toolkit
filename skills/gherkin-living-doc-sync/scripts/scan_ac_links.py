@@ -22,6 +22,9 @@ Constraint: Parent IDs in @AC: tags must be numeric only (US-001, FUNC-042).
 Slug-based Feature IDs (e.g., FEAT-checkout-page) are not permitted in AC tag references;
 see living_doc_id.py for the corresponding catalog-level constraint.
 
+Tag grammar and tag-line-walking are shared with coverage_report.py via
+skills/shared/lib/ac_tag.py so the two tools cannot disagree on what a valid @AC: tag is.
+
 Glossary reference: skills/shared/references/living-doc-glossary.md
 """
 
@@ -29,22 +32,13 @@ import re
 import sys
 from pathlib import Path
 
-# Matches a @AC: Cucumber tag with optional /param:value segments:
-#   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
-#   Parent ID segment must be numeric only (US-001, not US-checkout);
-#   slug-based FEAT IDs like FEAT-login-page are not permitted in AC tags.
-#   Anchored with $ (tag is always matched as a single whitespace-free token, see
-#   get_tags_above) so a trailing extra digit — @AC:US-1-011 — fails to match at all
-#   instead of silently matching a truncated @AC:US-1-01.
-AC_TAG = re.compile(
-    r"@AC:((?:US|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)$",
-    re.IGNORECASE,
-)
+# Resolve the shared library path relative to this script
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+
+from ac_tag import TAG_LINE, get_tag_lines_above, match_ac_tag
+
 # Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FUNC-001-01 (...)
 AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FUNC)-\d+-\d{2})", re.IGNORECASE)
-# Canonical AC ID only (no params): AC:<parent>-<nn>
-AC_ID_FORMAT = re.compile(r"^AC:(US|FUNC)-\d+-\d{2}$", re.IGNORECASE)
-TAG_LINE = re.compile(r"^\s*@\S+")
 COMMENT_LINE = re.compile(r"^\s*#")
 SCENARIO_LINE = re.compile(r"^\s*(Scenario:|Scenario Outline:)\s*(.+)", re.IGNORECASE)
 
@@ -62,10 +56,8 @@ def is_living_doc_file(path: Path, living_doc_paths: tuple[str, ...] = LIVING_DO
 def get_tags_above(lines: list[str], scenario_index: int) -> list[str]:
     """Return all Cucumber tag tokens from consecutive tag lines immediately above a scenario."""
     tags: list[str] = []
-    i = scenario_index - 1
-    while i >= 0 and TAG_LINE.match(lines[i]):
-        tags.extend(re.findall(r"@\S+", lines[i]))
-        i -= 1
+    for line in get_tag_lines_above(lines, scenario_index):
+        tags.extend(re.findall(r"@\S+", line))
     return tags
 
 
@@ -121,7 +113,7 @@ def scan_file(path: Path) -> list[dict]:
 
         for tag in ac_tags:
             # Extract AC ID and optional /param:value segments
-            m = AC_TAG.match(tag)
+            m = match_ac_tag(tag)
             if not m:
                 issues.append({
                     "file": str(path),
@@ -136,19 +128,6 @@ def scan_file(path: Path) -> list[dict]:
                 })
                 continue
             ac_id_raw = "AC:" + m.group(1)  # reconstruct full AC ID
-            if not AC_ID_FORMAT.match(ac_id_raw):
-                issues.append({
-                    "file": str(path),
-                    "line": lineno,
-                    "scenario": scenario_title,
-                    "issue": "malformed_ac_id",
-                    "severity": "error",
-                    "detail": (
-                        f"'{ac_id_raw}' does not match AC:<parent>-<nn> format "
-                        "(e.g. AC:US-001-01, AC:US-1-01)."
-                    ),
-                })
-                continue
             plain_id = m.group(1).upper()  # e.g. US-1-01
             # Include /param:value suffixes in duplicate tracking to allow multi-aspect tagging.
             # Scenarios with @AC:US-1-01/aspect:username-input and @AC:US-1-01/aspect:password-input

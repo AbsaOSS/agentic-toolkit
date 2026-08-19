@@ -13,11 +13,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-from scan_ac_links import AC_TAG, scan_file
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+from ac_tag import match_ac_tag  # noqa: E402 — path must be set up first
+
+from scan_ac_links import scan_file  # noqa: E402
 
 
 def test_valid_tag_matches_in_full():
-    m = AC_TAG.match("@AC:US-1-01")
+    m = match_ac_tag("@AC:US-1-01")
     assert m is not None, "valid tag should match"
     assert m.group(0) == "@AC:US-1-01", m.group(0)
     print("✓ Valid @AC: tag matches in full")
@@ -25,20 +28,26 @@ def test_valid_tag_matches_in_full():
 
 def test_trailing_extra_digit_does_not_match():
     """@AC:US-1-011 must not silently match as @AC:US-1-01."""
-    assert AC_TAG.match("@AC:US-1-011") is None
+    assert match_ac_tag("@AC:US-1-011") is None
     print("✓ Malformed tag with a trailing extra digit does not match at all")
 
 
 def test_trailing_garbage_does_not_match():
-    assert AC_TAG.match("@AC:US-1-01x") is None
+    assert match_ac_tag("@AC:US-1-01x") is None
     print("✓ Malformed tag with trailing non-digit garbage does not match at all")
 
 
 def test_aspect_param_still_matches():
-    m = AC_TAG.match("@AC:US-001-01/aspect:username-input")
+    m = match_ac_tag("@AC:US-001-01/aspect:username-input")
     assert m is not None
     assert m.group(1) == "US-001-01", m.group(1)
     print("✓ Aspect-param tags still match correctly")
+
+
+def test_feat_parent_still_rejected():
+    """FEAT is never a valid AC parent — Features own Functionalities, not ACs."""
+    assert match_ac_tag("@AC:FEAT-016-01") is None
+    print("✓ FEAT-parent tags are still rejected (shared grammar, US|FUNC only)")
 
 
 def test_scan_file_flags_truncated_tag_as_malformed():
@@ -66,6 +75,7 @@ if __name__ == "__main__":
         test_trailing_extra_digit_does_not_match()
         test_trailing_garbage_does_not_match()
         test_aspect_param_still_matches()
+        test_feat_parent_still_rejected()
         test_scan_file_flags_truncated_tag_as_malformed()
         print("\n✓ All tests passed!")
     except AssertionError as e:
