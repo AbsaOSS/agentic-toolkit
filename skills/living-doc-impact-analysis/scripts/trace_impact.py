@@ -77,6 +77,10 @@ _CONFIG_PATTERNS = [
 ]
 _TEST_PATTERN = re.compile(r"(test|spec|mock|fixture|stub)", re.IGNORECASE)
 
+# Canonical AC-ID grammar (skills/shared/references/living-doc-glossary.md):
+# AC:<PARENT>-<nn>, where <PARENT> is US-<n> or FUNC-<nnn>. Captures the parent ID.
+_AC_ID_PATTERN = re.compile(r"^AC:(US-\d+|FUNC-\d+)-\d{2}$")
+
 
 def classify_file(path: str) -> str:
     """Return a surface category for the given file path."""
@@ -212,25 +216,25 @@ def trace_entities(feature_ids: list[str], catalog_data: dict) -> dict:
                     {"id": us_id, "title": us.get("title", us.get("name", ""))}
                 )
 
-    # Collect ACs and linked scenarios from the matched entities
+    # Collect ACs and linked scenarios from the matched entities.
+    # Canonical AC-ID grammar: AC:<PARENT>-<nn>, where <PARENT> is US-<n> or FUNC-<nnn>
+    # (see skills/shared/references/living-doc-glossary.md). Extract the parent and check
+    # it against the User Stories / Functionalities actually traced above.
+    affected_ids = {e["id"] for e in result["user_stories"]} | {
+        e["id"] for e in result["functionalities"]
+    }
     reviewed_acs: set[str] = set()
     rerun_scenarios: set[str] = set()
     for ac_id, test_link in known_test_links.items():
-        # Match ACs belonging to affected User Stories or Functionalities
-        owner = ac_id.split("-AC-")[0] if "-AC-" in ac_id else None
-        if not owner:
-            # Try prefix match on US-nnn or FUNC-nnn
-            for entity_list, key in [(result["user_stories"], "id"), (result["functionalities"], "id")]:
-                if any(ac_id.startswith(e[key]) for e in entity_list):
-                    owner = "matched"
-                    break
-        if owner:
-            if ac_id not in reviewed_acs:
-                reviewed_acs.add(ac_id)
-                result["acs_requiring_review"].append(ac_id)
-            if test_link and isinstance(test_link, str) and test_link not in rerun_scenarios:
-                rerun_scenarios.add(test_link)
-                result["scenarios_requiring_rerun"].append(test_link)
+        m = _AC_ID_PATTERN.match(ac_id)
+        if not m or m.group(1) not in affected_ids:
+            continue
+        if ac_id not in reviewed_acs:
+            reviewed_acs.add(ac_id)
+            result["acs_requiring_review"].append(ac_id)
+        if test_link and isinstance(test_link, str) and test_link not in rerun_scenarios:
+            rerun_scenarios.add(test_link)
+            result["scenarios_requiring_rerun"].append(test_link)
 
     return result
 
