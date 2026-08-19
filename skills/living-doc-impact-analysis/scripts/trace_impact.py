@@ -145,7 +145,7 @@ def default_impact_level(category: str) -> str:
 # ── Catalog helpers ────────────────────────────────────────────────────────────
 
 def load_catalog(path: str) -> dict:
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -153,7 +153,7 @@ def parse_diff_files(diff_path: str) -> list[str]:
     """Extract changed file paths from a unified diff (git diff format)."""
     seen: set[str] = set()
     changed: list[str] = []
-    with open(diff_path) as f:
+    with open(diff_path, encoding="utf-8") as f:
         for line in f:
             if line.startswith("+++ ") or line.startswith("--- "):
                 raw = line[4:].strip()
@@ -382,7 +382,7 @@ def main() -> None:
     if args.summary:
         print_summary(impact_map)
     elif args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(impact_map, f, indent=2)
         print(f"Impact map written to {args.output}", file=sys.stderr)
     else:

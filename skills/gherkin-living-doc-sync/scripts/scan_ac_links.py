@@ -165,7 +165,11 @@ def scan_file(path: Path) -> list[dict]:
     return issues
 
 
-def main(features_dir: str, living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS) -> None:
+def main(
+    features_dir: str,
+    living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS,
+    allow_empty: bool = False,
+) -> None:
     root = Path(features_dir)
     if not root.exists():
         print(f"Error: directory not found: {features_dir}")
@@ -181,7 +185,15 @@ def main(features_dir: str, living_doc_paths: tuple[str, ...] = LIVING_DOC_PATHS
     if not feature_files:
         print(f"No living-doc .feature files found under {features_dir}")
         print(f"Expected files under {' or '.join(repr(p) for p in living_doc_paths)}")
-        return
+        if allow_empty:
+            print("--allow-empty set: treating this as pass (exit 0).")
+            return
+        print(
+            "Exit code 1: zero feature files usually means a wrong --us-dir/--func-dir "
+            "or a different repo layout, not an intentionally empty project. "
+            "Pass --allow-empty to treat this as a pass instead."
+        )
+        sys.exit(1)
 
     all_issues: list[dict] = []
     for f in feature_files:
@@ -245,10 +257,16 @@ if __name__ == "__main__":
         default="features/liv_doc_func/",
         help="Living-doc Functionality directory fragment (Project Profile feature_dirs.functionality).",
     )
+    parser.add_argument(
+        "--allow-empty",
+        action="store_true",
+        help="Exit 0 when zero living-doc feature files are found, instead of the default exit 1. "
+        "Use only when the project intentionally has no living-doc feature files yet.",
+    )
     args = parser.parse_args()
 
     def _norm(fragment: str) -> str:
         fragment = fragment.replace("\\", "/").strip("/")
         return f"{fragment}/"
 
-    main(args.features_dir, (_norm(args.us_dir), _norm(args.func_dir)))
+    main(args.features_dir, (_norm(args.us_dir), _norm(args.func_dir)), args.allow_empty)

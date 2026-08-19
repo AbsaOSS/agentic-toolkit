@@ -77,7 +77,7 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     try:
         import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
 
-        with open(profile_path) as f:
+        with open(profile_path, encoding="utf-8") as f:
             profile = yaml.safe_load(f) or {}
     except (FileNotFoundError, ImportError, ValueError) as exc:
         print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
@@ -351,7 +351,7 @@ def main() -> None:
         if args.entity == "-":
             entity = json.load(sys.stdin)
         else:
-            with open(args.entity) as f:
+            with open(args.entity, encoding="utf-8") as f:
                 entity = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as exc:
         print(f"Error reading entity: {exc}", file=sys.stderr)
@@ -360,7 +360,7 @@ def main() -> None:
     catalog: dict | None = None
     if args.catalog:
         try:
-            with open(args.catalog) as f:
+            with open(args.catalog, encoding="utf-8") as f:
                 catalog = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as exc:
             print(f"Error reading catalog: {exc}", file=sys.stderr)

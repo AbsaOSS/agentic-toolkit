@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
 from ac_tag import match_ac_tag  # noqa: E402 — path must be set up first
 
-from scan_ac_links import scan_file  # noqa: E402
+from scan_ac_links import main, scan_file  # noqa: E402
 
 
 def test_valid_tag_matches_in_full():
@@ -69,6 +69,26 @@ def test_scan_file_flags_truncated_tag_as_malformed():
     print("✓ scan_file() flags a truncated tag as malformed, not as AC:US-1-01")
 
 
+def test_zero_feature_files_exits_nonzero_by_default():
+    """A misconfigured --us-dir/--func-dir (or wrong repo layout) that finds zero
+    feature files must fail CI by default, not silently print a note and exit 0."""
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            main(tmp)
+        except SystemExit as e:
+            assert e.code == 1, f"expected exit 1, got {e.code}"
+        else:
+            raise AssertionError("expected SystemExit(1), main() returned normally")
+    print("✓ Zero feature files found exits 1 by default")
+
+
+def test_zero_feature_files_allow_empty_exits_zero():
+    """--allow-empty is the explicit opt-in for an intentionally empty project."""
+    with tempfile.TemporaryDirectory() as tmp:
+        main(tmp, allow_empty=True)  # must not raise/exit non-zero
+    print("✓ --allow-empty treats zero feature files as a pass")
+
+
 if __name__ == "__main__":
     try:
         test_valid_tag_matches_in_full()
@@ -77,6 +97,8 @@ if __name__ == "__main__":
         test_aspect_param_still_matches()
         test_feat_parent_still_rejected()
         test_scan_file_flags_truncated_tag_as_malformed()
+        test_zero_feature_files_exits_nonzero_by_default()
+        test_zero_feature_files_allow_empty_exits_zero()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

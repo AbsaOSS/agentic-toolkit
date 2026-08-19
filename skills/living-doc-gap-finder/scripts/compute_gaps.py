@@ -44,7 +44,7 @@ PRIORITIES = {
 
 
 def load_snapshot(path: str) -> dict:
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -150,8 +150,12 @@ def compute_gaps(snapshot: dict) -> list[dict]:
             )
 
     # ── Gap 3 — ORPHAN_FEATURE ────────────────────────────────────────────────
+    # Honour both the Feature's own forward `user_stories` link and the back-link
+    # from a User Story's `features` list (features_linked_from_us, built above) —
+    # otherwise a Feature linked only from the User Story side is falsely flagged,
+    # inconsistent with Gap 4 below which already honours both directions.
     for feat in features:
-        if not feat.get("user_stories"):
+        if not feat.get("user_stories") and feat["id"] not in features_linked_from_us:
             add_gap(
                 "ORPHAN_FEATURE",
                 feat["id"],
@@ -309,7 +313,7 @@ def main() -> None:
     if args.summary:
         print_summary(report)
     elif args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
         print(f"Gap report written to {args.output}", file=sys.stderr)
     else:

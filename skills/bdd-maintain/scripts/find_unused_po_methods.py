@@ -85,10 +85,25 @@ def collect_po_methods(pages_dir: Path) -> list[MethodDef]:
     return methods
 
 
-def collect_called_methods(steps_dir: Path) -> set[str]:
-    """Collect all method names called (via `.name(`) in step files and fixtures."""
+def collect_called_methods(steps_dir: Path, pages_dir: Path) -> set[str]:
+    """Collect all method names called (via `.name(`) in step files, fixtures.ts, and
+    other PageObject files.
+
+    Scanning only steps_dir misses two real call sites: fixtures.ts (parallel to
+    find_unused_po_components.py, which already scans it correctly) and composition —
+    a method called from another PageObject or a base-class helper, not from a step
+    file at all. Both previously produced false-positive "unused" reports.
+    """
     called: set[str] = set()
-    for ts_file in sorted(steps_dir.rglob("*.ts")):
+    files = list(sorted(steps_dir.rglob("*.ts")))
+
+    fixtures_file = steps_dir.parent / "fixtures.ts"
+    if fixtures_file.exists():
+        files.append(fixtures_file)
+
+    files.extend(sorted(pages_dir.rglob("*.ts")))
+
+    for ts_file in files:
         text = ts_file.read_text(encoding="utf-8")
         for m in CALL_RE.finditer(text):
             called.add(m.group(1))
@@ -121,12 +136,16 @@ def main() -> int:
         print(f"ERROR: steps-dir not found: {steps_dir}", file=sys.stderr)
         return 2
 
+    fixtures_path = steps_dir.parent / "fixtures.ts"
+
     print(f"Scanning PageObject methods in:  {pages_dir}")
-    print(f"Scanning method calls in:        {steps_dir}")
+    print(f"Scanning method calls in:        {steps_dir}, {pages_dir}")
+    if fixtures_path.exists():
+        print(f"Also scanning:                   {fixtures_path}")
     print()
 
     po_methods = collect_po_methods(pages_dir)
-    called_methods = collect_called_methods(steps_dir)
+    called_methods = collect_called_methods(steps_dir, pages_dir)
 
     print(f"Found {len(po_methods)} public method(s) across {pages_dir}")
     print(f"Found {len(called_methods)} distinct method call(s) across {steps_dir}")

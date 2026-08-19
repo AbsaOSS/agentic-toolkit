@@ -40,9 +40,14 @@ ARTIFACT_SCHEMAS = {
 }
 
 # Inline credential literals are a security violation in seed.yaml.
+# The keyword may be anywhere in the key (db_password, aws_secret_access_key,
+# admin_token — not just an exact key match), and an optional leading "- " covers a
+# YAML list item. [\w-]* around the keyword accepts occasional false positives (e.g.
+# a hypothetical "passwordless" key) — acceptable for a security gate, where missing
+# a real leaked credential is far worse than one extra line to double-check.
 # Negative lookaheads allow safe patterns (env:, ${, <, ~, null) both quoted and unquoted.
 CREDENTIAL_LEAK_RE = re.compile(
-    r"^\s*(password|passwd|pwd|secret|token|api_?key|client_secret)\s*:\s*"
+    r"^\s*(?:-\s+)?[\w-]*(?:password|passwd|pwd|secret|token|api_?key|client_secret)[\w-]*\s*:\s*"
     r"(?![\"']?env:)(?![\"']?\$\{)(?![\"']?<)(?![\"']?~)(?![\"']?null\b)(?!\s*$)\S",
     re.IGNORECASE | re.MULTILINE,
 )

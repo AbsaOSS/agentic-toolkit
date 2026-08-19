@@ -61,7 +61,10 @@ def find_pageobject_files(root: Path) -> set[str]:
             parts = p.parts
             if any(skip in parts for skip in ("node_modules", ".venv", "__pycache__", ".git")):
                 continue
-            found.add(str(p.relative_to(root)))
+            # .as_posix(), not str() — manifest paths always use "/"; str() yields
+            # backslash paths on Windows and the set diff below would then flag every
+            # PageObject as undocumented.
+            found.add(p.relative_to(root).as_posix())
     return found
 
 
