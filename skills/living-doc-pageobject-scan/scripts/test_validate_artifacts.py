@@ -6,8 +6,6 @@ Regression coverage for the bug flagged in PR #9 review: the keyword had to be t
 key's exact prefix, so db_password:, aws_secret_access_key:, admin_token: all slipped
 through; a YAML list item (- password: hunter2) also escaped the ^\\s* anchor.
 """
-__test__ = False  # pytest: ignore this helper script
-
 import sys
 
 from validate_artifacts import CREDENTIAL_LEAK_RE

@@ -66,6 +66,7 @@ Task-specific guidance for using individual skills. Start by picking your use ca
 |---|---|
 | [Token Saving](./guides/token-saving.md) | Keeping AI responses concise — how the token-saving skill works and when it applies |
 | [PR Review](./guides/pr-review.md) | How the PR review skill works, what sections it applies, and how to trigger it |
+| [Create Repository](./create-repository.md) | Creating a new AbsaOSS/absa-group repo from the template with standard guardrails |
 
 ### QA And Testing Skills
 
@@ -106,17 +107,8 @@ Task-specific guidance for using individual skills. Start by picking your use ca
 | Guide | Description |
 |----|----|
 | [BDD Maintenance](./guides/bdd-maintain.md) | Clean up BDD artifacts: remove deprecated feature files, find dead code, audit unused steps and PageObject methods |
-| [Create Repository](./create-repository.md) | Creating a new AbsaOSS/absa-group repo from the template with standard guardrails |
 | [Gap Finder](./guides/living-doc-gap-finder.md) | Audit living doc completeness: find undocumented features, orphan tests, untested ACs; produce gap reports |
 | [Impact Analysis](./guides/living-doc-impact-analysis.md) | Trace PR impact on living doc: identify affected Features, Functionalities, User Stories; determine what to review/re-test |
-| [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
-| [TDD Workflow](./tdd-workflow.md)       | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
-| [Test Data Management](./test-data-management.md)   | How the test-data-management skill works, what it covers, and when it fires |
-| [Test Mocking Patterns](./test-mocking-patterns.md) | Double selection, patching strategies, cleanup, and language-specific guidance |
-| [Unit Test Standards](./test-unit-standards.md)  | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
-| [Unit Test Writer](./test-unit-write.md)         | Generate complete unit tests from scratch following language-specific standards |
-| [Unit Test Reviewer](./test-unit-review.md)      | Systematically audit unit tests and report findings by severity |
-| [Token Saving](./token-saving.md)       | Keeping AI responses concise — how the token-saving skill works and when it applies |
 
 > **Keep this index up to date.** When you add a new guide, add a row to the appropriate table above.
 
