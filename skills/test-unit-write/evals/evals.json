@@ -1,0 +1,169 @@
+{
+  "skill_name": "test-unit-write",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Write unit tests for the OrderService class in evals/files/source-order-service.py. Cover all public methods.",
+      "expected_output": "Output produces a complete, compliant test file: fixtures stub InventoryRepository and NotificationClient (no real I/O); place_order happy path, ValueError for empty sku and quantity<=0, InsufficientStockError, and boundary quantity=1 are all tested; cancel_order happy path (pending order), already-shipped return value, and empty order_id ValueError are tested; test names follow test_<unit>_<condition>_<expected>; assertions are specific; no private members accessed.",
+      "files": [
+        "evals/files/source-order-service.py"
+      ],
+      "expectations": [
+        "Shared fixtures stub InventoryRepository and NotificationClient — no real I/O",
+        "place_order happy path is tested and returns expected dict fields",
+        "place_order with empty sku raises ValueError",
+        "place_order with quantity <= 0 raises ValueError",
+        "place_order when stock < quantity raises InsufficientStockError",
+        "place_order confirms inventory.reserve is called with correct args",
+        "place_order confirms notifications.send is called",
+        "cancel_order with a non-shipped order returns True",
+        "cancel_order with a shipped order returns False",
+        "cancel_order with empty order_id raises ValueError",
+        "Test names follow test_<unit>_<condition>_<expected> convention",
+        "Assertions use specific values, not is-not-None or truthy checks",
+        "No private members (_inventory, _notifications) are accessed"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Write unit tests for PriceCalculator.calculate() in evals/files/source-price-calculator.py. Make sure all I/O is mocked and all paths are covered.",
+      "expected_output": "Output stubs the promotions HTTP client (no real requests.get); tests cover: gold/silver/bronze tier discounts, no-tier (None) case, negative base_price ValueError, unrecognised tier ValueError, promo_code with successful API response, promo_code when API returns non-200 raises PromotionError, zero price boundary, and combination of tier + promo_code discount. Env var PROMOTIONS_API_URL is either monkeypatched or unused because the client is injected. Test names are descriptive.",
+      "files": [
+        "evals/files/source-price-calculator.py"
+      ],
+      "expectations": [
+        "promotions HTTP client is stubbed — no real requests.get calls",
+        "Gold tier discount (20%) is tested",
+        "Silver tier discount (10%) is tested",
+        "Bronze tier discount (5%) is tested",
+        "None tier (no discount) is tested",
+        "Negative base_price raises ValueError",
+        "Unrecognised tier raises ValueError",
+        "promo_code path with a 200 API response applies extra discount",
+        "promo_code path with a non-200 API response raises PromotionError",
+        "Boundary: base_price = 0 returns 0",
+        "Test names follow the naming convention from the language reference"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "extension",
+      "prompt": "The file evals/files/partial-happy-path-only.py has unit tests for OrderService but only covers the happy path. Add tests for all missing failure paths and boundary values without modifying the existing tests.",
+      "expected_output": "Output adds tests for: place_order with quantity=0 raises ValueError; place_order with quantity negative raises ValueError; place_order with empty sku raises ValueError; place_order when inventory.get_stock returns less than quantity raises InsufficientStockError; cancel_order with a shipped order returns False; cancel_order with a non-shipped pending order returns True; cancel_order with empty order_id raises ValueError. Existing tests are left unchanged.",
+      "files": [
+        "evals/files/partial-happy-path-only.py"
+      ],
+      "expectations": [
+        "place_order with quantity=0 is tested and raises ValueError",
+        "place_order with empty sku is tested and raises ValueError",
+        "place_order when insufficient stock is tested and raises InsufficientStockError",
+        "cancel_order with a shipped order is tested and returns False",
+        "cancel_order with empty order_id is tested and raises ValueError",
+        "Existing three tests are not modified",
+        "New test names follow test_<unit>_<condition>_<expected> convention",
+        "No real I/O is introduced in the new tests"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "negative",
+      "prompt": "Can you review these unit tests and tell me what's wrong with them? evals/files/partial-happy-path-only.py",
+      "expected_output": "This is a review request, not a test-writing request. The skill routes this to test-unit-review rather than generating new tests. If handled here: it identifies missing failure paths and boundary coverage but does not generate new test code.",
+      "files": [
+        "evals/files/partial-happy-path-only.py"
+      ],
+      "expectations": [
+        "Skill does not confuse a review request with a write request",
+        "If the skill proceeds, it identifies missing coverage rather than generating tests",
+        "No new test code is generated as part of a review-only response"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Should I use a spy or a mock for the notification_client in these tests?",
+      "expected_output": "This is a test-double selection question that routes to test-mocking-patterns. test-unit-write does not own double selection decisions.",
+      "files": [],
+      "expectations": [
+        "Skill does not generate test code for a double-selection question",
+        "Response correctly defers to test-mocking-patterns for spy vs mock guidance"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Add tests for the new refund logic in RefundService — cover the happy path, the already-refunded rejection, and the partial refund boundary.",
+      "expected_output": "Agent produces three unit tests: (1) happy path — refund succeeds for a valid pending order, asserts returned refund ID and status; (2) already-refunded rejection — calling refund on an already-refunded order raises AlreadyRefundedError with the order ID in the message; (3) partial refund boundary — refund amount equal to the total order amount succeeds; amount greater than total raises OverRefundError. All dependencies are stubbed via fixtures. Test names follow test_<unit>_<condition>_<expected>.",
+      "files": [],
+      "expectations": [
+        "Three test functions covering the three specified paths",
+        "Happy path asserts returned refund ID and status specifically",
+        "AlreadyRefundedError test asserts exception type and message content",
+        "Boundary test covers amount == total (pass) and amount > total (fail)",
+        "All dependencies are stubbed — no real I/O",
+        "Test names follow test_<unit>_<condition>_<expected>"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "The method I'm testing raises different exceptions for different invalid inputs. How should I structure the tests — one test per exception or one test for all invalid inputs?",
+      "expected_output": "One test per exception type and triggering condition. Each invalid input deserves its own focused test because: (1) the test name documents the specific invalid condition; (2) a single test with multiple asserts stops at the first failure, hiding subsequent failures; (3) mutation testing requires each branch to be covered by a dedicated test. Use pytest.raises as a context manager in each test. If many inputs trigger the same exception type, use pytest.mark.parametrize to table them.",
+      "files": [],
+      "expectations": [
+        "Recommends one test per exception type and triggering condition",
+        "Explains why combined tests are worse: mask failures, hurt mutation coverage",
+        "Recommends pytest.raises as context manager",
+        "Notes pytest.mark.parametrize for multiple inputs triggering the same exception"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me what unit tests generated by the skill look like — naming, structure, fixtures.",
+      "expected_output": "Generated tests appear in a single fenced ```python code block. Function names follow test_<unit>_<condition>_<expected> convention. Each test function has a one-line docstring. Dependencies are patched via pytest fixtures using mocker.MagicMock(). Each test ends with exactly one assert or one pytest.raises() call. No test function imports additional modules beyond what is available in the fixture.",
+      "files": [],
+      "expectations": [
+        "Tests in a single fenced ```python code block",
+        "test_<unit>_<condition>_<expected> naming convention",
+        "One-line docstring per test",
+        "mocker.MagicMock() for dependencies",
+        "Exactly one assert or pytest.raises() per test"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "Write unit tests for this method: def get_discount_label(amount): return 'BIG' if amount > 100 else 'SMALL'",
+      "expected_output": "Agent generates two tests: one for amount > 100 (expects 'BIG') and one for amount <= 100 (expects 'SMALL'). Critically, each test asserts the exact return value string — NOT 'result is not None', NOT 'result is truthy', NOT 'assert result'. The regression being checked: a previous version of the skill generated 'assert result' (truthy check) instead of 'assert result == \"BIG\"'. The boundary value 100 is covered: amount=100 returns 'SMALL', amount=101 returns 'BIG'.",
+      "files": [],
+      "expectations": [
+        "Two tests: one for amount > 100, one for amount <= 100",
+        "Assertions use exact string values ('BIG', 'SMALL') — not truthy checks",
+        "Boundary value 100 is covered",
+        "No 'assert result' or 'assert result is not None' style assertions"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "Write unit tests for DiscountCalculator.calculate_discount() using pytest.mark.parametrize to cover all tiers. File: evals/files/source-parametrized-discounts.py",
+      "expected_output": "Output uses pytest.mark.parametrize to test all four tiers (gold, silver, bronze, standard) and None with expected discount rates. Additionally, tests for failure cases: negative amount (ValueError), unknown tier (ValueError). Assertions verify exact discount amounts (e.g. amount * 0.8 for gold tier). No test duplication; a single parametrized test covers all success paths. Test names clearly indicate parametrized nature (e.g. test_calculate_discount_with_tier[gold-20%]).",
+      "files": [
+        "evals/files/source-parametrized-discounts.py"
+      ],
+      "expectations": [
+        "pytest.mark.parametrize is used for multiple tier inputs",
+        "All four tiers (gold, silver, bronze, standard) are covered",
+        "None tier is tested (no discount)",
+        "Failure path for negative amount is tested",
+        "Failure path for unknown tier is tested",
+        "Assertions verify exact discount amounts, not just non-None",
+        "No test duplication",
+        "Test names reflect parametrized values"
+      ]
+    }
+  ]
+}

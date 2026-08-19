@@ -1,0 +1,184 @@
+{
+  "skill_name": "tdd-workflow",
+  "evals": [
+    {
+      "id": "happy-path-implement-function",
+      "category": "happy-path",
+      "prompt": "I want to implement a discount calculator function that applies a percentage rate to a price. Use TDD.",
+      "expected_output": "Skill creates SPEC.md first, proposes a test case table (happy path, zero discount, negative price, rate > 1, etc.), waits for confirmation, then writes failing tests before any implementation code.",
+      "files": [],
+      "expectations": [
+        "SPEC.md is created before any test or implementation code",
+        "A test case table with columns: #, name, intent, input summary, expected output summary is proposed",
+        "The skill explicitly waits for user confirmation before proceeding past Step 2",
+        "Failing tests are written in Step 3 before any implementation",
+        "Implementation code only appears in Step 4 (Green phase)",
+        "A Refactor step is mentioned or applied after tests pass",
+        "SPEC.md is described as a local scratchpad not to be committed"
+      ]
+    },
+    {
+      "id": "happy-path-fix-bug-tdd",
+      "category": "happy-path",
+      "prompt": "There's a bug in our order totalling logic — it ignores taxes when a coupon is applied. Walk me through fixing it test-first.",
+      "expected_output": "Skill drafts SPEC.md capturing the bug scenario, proposes a test table covering the failing case and related edge cases, waits for confirmation, then writes a failing test that reproduces the bug before touching the implementation.",
+      "files": [],
+      "expectations": [
+        "SPEC.md is created first to describe the bug scenario",
+        "A test table is proposed covering the bug case and edge cases",
+        "A failing test that reproduces the bug is written in the Red phase",
+        "Implementation fix only comes after the failing test is in place",
+        "Refactor phase is included after the fix is confirmed passing"
+      ]
+    },
+    {
+      "id": "happy-path-new-class",
+      "category": "happy-path",
+      "prompt": "I need a RateLimiter class that blocks requests exceeding N calls per window. Start with TDD.",
+      "expected_output": "Skill creates SPEC.md for RateLimiter, proposes a test table (under limit, at limit, over limit, window reset, zero limit), waits for confirmation, writes failing tests covering each scenario, then implements the class.",
+      "files": [],
+      "expectations": [
+        "SPEC.md is created with purpose, scenarios table, edge cases, and out-of-scope sections",
+        "Test table includes at minimum: under-limit pass, at-limit pass, over-limit block, window reset",
+        "Skill pauses and waits for confirmation after presenting the test table",
+        "Tests do not access private members of RateLimiter",
+        "Each test has a descriptive name or docstring matching its scenario"
+      ]
+    },
+    {
+      "id": "regression-no-code-before-confirmation",
+      "category": "regression",
+      "prompt": "Implement a password validator with TDD. It should enforce min length 8, one uppercase, one digit.",
+      "expected_output": "Skill must NOT write any code (test or implementation) until the test table is confirmed. If it jumps ahead, that is a regression.",
+      "files": [],
+      "expectations": [
+        "No test code is written before the test table is presented",
+        "No implementation code is written before Step 3",
+        "Skill explicitly states it is waiting for confirmation before proceeding"
+      ]
+    },
+    {
+      "id": "regression-no-private-member-access",
+      "category": "regression",
+      "prompt": "Use TDD to build a BankAccount class with deposit, withdraw, and balance methods.",
+      "expected_output": "Tests only interact with BankAccount through its public interface (deposit, withdraw, balance). No test should read _balance or other private attributes directly.",
+      "files": ["evals/files/bank-account-spec.md"],
+      "expectations": [
+        "Tests call deposit(), withdraw(), and balance() — not _balance or __balance",
+        "Test names or docstrings describe the scenario, not the assertion",
+        "Section separators (# --- section ---) are used instead of inline prose comments in the test file"
+      ]
+    },
+    {
+      "id": "edge-already-has-spec",
+      "category": "edge",
+      "prompt": "I already have a SPEC.md drafted for my CSV parser. Here it is:\n\n# CSV Parser\n## Purpose\nParse CSV rows into typed dicts.\n## Scenarios\n| # | Name | Intent | Input | Expected Output |\n|---|------|--------|-------|-----------------|\n| 1 | basic row | single row with header | 'a,b\\n1,2' | [{'a':'1','b':'2'}] |\nCan you move straight to writing the tests?",
+      "expected_output": "Because a SPEC.md is already present, the skill skips creation and moves to proposing/confirming the test table from the existing scenarios, then proceeds to Red phase.",
+      "files": [],
+      "expectations": [
+        "Skill acknowledges the existing SPEC.md rather than recreating it",
+        "Skill proposes the test table derived from the provided scenarios",
+        "Skill still waits for confirmation before writing tests"
+      ]
+    },
+    {
+      "id": "output-format-test-table",
+      "category": "output-format",
+      "prompt": "TDD for a temperature converter (Celsius ↔ Fahrenheit). Show me the test cases.",
+      "expected_output": "Skill outputs a well-formed markdown table with exactly the columns: #, name, intent, input summary, expected output summary.",
+      "files": [],
+      "expectations": [
+        "Table has exactly 5 columns: #, name, intent, input summary, expected output summary",
+        "At least 4 rows covering: C→F normal, F→C normal, absolute zero, freezing/boiling boundary",
+        "Skill explicitly asks for confirmation before writing any code"
+      ]
+    },
+    {
+      "id": "negative-no-tdd-requested",
+      "category": "negative",
+      "prompt": "Can you explain the difference between integration tests and unit tests?",
+      "expected_output": "This is a conceptual question, not a request to implement code. The skill should NOT activate and hijack it into a TDD workflow.",
+      "files": [],
+      "expectations": [
+        "Skill does not create SPEC.md",
+        "Skill does not propose a test table",
+        "Response answers the question directly without forcing TDD steps"
+      ]
+    },
+    {
+      "id": "paraphrase-implicit-implement",
+      "category": "paraphrase",
+      "prompt": "Add a retry-with-backoff utility to our HTTP client module.",
+      "expected_output": "Even though 'TDD' is not mentioned, the skill should activate because the user is adding new functionality. SPEC.md is created first.",
+      "files": [],
+      "expectations": [
+        "Skill activates and creates SPEC.md before writing any code",
+        "Test table is proposed covering success on first try, success after N retries, exhausted retries, non-retryable error",
+        "Skill pauses for confirmation"
+      ]
+    },
+    {
+      "id": "paraphrase-design-system",
+      "category": "paraphrase",
+      "prompt": "Design the architecture for a notification service — what modules do we need and how should they interact?",
+      "expected_output": "Even though the user framed this as design/architecture rather than coding, the skill activates because designing systems and modules is explicitly in scope. SPEC.md is created to capture purpose, scenarios, edge cases, and open questions before any code is proposed.",
+      "files": [],
+      "expectations": [
+        "Skill activates and creates SPEC.md before proposing any implementation",
+        "Purpose section captures what the notification service does and why",
+        "Open Questions section captures unresolved design decisions (e.g. delivery guarantees, retry strategy)",
+        "Skill pauses for confirmation before writing tests"
+      ]
+    },
+    {
+      "id": "regression-no-batch-tests",
+      "category": "regression",
+      "prompt": "Use TDD to build an email validator. Write all the tests first so we can see the full plan, then implement.",
+      "expected_output": "The user is requesting horizontal slicing (all tests then all code), which is the anti-pattern the skill explicitly prohibits. The skill should explain vertical slicing, create SPEC.md, propose the test table, confirm it, then write ONE test and ONE implementation before moving to the next.",
+      "files": [],
+      "expectations": [
+        "Skill does NOT write all test cases at once before any implementation",
+        "Skill explains or applies vertical slicing: one test → one implementation → repeat",
+        "SPEC.md and test table are created before any test code",
+        "First test (tracer bullet) is written and made passing before the second test is written"
+      ]
+    },
+    {
+      "id": "edge-user-skips-gate",
+      "category": "edge",
+      "prompt": "I need a file-size validator. Skip the test table, I trust you — just write the tests.",
+      "expected_output": "Even when the user explicitly asks to skip the confirmation gate, the skill must not bypass it. It presents the test table and waits for confirmation before writing any code.",
+      "files": [],
+      "expectations": [
+        "Skill does NOT skip the test table despite the user's instruction",
+        "Skill presents the test table and explains why the gate exists",
+        "Skill waits for the user to confirm the table before writing any test or implementation code"
+      ]
+    },
+    {
+      "id": "edge-incomplete-spec",
+      "category": "edge",
+      "prompt": "I have a partial SPEC.md for my JWT decoder:\n\n# JWT Decoder\n## Purpose\nDecode and validate JWT tokens.\n## Scenarios\n| # | Name | Intent | Input | Expected Output |\n|---|------|--------|-------|-----------------|\n| 1 | valid token | decode well-formed JWT | valid JWT string | decoded payload dict |\n\nCan we move to tests?",
+      "expected_output": "The provided SPEC.md is missing the Edge Cases, Out of Scope, and Open Questions sections. The skill must identify these gaps, complete the missing sections (asking the user if needed), and only then propose the test table.",
+      "files": [],
+      "expectations": [
+        "Skill identifies that Edge Cases, Out of Scope, and Open Questions sections are missing",
+        "Skill does not proceed to the test table until the SPEC.md is complete",
+        "Once completed, the test table includes edge cases such as: expired token, invalid signature, malformed input, missing claims",
+        "Skill waits for confirmation before writing any code"
+      ]
+    },
+    {
+      "id": "negative-refactor-passing",
+      "category": "negative",
+      "prompt": "Refactor the UserRepository to use the repository pattern instead of inline queries. All existing tests pass.",
+      "expected_output": "This is a refactor request with passing tests — explicitly out of scope per the skill. The skill should NOT activate a TDD workflow or create SPEC.md. It should proceed with the refactor directly.",
+      "files": [],
+      "expectations": [
+        "Skill does not create SPEC.md",
+        "Skill does not propose a test table",
+        "Skill proceeds with the refactor without invoking TDD steps"
+      ]
+    }
+  ]
+}

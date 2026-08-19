@@ -1,0 +1,116 @@
+[
+  {
+    "id": "r-t01-review-tests-explicit",
+    "query": "Review these unit tests and tell me if they follow our standards.",
+    "should_trigger": true,
+    "reason": "Explicit review request — primary trigger."
+  },
+  {
+    "id": "r-t02-audit-test-file",
+    "query": "Audit this test file against our unit test standards.",
+    "should_trigger": true,
+    "reason": "'Audit this test file' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t03-are-tests-up-to-scratch",
+    "query": "Are these tests up to scratch? I want to ship this tomorrow.",
+    "should_trigger": true,
+    "reason": "'Are these tests up to scratch' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t04-lgtm-on-tests",
+    "query": "LGTM on the tests?",
+    "should_trigger": true,
+    "reason": "'LGTM on tests' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t05-does-this-look-right",
+    "query": "Does this test look right to you?",
+    "should_trigger": true,
+    "reason": "'Does this test look right' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t06-check-my-tests",
+    "query": "Check my tests before I merge this PR.",
+    "should_trigger": true,
+    "reason": "'Check my tests' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t07-isolation-check",
+    "query": "Are these tests properly isolated? I want to make sure they don't call real APIs.",
+    "should_trigger": true,
+    "reason": "Isolation audit is a specific category within the review checklist."
+  },
+  {
+    "id": "r-t08-any-issues-with-my-tests",
+    "query": "Any issues with my test file that I should fix before the sprint review?",
+    "should_trigger": true,
+    "reason": "'Any issues with my tests' maps to the review skill."
+  },
+  {
+    "id": "r-t09-is-this-missing-anything",
+    "query": "Is this test missing any important coverage?",
+    "should_trigger": true,
+    "reason": "'Is this test missing anything' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t10-give-feedback",
+    "query": "Give me feedback on this test file.",
+    "should_trigger": true,
+    "reason": "'Give feedback on this test file' is a listed trigger phrase."
+  },
+  {
+    "id": "r-t11-do-these-tests-follow-standards",
+    "query": "Do these tests follow our standards?",
+    "should_trigger": true,
+    "reason": "'Do these tests follow our standards' is a listed trigger phrase."
+  },
+  {
+    "id": "r-n01-write-tests",
+    "query": "Write unit tests for the ReportService class.",
+    "should_trigger": false,
+    "reason": "Test-writing request — routes to test-unit-write, not test-unit-review."
+  },
+  {
+    "id": "r-n02-add-failure-coverage",
+    "query": "Add failure-path tests to this file.",
+    "should_trigger": false,
+    "reason": "Adding new tests is a write task — routes to test-unit-write."
+  },
+  {
+    "id": "r-n03-debug-failing-test",
+    "query": "Why is my test throwing NullPointerException on the mock setup?",
+    "should_trigger": false,
+    "reason": "Runtime debugging — not a standards review task."
+  },
+  {
+    "id": "r-n04-spy-vs-mock",
+    "query": "Should I use a spy or a mock for the email service?",
+    "should_trigger": false,
+    "reason": "Test-double selection — routes to test-mocking-patterns."
+  },
+  {
+    "id": "r-n05-pr-review",
+    "query": "Review this pull request before I merge it.",
+    "should_trigger": false,
+    "reason": "General PR review — routes to pr-review skill, not test-unit-review."
+  },
+  {
+    "id": "r-n06-integration-test-plan",
+    "query": "Design an integration test plan for the checkout flow.",
+    "should_trigger": false,
+    "reason": "Integration test planning is out of scope for this skill."
+  },
+  {
+    "id": "r-n07-flaky-tests-ci",
+    "query": "Why are my tests flaky when run in parallel in CI but not locally?",
+    "should_trigger": false,
+    "reason": "Debugging runtime behaviour and CI infrastructure — not a standards review of test code quality."
+  },
+  {
+    "id": "r-n08-parallel-execution",
+    "query": "Should I run unit tests in parallel or sequentially?",
+    "should_trigger": false,
+    "reason": "Test execution strategy and CI infrastructure configuration — outside the standards review scope."
+  }
+]
