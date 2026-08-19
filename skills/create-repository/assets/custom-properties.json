@@ -1,0 +1,8 @@
+{
+  "properties": [
+    { "property_name": "SNowCI",          "value": "CI131342693" },
+    { "property_name": "Support_Contact", "value": "ConsumerProductSquad" },
+    { "property_name": "Support_Email",   "value": "ConsumerProductSquad@absa.africa" },
+    { "property_name": "Support_Url",     "value": "https://github.com/absa-group/" }
+  ]
+}
