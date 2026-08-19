@@ -13,7 +13,7 @@ __test__ = False  # pytest: ignore this helper script
 
 import sys
 
-from trace_impact import trace_entities
+from trace_impact import classify_file, trace_entities
 
 
 def _catalog(known_test_links):
@@ -94,6 +94,37 @@ def test_empty_known_test_links():
     print("✓ Empty known_test_links produces no matches, no crash")
 
 
+def test_real_domain_code_not_misclassified_as_test():
+    """Files whose name merely contains 'test'/'spec' as a substring must not be
+    classified test_or_mock — that hides real domain changes behind impact 'None'."""
+    for path in (
+        "src/latestOffers/Service.java",
+        "Inspector.ts",
+        "attestation/AttestationService.java",
+        "Contestant.java",
+        "Specification.java",
+    ):
+        assert classify_file(path) != "test_or_mock", f"{path} misclassified as test_or_mock"
+    print("✓ Real domain files with 'test'/'spec' substrings are not misclassified")
+
+
+def test_actual_test_and_mock_files_still_classified():
+    """Real test/mock/spec/fixture/stub files, in any common naming style, must still
+    be caught — the word-boundary fix must not lose recall."""
+    for path in (
+        "src/auth/LoginControllerTest.java",
+        "test_validate_cart.py",
+        "tests/features/checkout.feature",
+        "MockNotificationClient.java",
+        "__tests__/foo.test.js",
+        "src/payments/PromoService.spec.ts",
+        "fixtures/data.json",
+        "stub_server.py",
+    ):
+        assert classify_file(path) == "test_or_mock", f"{path} should classify as test_or_mock"
+    print("✓ Real test/mock/spec/fixture/stub files across naming styles are still caught")
+
+
 if __name__ == "__main__":
     try:
         test_canonical_ac_matches_affected_entities()
@@ -101,6 +132,8 @@ if __name__ == "__main__":
         test_null_test_link_is_reviewed_but_not_rerun()
         test_legacy_and_malformed_ids_are_ignored_not_crash()
         test_empty_known_test_links()
+        test_real_domain_code_not_misclassified_as_test()
+        test_actual_test_and_mock_files_still_classified()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

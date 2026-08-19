@@ -75,7 +75,30 @@ _CONFIG_PATTERNS = [
     r".*(build|Build)\.(gradle|maven|sbt)$",
     r".*[Cc]onfig\.(java|py|ts|yaml|yml|json)$",
 ]
-_TEST_PATTERN = re.compile(r"(test|spec|mock|fixture|stub)", re.IGNORECASE)
+# Word-boundary test/mock detection. A plain substring search on "test"/"spec" would
+# misclassify real domain code whose name merely contains the letters (latestOffers,
+# Inspector, attestation) as test_or_mock. Instead, split the path into path-segment
+# and camelCase/snake_case tokens and require a *whole* token to match one of these
+# keywords (e.g. "Test" in OrderServiceTest.java, "tests" as a directory segment).
+_TEST_KEYWORDS = frozenset({
+    "test", "tests", "spec", "specs", "mock", "mocks",
+    "fixture", "fixtures", "stub", "stubs",
+})
+_CAMEL_TOKEN = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z0-9]+|[A-Z]+")
+
+
+def _path_tokens(path: str) -> list[str]:
+    """Split a path into path-segment, punctuation, and camelCase-boundary tokens."""
+    tokens: list[str] = []
+    for segment in re.split(r"[\\/]", path):
+        for chunk in re.split(r"[^A-Za-z0-9]+", segment):
+            if chunk:
+                tokens.extend(_CAMEL_TOKEN.findall(chunk))
+    return tokens
+
+
+def is_test_or_mock_path(path: str) -> bool:
+    return any(tok.lower() in _TEST_KEYWORDS for tok in _path_tokens(path))
 
 # Canonical AC-ID grammar (skills/shared/references/living-doc-glossary.md):
 # AC:<PARENT>-<nn>, where <PARENT> is US-<n> or FUNC-<nnn>. Captures the parent ID.
@@ -84,7 +107,7 @@ _AC_ID_PATTERN = re.compile(r"^AC:(US-\d+|FUNC-\d+)-\d{2}$")
 
 def classify_file(path: str) -> str:
     """Return a surface category for the given file path."""
-    if _TEST_PATTERN.search(path):
+    if is_test_or_mock_path(path):
         return "test_or_mock"
     name = Path(path).name
     for pattern in _API_PATTERNS:
