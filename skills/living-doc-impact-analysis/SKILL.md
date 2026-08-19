@@ -14,7 +14,6 @@ description: >
   (use living-doc-gap-finder); creating new entities (use living-doc-create-*).
   Pairs with living-doc-update, gherkin-living-doc-sync, and bdd-maintain.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Impact Analysis

@@ -15,7 +15,6 @@ description: >
   Pairs with living-doc-create-functionality and living-doc-create-user-story.
   After creating, add a feature_registry entry for living-doc-impact-analysis.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Create Feature

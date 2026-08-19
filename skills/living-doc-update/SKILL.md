@@ -14,7 +14,6 @@ description: >
   (use living-doc-gap-finder), generating scenarios (use living-doc-scenario-creator).
   Pairs with gherkin-living-doc-sync (propagate AC changes) and bdd-maintain (cleanup after deprecation).
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Update

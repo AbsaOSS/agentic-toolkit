@@ -14,7 +14,6 @@ description: >
   Pairs with living-doc-pageobject-scan (upstream) and living-doc-scenario-creator (downstream);
   invokes living-doc-update for Functionality promotion.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # data-cy-instrument

@@ -14,7 +14,6 @@ description: >
   creating entities (use living-doc-create-*).
   Pairs with living-doc-update (upstream) and gherkin-step (downstream).
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Gherkin ↔ Living Doc Sync

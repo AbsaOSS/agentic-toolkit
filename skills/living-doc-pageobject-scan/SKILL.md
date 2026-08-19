@@ -15,7 +15,6 @@ description: >
   missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain).
   Pairs with data-cy-instrument, living-doc-create-feature, and living-doc-scenario-creator.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — PageObject Scan & Webapp Exploration

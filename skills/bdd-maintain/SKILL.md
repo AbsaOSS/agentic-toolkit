@@ -14,7 +14,6 @@ description: >
   Pairs with living-doc-update (upstream — deprecate entity first) and
   gherkin-living-doc-sync (upstream — tag scenarios first).
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # BDD Maintenance

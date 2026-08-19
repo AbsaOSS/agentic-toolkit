@@ -15,7 +15,6 @@ description: >
   Pairs with living-doc-create-feature and living-doc-scenario-creator. After creating,
   update the parent Feature's functionalities[] array.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Create Functionality

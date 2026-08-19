@@ -14,7 +14,6 @@ description: >
   Pairs with living-doc-scenario-creator and living-doc-pageobject-scan (PageObjects must
   exist before step definitions reference them).
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Gherkin Step Definition Standards

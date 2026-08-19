@@ -14,7 +14,6 @@ description: >
   Does NOT trigger for: creating new living doc objects (use living-doc-create-* skills).
   Pairs with living-doc-update and living-doc-create-* skills.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Gap Finder

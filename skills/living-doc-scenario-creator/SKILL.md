@@ -13,7 +13,6 @@ description: >
   Does NOT trigger for: implementing step definitions (use gherkin-step); writing unit tests.
   Pairs with living-doc-create-user-story, living-doc-pageobject-scan, and gherkin-step.
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Scenario Creator

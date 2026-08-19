@@ -24,7 +24,7 @@ Full living documentation agent. Owns both the catalog layer (requirements, enti
 `.copilot/bdd/.project-profile.yaml`. It holds every project-specific convention skills must not
 hardcode: the test-id attribute, feature/PageObject/steps directories, AC state and PageObject
 status vocabularies, scenario tag conventions, and the manifest shape. If it is absent, create it
-from the defaults in the [BDD schemas reference — Project Profile](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-bdd-schemas.md) and confirm each value with the user. Once loaded, profile values override any default path, attribute, or casing shown in a skill.
+from the defaults in the [BDD schemas reference — Project Profile](skills/shared/references/living-doc-bdd-schemas.md) and confirm each value with the user. Once loaded, profile values override any default path, attribute, or casing shown in a skill.
 
 **Storage Profile (catalog layer).** When the user is setting up living documentation for the first time, also ask:
 
@@ -149,7 +149,7 @@ Do not skip steps or run them out of order. Complete catalog changes (step 1) be
 
 **Manifest loading rule:** Use targeted line ranges for the current route(s). Load full manifest only for RE-SCAN. `seed.yaml`: always load in full. When PageObject generation discovers a route with no linked Feature entity, set `feature_id: FEAT-UNKNOWN`, flag the route as needing a Feature entity, and cross-load `living-doc-create-feature` to create it before continuing.
 
-**living-doc-bdd-schemas:** Load [remotely](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
+**living-doc-bdd-schemas:** Load [skills/shared/references/living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
 
 ---
 
@@ -234,7 +234,7 @@ Plan: Loading `living-doc-gap-finder` (top-down). First action: create session s
 
 ## Living Doc Conventions
 
-Full model: [living-doc-glossary](https://raw.githubusercontent.com/AbsaOSS/agentic-toolkit/master/skills/shared/references/living-doc-glossary.md) — load only if creating or validating entities.
+Full model: [living-doc-glossary](skills/shared/references/living-doc-glossary.md) — load only if creating or validating entities.
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 

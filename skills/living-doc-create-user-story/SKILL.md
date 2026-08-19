@@ -14,7 +14,6 @@ description: >
   Pairs with living-doc-create-feature, living-doc-create-functionality, and
   living-doc-scenario-creator (generate scenarios after the US is active).
 license: Apache-2.0
-compatibility: GitHub Copilot
 ---
 
 # Living Doc — Create User Story
