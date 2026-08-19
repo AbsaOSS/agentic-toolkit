@@ -33,8 +33,11 @@ from pathlib import Path
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input/coverage:partial
 #   Parent ID segment must be numeric only (US-001, not US-checkout);
 #   slug-based FEAT IDs like FEAT-login-page are not permitted in AC tags.
+#   Anchored with $ (tag is always matched as a single whitespace-free token, see
+#   get_tags_above) so a trailing extra digit — @AC:US-1-011 — fails to match at all
+#   instead of silently matching a truncated @AC:US-1-01.
 AC_TAG = re.compile(
-    r"@AC:((?:US|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)",
+    r"@AC:((?:US|FUNC)-\d+-\d{2})((?:/[a-z][\w-]*:[^\s/@]+)*)$",
     re.IGNORECASE,
 )
 # Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FUNC-001-01 (...)

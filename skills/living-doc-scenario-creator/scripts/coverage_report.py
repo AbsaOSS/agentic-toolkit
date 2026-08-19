@@ -49,8 +49,12 @@ from pathlib import Path
 #   @AC:US-1-01  or  @AC:US-001-01/aspect:username-input
 # Group 1 captures the AC ID only (params are ignored for coverage purposes).
 # Both uppercase and lowercase @AC: prefixes are matched; output is always uppercase.
+# \d{2} is followed by a negative lookahead (?!\d) so a trailing extra digit —
+# @AC:US-1-011 — fails to match at all (finditer has no line-level $ anchor to lean
+# on, since multiple tags can share a line) instead of silently matching a truncated
+# @AC:US-1-01 and canonicalizing the malformed tag as if it were valid.
 AC_TAG = re.compile(
-    r"@(?:AC):((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2})(?:/[a-z][\w-]*:[^\s/@]+)*",
+    r"@(?:AC):((?:US|FEAT|FUNC)-(?:\d+|[a-z0-9]+(?:-[a-z0-9]+)*)-\d{2}(?!\d))(?:/[a-z][\w-]*:[^\s/@]+)*",
     re.IGNORECASE,
 )
 TAG_LINE = re.compile(r"^\s*@\S+")
