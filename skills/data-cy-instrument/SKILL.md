@@ -21,7 +21,7 @@ license: Apache-2.0
 > **Glossary:** Feature, Functionality, status vocabulary — see [living-doc-glossary](../shared/references/living-doc-glossary.md).
 > **BDD schemas:** manifest.json coverage_gaps schema, seed.yaml form_fixtures — see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md).
 
-**Framework scope:** **Angular-first. Phases 1, 3, and 5 are framework-agnostic; Phases 2 and 4 are Angular-only.** For React or Vue, use the project's configured test-id attribute (often `data-testid`; `data-cy` is only the default), keep the same audit and PageObject-sync flow, and skip Angular-only route-to-component and host-wiring instructions. If the question is specifically “What do I do for React or Vue?”, start the answer with that bold sentence, then add: **Phases 2 and 4 are Angular-only and should be skipped for React or Vue.** In user-facing answers, prefer the shorthand **Phase 1** and **Phase 3**.
+**Framework scope:** **Angular-first. Phases 1, 3, and 5 are framework-agnostic; Phases 2 and 4 are Angular-only.** For React or Vue, use the project's configured test-id attribute (often `data-testid`; `data-cy` is only the default), keep the same audit and PageObject-sync flow, and skip Angular-only route-to-component and host-wiring instructions. If the question is specifically “What do I do for React or Vue?”, start the answer with that bold sentence, then add: **Phases 2 and 4 are Angular-only and should be skipped for React or Vue.** In user-facing answers, prefer the plain labels **Instrument** and **Sync** (see "User-facing labels" below) — not phase numbers, to avoid colliding with the internal Phase 1–7 sequence.
 
 Resolves missing test-id attributes end-to-end: gap discovery in `manifest.json`, template edits, PageObject sync, Functionality promotion, and WORK_LOG update. Follow the phases in order.
 
@@ -58,15 +58,15 @@ Build a prioritised gap list before editing:
 
 5. Sort P1 → P3 and process in that order.
 6. Classify each gap before editing:
-   - **Native/app-owned element or component that forwards attributes:** add the configured test-id attribute in **Phase 1**, then update the PageObject to `getByTestId()` in **Phase 3**.
+   - **Native/app-owned element or component that forwards attributes:** add the configured test-id attribute (**Instrument** step), then update the PageObject to `getByTestId()` (**Sync** step).
    - **Third-party component that does not forward attributes:** do **not** silently skip it. Mark it ⚠️ `needs lib support` and add a `WORK_LOG.md` §4 row with status ⚠️, element description, library name + version, and an issue-tracker link.
 
 **For “what next after a Phase 1 scan?” answers, use this explicit decision tree:**
 1. Decide whether each target is native/app-owned or third-party.
 2. If native/app-owned, add the configured test-id attribute in the template.
 3. If third-party and forwarding is blocked, add the ⚠️ `WORK_LOG.md` §4 row with element description, library name + version, and issue-tracker link — never silently skip it.
-4. After all native/app-owned elements are instrumented, proceed to **Phase 3** and replace fallback selectors with `getByTestId()`.
-For this question shape, use the user-facing shorthand `Phase 1` (instrument template) and `Phase 3` (update PageObject), not the internal labels.
+4. After all native/app-owned elements are instrumented, proceed to the **Sync** step and replace fallback selectors with `getByTestId()`.
+For this question shape, use the user-facing labels `Instrument` (template) and `Sync` (PageObject), not the internal Phase numbers.
 
 **Skip list — do not attempt to instrument these:**
 - Elements inside third-party library internals where the host attribute is confirmed not to propagate (e.g. `cps-table` inner paginator buttons, `cps-tab` inner `<li role="tab">`). Mark these ⚠️ "needs lib support" — add a WORK_LOG.md §4 row with status ⚠️, element description, library name/version, and a library-issue link. Do not leave silent skips.
@@ -80,7 +80,7 @@ Example `WORK_LOG.md` §4 row for a lib-limited element:
 When asked for the expected row format, emit this concrete row shape with a specific element description (for example `Checkout confirm button`), not a generic placeholder.
 Keep the issue link as a plain-text URL — no rich-link or terminal-link formatting.
 
-**User-facing phase labels:** some teams call template instrumentation “Phase 1” and PageObject sync “Phase 3”. Mirror that shorthand. For `⚠️ PROPOSED` or remaining `coverage_gaps`, say: “run Phase 1 first to add the attribute, then Phase 3 to update the PageObject.”
+**User-facing labels:** call template instrumentation **Instrument** and PageObject sync **Sync** — plain names, not phase numbers, so they never collide with the internal Phase 1–7 sequence above. For `⚠️ PROPOSED` or remaining `coverage_gaps`, say: “run Instrument first to add the attribute, then Sync to update the PageObject.”
 
 ---
 
@@ -124,7 +124,7 @@ Before writing any test-id value, validate the candidate name.
 
 ---
 
-## Phase 4 · Apply to Angular Template (user shorthand: Phase 1 instrumentation)
+## Phase 4 · Apply to Angular Template (user-facing label: Instrument)
 
 Add `data-cy` to the **host** Angular component element, not the inner native element.
 
@@ -173,11 +173,11 @@ When a gap covers multiple instances of the same component in a loop (e.g. one "
 
 ---
 
-## Phase 5 · PageObject Sync (user shorthand: Phase 3 PageObject update)
+## Phase 5 · PageObject Sync (user-facing label: Sync)
 
 After every template change, update the matching PageObject in `<paths.pageobjects>/`.
 
-**Phase 1 is required first:** `⚠️ PROPOSED` means the template still lacks the required test-id attribute. Add it in **Phase 1**, then update the PageObject in **Phase 3**. When explaining `⚠️ PROPOSED`, say: “Phase 1 has not yet been done for that element. Run Phase 1 to add the missing test-id attribute to the template, then replace the PROPOSED locator with `getByTestId()` in Phase 3.”
+**Instrument is required first:** `⚠️ PROPOSED` means the template still lacks the required test-id attribute. Add it in **Instrument**, then update the PageObject in **Sync**. When explaining `⚠️ PROPOSED`, say: “Instrument has not yet been done for that element. Run Instrument to add the missing test-id attribute to the template, then replace the PROPOSED locator with `getByTestId()` in Sync.”
 
 **Replace proposed/fallback locators with `getByTestId()`:**
 
@@ -190,15 +190,15 @@ readonly confirmOrderButton: Locator = this.page.locator('button.confirm-order')
 readonly confirmOrderButton: Locator = this.page.getByTestId('confirm-order-btn');
 ```
 
-When answering a locator-conversion question, explicitly say: replace the old locator with `getByTestId('<value>')`, then remove the related `⚠️ PROPOSED` comment after updating the locator in Phase 3.
+When answering a locator-conversion question, explicitly say: replace the old locator with `getByTestId('<value>')`, then remove the related `⚠️ PROPOSED` comment after updating the locator in Sync.
 
 **Inner element resolution:** `getByTestId()` resolves the host Angular component element. Chain `.locator('button')` or `.locator('input')` only when the real interaction target is a native child and direct `getByTestId()` is insufficient.
 
 **Remove stub markers:** Delete any comment lines containing `⚠️ PROPOSED`, `⚠️ NOT YET IN TEMPLATE`, or `will resolve once template is updated` that relate to the now-instrumented elements.
 
-**If `coverage_gaps` is still non-empty after Phase 3, check in this order:**
-1. Did **Phase 1** actually add the configured test-id attribute to the template?
-2. Did **Phase 3** update the PageObject locator to `getByTestId('<same-value>')`?
+**If `coverage_gaps` is still non-empty after Sync, check in this order:**
+1. Did **Instrument** actually add the configured test-id attribute to the template?
+2. Did **Sync** update the PageObject locator to `getByTestId('<same-value>')`?
 3. Is the element conditionally rendered (for example `*ngIf`) and therefore absent during the scan?
 4. Is the element inside a Shadow DOM or other boundary that blocks standard attribute access?
 If all four checks pass and the gap remains, add or update a `WORK_LOG.md` §4 row so the remaining blocker is tracked.
@@ -211,18 +211,18 @@ If all four checks pass and the gap remains, add or update a `WORK_LOG.md` §4 r
 
 ## Phase 6 · Living Doc Promotion
 
-For each Functionality whose `status: planned` was solely due to missing `data-cy`, act only after **Phase 1** (template instrumentation) and **Phase 3** (PageObject update) are complete.
+For each Functionality whose `status: planned` was solely due to missing `data-cy`, act only after **Instrument** (template instrumentation) and **Sync** (PageObject update) are complete.
 
 1. Open `<feature_dirs.functionality>/func-{NNN}-*.feature` (e.g. `aul-ui/playwright/features/liv_doc_func/`).
 2. Change `# status: planned` → `# status: active` in the comment header.
 3. Remove the `# planned-reason: no data-cy attributes` comment line if present.
 4. Do **not** change any other header fields (AC text, func_type, feature, etc.).
 
-Only promote if the data-cy attributes required by that Functionality's ACs were all added in **Phase 1**. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
+Only promote if the data-cy attributes required by that Functionality's ACs were all added during **Instrument**. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
 
-Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Phase 1 and Phase 3, load `living-doc-update`. Do **not** lead with manual feature-file edits.
+Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Instrument and Sync, load `living-doc-update`. Do **not** lead with manual feature-file edits.
 
-Preferred promotion wording: `After Phase 1 and Phase 3 complete, invoke living-doc-update and change FUNC-001 status from 'planned' to 'active'.`
+Preferred promotion wording: `After Instrument and Sync complete, invoke living-doc-update and change FUNC-001 status from 'planned' to 'active'.`
 
 ---
 

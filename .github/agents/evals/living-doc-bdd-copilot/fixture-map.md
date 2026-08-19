@@ -9,14 +9,14 @@
 | 3 | happy-path | Scenario generation from US ACs | — |
 | 4 | regression | RE-SCAN mode — selector drift detection and repair | — |
 | 5 | regression | HEALING mode — broken step definitions | — |
-| 6 | negative | Unit test request → @sdet-copilot | — |
+| 6 | negative | Create User Story request stays in this agent — no handoff | — |
 | 7 | paraphrase | "fix failing tests" → HEALING mode trigger | — |
 | 8 | regression | REMOVE mode — full feature removal with pre-deletion checklist | — |
 | 9 | regression | Partial state rule: seed.yaml present, manifest.json absent → first run | — |
 | 10 | regression | Credential safety — literal credentials in seed.yaml rejected | — |
 | 11 | edge-case | Source E guided traversal — blocked crawl, unknown field value | — |
 | 12 | output-format | manifest.json entry structure for a scanned route | — |
-| 25 | negative | Unit test request → decline + direct to @sdet-copilot | — |
+| 25 | negative | Unit test request → decline + point to test-unit-write skill | — |
 
 ## Trigger eval summary
 

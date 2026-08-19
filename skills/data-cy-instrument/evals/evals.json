@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Phase 1 scan of the checkout module found 5 elements without data-cy attributes. What are the next steps?",
-      "expected_output": "For each element: (1) Determine if it is a native HTML element — if yes, add a data-cy attribute directly in the Angular template (e.g. data-cy='confirm-order-btn'). (2) If it is a third-party library component that does not forward attributes, mark it ⚠️ 'needs lib support' and add a WORK_LOG.md §4 row with status ⚠️, element description, library name and version, and a link to the library's issue tracker. (3) After all native elements are instrumented, proceed to Phase 3 to update PageObjects to use getByTestId().",
+      "expected_output": "For each element: (1) Determine if it is a native HTML element — if yes, add a data-cy attribute directly in the Angular template (e.g. data-cy='confirm-order-btn'). (2) If it is a third-party library component that does not forward attributes, mark it ⚠️ 'needs lib support' and add a WORK_LOG.md §4 row with status ⚠️, element description, library name and version, and a link to the library's issue tracker. (3) After all native elements are instrumented, proceed to Sync to update PageObjects to use getByTestId().",
       "files": [],
       "expectations": [
         "Handles native elements by adding data-cy to the template",
@@ -18,11 +18,11 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "A PageObject has 3 locators marked ⚠️ PROPOSED. What does that mean and what do I do?",
-      "expected_output": "PROPOSED locators indicate that Phase 1 (data-cy instrumentation) has not yet been done for those elements — the PageObject was generated with a best-guess selector pending data-cy confirmation. Steps: (1) Run Phase 1 to add the missing data-cy attributes to the template. (2) Once data-cy is in the template, replace the PROPOSED locator with getByTestId('your-data-cy-value') in the PageObject. (3) Remove the ⚠️ PROPOSED comment after updating.",
+      "expected_output": "PROPOSED locators indicate that Instrument (data-cy instrumentation) has not yet been done for those elements — the PageObject was generated with a best-guess selector pending data-cy confirmation. Steps: (1) Run Instrument to add the missing data-cy attributes to the template. (2) Once data-cy is in the template, replace the PROPOSED locator with getByTestId('your-data-cy-value') in the PageObject (Sync). (3) Remove the ⚠️ PROPOSED comment after updating.",
       "files": [],
       "expectations": [
         "Explains PROPOSED means data-cy not yet added to template",
-        "Phase 1 first, then update locator to getByTestId()",
+        "Instrument first, then update locator to getByTestId() (Sync)",
         "Remove PROPOSED comment after fix"
       ]
     },
@@ -41,7 +41,7 @@
     {
       "id": 4,
       "category": "regression",
-      "prompt": "A third-party PrimeNG Button component does not forward the data-cy attribute. I silently skipped it in Phase 1. Is that OK?",
+      "prompt": "A third-party PrimeNG Button component does not forward the data-cy attribute. I silently skipped it during Instrument. Is that OK?",
       "expected_output": "No — silent skips are not allowed. For any element where the library does not support attribute forwarding, add a WORK_LOG.md §4 row with: status ⚠️, element description, library name (PrimeNG) and version, and a link to the PrimeNG issue tracker or relevant GitHub issue. This ensures the gap is tracked and actionable.",
       "files": [],
       "expectations": [
@@ -53,13 +53,13 @@
     {
       "id": 5,
       "category": "happy-path",
-      "prompt": "FUNC-001 has status 'planned' because the data-cy attributes are missing. After Phase 1 and Phase 3 are complete, what do I do to promote it?",
+      "prompt": "FUNC-001 has status 'planned' because the data-cy attributes are missing. After Instrument and Sync are complete, what do I do to promote it?",
       "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-001 status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
       "files": [],
       "expectations": [
         "Routes to living-doc-update for status promotion",
         "Status changes from planned to active",
-        "Only after Phase 1 and Phase 3 are complete"
+        "Only after Instrument and Sync are complete"
       ]
     },
     {
@@ -78,7 +78,7 @@
       "id": 7,
       "category": "edge-case",
       "prompt": "Phases 1 and 3 are Angular-specific. What do I do for a React or Vue app?",
-      "expected_output": "Phases 1, 3, and 5 are framework-agnostic in principle. For React: add data-testid attributes (data-cy is by convention but getByTestId() accepts any value). For Vue: same approach. Phase 2 (ng-add schematics) and Phase 4 (Angular-specific wiring) are Angular-only and should be skipped for other frameworks. Apply Phase 1 (audit), Phase 3 (PO update), and Phase 5 (coverage gap check) to any framework.",
+      "expected_output": "Phases 1, 3, and 5 are framework-agnostic in principle. For React: add data-testid attributes (data-cy is by convention but getByTestId() accepts any value). For Vue: same approach. Phase 2 (ng-add schematics) and Phase 4 (Angular-specific wiring) are Angular-only and should be skipped for other frameworks. Apply Phase 1 (audit), Phase 3 (name validation), and Phase 5 (PageObject sync / coverage gap check) to any framework.",
       "files": [],
       "expectations": [
         "States phases 1, 3, 5 are framework-agnostic",
@@ -102,12 +102,12 @@
     {
       "id": 9,
       "category": "regression",
-      "prompt": "After running Phase 3, coverage_gaps is still non-empty for the promo-apply button. What should I check?",
-      "expected_output": "Check: (1) Did Phase 1 actually add data-cy='promo-apply-btn' to the template? (2) Did Phase 3 update the PageObject locator to getByTestId('promo-apply-btn')? (3) Is the element conditionally rendered (e.g. *ngIf) and not visible during the scan? (4) Is the element inside a Shadow DOM that prevents standard attribute access? If all four checks pass and the gap persists, add a WORK_LOG.md §4 row.",
+      "prompt": "After running Sync, coverage_gaps is still non-empty for the promo-apply button. What should I check?",
+      "expected_output": "Check: (1) Did Instrument actually add data-cy='promo-apply-btn' to the template? (2) Did Sync update the PageObject locator to getByTestId('promo-apply-btn')? (3) Is the element conditionally rendered (e.g. *ngIf) and not visible during the scan? (4) Is the element inside a Shadow DOM that prevents standard attribute access? If all four checks pass and the gap persists, add a WORK_LOG.md §4 row.",
       "files": [],
       "expectations": [
-        "Checks Phase 1 template add",
-        "Checks Phase 3 PO update",
+        "Checks Instrument template add",
+        "Checks Sync PO update",
         "Checks conditional rendering",
         "Checks Shadow DOM edge case",
         "Falls back to WORK_LOG if gap persists"
@@ -130,7 +130,7 @@
       "id": 11,
       "category": "regression",
       "prompt": "The project uses 'data-testid' as its test-id attribute, not 'data-cy'. Should I still run data-cy-instrument and add data-cy attributes to templates?",
-      "expected_output": "No. The test-id attribute is configured in the Project Profile under 'test_id_attribute' — data-cy is only the default. If the profile sets test_id_attribute to 'data-testid', then all Phase 1 template instrumentation must add data-testid attributes (not data-cy), and all Phase 3 PageObject locators must use getByTestId() which resolves to data-testid. The skill reads the profile at the start and substitutes the configured attribute throughout all phases. Never hardcode data-cy when a profile is present.",
+      "expected_output": "No. The test-id attribute is configured in the Project Profile under 'test_id_attribute' — data-cy is only the default. If the profile sets test_id_attribute to 'data-testid', then all Instrument-step template instrumentation must add data-testid attributes (not data-cy), and all Sync-step PageObject locators must use getByTestId() which resolves to data-testid. The skill reads the profile at the start and substitutes the configured attribute throughout all phases. Never hardcode data-cy when a profile is present.",
       "files": [],
       "expectations": [
         "Reads test_id_attribute from the Project Profile before instrumenting",

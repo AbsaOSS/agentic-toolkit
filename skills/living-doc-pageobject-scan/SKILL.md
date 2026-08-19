@@ -6,14 +6,13 @@ description: >
   Functionality stubs, and manifest.json output.
   Three scopes: CREATE (first scan), RE-SCAN (full manifest refresh after UI changes),
   HEALING (fix selector drift in failing tests only).
-  Triggers on: "scan this webapp", "generate pageobjects", "crawl the UI", "explore the app",
-  "discover routes", "seed.yaml", "manifest.json", "first scan", "create page objects",
-  "pageobject drift", "re-scan", "refresh manifest", "heal pageobjects", "fix failing tests",
-  "selector drift", "tests are failing", "generate functionality stubs",
-  "bootstrap pageobjects", "bootstrap page objects".
+  Triggers on: "scan this webapp", "generate pageobjects", "crawl the UI", "discover routes",
+  "seed.yaml", "manifest.json", "first scan", "create page objects", "pageobject drift",
+  "re-scan", "refresh manifest", "heal pageobjects", "fix failing e2e tests after UI changes",
+  "selector drift", "generate functionality stubs", "bootstrap pageobjects".
   Does NOT trigger for: adding/fixing Gherkin (use living-doc-scenario-creator); resolving
-  missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain).
-  Pairs with data-cy-instrument, living-doc-create-feature, and living-doc-scenario-creator.
+  missing data-cy (use data-cy-instrument); deleting deprecated BDD files (use bdd-maintain);
+  ordinary unit/integration test failures (use test-unit-write/test-unit-review).
 license: Apache-2.0
 ---
 

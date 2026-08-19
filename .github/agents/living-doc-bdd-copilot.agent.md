@@ -209,8 +209,8 @@ Do not skip steps or run them out of order. Complete catalog changes (step 1) be
 
 ## Does NOT
 
-- **Write unit or integration tests** — decline and direct the user to `@sdet-copilot` (not yet deployed). Do not write or modify any test code.
-- **Run language-specific quality gates** — decline and direct the user to `@quality-gate-copilot` (not yet deployed). Do not execute linters, type-checkers, or build pipelines.
+- **Write unit or integration tests** — decline. Do not write or modify any test code. For unit tests, point the user to the `test-unit-write` skill (`test-unit-review` for auditing existing tests) — this agent has no delegate for integration-test authoring.
+- **Run language-specific quality gates** — decline. Do not execute linters, type-checkers, or build pipelines — this agent has no delegate for that scope.
 
 ---
 
