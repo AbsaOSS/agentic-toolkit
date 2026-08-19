@@ -37,7 +37,17 @@ from pathlib import Path
 lib_path = Path(__file__).parent.parent.parent / "shared" / "lib"
 sys.path.insert(0, str(lib_path))
 
-from living_doc_id import cli_main
+try:
+    from living_doc_id import cli_main
+except ImportError:
+    print(
+        f"Error: shared library not found at {lib_path} — this skill depends on skills/shared/.\n"
+        "If you installed this skill standalone, also install the shared library skill:\n"
+        "  npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared\n"
+        "(or use a full repo clone instead of a single-skill install).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 if __name__ == "__main__":
     sys.exit(cli_main())
@@ -52,26 +62,52 @@ near the top of the file, after the same `sys.path.insert`:
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+lib_path = Path(__file__).parent.parent.parent / "shared" / "lib"
+sys.path.insert(0, str(lib_path))
 
-from ac_tag import match_ac_tag, get_tag_lines_above
+try:
+    from ac_tag import match_ac_tag, get_tag_lines_above
+except ImportError:
+    print(
+        f"Error: shared library not found at {lib_path} — this skill depends on skills/shared/.\n"
+        "If you installed this skill standalone, also install the shared library skill:\n"
+        "  npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared\n"
+        "(or use a full repo clone instead of a single-skill install).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 ```
 
 There is no separate wrapper file in this case — creating one per imported function
 would add indirection without a matching "this file is the CLI entrypoint" delegation
 to justify it. Do not duplicate the imported logic locally instead.
 
+**The `try`/`except ImportError` is required in both patterns**, not optional — without
+it, a standalone single-skill install fails with a raw `ModuleNotFoundError` traceback
+instead of a message that tells the user what to do about it.
+
 **Benefits (both patterns):**
 - Single source of truth — updates to shared logic happen in one place
 - Clear intent — the `sys.path.insert` + import makes it obvious the logic is shared
 - Testable — shared tests live in `skills/shared/lib/` (see `test_living_doc_id.py`)
 
-**Known limitation:** any skill that imports from `skills/shared/lib/` (both patterns)
-currently breaks if installed standalone, since `skills/shared/` has no `SKILL.md` and
-isn't itself an installable unit — the `sys.path` hack assumes the shared tree exists
-alongside it. This is a pre-existing, separately tracked issue (not specific to any one
-module here); fixing it is a repo-level call, not something each new shared module
-should work around individually.
+**Standalone installs:** `skills/shared/` has its own `SKILL.md` ([shared/SKILL.md](../SKILL.md))
+specifically so it can be installed as a normal, name-matching skill unit — a sibling
+directory alongside any dependent skill. A single-skill install of, say,
+`living-doc-create-feature` still needs a second, explicit install of `shared`:
+
+```bash
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-create-feature
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
+```
+
+There's no dependency graph in the install tooling, so this has to be a documented
+manual step, not something the CLI resolves automatically. The full install-command
+list for every skill that needs `shared` is kept centrally in
+[.github/agents/living-doc-bdd-copilot.agent.md](../../../.github/agents/living-doc-bdd-copilot.agent.md)
+rather than repeated in each dependent skill's own `SKILL.md` — one place to keep in
+sync as new shared-lib consumers are added. The `try`/`except` above is the fallback
+for when a user installs a skill without following that list.
 
 ## Adding New Shared Utilities
 

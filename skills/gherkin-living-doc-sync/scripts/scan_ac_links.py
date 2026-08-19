@@ -33,9 +33,20 @@ import sys
 from pathlib import Path
 
 # Resolve the shared library path relative to this script
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+_lib_path = Path(__file__).parent.parent.parent / "shared" / "lib"
+sys.path.insert(0, str(_lib_path))
 
-from ac_tag import TAG_LINE, get_tag_lines_above, match_ac_tag
+try:
+    from ac_tag import TAG_LINE, get_tag_lines_above, match_ac_tag
+except ImportError:
+    print(
+        f"Error: shared library not found at {_lib_path} — this skill depends on skills/shared/.\n"
+        "If you installed this skill standalone, also install the shared library skill:\n"
+        "  npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared\n"
+        "(or use a full repo clone instead of a single-skill install).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 # Matches a # AC: human-readable comment: # AC:US-1-01 or # AC:FUNC-001-01 (...)
 AC_COMMENT_LINE = re.compile(r"^\s*#\s*AC:((?:US|FUNC)-\d+-\d{2})", re.IGNORECASE)

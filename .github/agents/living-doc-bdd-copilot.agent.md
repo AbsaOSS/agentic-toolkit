@@ -18,6 +18,43 @@ Full living documentation agent. Owns both the catalog layer (requirements, enti
 
 ---
 
+## Installation
+
+This agent dispatches to all 12 skills listed under [Skills](#skills) below, several of
+which import from `skills/shared/lib/` (the canonical AC-ID grammar and entity-ID
+assignment logic — see [skills/shared/lib/README.md](../../skills/shared/lib/README.md)).
+The install tooling has no dependency resolution — a single-skill install
+(`--skill <name>`) copies only that one folder — so a full install for this agent means
+running every command below, `shared` included:
+
+```bash
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-create-user-story
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-create-feature
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-create-functionality
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-update
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-impact-analysis
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-gap-finder
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-pageobject-scan
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill data-cy-instrument
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill living-doc-scenario-creator
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill bdd-maintain
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill gherkin-step
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill gherkin-living-doc-sync
+```
+
+Or, to skip the per-skill list entirely, install every skill in the repo (this family
+plus everything else, e.g. `pr-review`, `test-unit-write`):
+
+```bash
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g
+```
+
+If a skill was installed without `shared`, its script fails with an actionable error
+naming the missing companion command, rather than a raw import traceback.
+
+---
+
 ## Initialisation
 
 **Project Profile (all layers) — load first.** At session start, read
