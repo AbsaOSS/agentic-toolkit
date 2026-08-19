@@ -21,6 +21,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install dependencies
+        run: pip install pyyaml
+
       - name: Discover and run test_*.py scripts
         env:
           PYTHONIOENCODING: utf-8
