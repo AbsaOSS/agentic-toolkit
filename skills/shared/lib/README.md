@@ -9,17 +9,19 @@ This directory contains shared utilities used by multiple skills to prevent code
   - Exports: `load_catalog()`, `next_entity_id()`, `next_ac_id()`, `cli_main()`
   - Each skill's `scripts/next_id.py` is a thin wrapper that imports and delegates to `cli_main()`
 
-- **`ac_tag.py`** — Canonical `@AC:` Cucumber tag grammar (`AC:<US|FUNC>-<n>-<nn>`) and
-  tag-line-walking helpers
+- **`ac_tag.py`** — Canonical AC-ID grammar (`AC:<US|FUNC>-<n>-<nn>`): both the `@AC:`
+  Cucumber tag form and the bare `AC:...` form, plus tag-line-walking helpers
   - Used by: `gherkin-living-doc-sync` (`scripts/scan_ac_links.py`), `living-doc-scenario-creator`
-    (`scripts/coverage_report.py`)
-  - Exports: `AC_TAG_PATTERN`, `match_ac_tag()`, `iter_ac_tags()`, `TAG_LINE`,
-    `get_tag_lines_above()`, `canonicalize_ac_id()`
+    (`scripts/coverage_report.py`), `living-doc-update` (`scripts/validate_entity.py`)
+  - Exports: `AC_TAG_PATTERN`, `AC_ID_PATTERN`, `match_ac_tag()`, `iter_ac_tags()`,
+    `TAG_LINE`, `get_tag_lines_above()`, `canonicalize_ac_id()`
   - No `cli_main()` — this is a pure function library, not a CLI tool, so each consumer
-    imports the specific functions it needs directly (see Pattern B below) rather than
-    delegating a whole command to it
-  - Extracted after a review found the two consuming scripts had silently forked: one
-    accepted `FEAT`/slug-parent tags the other rejected as malformed
+    imports the specific functions/constants it needs directly (see Pattern B below)
+    rather than delegating a whole command to it
+  - Extracted after a review found the consuming scripts had silently forked on what
+    counts as a valid AC ID: `coverage_report.py` accepted `FEAT`/slug-parent tags that
+    `scan_ac_links.py` rejected as malformed, and `validate_entity.py` had its own
+    third, incompatible `AC_ID_PATTERN` that rejected the canonical format entirely
 
 ## Pattern
 

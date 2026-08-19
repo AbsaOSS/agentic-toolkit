@@ -25,6 +25,11 @@ Functions:
   - canonicalize_ac_id(ac_id: str) -> str
     Zero-pad the numeric parent to 3 digits: US-1-01 -> US-001-01. Returns the
     input unchanged if it isn't a US|FUNC canonical AC ID.
+
+Constants:
+  - AC_TAG_PATTERN — the "@AC:..." Cucumber tag form (with optional /param:value segments)
+  - AC_ID_PATTERN — the bare "AC:..." form, for validating an AC's own "id" field in
+    entity JSON (e.g. validate_entity.py), as opposed to a Cucumber tag token
 """
 
 import re
@@ -36,6 +41,11 @@ import re
 _AC_ID_CORE = r"(?:US|FUNC)-\d+-\d{2}(?!\d)"
 _AC_PARAMS = r"(?:/[a-z][\w-]*:[^\s/@]+)*"
 AC_TAG_PATTERN = re.compile(rf"@AC:({_AC_ID_CORE})({_AC_PARAMS})", re.IGNORECASE)
+
+# Bare "AC:US-001-01" form (no leading "@", no /param segments) — for validating an
+# AC's own "id" field in entity JSON (e.g. living-doc-update's validate_entity.py),
+# as opposed to AC_TAG_PATTERN which matches a Cucumber tag token in a feature file.
+AC_ID_PATTERN = re.compile(rf"^AC:{_AC_ID_CORE}$", re.IGNORECASE)
 
 # Matches any Cucumber tag line (used to find the consecutive tag-line block above a
 # Scenario — not specific to @AC: tags, since other tags like @Regression may share it).

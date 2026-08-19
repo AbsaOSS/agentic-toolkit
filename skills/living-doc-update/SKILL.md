@@ -41,8 +41,8 @@ If the user says "update the story" but the substance is a newly discovered edge
 When adding a new AC to an existing User Story:
 
 1. Load the existing User Story entity
-2. Assign the next sequential AC ID (for example `US-042-AC-4`; preserve an existing project
-   prefix such as `AC:US-042-04` if the catalog already uses it)
+2. Assign the next sequential AC ID in the canonical `AC:<parent-id>-<nn>` format
+   (for example `AC:US-042-04`) — see [living-doc-glossary](../shared/references/living-doc-glossary.md#acceptance-criterion-ac)
 3. Elicit the new AC using the same completeness checklist as `living-doc-create-user-story` and
    capture it in `description`, `given`, `when`, `then` form:
    - Happy path covered?

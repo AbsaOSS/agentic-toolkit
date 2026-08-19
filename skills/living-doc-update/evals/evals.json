@@ -166,7 +166,7 @@
       "type": "regression",
       "description": "Developer asks whether to validate the entity after making changes.",
       "prompt": "I just added a new AC to US-042. Should I run any validation before committing?",
-      "expected_output": "Yes — run scripts/validate_entity.py against the updated entity file. This checks required fields, ID format (US-<nnn>-AC-<n> pattern), status values, and AC structure. With --catalog flag it also checks referential integrity against the full catalog. If the script exits 0, the entity is valid (warnings are non-blocking). If it exits 1, fix the reported errors before committing.",
+      "expected_output": "Yes — run scripts/validate_entity.py against the updated entity file. This checks required fields, ID format (AC:<parent-id>-<nn> pattern), status values, and AC structure. With --catalog flag it also checks referential integrity against the full catalog. If the script exits 0, the entity is valid (warnings are non-blocking). If it exits 1, fix the reported errors before committing.",
       "files": [],
       "expectations": [
         "Recommends running validate_entity.py after any update",

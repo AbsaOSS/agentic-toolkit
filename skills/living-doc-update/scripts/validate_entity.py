@@ -20,6 +20,12 @@ import argparse
 import json
 import re
 import sys
+from pathlib import Path
+
+# Resolve the shared library path relative to this script
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "lib"))
+
+from ac_tag import AC_ID_PATTERN
 
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
@@ -29,13 +35,20 @@ VALID_SURFACE_TYPES = {"UI", "API"}
 # Override at runtime with --profile to read the project's own ac_states list.
 VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
 
+# Numeric only, any digit count (US-1 and US-001 are both valid — matches
+# living_doc_id.py's ENTITY_TYPE_MAP and scan_ac_links.py). Feature IDs are numeric
+# only: living_doc_id.py's next_entity_id() explicitly rejects slug-based Feature IDs
+# (e.g. FEAT-checkout-page) at auto-increment time, so a single-entity validator must
+# reject them too rather than silently accepting what the ID generator would refuse.
 ID_PATTERNS: dict[str, re.Pattern] = {
-    "User Story": re.compile(r"^US-\d{3,}$"),
-    "Feature": re.compile(r"^FEAT-(\d{3,}|[a-z0-9]+(?:-[a-z0-9]+)*)$"),
-    "Functionality": re.compile(r"^FUNC-\d{3,}$"),
+    "User Story": re.compile(r"^US-\d+$"),
+    "Feature": re.compile(r"^FEAT-\d+$"),
+    "Functionality": re.compile(r"^FUNC-\d+$"),
 }
 
-AC_ID_PATTERN = re.compile(r"^AC:(US|FUNC)-\d+-\d+$")
+# AC_ID_PATTERN is imported from the shared lib (skills/shared/lib/ac_tag.py) so this
+# validator, scan_ac_links.py, and coverage_report.py cannot disagree on the AC-ID
+# grammar again — AC:<US|FUNC>-<n>-<nn>, two-digit suffix, no FEAT parent, no slugs.
 
 REQUIRED_FIELDS: dict[str, list[str]] = {
     "User Story": ["id", "name", "status", "features", "acceptance_criteria"],
