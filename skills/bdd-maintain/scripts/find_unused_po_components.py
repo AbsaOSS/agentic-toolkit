@@ -46,14 +46,24 @@ def collect_po_classes(pages_dir: Path) -> list[PageObjectClass]:
     return classes
 
 
-def collect_imported_names(steps_dir: Path) -> set[str]:
-    """Collect all identifiers imported or used in step files and fixtures."""
+def collect_imported_names(steps_dir: Path, pages_dir: Path) -> set[str]:
+    """Collect all identifiers imported or used in step files, fixtures, and other
+    PageObject files.
+
+    Scanning only steps_dir (+ fixtures.ts) misses composition — a PageObject class
+    imported by another PageObject (e.g. a wizard step's primary page importing its
+    step sub-pages), not by a step file at all — which would otherwise read as a
+    false-positive "unused" class. Mirrors the equivalent fix in
+    find_unused_po_methods.py.
+    """
     names: set[str] = set()
     # Also scan fixtures.ts at the parent of steps_dir or sibling file
     fixtures_file = steps_dir.parent / "fixtures.ts"
     extra_files: list[Path] = []
     if fixtures_file.exists():
         extra_files.append(fixtures_file)
+
+    extra_files.extend(sorted(pages_dir.rglob("*.ts")))
 
     for ts_file in list(sorted(steps_dir.rglob("*.ts"))) + extra_files:
         text = ts_file.read_text(encoding="utf-8")
@@ -98,7 +108,7 @@ def main() -> int:
         return 2
 
     print(f"Scanning PageObject classes in:  {pages_dir}")
-    print(f"Scanning imports in:             {steps_dir}")
+    print(f"Scanning imports in:             {steps_dir}, {pages_dir}")
 
     # Also look for fixtures.ts
     fixtures_path = steps_dir.parent / "fixtures.ts"
@@ -107,7 +117,7 @@ def main() -> int:
     print()
 
     po_classes = collect_po_classes(pages_dir)
-    imported_names = collect_imported_names(steps_dir)
+    imported_names = collect_imported_names(steps_dir, pages_dir)
 
     print(f"Found {len(po_classes)} PageObject class(es) in {pages_dir}")
     print(f"Found {len(imported_names)} imported name(s) across step files")

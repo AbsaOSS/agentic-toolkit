@@ -1,0 +1,57 @@
+name: Test Operational Scripts
+
+on:
+  pull_request:
+    paths:
+      - "skills/**/*.py"
+      - ".github/workflows/test-scripts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Discover and run test_*.py scripts
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -euo pipefail
+
+          mapfile -t test_files < <(find skills -type f -name "test_*.py" | sort)
+
+          if [ "${#test_files[@]}" -eq 0 ]; then
+            echo "No test_*.py files found under skills/ — nothing to run."
+            exit 0
+          fi
+
+          echo "Found ${#test_files[@]} test file(s):"
+          printf '  %s\n' "${test_files[@]}"
+          echo
+
+          failures=()
+          for f in "${test_files[@]}"; do
+            echo "::group::$f"
+            if ! python "$f"; then
+              failures+=("$f")
+            fi
+            echo "::endgroup::"
+          done
+
+          echo
+          if [ "${#failures[@]}" -ne 0 ]; then
+            echo "FAILED (${#failures[@]}/${#test_files[@]}):"
+            printf '  %s\n' "${failures[@]}"
+            exit 1
+          fi
+
+          echo "All ${#test_files[@]} test file(s) passed."
