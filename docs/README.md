@@ -25,6 +25,7 @@ Navigation hub for all guides in this repository. Browse by category below.
 
 | Guide | Description |
 |----|----|
+| [Create Repository](./create-repository.md) | Creating a new AbsaOSS/absa-group repo from the template with standard guardrails |
 | [PR Review](./pr-review.md)             | How the PR review skill works, what sections it applies, and how to trigger it     |
 | [TDD Workflow](./tdd-workflow.md)       | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
 | [Test Data Management](./test-data-management.md)   | How the test-data-management skill works, what it covers, and when it fires |
