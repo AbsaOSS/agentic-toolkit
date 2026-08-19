@@ -24,7 +24,7 @@ Fundamental setup, conventions, and troubleshooting for working with skills in t
 |-----------------------------------------|-------------------------------------------------------------------------------------|
 | [Getting Started](./getting-started.md) | What skills are, how to install them, Copilot CLI usage                             |
 | [Contributing](../CONTRIBUTING.md)  | Skill folder layout, frontmatter, description writing, body guidelines, PR process |
-| [Skill Testing](./skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization |
+| [Skill Testing](./testing/skill-testing.md) | Eval creation, fixtures, regression loops, trigger and description optimization |
 | [Troubleshooting](./troubleshooting.md) | Setup fixes for install, activation, and proxy issues |
 
 ## Agent Development Guides
