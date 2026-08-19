@@ -181,7 +181,7 @@
     },
     {
       "id": 14,
-      "prompt": "A Feature (e.g., FEAT-001 Checkout Page) is linked to no User Stories at all. What gap type is this?",,
+      "prompt": "A Feature (e.g., FEAT-001 Checkout Page) is linked to no User Stories at all. What gap type is this?",
       "expected_output": "Gap type ORPHAN_FEATURE (not \"Gap type 3\"). Priority: Important. Guidance: link at least one User Story to give the Feature traceable business value.",
       "files": [],
       "category": "edge-case",

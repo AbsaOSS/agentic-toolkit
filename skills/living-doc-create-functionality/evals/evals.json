@@ -126,7 +126,7 @@
       "id": 10,
       "category": "happy-path",
       "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
-      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID.",,
+      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID.",
       "files": [],
       "expectations": [
         "Asks for the parent Feature ID (numeric, from catalog) instead of inventing a slug",

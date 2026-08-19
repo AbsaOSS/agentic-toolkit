@@ -21,7 +21,7 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "I want to document the Orders API as a Feature.",
-      "expected_output": "Agent identifies surface_type as API. Asks for endpoint group description, linked User Stories, owned Functionalities, team owners, and external dependencies (e.g. order-db, notification-service). Runs next_id.py to get the next Feature ID from the catalog. Outputs Feature JSON with id=FEAT-002 (or next numeric ID), surface_type=API.",,
+      "expected_output": "Agent identifies surface_type as API. Asks for endpoint group description, linked User Stories, owned Functionalities, team owners, and external dependencies (e.g. order-db, notification-service). Runs next_id.py to get the next Feature ID from the catalog. Outputs Feature JSON with id=FEAT-002 (or next numeric ID), surface_type=API.",
       "files": [],
       "expectations": [
         "surface_type is API",
@@ -94,7 +94,7 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a Feature entity for the 'User Profile' screen in our banking app. It is owned by team-identity and depends on the customer-service API.",
-      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",,
+      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
@@ -109,7 +109,7 @@
       "category": "file-based",
       "description": "Create a Feature entity from rough notes provided as a markdown file.",
       "prompt": "Read evals/files/raw-feature-notes.md and produce a canonical Feature entity JSON from the notes.",
-      "expected_output": "Agent extracts the surface type, purpose, owners, and dependencies from the notes and produces a Feature entity JSON in a fenced ```json block. Runs next_id.py to get the numeric ID from the catalog. The id is a numeric ID (e.g. FEAT-001). The surface_type, owners, and external_dependencies fields are populated from the file content. user_stories and functionalities are empty arrays with a warning that they must be linked.",,
+      "expected_output": "Agent extracts the surface type, purpose, owners, and dependencies from the notes and produces a Feature entity JSON in a fenced ```json block. Runs next_id.py to get the numeric ID from the catalog. The id is a numeric ID (e.g. FEAT-001). The surface_type, owners, and external_dependencies fields are populated from the file content. user_stories and functionalities are empty arrays with a warning that they must be linked.",
       "files": [
         "evals/files/raw-feature-notes.md"
       ],
@@ -150,7 +150,7 @@
       "id": 12,
       "category": "happy-path",
       "prompt": "Document a Feature for our PaymentEventProcessor — an asynchronous worker that listens on a Kafka topic and processes payment events in the background.",
-      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Runs next_id.py to get the numeric ID from the catalog. Outputs Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",,
+      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Runs next_id.py to get the numeric ID from the catalog. Outputs Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",
       "files": [],
       "expectations": [
         "Identifies surface_type as Worker",
@@ -204,7 +204,7 @@
       "id": 17,
       "category": "regression",
       "prompt": "Create a Feature entity for the 'Payment Page'. The catalog file is not present — next_id.py cannot be run. What should the agent do?",
-      "expected_output": "Agent cannot auto-assign a numeric ID without a catalog. It asks the user: 'The catalog file is missing. Please provide the path to catalog.json or explicitly specify which numeric ID should be assigned (e.g., FEAT-001).' The agent does NOT fall back to slug IDs or invent numeric IDs.",,
+      "expected_output": "Agent cannot auto-assign a numeric ID without a catalog. It asks the user: 'The catalog file is missing. Please provide the path to catalog.json or explicitly specify which numeric ID should be assigned (e.g., FEAT-001).' The agent does NOT fall back to slug IDs or invent numeric IDs.",
       "files": [],
       "expectations": [
         "Falls back to asking for catalog path or explicit ID, does not invent a slug",
@@ -216,8 +216,8 @@
     {
       "id": 15,
       "category": "regression",
-      "prompt": "I need to rename a Feature ID because the domain split. What steps do I need to follow?",,
-      "expected_output": "Renaming a Feature numeric ID is not recommended after creation — numeric IDs are stable catalog identifiers. If the Feature name must change (e.g. 'Checkout Page' → 'Checkout & Payments'), update only the 'name' field, not the 'id'. The 'id' field should remain FEAT-001 (for example). Updating the name requires: (1) Update the entity file (name field only). (2) Update feature_registry to reflect the new name under the existing numeric ID. (3) Update manifest.json / seed.yaml. (4) Update PageObject file headers. (5) Update Gherkin # Feature: headers. (6) Run living-doc-gap-finder to confirm no broken references. Load living-doc-update and follow the 'Update Feature name' workflow.",,
+      "prompt": "I need to rename a Feature ID because the domain split. What steps do I need to follow?",
+      "expected_output": "Renaming a Feature numeric ID is not recommended after creation — numeric IDs are stable catalog identifiers. If the Feature name must change (e.g. 'Checkout Page' → 'Checkout & Payments'), update only the 'name' field, not the 'id'. The 'id' field should remain FEAT-001 (for example). Updating the name requires: (1) Update the entity file (name field only). (2) Update feature_registry to reflect the new name under the existing numeric ID. (3) Update manifest.json / seed.yaml. (4) Update PageObject file headers. (5) Update Gherkin # Feature: headers. (6) Run living-doc-gap-finder to confirm no broken references. Load living-doc-update and follow the 'Update Feature name' workflow.",
       "files": [],
       "expectations": [
         "Notes that numeric IDs are stable and should not change",
