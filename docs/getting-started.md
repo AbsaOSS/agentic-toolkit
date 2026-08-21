@@ -141,6 +141,55 @@ your-project-repo/
             └── SKILL.md
 ```
 
+## Install Agents
+
+Agents are pre-configured AI personas that orchestrate multiple skills for a specific engineering phase. Unlike skills (which are auto-activated by description matching), agents are invoked explicitly by name in Copilot Chat.
+
+### How agents differ from skills
+
+| | Skills | Agents |
+|---|---|---|
+| Activation | Auto — triggered when your prompt matches the description | Manual — you @-mention the agent name |
+| Scope | Any compatible tool (Copilot, Claude, Cursor) | GitHub Copilot Chat (VS Code) |
+| Install location | `~/.agents/skills/` or `.github/skills/` | `.github/agents/` inside your project repo |
+
+### Install an agent into your project
+
+Copy the agent file into your project's `.github/agents/` directory:
+
+```bash
+# One-time setup
+mkdir -p .github/agents
+
+# Copy the agent
+cp path/to/agentic-toolkit/.github/agents/living-doc-bdd-copilot.agent.md .github/agents/
+```
+
+Or clone the toolkit and copy all agents:
+
+```bash
+git clone https://github.com/AbsaOSS/agentic-toolkit.git
+cp agentic-toolkit/.github/agents/*.agent.md .github/agents/
+```
+
+Commit the `.github/agents/` directory to share the agents with your team.
+
+### Use an agent in Copilot Chat
+
+Open Copilot Chat in VS Code and type `@` followed by the agent name:
+
+```
+@living-doc-bdd-copilot create user story for the login feature
+@living-doc-bdd-copilot living doc gaps
+@living-doc-bdd-copilot HEALING mode
+```
+
+The agent loads its skills on demand and follows its defined scope. 
+
+> ⚠️ **Agents are invoked only via `@-mention`** — the `description` field in an agent file is for documentation only, not an activation trigger (unlike skills). Type `@agent-name` explicitly in Copilot Chat to invoke the agent.
+
+See the [Agent Roster](../README.md#agent-roster) for the full list of available agents and their guides.
+
 ## Troubleshooting
 
 Running into issues? See **[docs/troubleshooting.md](./troubleshooting.md)** guide.

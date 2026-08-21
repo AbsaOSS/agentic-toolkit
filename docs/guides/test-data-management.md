@@ -53,10 +53,10 @@ The skill covers patterns for Python, TypeScript/JavaScript, Scala, Java, and .N
 
 ## Evals
 
-The skill ships with 10 functional evals (`evals/evals.json`) and 19 trigger evals (`evals/trigger-eval.json`). Run them to validate behaviour after edits — see [Skill Testing](./skill-testing.md).
+The skill ships with 10 functional evals (`evals/evals.json`) and 19 trigger evals (`evals/trigger-eval.json`). Run them to validate behaviour after edits — see [Skill Testing](../testing/skill-testing.md).
 
 ---
 
 ## Installation
 
-See [Getting Started](./getting-started.md) for the full install guide.
+See [Getting Started](../getting-started.md) for the full install guide.

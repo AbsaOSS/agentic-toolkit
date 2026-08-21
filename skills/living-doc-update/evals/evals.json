@@ -1,0 +1,223 @@
+{
+  "skill_name": "living-doc-update",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I need to add a new acceptance criterion to US-042 covering the case where a promo code has expired. How do I update the living doc?",
+      "expected_output": "Agent assigns the next sequential AC ID. Runs the AC completeness checklist. Flags any linked Gherkin scenarios for review via gherkin-living-doc-sync if they need updating. Outputs a change summary.",
+      "files": [],
+      "expectations": [
+        "Assigns next sequential AC ID",
+        "Runs AC completeness checklist",
+        "Flags for gherkin-living-doc-sync if linked scenarios need updating",
+        "Outputs change summary"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "regression",
+      "prompt": "I want to mark US-089 as ready for development, but I'm not sure it's complete.",
+      "expected_output": "Agent checks all promotion invariants: narrative complete, Feature linked, at least one AC exists, at least one error-path AC exists, and no TODO markers remain. Warns for each failing invariant. Blocks promotion until all invariants pass.",
+      "files": [],
+      "expectations": [
+        "Checks all promotion invariants: narrative complete, Feature linked, AC exists, error-path AC exists, no TODO markers",
+        "Warns for each failing invariant",
+        "Blocks promotion until all invariants pass"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "regression",
+      "prompt": "The `LegacyPaymentGatewayService` has been deleted from the codebase. How do I handle this in the living doc?",
+      "expected_output": "Agent sets status to deprecated on the entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
+      "files": [],
+      "expectations": [
+        "Sets status: deprecated — never deletes the entity file",
+        "Adds deprecated_at and deprecation_reason fields",
+        "Links to the commit that deleted the code if possible",
+        "Flags linked Gherkin scenarios for gherkin-living-doc-sync"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "The checkout feature is now owned by team-payments-v2 instead of team-checkout. How do I update this in the living doc?",
+      "expected_output": "Agent updates the owners array in the Feature entity JSON to team-payments-v2. Adds owner_changed_at and owner_change_reason fields. Notifies the new owner if open User Stories are linked to the Feature.",
+      "files": [],
+      "expectations": [
+        "Updates owners array in Feature entity JSON",
+        "Adds owner_changed_at and owner_change_reason fields",
+        "Notifies new owner if open User Stories exist"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "regression",
+      "prompt": "After the sprint review, the product owner clarified the wording of AC:US-042-01. How do I update it without breaking traceability?",
+      "expected_output": "Agent keeps the AC ID stable — never changes the ID. Only updates the description, given, when, and then fields. Flags for gherkin-living-doc-sync if the linked scenario step text needs updating to match the revised wording.",
+      "files": [],
+      "expectations": [
+        "Keeps AC ID stable — never changes the ID",
+        "Updates only description, given, when, then fields",
+        "Flags for gherkin-living-doc-sync if linked scenario text needs updating"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "Create a new User Story for the express checkout flow.",
+      "expected_output": "Creating a new User Story is out of scope for this skill — routes to living-doc-create-user-story. living-doc-update amends or deprecates existing entities; it does not create new ones.",
+      "files": [],
+      "expectations": [
+        "Does not create a new User Story",
+        "Routes to living-doc-create-user-story",
+        "Explains the distinction: update existing vs. create new"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "negative",
+      "prompt": "Which User Stories don't have any linked Gherkin scenarios?",
+      "expected_output": "Finding coverage gaps is out of scope for this skill — routes to living-doc-gap-finder. living-doc-update modifies existing entities; gap detection is handled by living-doc-gap-finder.",
+      "files": [],
+      "expectations": [
+        "Does not search for User Stories without scenarios",
+        "Routes to living-doc-gap-finder",
+        "Explains the distinction: entity update vs. gap detection"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "paraphrase",
+      "prompt": "US-089 needs updating — we discovered a new edge case during testing: when the delivery address is outside our shipping zone, the order should be blocked with a clear message. Can you update the story?",
+      "expected_output": "Agent identifies this as an add-AC request despite 'update the story' phrasing. Assigns the next sequential AC ID. Forms the AC: Given customer with out-of-zone address / When order is placed / Then order is blocked with SHIPPING_ZONE_EXCLUDED error. Flags for gherkin-living-doc-sync if linked scenarios need updating. Outputs a change summary with the new AC.",
+      "files": [],
+      "expectations": [
+        "Identifies this as an add-AC request despite 'update the story' phrasing",
+        "Assigns next sequential AC ID",
+        "AC format: Given out-of-zone address / When order placed / Then blocked with SHIPPING_ZONE_EXCLUDED error",
+        "Flags for gherkin-living-doc-sync if linked scenarios need updating",
+        "Outputs change summary with the new AC"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "edge-case",
+      "prompt": "We decided during the sprint to descope AC:US-042-03 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
+      "expected_output": "Agent sets the AC status to 'descoped' — does not delete the AC. Adds descoped_at and descoped_reason fields. Adds a future_release reference if the work is planned for a later sprint. Flags any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync.",
+      "files": [],
+      "expectations": [
+        "Sets AC status to 'descoped' — does not delete the AC",
+        "Adds descoped_at and descoped_reason fields",
+        "Adds a future_release reference if planned for a later sprint",
+        "Flags linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "output-format",
+      "prompt": "AC-5 on US-042 was changed from 'payment must complete within 3 seconds' to 'payment must complete within 2 seconds'. Show me what the update output looks like.",
+      "expected_output": "The response shows a diff-style update. The changed AC entry is presented with the old text labelled OLD and the new text labelled NEW (or using strikethrough markdown). The output also lists which Gherkin scenarios reference this AC (with filename and line number) and need re-syncing. No content beyond the changed AC and its directly linked scenarios is modified.",
+      "files": [],
+      "expectations": [
+        "Old text clearly labelled (OLD or strikethrough)",
+        "New text clearly labelled (NEW)",
+        "Linked Gherkin scenarios listed with filename and line number",
+        "No content beyond changed AC and linked scenarios is modified"
+      ],
+      "category": "happy-path"
+    },
+    {
+      "id": 11,
+      "type": "file-based",
+      "description": "Update a living doc file where AC-2 has been changed to tighten the response time SLA.",
+      "prompt": "Apply this AC change to evals/files/payment-living-doc.md: AC-2 'Payment must complete within 3 seconds' changes to 'Payment must complete within 1 second (p99)'.",
+      "expected_output": "Agent shows the old AC-2 text (labelled OLD) and the new AC-2 text (labelled NEW or in diff format). It also lists the Gherkin scenario linked to AC-2 in the file that needs to be re-synced. No other ACs or sections of the living doc are changed.",
+      "files": [
+        "evals/files/payment-living-doc.md"
+      ],
+      "expectations": [
+        "Old AC-2 text shown (labelled OLD or struck-through)",
+        "New AC-2 text shown (labelled NEW)",
+        "Linked Gherkin scenario identified for re-sync",
+        "No other ACs or sections modified"
+      ],
+      "category": "happy-path"
+    },
+    {
+      "id": 12,
+      "type": "happy-path",
+      "description": "Developer deprecates a Feature that has been superseded by a new Feature.",
+      "prompt": "The 'Legacy Payment Widget' (FEAT-003) has been replaced by the new 'Payment Page' (FEAT-002). How do I deprecate the old Feature in the living doc?",
+      "expected_output": "Set status: deprecated on FEAT-003. Add deprecated_at (today's date), deprecation_reason (e.g. 'Replaced by FEAT-002'), and superseded_by: 'FEAT-002'. Never delete the entity — deprecation preserves the audit trail. Flag any Functionalities owned by FEAT-003 for deprecation review. Flag any tests linked to those Functionalities for update or removal.",
+      "files": [],
+      "expectations": [
+        "Sets status: deprecated — never deletes the entity",
+        "Adds deprecated_at, deprecation_reason, and superseded_by fields",
+        "superseded_by points to FEAT-002",
+        "Flags owned Functionalities for deprecation review",
+        "Flags linked tests for update or removal"
+      ],
+      "category": "regression"
+    },
+    {
+      "id": 13,
+      "type": "regression",
+      "description": "Developer asks whether to validate the entity after making changes.",
+      "prompt": "I just added a new AC to US-042. Should I run any validation before committing?",
+      "expected_output": "Yes — run scripts/validate_entity.py against the updated entity file. This checks required fields, ID format (AC:<parent-id>-<nn> pattern), status values, and AC structure. With --catalog flag it also checks referential integrity against the full catalog. If the script exits 0, the entity is valid (warnings are non-blocking). If it exits 1, fix the reported errors before committing.",
+      "files": [],
+      "expectations": [
+        "Recommends running validate_entity.py after any update",
+        "Notes the script checks field requirements, ID format, and status values",
+        "Notes --catalog flag for referential integrity checks",
+        "Explains exit 0 (valid with warnings) vs exit 1 (errors to fix)"
+      ],
+      "category": "regression"
+    },
+    {
+      "id": 14,
+      "type": "regression",
+      "description": "Developer asks how to handle promoting a User Story that fails an invariant check.",
+      "prompt": "I want to set US-089 status to 'active', but it only has one AC and it's a happy-path AC. Is that OK?",
+      "expected_output": "No. US-089 cannot be promoted to 'active' because it is missing at least one error or alternative-path AC. The promotion invariant requires at least one error/alternative AC to prevent User Stories from shipping with untested failure paths. Add at least one AC for a failure scenario before promoting. Example: 'When the delivery address is outside the shipping zone, the order is rejected with a clear reason.'",
+      "files": [],
+      "expectations": [
+        "Blocks promotion — invariant not met",
+        "Identifies the failing invariant: missing error/alternative-path AC",
+        "Proposes an example error-path AC",
+        "Does not set status to active until the invariant passes"
+      ],
+      "category": "edge-case"
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "AC:US-042-01 is currently ACTIVE at v1.0.0. The discount threshold rule changed — the minimum order value is now £75 instead of £50. I need to update the AC.",
+      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC: US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
+      "files": [],
+      "expectations": [
+        "Version bumped from v1.0.0 to v1.1.0",
+        "AC ID stays unchanged",
+        "OLD and NEW AC shown side by side before writing",
+        "Linked Gherkin scenarios flagged for re-sync via gherkin-living-doc-sync"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "I need to rename FEAT-001 (Checkout Page). What are the cascade steps?",
+      "expected_output": "Feature rename cascade — 7 steps: (1) Update the Feature entity file: change 'name' field. (Note: numeric 'id' should not be changed after creation.) (2) Update all references in Functionality entities that link to this Feature. (3) Update feature_registry.json: replace the old name with the new name under the numeric key. (4) Update manifest.json / seed.yaml: update the Feature name entry. (5) Update PageObject file headers: change '# Feature: FEAT-001' marker if it includes the human-readable name. (6) Update Gherkin feature file headers with the new name. (7) Run living-doc-gap-finder to confirm no orphan references remain.",
+      "files": [],
+      "expectations": [
+        "Lists all 7 cascade steps",
+        "Step 2: update feature_id in Functionality entities",
+        "Step 3: update feature_registry.json",
+        "Step 5: update PageObject file headers",
+        "Step 6: update Gherkin # Feature: headers",
+        "Step 7: run gap-finder to confirm clean state"
+      ]
+    }
+  ]
+}

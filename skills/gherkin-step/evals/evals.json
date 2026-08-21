@@ -1,0 +1,236 @@
+{
+  "skill_name": "gherkin-step",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Write a Python behave step definition for 'When the customer confirms the order'. The CheckoutPage PageObject has a confirm_order() method.",
+      "expected_output": "Outputs a thin step definition that delegates entirely to the PageObject: @when('the customer confirms the order') / def step_confirm_order(context): / context.checkout_page.confirm_order(). No CSS selectors, no business logic, and no assertions inside the step. The method call is the only line in the step body (plus any state retrieval from context).",
+      "files": [],
+      "expectations": [
+        "Step delegates to CheckoutPage.confirm_order() - no selector or business logic in step body",
+        "Uses @when decorator",
+        "Accesses checkout_page via context object",
+        "No assertions in a When step"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "In behave, I have a Given step that creates a customer and a Then step that checks the discount. How do I pass the customer object between them without using global variables?",
+      "expected_output": "Use the context object - behave instantiates it fresh per scenario so there is no contamination. In the Given step, attach the object: context.customer = Customer(tier=tier). In the Then step, read it back: context.customer.discount_rate(). Never store state in module-level or global variables. Provides a code example showing both steps using context.customer.",
+      "files": [],
+      "expectations": [
+        "Uses context object to pass state between steps",
+        "Explicitly warns against global or module-level variables",
+        "Shows both Given and Then steps using context.customer",
+        "Notes that context is fresh per scenario"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "I have a step 'When the customer adds the following items' that takes a DataTable with columns 'sku' and 'quantity'. How do I parse the table in behave?",
+      "expected_output": "Access the table via context.table and iterate with a for loop. Each row is a dict-like object: for row in context.table: context.cart.add_item(row['sku'], int(row['quantity'])). Notes that column values are strings by default - cast quantity to int explicitly. Provides a complete step definition example.",
+      "files": [],
+      "expectations": [
+        "Uses context.table to access the DataTable",
+        "Iterates rows with a for loop",
+        "Casts quantity to int (DataTable values are strings)",
+        "Delegates the actual add_item call to a domain object"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "Review this step definition:\n\n@when('the customer confirms the order')\ndef step_confirm_order(context):\n    context.cart.total *= (1 - context.discount / 100)\n    context.order_status = 'placed'\n    context.db.save(context.order)",
+      "expected_output": "Flags the step as violating the 'keep step definitions thin' rule. Business logic (discount calculation, status assignment, DB write) must not live in step definitions - these belong in domain objects or PageObjects. The step should only call a method: context.checkout_page.confirm_order() or context.order_service.confirm_order(). Provides a corrected version that delegates to a domain object.",
+      "files": [],
+      "expectations": [
+        "Identifies business logic in the step body as the violation",
+        "Flags discount calculation, status assignment, and DB write as out-of-place",
+        "Provides a corrected thin version that delegates to a domain/service object",
+        "Explains that step definitions are bindings only"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Write a Gherkin scenario for when the promo code is expired.",
+      "expected_output": "Writing Gherkin scenarios is out of scope for this skill - routes to living-doc-scenario-creator. gherkin-step handles step definition code; living-doc-scenario-creator handles Gherkin text.",
+      "files": [],
+      "expectations": [
+        "Does not write a Gherkin scenario",
+        "Routes to living-doc-scenario-creator",
+        "Explains the distinction: step binding code vs. Gherkin text"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "How do I pass data between step files in behave? For example, I create an order in a Given step and need to check it in a Then step in a different file.",
+      "expected_output": "Use the context object - behave's built-in mechanism for sharing state across steps from different files. In the Given step (any file), assign context.order = .... In the Then step (another file), read context.order. The context is scoped to the scenario and reset between scenarios. Provides a concrete code example showing a Given in one file and Then in another, both using context.order.",
+      "files": [],
+      "expectations": [
+        "Recommends context object for cross-file state sharing",
+        "Shows assignment in Given and access in Then",
+        "Notes that context is scenario-scoped",
+        "Does not recommend global variables"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "I want a Before hook in behave that only runs for scenarios tagged @database. How do I scope it?",
+      "expected_output": "Use the context.tags check inside the before_scenario hook: @before_scenario / def setup_database(context): / if 'database' in context.tags: / context.db = create_test_db(). This scopes setup to only the tagged scenarios. Notes that before_scenario runs before every scenario by default - the tag check prevents unnecessary setup. Advises pairing with an after_scenario hook to clean up: if 'database' in context.tags: context.db.teardown().",
+      "files": [],
+      "expectations": [
+        "Uses context.tags check to scope the hook",
+        "Shows before_scenario hook with 'database' tag check",
+        "Advises pairing with a cleanup after_scenario hook",
+        "Notes the hook runs before every scenario by default without the tag check"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me the correct structure for a Cucumber TypeScript step definition that reads the order ID from the World object and submits the order using a PageObject.",
+      "expected_output": "Output is a TypeScript code block. The step uses the When decorator and accesses this (typed as OrderWorld). Calls this.checkoutPage.submitOrder(this.orderId). The World interface/class includes orderId and checkoutPage properties. No CSS selectors appear in the step body - they are encapsulated in CheckoutPage. Example follows the pattern: When('the customer submits the order', async function (this: OrderWorld) { await this.checkoutPage.submitOrder(); }).",
+      "files": [],
+      "expectations": [
+        "Output is a TypeScript code block",
+        "Step uses async function with this typed as a World class",
+        "Delegates to PageObject method - no selectors in step body",
+        "World object holds page and state properties"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "My step is throwing AttributeError: \"Context\" object has no attribute \"checkout_page\". How do I fix this? The CheckoutPage class is in pages/checkout_page.py.",
+      "expected_output": "Explanation that context.checkout_page must be initialized before the step runs, using a before_scenario hook in environment.py; shows the correct before_scenario pattern attaching a CheckoutPage instance to context.",
+      "files": [],
+      "category": "edge-case",
+      "expectations": [
+        "Explains context.checkout_page must be assigned before the step runs",
+        "Points to a Before hook (environment.py or Cucumber Before) as the fix location",
+        "Shows the correct assignment: context.checkout_page = CheckoutPage(context.browser)",
+        "Does not suggest modifying the step function itself to work around the missing attribute"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Should I name my behave step function step_when_the_customer_clicks_the_confirm_order_button or step_confirm_order?",
+      "expected_output": "Recommends step_confirm_order - concise action-based name. Explains why verbose full-phrase names are discouraged: they duplicate the Gherkin text and make step files harder to scan.",
+      "files": [],
+      "category": "happy-path",
+      "expectations": [
+        "Recommends the concise action-based name: step_confirm_order",
+        "Flags the verbose full-phrase name as an anti-pattern",
+        "Explains the reason: long names are hard to read and cause truncation in test output",
+        "Consistent with the step file naming convention: one file per domain"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "happy-path",
+      "prompt": "How do I set up AppWorld in Cucumber TypeScript so that each scenario gets a fresh Playwright browser context?",
+      "expected_output": "Define an AppWorld class implementing the World interface with a `page` property and a `browser` property. In the constructor, record `this.browser = browser`. In a Before hook, call `this.page = await this.browser.newPage()`. Register with `setWorldConstructor(AppWorld)`. Each scenario gets a fresh context automatically.",
+      "files": [],
+      "expectations": [
+        "Shows AppWorld class with World interface implementation",
+        "Includes setWorldConstructor(AppWorld) registration",
+        "Before hook creates new page and assigns to this.page",
+        "After hook closes page"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "Show me a complete Cucumber TypeScript World setup for a Playwright test suite — I need the AppWorld interface, the class, and the Before/After hooks.",
+      "expected_output": "Provide: (1) AppWorld interface with page and browser properties, (2) AppWorld class implementing it with browser injection in constructor, (3) setWorldConstructor(AppWorld), (4) Before hook: this.page = await this.browser.newPage(), (5) After hook: await this.page?.close().",
+      "files": [],
+      "expectations": [
+        "AppWorld interface shown with correct property types",
+        "setWorldConstructor called with the class",
+        "Before and After hooks shown",
+        "No hardcoded browser creation inside the class"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "My Cucumber TypeScript World setup creates a new browser in the constructor with `playwright.chromium.launch()`. What is wrong with this?",
+      "expected_output": "The browser should be injected via the World constructor parameter `{ browser }`, not created inside the class. Creating a browser in the constructor means each scenario launches a separate browser process, bypassing Cucumber's browser management. Use `this.browser = browser` and create only a new page (`this.browser.newPage()`) in the Before hook.",
+      "files": [],
+      "expectations": [
+        "Identifies the anti-pattern: launching browser inside constructor",
+        "Explains the correct pattern: inject browser via constructor parameter",
+        "Shows Before hook creating a new page instead"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "happy-path",
+      "prompt": "What is the correct file naming convention for Cucumber TypeScript step definition files? I have one large steps.ts file right now.",
+      "expected_output": "Use one step file per domain, named after the domain: e.g. `checkout.steps.ts`, `login.steps.ts`. Never use a generic `steps.ts` filename — it makes it hard to locate step definitions during debugging and conflicts when multiple domains are merged.",
+      "files": [],
+      "expectations": [
+        "Recommends per-domain file naming",
+        "Shows example: checkout.steps.ts, login.steps.ts",
+        "Flags generic steps.ts as an anti-pattern"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "happy-path",
+      "prompt": "I need a step for 'Given the user is on the checkout page'. What step type is this and what should the implementation look like?",
+      "expected_output": "This is a Navigation Given step — it moves the browser to a specific URL via a real page.goto() call (directly or through a PageObject goto() method). The step text must start with 'I am on the …' or 'the user is on the …'. Implementation: Given('the user is on the checkout page', async function (this: AppWorld) { await this.checkoutPage.goto(); }). A Navigation Given does NOT assert that the page loaded — do not add a Then assertion inside the same step.",
+      "files": [],
+      "expectations": [
+        "Classifies as Navigation Given step type",
+        "Implementation calls a real page.goto() or PageObject goto()",
+        "Text follows the 'I am on the …' / 'the user is on the …' convention",
+        "Does not add an assertion inside the Navigation Given step"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "happy-path",
+      "prompt": "I need a step for 'When the user clicks the Confirm Order button'. What rules apply to Action When steps?",
+      "expected_output": "Action When steps represent one atomic UI interaction. Rules: (1) One action per step — do not chain click + fill in one When. (2) Neutral text — do not bake success or failure into the step name ('When the user successfully clicks' is wrong). (3) Expected values arrive as {string} or {int} parameters, never hardcoded. (4) Selector logic belongs in the PageObject — the step delegates: When('the user clicks the Confirm Order button', async function (this: AppWorld) { await this.checkoutPage.clickConfirmOrder(); }).",
+      "files": [],
+      "expectations": [
+        "Classifies as Action When step type",
+        "One atomic interaction per step (no chaining)",
+        "Neutral text — no success/failure baked in",
+        "Delegates to PageObject — no selectors in the step body"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "A developer placed a Compound Given (accelerator) step mid-scenario to fast-forward the UI state. Is this correct?",
+      "expected_output": "No. Compound Given / accelerator steps are permitted only in a Background block or as the very first step of a scenario — never mid-scenario. Placing an accelerator mid-scenario hides state transitions that are under test and makes the scenario harder to debug. Move the accelerator to Background (if it applies to all scenarios in the Feature) or to the very first Given in the scenario. Any subsequent state setup that involves actions under test must use individual atomic Given or When steps.",
+      "files": [],
+      "expectations": [
+        "Identifies mid-scenario accelerator as incorrect",
+        "States the rule: Compound Given allowed only in Background or as first Given",
+        "Explains the risk: hides state transitions, complicates debugging",
+        "Advises moving to Background or replacing mid-scenario with atomic steps"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "edge-case",
+      "prompt": "Where should Compound Given (accelerator) step definitions live — in the domain step file or somewhere else?",
+      "expected_output": "Compound Given / accelerator steps belong in a dedicated setup file: <area>.setup.steps.ts (e.g. checkout.setup.steps.ts), separate from the domain page-action steps in checkout.steps.ts. The JSDoc on each accelerator step must list the individual atomic steps it replaces so the intent remains legible. Keeping setup concerns in a separate file prevents the domain step file from becoming a mix of page-action and setup code.",
+      "files": [],
+      "expectations": [
+        "Accelerators live in <area>.setup.steps.ts, not the domain step file",
+        "JSDoc must list the atomic steps the accelerator replaces",
+        "Explains the separation: setup concerns vs. page-action steps",
+        "Names the file convention: <area>.setup.steps.ts"
+      ]
+    }
+  ]
+}

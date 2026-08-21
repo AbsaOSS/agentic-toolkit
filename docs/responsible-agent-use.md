@@ -81,7 +81,7 @@ How it works:
 - Steer the agent toward **targeted edits**, not rewriting whole files it could patch in place.
 - **Bound the loop:** give acceptance criteria so it stops when done instead of polishing, and interrupt a run
   that's spiralling — every extra turn is more output.
-- Use a brevity skill like [`token-saving`](./token-saving.md) to cut filler from the agent's prose.
+- Use a brevity skill like [`token-saving`](./guides/token-saving.md) to cut filler from the agent's prose.
 - Don't have the agent echo back code or files it already has in context.
 - For verbose, low-stakes work, drop to a cheaper model — the output-rate spread between models is huge.
 
@@ -237,7 +237,7 @@ on top.
 
 **Skills** are loadable instruction bundles (like those in this repo). Used well, they are net **token savers**:
 
-- A skill like [`token-saving`](./token-saving.md) trims filler from every response — pure savings.
+- A skill like [`token-saving`](./guides/token-saving.md) trims filler from every response — pure savings.
 - Skills encode a workflow **once** so you don't re-explain it (and re-pay for it) in every session.
 - They load **on demand** when a task matches, so a large library doesn't tax context until it's relevant
   (see [What Is a Skill?](./getting-started.md#what-is-a-skill) for the loading model).

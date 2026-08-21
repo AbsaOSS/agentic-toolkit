@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "query": "Remove all BDD artifacts for the deprecated checkout feature",
+    "should_trigger": true,
+    "reason": "REMOVE mode — deleting BDD artifacts for a deprecated entity"
+  },
+  {
+    "id": 2,
+    "query": "Delete the feature files and step definitions for US-007 which was deprecated",
+    "should_trigger": true,
+    "reason": "REMOVE mode — explicit BDD artifact deletion"
+  },
+  {
+    "id": 3,
+    "query": "Run a dead code audit to find unused step definitions",
+    "should_trigger": true,
+    "reason": "DEAD CODE AUDIT mode — finding unused step definitions"
+  },
+  {
+    "id": 4,
+    "query": "Find unused PageObject methods across the test suite",
+    "should_trigger": true,
+    "reason": "DEAD CODE AUDIT mode — finding unused PO methods"
+  },
+  {
+    "id": 5,
+    "query": "Which PageObject components are never referenced by any step definition?",
+    "should_trigger": true,
+    "reason": "DEAD CODE AUDIT mode — finding dead PO components"
+  },
+  {
+    "id": 6,
+    "query": "BDD cleanup after deprecating FEAT-003",
+    "should_trigger": true,
+    "reason": "REMOVE mode — bdd cleanup keyword"
+  },
+  {
+    "id": 7,
+    "query": "Remove the PageObject for the old checkout wizard screen",
+    "should_trigger": true,
+    "reason": "REMOVE mode — removing a specific PageObject"
+  },
+  {
+    "id": 8,
+    "query": "Run find_unused_steps.py to find orphaned step definitions",
+    "should_trigger": true,
+    "reason": "DEAD CODE AUDIT — direct script invocation"
+  },
+  {
+    "id": 9,
+    "query": "Are there any dead PO components that nothing calls anymore?",
+    "should_trigger": true,
+    "reason": "DEAD CODE AUDIT — dead PO components query"
+  },
+  {
+    "id": 10,
+    "query": "After deprecating US-042 in the living doc, what BDD files need to go?",
+    "should_trigger": true,
+    "reason": "REMOVE mode — downstream of entity deprecation"
+  },
+  {
+    "id": 11,
+    "query": "Scan the webapp at https://app.example.com and update the PageObjects",
+    "should_trigger": false,
+    "reason": "PageObject re-scan after UI change — routes to living-doc-pageobject-scan RE-SCAN"
+  },
+  {
+    "id": 12,
+    "query": "Heal the PageObjects — selectors are broken after the UI redesign",
+    "should_trigger": false,
+    "reason": "Selector drift healing — routes to living-doc-pageobject-scan HEALING"
+  },
+  {
+    "id": 13,
+    "query": "Sync the @AC: tags in checkout.feature with the living doc",
+    "should_trigger": false,
+    "reason": "@AC: traceability sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 14,
+    "query": "Create a User Story for the checkout capability",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 15,
+    "query": "Generate BDD scenarios for US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 16,
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 17,
+    "query": "Run a gap analysis on the living documentation",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 18,
+    "query": "What does PR #217 affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 19,
+    "query": "Add data-cy attributes to the checkout template",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": 20,
+    "query": "Update US-042 to add a new AC for the expired promo path",
+    "should_trigger": false,
+    "reason": "Updating an entity — routes to living-doc-update"
+  }
+]

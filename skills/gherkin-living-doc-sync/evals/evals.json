@@ -1,0 +1,191 @@
+{
+  "skill_name": "gherkin-living-doc-sync",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "checkout.feature has 3 scenarios but none of them have a # AC: comment above them. What should I do?",
+      "expected_output": "Agent identifies all three scenarios as missing AC link headers (sync direction: feature file → living doc). For each scenario, it proposes a matching AC from the living doc catalog and outputs a SYNC ACTION block per scenario showing the proposed # AC: line to insert. Format: 'SYNC ACTION: checkout.feature:<line> — Missing AC link header — Proposed link: # AC: <id> (<version> – <State>) — <description>'. Asks the developer to confirm each mapping before applying.",
+      "files": [],
+      "expectations": [
+        "Identifies all scenarios missing # AC: comments",
+        "Proposes a matching AC from the catalog for each scenario",
+        "Outputs a SYNC ACTION block for each affected scenario",
+        "Does not apply changes without developer confirmation",
+        "Does not delete any scenario"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "The product owner changed the description of AC:US-001-01 in the living doc. The linked scenario in checkout.feature still has the old # AC: description text. How do I fix this?",
+      "expected_output": "Sync direction is living doc → feature file. Agent updates the # AC: comment text above the linked scenario to reflect the new AC description. The AC ID itself is never changed — only the description text in the comment. Outputs: OLD: '# AC: US-001-01 (v1.0.0 – Active) — <old text>' and NEW: '# AC: US-001-01 (v1.1.0 – Active) — <new text>'. Flags any step text that may also need updating to match the revised AC intent.",
+      "files": [],
+      "expectations": [
+        "Sync direction: living doc → feature file",
+        "Updates comment description text only — AC ID remains stable",
+        "Shows old and new comment text clearly labelled",
+        "Flags step text for review if the AC intent changed significantly",
+        "Does not change the scenario structure"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "After renaming a button's data-testid, the step 'When the customer clicks the Confirm Purchase button' no longer matches any step definition. The old step was 'When the customer confirms the order'. How do I fix this?",
+      "expected_output": "Sync direction: step text → PageObject. Agent outputs a DRIFT DETECTED block: identifies the broken step text, the previous matching step definition, the PageObject method it delegates to (CheckoutPage.confirm_order()), and proposes two fix options: (1) update the .feature file step text to match the existing step definition, or (2) update the step definition regex to match the new wording. Recommends option 1 (update feature file) as the lower-risk change since the PageObject method and step definition are already working.",
+      "files": [],
+      "expectations": [
+        "Outputs DRIFT DETECTED block with affected file and line number",
+        "Identifies the broken step text and the expected step definition",
+        "Links the step to its PageObject method",
+        "Provides two fix options",
+        "Recommends updating the feature file as the lower-risk fix"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "User Story US-042 has been deprecated in the living doc. There are 3 scenarios in promo.feature linked to ACs of US-042. What happens to these scenarios?",
+      "expected_output": "When a US is deprecated, the sync direction is living doc → feature file. Agent proposes: add @deprecated tag to each affected scenario; add a comment above each with the reason (e.g. '# Deprecated: US-042 was deprecated on 2026-05-15 — reason: feature removed'). Never deletes scenarios — marks with @review-needed for developer decision. Lists all 3 affected scenarios with their line numbers.",
+      "files": [],
+      "expectations": [
+        "Adds @deprecated tag to each scenario linked to the deprecated US",
+        "Adds a comment explaining the reason for deprecation",
+        "Never deletes scenarios — marks with @review-needed",
+        "Lists all affected scenarios with file and line number"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "I need a new Gherkin scenario for the case where a promo code has expired.",
+      "expected_output": "Writing new scenarios is out of scope for this skill — routes to living-doc-scenario-creator. gherkin-living-doc-sync corrects existing links and syncs existing scenarios; it does not write new scenarios from scratch.",
+      "files": [],
+      "expectations": [
+        "Does not write a new scenario",
+        "Routes to living-doc-scenario-creator",
+        "Explains the distinction: sync vs. write new"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "After the UI redesign our feature files are a mess — step text is broken and half the AC links point to the wrong things. Where do I start?",
+      "expected_output": "Agent identifies this as a multi-direction sync problem. Recommends running scan_ac_links.py first to get a full audit before applying changes. Then: (1) run step text drift detection for all .feature files to find broken step bindings; (2) audit # AC: headers for correctness; (3) apply the minimum change per sync action. Outputs a prioritised repair plan: broken steps (risk: tests fail) before stale AC links (risk: traceability gaps).",
+      "files": [],
+      "expectations": [
+        "Recommends scan_ac_links.py as first action",
+        "Detects both step text drift and stale AC links",
+        "Prioritises broken steps (test failures) over stale links (traceability)",
+        "Applies minimum necessary change per action"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "A scenario has '# AC: US-099-01' in its header but US-099 does not exist in the living doc catalog. What should I do?",
+      "expected_output": "This is a broken AC reference. Agent outputs a SYNC ACTION flagging the scenario with the broken link. Resolution options: (1) find the correct AC ID in the catalog that matches this scenario's intent and update the # AC: comment; (2) if the behavior is new and has no AC, invoke living-doc-create-user-story or living-doc-create-functionality to create the missing entity, then link the scenario. Never silently removes the # AC: comment — that would destroy the traceability intent.",
+      "files": [],
+      "expectations": [
+        "Detects the broken AC reference (AC ID not in catalog)",
+        "Provides two resolution options: find correct AC or create missing entity",
+        "Does not silently remove the # AC: comment",
+        "Routes entity creation to the appropriate living-doc-create-* skill"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show me what the output of a sync run looks like when there are 2 missing AC links and 1 step text drift.",
+      "expected_output": "Output contains: (1) a SYNC ACTION block for each missing AC link — showing the feature file path, line number, scenario title, and proposed # AC: header; (2) a DRIFT DETECTED block for the broken step — showing the old step text, the expected step text, the PageObject method, and the suggested fix. Each block has a clear header (SYNC ACTION / DRIFT DETECTED). A summary line at the end: '2 missing AC links, 1 step text drift detected — apply changes? (y/n per action)'.",
+      "files": [],
+      "expectations": [
+        "SYNC ACTION blocks for each missing AC link with file, line, scenario, and proposed fix",
+        "DRIFT DETECTED block with old step, expected step, PageObject method, and fix options",
+        "Each block has a distinct labelled header",
+        "Summary line with counts at the end",
+        "Asks for confirmation before applying"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "happy-path",
+      "prompt": "What is the difference between the '@AC:US-001-01' Cucumber tag and the '# AC:US-001-01 ...' comment above a scenario? Do I need both?",
+      "expected_output": "Yes — both serve distinct purposes. The '# AC: ...' comment provides human-readable context: the AC version, state, description, and optional aspect annotation, all visible at a glance in the feature file. The '@AC:' Cucumber tag provides machine-readable traceability: coverage scripts, gap finders, and CI tools use it to link scenarios to ACs programmatically. Both must be present on every scenario for full traceability. The sync skill ensures both are aligned — if only one is present, a SYNC ACTION is raised.",
+      "files": [],
+      "expectations": [
+        "Explains # AC: comment as human-readable context with version, state, and description",
+        "Explains @AC: tag as machine-readable traceability for scripts and CI",
+        "States both are required on every scenario",
+        "Notes sync skill raises a SYNC ACTION when only one is present"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "I want to run a full audit of all AC link headers across all feature files before starting a sync. How do I use scan_ac_links.py?",
+      "expected_output": "Run: 'python skills/gherkin-living-doc-sync/scripts/scan_ac_links.py <features_dir> --us-dir <feature_dirs.user_story> --func-dir <feature_dirs.functionality> --catalog <catalog_path>'. The script scans the living-doc feature directories for '# AC:' comments and '@AC:' tags, validates each AC ID against the living doc catalog, and outputs a report listing: (1) missing # AC: comments (scenarios with no link header), (2) stale AC IDs (IDs not found in catalog), (3) mismatched comment/tag pairs (one present but not the other). The --us-dir and --func-dir flags accept the profile feature_dirs.user_story and feature_dirs.functionality values (defaults: features/liv_doc_us/ and features/liv_doc_func/). Use this report as input to the sync workflow — address broken links first, then missing links, then mismatches.",
+      "files": [],
+      "expectations": [
+        "Names the correct command with --us-dir and --func-dir flags (profile feature_dirs paths)",
+        "Explains what the script reports: missing headers, stale IDs, mismatched pairs",
+        "Notes the living-doc directories are driven by the Project Profile (feature_dirs.*)",
+        "Recommends repair order: broken links → missing links → mismatches",
+        "Notes the script output drives the subsequent sync workflow"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "A scenario has '@AC:US-001-01/aspect:username-input' but the # AC: comment above it just reads '# AC:US-001-01 (v1.0.0 – Active) — displays login form fields'. Is this a sync issue?",
+      "expected_output": "Yes — this is a SYNC ACTION. The @AC: tag encodes an aspect param (/aspect:username-input) but the # AC: comment does not mirror it. Per the skill spec, the comment must include '| aspect: username input' to match the tag. Apply: change the comment to '# AC:US-001-01 (v1.0.0 – Active) — displays login form fields | aspect: username input'. The comment mirrors the human-readable form of the tag's /aspect: param. Confirm before applying.",
+      "files": [],
+      "expectations": [
+        "Identifies mismatch between @AC: tag aspect param and # AC: comment as a SYNC ACTION",
+        "Provides the corrected # AC: comment with | aspect: annotation",
+        "Comment mirrors the /aspect:value in human-readable form",
+        "Asks for confirmation before applying"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "I have a scenario linked to AC:US-042-03 which has just been descoped in the living doc (status: descoped). What should the sync skill do?",
+      "expected_output": "Sync direction: living doc → feature file. When an AC is descoped, the linked scenario should be tagged with @wip or @pending to indicate it is not active. Add a comment above the scenario explaining the descope: '# Descoped: AC:US-042-03 descoped on 2026-05-15 — reason: promo stacking deferred to sprint-52'. Never delete the scenario — it preserves the intent for when the AC is reinstated. Flag the scenario for @pending or @wip tagging in the CI pipeline.",
+      "files": [],
+      "expectations": [
+        "Sync direction: living doc → feature file",
+        "Tags scenario with @wip or @pending — does not delete it",
+        "Adds a comment with the descope reason and date",
+        "Preserves the scenario for when the AC is reinstated",
+        "Flags for @pending tagging in CI"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "edge-case",
+      "prompt": "AC:US-001-02 was split into two separate ACs: AC:US-001-02 (happy path) and AC:US-001-04 (alt path: guest checkout). The feature file still has one scenario linked to AC:US-001-02. What does the sync output look like?",
+      "expected_output": "Two SYNC ACTIONs are emitted. (1) Existing scenario: the '@AC:US-001-02' tag is updated to the primary (happy path) AC — it stays unchanged since it was always the primary AC. (2) A SYNC ACTION proposes creating a new scenario for AC:US-001-04 with the required '# AC: US-001-04' header and '@AC:US-001-04' tag. The existing scenario is never modified or deleted. Developer confirms both actions before any change is applied.",
+      "files": [],
+      "expectations": [
+        "Existing scenario's @AC: tag is updated to point to the primary AC (US-001-02)",
+        "A SYNC ACTION is raised proposing a new scenario for AC:US-001-04",
+        "The existing scenario is not deleted or modified beyond the tag update",
+        "Developer confirmation is required before any file is edited"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "happy-path",
+      "prompt": "During a sync pass I discover that the step text for AC:US-007-03 changed AND the PageObject method that backs it was renamed. What should I do for each part?",
+      "expected_output": "Split the work: (1) gherkin-living-doc-sync updates the step text and the @AC: tag in the .feature file — this skill handles Gherkin text sync. (2) The PageObject method rename (signature and locator) is owned by living-doc-pageobject-scan HEALING scope — load that skill for the PO side. Do not attempt to rename PageObject methods inside this sync skill.",
+      "files": [],
+      "expectations": [
+        "Correctly splits Gherkin-side vs PageObject-side work",
+        "Routes PageObject method rename to living-doc-pageobject-scan HEALING",
+        "Does not attempt to rename PO methods within gherkin-living-doc-sync"
+      ]
+    }
+  ]
+}

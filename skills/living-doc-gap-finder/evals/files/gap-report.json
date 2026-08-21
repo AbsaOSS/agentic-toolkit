@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-05-22T19:03:52.630632+00:00",
+  "documentation_coverage": {
+    "total_acs": 9,
+    "covered_acs": 1,
+    "coverage_percentage": 11.1
+  },
+  "summary": {
+    "total_gaps": 20,
+    "blockers": 8,
+    "important": 9,
+    "nits": 3
+  },
+  "gaps": [
+    {
+      "id": "GAP-001",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-001-02",
+      "description": "AC 'AC:US-001-02' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-002",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-001-03",
+      "description": "AC 'AC:US-001-03' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-003",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-002-01",
+      "description": "AC 'AC:US-002-01' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-004",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-002-02",
+      "description": "AC 'AC:US-002-02' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-005",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-007-01",
+      "description": "AC 'AC:US-007-01' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-006",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-007-02",
+      "description": "AC 'AC:US-007-02' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-007",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-007-03",
+      "description": "AC 'AC:US-007-03' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-008",
+      "type": "UNTESTED_AC",
+      "severity": "Blocker",
+      "entity": "AC:US-007-04",
+      "description": "AC 'AC:US-007-04' has no linked test",
+      "proposed_action": "Generate a BDD scenario using living-doc-scenario-creator, or add a unit/integration test and link it to this AC"
+    },
+    {
+      "id": "GAP-009",
+      "type": "UNDOCUMENTED_SURFACE",
+      "severity": "Important",
+      "entity": "/account/orders",
+      "description": "Surface '/account/orders' exists in the application with no Feature entity",
+      "proposed_action": "Create a Feature entity using living-doc-create-feature"
+    },
+    {
+      "id": "GAP-010",
+      "type": "UNDOCUMENTED_SURFACE",
+      "severity": "Important",
+      "entity": "/account/preferences",
+      "description": "Surface '/account/preferences' exists in the application with no Feature entity",
+      "proposed_action": "Create a Feature entity using living-doc-create-feature"
+    },
+    {
+      "id": "GAP-011",
+      "type": "UNDOCUMENTED_SURFACE",
+      "severity": "Important",
+      "entity": "/reports/legacy",
+      "description": "Surface '/reports/legacy' exists in the application with no Feature entity",
+      "proposed_action": "Create a Feature entity using living-doc-create-feature"
+    },
+    {
+      "id": "GAP-013",
+      "type": "ORPHAN_FEATURE",
+      "severity": "Important",
+      "entity": "FEAT-008",
+      "description": "Feature 'FEAT-008' (Legacy Report Screen) has no linked User Stories",
+      "proposed_action": "Link to an existing User Story or confirm with the product owner whether to deprecate"
+    },
+    {
+      "id": "GAP-012",
+      "type": "ORPHAN_FEATURE",
+      "severity": "Important",
+      "entity": "FEAT-004",
+      "description": "Feature 'FEAT-004' (Promotions Module) has no linked User Stories",
+      "proposed_action": "Link to an existing User Story or confirm with the product owner whether to deprecate"
+    },
+    {
+      "id": "GAP-014",
+      "type": "ORPHAN_USER_STORY",
+      "severity": "Important",
+      "entity": "US-007",
+      "description": "User Story 'US-007' (Apply a promotional discount) has no linked Feature",
+      "proposed_action": "Link to an existing Feature or create the missing Feature using living-doc-create-feature"
+    },
+    {
+      "id": "GAP-017",
+      "type": "ORPHAN_TEST",
+      "severity": "Important",
+      "entity": "View paginated order history",
+      "description": "Test 'View paginated order history' has no linked AC",
+      "proposed_action": "Link to an existing AC, or create a Functionality for the behavior using living-doc-create-functionality. Never delete the test to resolve the gap."
+    },
+    {
+      "id": "GAP-016",
+      "type": "ORPHAN_TEST",
+      "severity": "Important",
+      "entity": "test_login_flow.feature",
+      "description": "Test 'test_login_flow.feature' has no linked AC",
+      "proposed_action": "Link to an existing AC, or create a Functionality for the behavior using living-doc-create-functionality. Never delete the test to resolve the gap."
+    },
+    {
+      "id": "GAP-015",
+      "type": "ORPHAN_TEST",
+      "severity": "Important",
+      "entity": "test_order_history.py",
+      "description": "Test 'test_order_history.py' has no linked AC",
+      "proposed_action": "Link to an existing AC, or create a Functionality for the behavior using living-doc-create-functionality. Never delete the test to resolve the gap."
+    },
+    {
+      "id": "GAP-018",
+      "type": "UNDOCUMENTED_FUNCTIONALITY",
+      "severity": "Nit",
+      "entity": "FUNC-002",
+      "description": "Functionality 'FUNC-002' has 5 AC(s) with no linked tests",
+      "proposed_action": "Create unit or integration tests for this Functionality's ACs and link them"
+    },
+    {
+      "id": "GAP-019",
+      "type": "EMPTY_FEATURE",
+      "severity": "Nit",
+      "entity": "FEAT-005",
+      "description": "Feature 'FEAT-005' (Account Dashboard) has no Functionalities defined",
+      "proposed_action": "Create Functionalities for known behaviors using living-doc-create-functionality"
+    },
+    {
+      "id": "GAP-020",
+      "type": "EMPTY_FEATURE",
+      "severity": "Nit",
+      "entity": "FEAT-008",
+      "description": "Feature 'FEAT-008' (Legacy Report Screen) has no Functionalities defined",
+      "proposed_action": "Create Functionalities for known behaviors using living-doc-create-functionality"
+    }
+  ]
+}

@@ -56,4 +56,4 @@ If another active skill specifies its own output format (e.g. a review skill wit
 
 ## Installation
 
-See [Getting Started](./getting-started.md) for the full install guide.
+See [Getting Started](../getting-started.md) for the full install guide.

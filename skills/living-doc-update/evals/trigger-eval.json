@@ -1,0 +1,152 @@
+[
+  {
+    "id": "t01-update-us-explicit",
+    "query": "Update User Story US-042 to add a new AC.",
+    "should_trigger": true,
+    "reason": "'update user story' is a listed trigger phrase."
+  },
+  {
+    "id": "t02-add-ac",
+    "query": "I need to add an AC to an existing User Story for the expired promo path.",
+    "should_trigger": true,
+    "reason": "'add AC to user story' is a listed trigger phrase."
+  },
+  {
+    "id": "t03-deprecate-functionality",
+    "query": "How do I deprecate a Functionality in the living doc?",
+    "should_trigger": true,
+    "reason": "'deprecate functionality' is a listed trigger phrase."
+  },
+  {
+    "id": "t04-mark-us-ready",
+    "query": "I want to mark User Story US-089 as ready for development.",
+    "should_trigger": true,
+    "reason": "'mark US ready' is a listed trigger phrase."
+  },
+  {
+    "id": "t05-change-feature-owner",
+    "query": "Change the owner of the checkout feature from team-checkout to team-payments-v2.",
+    "should_trigger": true,
+    "reason": "'change feature owner' is a listed trigger phrase."
+  },
+  {
+    "id": "t06-update-functionality",
+    "query": "Update the living doc Functionality entry for the promo validation module.",
+    "should_trigger": true,
+    "reason": "'update functionality' is a listed trigger phrase."
+  },
+  {
+    "id": "t07-deprecate-feature",
+    "query": "Mark the legacy payment feature as deprecated in the living doc.",
+    "should_trigger": true,
+    "reason": "'mark feature deprecated' is a listed trigger phrase."
+  },
+  {
+    "id": "t08-update-ac",
+    "query": "The product owner changed the wording of AC-1 on US-042. How do I update it?",
+    "should_trigger": true,
+    "reason": "'update AC' is a listed trigger phrase."
+  },
+  {
+    "id": "t09-update-feature-registry",
+    "query": "How do I update the Feature Registry after the team restructure?",
+    "should_trigger": true,
+    "reason": "Updating Feature ownership is a core living-doc-update task covered by 'change feature owner'; Feature Registry updates are part of Feature ownership changes handled in the skill body."
+  },
+  {
+    "id": "t10-not-create-us",
+    "query": "Create a new User Story for the express checkout journey.",
+    "should_trigger": false,
+    "reason": "Creating new entities is handled by living-doc-create-user-story."
+  },
+  {
+    "id": "t11-not-gap-finder",
+    "query": "Find User Stories with no Gherkin scenario coverage.",
+    "should_trigger": false,
+    "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
+  },
+  {
+    "id": "t12-not-scenario-creator",
+    "query": "Generate Gherkin scenarios for US-042.",
+    "should_trigger": false,
+    "reason": "Generating scenarios is handled by living-doc-scenario-creator."
+  },
+  {
+    "id": "t13-change-status",
+    "query": "Change the status of User Story US-089 to active.",
+    "should_trigger": true,
+    "reason": "'change status of user story' is a listed trigger phrase."
+  },
+  {
+    "id": "t14-not-impact-analysis",
+    "query": "What does this PR affect in the living doc?",
+    "should_trigger": false,
+    "reason": "PR impact analysis is handled by living-doc-impact-analysis, not living-doc-update."
+  },
+  {
+    "id": "t15-descope-ac",
+    "query": "Descope AC-3 on US-042 — it's moving to the next sprint.",
+    "should_trigger": true,
+    "reason": "Descoping an AC mid-sprint is an update operation covered by the 'update AC' / 'change status of user story' trigger patterns."
+  },
+  {
+    "id": "t16-superseded-by",
+    "query": "Mark FEAT-003 as deprecated and point to FEAT-002 as the replacement.",
+    "should_trigger": true,
+    "reason": "'mark feature deprecated' and 'deprecate feature' trigger phrases; superseded_by field is set as part of deprecation."
+  },
+  {
+    "id": "t17-not-scenario",
+    "query": "Generate BDD scenarios for all active ACs on US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": "t18-not-step",
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": "t19-not-bdd-maintain",
+    "query": "Run the BDD cleanup for the deprecated checkout feature",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": "t20-not-sync",
+    "query": "Sync the @AC: header comments in the feature files",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": "t21-not-pageobject",
+    "query": "Scan the webapp and regenerate PageObjects after the redesign",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": "t22-not-data-cy",
+    "query": "Add data-cy attributes to the confirm button",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": "t23-not-gap-finder",
+    "query": "Find all User Stories with no AC coverage",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": "t24-not-impact",
+    "query": "Does PR #217 affect the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis (PR-number phrasing; complements t14)."
+  },
+  {
+    "id": "t25-rename-feature",
+    "query": "I need to update a Feature's name because the domain split — walk me through all the cascade steps",
+    "should_trigger": true,
+    "reason": "Feature update cascade — living-doc-update owns the workflow for renaming/updating Features"
+  }
+]

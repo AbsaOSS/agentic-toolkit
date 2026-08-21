@@ -1,0 +1,218 @@
+{
+  "skill_name": "living-doc-create-functionality",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I want to document the atomic behavior: validate that a cart contains at least one in-stock item before checkout.",
+      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with feature_id set to the numeric Feature ID.",
+      "files": [],
+      "expectations": [
+        "Name is a verb phrase (not a noun)",
+        "Asks about empty cart, out-of-stock, and boundary conditions",
+        "Runs the completeness checklist",
+        "Produces at least 3 ACs covering error codes explicitly",
+        "All ACs have test_type=unit",
+        "Outputs valid canonical Functionality JSON"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Review this Functionality and tell me what's wrong with it. File: evals/files/broad-functionality.json",
+      "expected_output": "Agent identifies: Blocker — name 'Handle checkout' is too broad (verb phrase should identify a single atomic behavior); Blocker — both ACs are vague ('works correctly', 'handles it appropriately') — not testable; Important — no error codes specified in the error AC; Important — no boundary value conditions. Proposes splitting into multiple focused Functionalities and rewriting ACs with exact When/Then conditions and error codes.",
+      "files": [
+        "evals/files/broad-functionality.json"
+      ],
+      "expectations": [
+        "Flags 'Handle checkout' as too broad — not atomic",
+        "Flags 'works correctly' as non-testable — no exact output",
+        "Flags 'handles it appropriately' as vague — no error code",
+        "Proposes splitting into at least 2 focused Functionalities",
+        "Provides rewritten AC examples with exact outputs and error codes"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Should this AC have test_type=unit or test_type=integration? The behavior is: validate that the customer's email is not already registered.",
+      "expected_output": "This requires a database read to check existing registrations — it cannot be tested in pure isolation. test_type=integration. Explains: unit tests mock the DB; an integration test uses a real or test DB to verify the uniqueness constraint actually works. Notes that if the validation logic is a pure function that takes a list of existing emails as input, it could be unit-testable — in that case unit is preferred.",
+      "files": [],
+      "expectations": [
+        "Recommends integration because it requires a real DB read",
+        "Explains the unit vs integration distinction",
+        "Notes the pure-function alternative that would allow unit testing"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "I noticed this AC appears in both US-001 and US-007: 'When the cart is empty, validation returns INVALID with code CART_EMPTY'. Should I duplicate it?",
+      "expected_output": "No. This is a reuse candidate. Create a single Functionality with this AC and link both US-001 and US-007 to it via the user_stories array. Duplicating ACs across User Stories creates maintenance burden — a change to the behavior must be updated in multiple places.",
+      "files": [],
+      "expectations": [
+        "Flags as a reuse candidate — not a duplication",
+        "Advises creating one Functionality and linking both USs via user_stories array",
+        "Explains the maintenance risk of duplication"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Create a User Story for the order placement capability.",
+      "expected_output": "User Story creation — routes to living-doc-create-user-story. This skill documents atomic behaviors (Functionalities), not end-to-end User Stories.",
+      "files": [],
+      "expectations": [
+        "Does not create a User Story",
+        "Routes to living-doc-create-user-story"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "I need to capture the business rule: a gold member gets a 20% discount on all orders over £50. How do I document this in the living doc?",
+      "expected_output": "Agent identifies this as a Functionality entity. Forms verb-phrase name: 'Apply gold member discount on qualifying orders'. Runs completeness checklist: asks about non-gold members, orders exactly £50 (boundary), orders under £50, combination with promo codes. Produces ACs: order>£50 and gold member → 20% discount applied; order<=£50 → no discount; non-gold member → no discount; combined with promo → define stacking rule. All ACs test_type=unit. Outputs canonical Functionality JSON.",
+      "files": [],
+      "expectations": [
+        "Identifies as Functionality (atomic business rule), not User Story",
+        "Verb-phrase name captures the business rule precisely",
+        "Boundary value at £50 is included in the completeness checklist",
+        "At least 3 ACs with explicit expected outcomes",
+        "Outputs valid canonical Functionality JSON"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "A Functionality has 12 ACs. Is that a sign of a design problem?",
+      "expected_output": "Yes. A Functionality with 12 ACs is almost certainly not atomic — it is covering multiple distinct behaviors. An atomic Functionality should have 3-7 ACs covering the happy path, key error codes, and important boundary values. With 12, review whether the ACs can be grouped into 2-3 distinct behaviors that each warrant their own Functionality entity. Split the Functionality by behavioral concern. The goal is one coherent unit-testable behavior per entity.",
+      "files": [],
+      "expectations": [
+        "Flags 12 ACs as a sign of non-atomic scope",
+        "Recommends 3-7 ACs as the target range",
+        "Advises splitting into 2-3 focused Functionalities",
+        "Explains the atomic unit-testable behavior criterion"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Document the atomic behavior: 'The system deducts the applied voucher discount from the basket total before tax is calculated.'",
+      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, feature_id, acceptance_criteria (array), test_coverage (array), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values.",
+      "files": [],
+      "expectations": [
+        "Single fenced ```json code block",
+        "type field is 'Functionality'",
+        "id follows FUNC-<kebab> convention",
+        "acceptance_criteria is an array of business-language strings",
+        "test_coverage array covers every AC with unit or integration classification",
+        "No implementation details in JSON values"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "I want to document a Functionality called 'Password Validation'. Is that a good name?",
+      "expected_output": "'Password Validation' is a noun phrase — Functionality names must be verb phrases expressing what the behavior does. Rename it to 'Validate Password Strength' or 'Validate Password Against Policy'. The noun phrase 'Password Validation' names a module or component, which would be a Feature, not a Functionality. Correct format: verb + object, describing the single atomic action the Functionality performs.",
+      "files": [],
+      "expectations": [
+        "Flags 'Password Validation' as a noun phrase anti-pattern",
+        "Provides a correct verb-phrase rename (e.g. 'Validate Password Strength')",
+        "Explains: Functionality names must be verb phrases",
+        "Notes noun phrases describe modules/components (Features), not behaviors"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "happy-path",
+      "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
+      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID.",
+      "files": [],
+      "expectations": [
+        "Asks for the parent Feature ID (numeric, from catalog) instead of inventing a slug",
+        "Forms a verb-phrase name",
+        "Runs completeness checklist: all out of stock vs. partial",
+        "Notes that the parent Feature must already exist in the catalog with a numeric ID",
+        "Outputs valid Functionality JSON with feature_id populated"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "A Functionality has no parent Feature — I forgot to link it. Is that a problem?",
+      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set feature_id in the Functionality entity. Do not leave feature_id empty or null in a finalized entity.",
+      "files": [],
+      "expectations": [
+        "Flags missing feature_id as a traceability problem",
+        "Names the gap type: ORPHAN_FUNCTIONALITY",
+        "Notes it will be missed in impact analyses",
+        "Directs to living-doc-create-feature to create the parent Feature first"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "I have a Functionality AC that says: 'The system validates the discount code'. Is this AC well-formed?",
+      "expected_output": "No. This AC is vague — it does not specify an observable outcome or error code. 'validates' without a result is non-testable. Rewrite using When/Then form with explicit outcomes: e.g. 'When a valid discount code is applied, the discount is deducted from the basket total' and 'When an invalid or expired discount code is submitted, validation returns INVALID_CODE error'. Every AC must state an exact output or side effect; error cases must include the explicit error code.",
+      "files": [],
+      "expectations": [
+        "Flags 'validates' without a result as non-testable vague AC",
+        "Provides a rewritten AC with explicit When/Then outcome",
+        "Includes an error-case AC with an explicit error code",
+        "Explains: every AC must state an exact outcome"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Create a new Functionality entity 'Validate discount code expiry'. The catalog already contains FUNC-001 through FUNC-007.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FUNC --catalog catalog.json. The script returns FUNC-008. The agent assigns id='FUNC-008'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as FUNC-XXX or FUNC-<nnn>. The final JSON has a fully populated id field before being presented to the user.",
+      "files": [],
+      "expectations": [
+        "Runs next_id.py --type FUNC before assigning the ID",
+        "Assigns the ID returned by the script (e.g. FUNC-008)",
+        "Does not invent, guess, or reuse an ID",
+        "Does not leave a placeholder (FUNC-XXX, FUNC-<nnn>, FUNC-unknown)",
+        "Final JSON has a fully populated id field"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "Create a Functionality entity but the catalog file is missing — next_id.py cannot be run. What should the agent do?",
+      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='FUNC-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type FUNC once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as FUNC-001 without catalog evidence. The placeholder makes the gap visible rather than hiding it with a guessed value.",
+      "files": [],
+      "expectations": [
+        "Uses FUNC-PENDING placeholder when catalog is unavailable",
+        "Explicitly warns the user that the ID must be assigned before saving",
+        "Does not invent a numeric ID without catalog evidence",
+        "Placeholder is visibly distinct — not a real FUNC-nnn value"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "I just saved FUNC-001 to the living doc. What else do I need to do to make it fully linked?",
+      "expected_output": "After saving the Functionality entity, load living-doc-update and append 'FUNC-001' to the parent Feature's 'functionalities' array. An unlinked Functionality will be flagged as ORPHAN_FUNCTIONALITY by living-doc-gap-finder. The link must be added to the Feature entity — the Functionality alone is not sufficient.",
+      "files": [],
+      "expectations": [
+        "Identifies the required parent Feature update step",
+        "Routes to living-doc-update to perform the append",
+        "Mentions ORPHAN_FUNCTIONALITY gap type as the consequence of skipping"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Is this Functionality AC well-formed? 'The system should validate that the discount code is not expired.'",
+      "expected_output": "No — two problems. (1) 'Should' is a non-binary modal: the AC cannot be decisively passed or failed. Use `must` for rules the system enforces ('The system must reject expired discount codes'), `returns` for calculations, `rejects`/`accepts` for validations. (2) The AC lacks an explicit outcome — 'validate' without a result is non-testable. Rewrite: 'When an expired discount code is submitted, the system rejects it and returns DISCOUNT_EXPIRED error.' Every Functionality AC must name an exact output, return value, or error code.",
+      "files": [],
+      "expectations": [
+        "Flags 'should' as non-binary — AC cannot be decisively passed or failed",
+        "Suggests 'must', 'returns', 'rejects', or 'accepts' as replacements",
+        "Flags lack of explicit outcome as non-testable",
+        "Provides a rewritten AC with an explicit error code"
+      ]
+    }
+  ]
+}

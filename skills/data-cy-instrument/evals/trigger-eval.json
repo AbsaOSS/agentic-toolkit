@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "query": "Add missing data-cy attributes to the checkout Angular template",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — adding missing data-cy attributes"
+  },
+  {
+    "id": 2,
+    "query": "The PageObjects have ⚠️ PROPOSED locator comments — what do I do?",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — PROPOSED locator resolution"
+  },
+  {
+    "id": 3,
+    "query": "Instrument the Angular templates to add data-cy test IDs",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — instrument angular templates keyword"
+  },
+  {
+    "id": 4,
+    "query": "Fix data-cy gaps in the login component template",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — fix data-cy gaps keyword"
+  },
+  {
+    "id": 5,
+    "query": "Run a data-cy audit on the checkout module",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — data-cy audit keyword"
+  },
+  {
+    "id": 6,
+    "query": "Add testids to the checkout form inputs so Playwright can select them",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — add testids keyword"
+  },
+  {
+    "id": 7,
+    "query": "Our Playwright selectors are failing because there are no data-cy attributes on the buttons",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — fix playwright selectors due to missing data-cy"
+  },
+  {
+    "id": 8,
+    "query": "Update the PageObjects to use getByTestId() instead of CSS selectors",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — syncing PageObjects to use getByTestId()"
+  },
+  {
+    "id": 9,
+    "query": "The coverage_gaps list is non-empty after the PageObject scan — how do I resolve it?",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — coverage_gaps resolution workflow"
+  },
+  {
+    "id": 10,
+    "query": "FUNC-001 has status planned because there are no data-cy attributes — fix it",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — Functionality.status planned due to missing test IDs"
+  },
+  {
+    "id": 11,
+    "query": "Add data-cy to the third-party UI library button in the checkout form",
+    "should_trigger": true,
+    "reason": "data-cy-instrument trigger — even lib buttons need an audit decision (WORK_LOG if unsupported)"
+  },
+  {
+    "id": 12,
+    "query": "Generate BDD scenarios for US-007",
+    "should_trigger": false,
+    "reason": "Adding Gherkin — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": 13,
+    "query": "Write step definitions for the checkout scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": 14,
+    "query": "The PageObject selectors are broken after the UI redesign — heal them",
+    "should_trigger": false,
+    "reason": "PageObject healing without data-cy gaps — routes to living-doc-pageobject-scan HEALING"
+  },
+  {
+    "id": 15,
+    "query": "Scan the webapp and generate PageObjects for the admin portal",
+    "should_trigger": false,
+    "reason": "PageObject creation — routes to living-doc-pageobject-scan CREATE"
+  },
+  {
+    "id": 16,
+    "query": "Create a User Story for the checkout capability",
+    "should_trigger": false,
+    "reason": "Creating a User Story — routes to living-doc-create-user-story"
+  },
+  {
+    "id": 17,
+    "query": "Run a gap analysis on the living doc",
+    "should_trigger": false,
+    "reason": "Gap analysis — routes to living-doc-gap-finder"
+  },
+  {
+    "id": 18,
+    "query": "What does PR #217 affect in the living doc?",
+    "should_trigger": false,
+    "reason": "Impact analysis — routes to living-doc-impact-analysis"
+  },
+  {
+    "id": 19,
+    "query": "Sync the @AC: tags in the feature files with the living doc",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": 20,
+    "query": "Delete all BDD artifacts linked to the deprecated checkout feature",
+    "should_trigger": false,
+    "reason": "BDD artifact cleanup — routes to bdd-maintain"
+  },
+  {
+    "id": 21,
+    "query": "Update the wording of AC-1 on US-042",
+    "should_trigger": false,
+    "reason": "Updating an entity — routes to living-doc-update"
+  },
+  {
+    "id": 22,
+    "query": "Create a Feature entity for the checkout module",
+    "should_trigger": false,
+    "reason": "Creating a Feature — routes to living-doc-create-feature"
+  }
+]

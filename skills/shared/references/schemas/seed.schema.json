@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/shared/references/schemas/seed.schema.json",
+  "title": "Business Seed (seed.yaml)",
+  "description": "Canonical machine contract for .copilot/bdd/seed.yaml. See living-doc-bdd-schemas.md > seed.yaml (Business Seed). Credential literals are forbidden and enforced by validate_artifacts.py, not by this schema.",
+  "type": "object",
+  "required": ["app", "credentials_source", "test_id_attribute", "business_domains", "user_roles"],
+  "additionalProperties": true,
+  "properties": {
+    "app": {
+      "type": "object",
+      "required": ["name", "base_url", "auth_entry_path"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "base_url": { "type": "string", "minLength": 1 },
+        "auth_entry_path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "credentials_source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the env file holding test credentials, or an env:VAR placeholder. Never an inline literal."
+    },
+    "test_id_attribute": { "type": "string", "minLength": 1 },
+    "business_domains": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "route_prefix", "feature_id"],
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "route_prefix": { "type": "string", "minLength": 1 },
+          "feature_id": {
+            "type": "string",
+            "pattern": "^FEAT-(\\d{3,}|UNKNOWN)$"
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "user_roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["role", "description"],
+        "additionalProperties": true,
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "known_entities": { "type": "object" },
+    "form_fixtures": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": true,
+          "properties": {
+            "field": { "type": "string", "minLength": 1 },
+            "value": {},
+            "source": {
+              "type": "string",
+              "enum": ["seed_declared", "user_provided", "agent_observed"]
+            },
+            "note": { "type": "string" },
+            "value_class": {
+              "type": "string",
+              "enum": ["copyable", "derived", "fake", "real-world"]
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["label", "value", "source"],
+                "properties": {
+                  "label": { "type": "string" },
+                  "value": {},
+                  "source": { "type": "string" }
+                }
+              }
+            },
+            "condition": {
+              "type": "object",
+              "required": ["when_field", "when_value"],
+              "properties": {
+                "when_field": { "type": "string" },
+                "when_value": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

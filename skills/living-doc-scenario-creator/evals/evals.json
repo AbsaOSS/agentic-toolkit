@@ -1,0 +1,284 @@
+{
+  "skill_name": "living-doc-scenario-creator",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order.\n\nACs:\n- AC:US-007-01 (v1.0.0 – active) — happy_path: Customer places an order with a saved payment method\n- AC:US-007-02 (v1.0.0 – active) — error: Order is rejected when the payment card is declined\n- AC:US-007-03 (v1.0.0 – active) — alternative: Customer places an order using a guest checkout",
+      "expected_output": "Outputs a .feature file named 'us-007-place-an-online-order.feature'. Feature header uses the As-a/I-can/so-that narrative. Three Scenarios generated — one per active AC. Each Scenario: is preceded immediately by a '# AC: US-007-0n (v1.0.0 – active) — ...' comment. Scenario names follow the AC type conventions: US-007-01 is a Scenario: (happy_path), US-007-02 is titled 'Order rejected when payment card is declined' (error), US-007-03 is titled 'Place an Online Order — guest checkout' (alternative). All step text is domain language with no implementation details.",
+      "files": [],
+      "expectations": [
+        "Feature file named us-007-place-an-online-order.feature",
+        "Feature header with As-a/I-can/so-that narrative",
+        "Three scenarios — one per active AC",
+        "Each Scenario: immediately preceded by a # AC: comment",
+        "AC type conventions: happy_path → Scenario:, error → 'X — error', alternative → 'X — alternative path'",
+        "Business language steps — no HTTP, selectors, or DB"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Generate scenarios for US-007 which has these ACs:\n- AC:US-007-01 (active) — happy_path\n- AC:US-007-04 (deprecated) — error: old payment timeout path\n- AC:US-007-05 (planned) — alternative: loyalty points checkout\n\nWhat scenarios get generated and what appears in the coverage report?",
+      "expected_output": "Only AC:US-007-01 is active — one Scenario is generated for it. AC:US-007-04 (deprecated) and AC:US-007-05 (planned) are excluded from generation. Coverage report shows: AC:US-007-01 (active): generated. AC:US-007-04 (deprecated): skipped — deprecated AC. AC:US-007-05 (planned): skipped — not yet active. No scenarios are generated for deprecated or planned ACs.",
+      "files": [],
+      "expectations": [
+        "Only active ACs drive scenario generation",
+        "Deprecated ACs are excluded with 'skipped — deprecated AC' notation",
+        "Planned ACs are excluded with 'skipped — not yet active' notation",
+        "Coverage report lists all ACs with their skip reason"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Generating scenarios for US-007-01 — 'Customer confirms the order'. The CheckoutPage PageObject has a confirm_order() method. Generate the step stub for 'When the customer confirms the order'.",
+      "expected_output": "Case A — PageObject method exists. Generates a full step stub using the available method. Output includes: the missing step text, the PageObject candidate (CheckoutPage, FEAT-003), the suggested step file (tests/steps/checkout_steps.py), and the generated stub: @when('the customer confirms the order') / def step_confirm_order(context): / context.checkout_page.confirm_order(). No NotImplementedError — the PageObject method exists. PageObject setup belongs in before_scenario, not in the step body.",
+      "files": [],
+      "expectations": [
+        "Identifies as Case A (PageObject method exists)",
+        "Generates a full stub — no NotImplementedError",
+        "Names the PageObject candidate and Feature ID",
+        "Suggests the correct step file based on the domain"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "Generating scenarios for US-007-02. The step 'When the customer applies a promo code' has no matching method in CheckoutPage. Generate the step stub.",
+      "expected_output": "Case B — No matching PageObject method. Generates a stub with a NotImplementedError failure guard. The error message names the step text, the PageObject that is missing the method (CheckoutPage, FEAT-003), and the expected method name (apply_promo_code). Also outputs an action: invoke living-doc-pageobject-scan in Maintain mode for FEAT-003 to add the missing element. The stub is clearly marked as incomplete and will fail at runtime until the PageObject is extended.",
+      "files": [],
+      "expectations": [
+        "Identifies as Case B (missing PageObject method)",
+        "Generates stub with raise NotImplementedError",
+        "Error message includes step text, PageObject name, Feature ID, and missing method name",
+        "Instructs to run living-doc-pageobject-scan (Maintain mode) for the missing method",
+        "Stub will fail at runtime as intended"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Write a standalone Gherkin scenario for testing login without a specific User Story.",
+      "expected_output": "Standalone Gherkin without a User Story uses living-doc-scenario-creator Standalone mode. Use @AC:STANDALONE tag; scenario is not tied to a catalog entity.",
+      "files": [],
+      "expectations": [
+        "Generates the scenario using Standalone mode — does not refuse the request",
+        "Uses @AC:STANDALONE tag on the generated scenario",
+        "Explains the distinction: US-driven vs. standalone Gherkin"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Write feature tests for US-007 — I need full coverage of all the acceptance criteria.",
+      "expected_output": "Agent recognises this as a scenario generation request for a User Story. Loads US-007, filters to active ACs, and generates one scenario per AC. Outputs the .feature file and a coverage table. If any ACs are planned or deprecated, notes them as skipped in the coverage report.",
+      "files": [],
+      "expectations": [
+        "Recognises 'write feature tests for US-nnn' as a scenario generation request",
+        "Filters to active ACs only",
+        "Generates one scenario per AC",
+        "Outputs coverage table with skip reasons for excluded ACs"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "I want to generate scenarios for US-020, but all its ACs are in Planned state. What happens?",
+      "expected_output": "No scenarios are generated — there are no active or implemented ACs to drive generation. Coverage report shows all ACs with 'skipped — not yet active'. The skill advises: when ACs are promoted to active, re-run the scenario creator to generate the feature file. Does not create empty or stub scenarios for planned ACs.",
+      "files": [],
+      "expectations": [
+        "Generates zero scenarios when all ACs are planned",
+        "Coverage report lists all ACs as 'skipped — not yet active'",
+        "Advises to re-run when ACs become active",
+        "Does not create empty or stub scenarios for planned ACs"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Show the expected structure of a .feature file generated for US-007 with two active ACs: one happy_path and one error AC.",
+      "expected_output": "Output is a gherkin code block. Filename in a comment or header: us-007-place-an-online-order.feature. Feature: block with As-a/I-can/so-that narrative from the User Story. First scenario: '# AC: US-007-01 (v1.0.0 – active) — ...' immediately above 'Scenario: <happy path title>'. Second scenario: '# AC: US-007-02 (v1.0.0 – active) — ...' immediately above 'Scenario: <US title> — <error condition>'. All steps use domain language. A coverage table appears after the feature file block.",
+      "files": [],
+      "expectations": [
+        "Output is a gherkin code block with Feature: header",
+        "Feature header uses As-a/I-can/so-that narrative",
+        "# AC: comment immediately precedes each Scenario:",
+        "Error scenario title follows convention: '<US title> — <error condition>'",
+        "Coverage table appended after the feature file"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "edge-case",
+      "prompt": "AC:US-010-01 is: 'The login form displays the username input field and the password input field.' I need to write two scenarios — one for each field. How should the @AC: tags look?",
+      "expected_output": "Since each scenario covers only one aspect of the multi-aspect AC, encode the aspect using the /aspect:value param on the tag: first scenario uses '@AC:US-010-01/aspect:username-input' with comment '# AC:US-010-01 (v1.0.0 - active) — ... | aspect: username input'. Second scenario uses '@AC:US-010-01/aspect:password-input' with comment mirroring the aspect. The /aspect:value format allows coverage scripts to map each scenario to its specific aspect while the base AC ID keeps overall traceability intact.",
+      "files": [],
+      "expectations": [
+        "Uses @AC:US-010-01/aspect:username-input for the first scenario",
+        "Uses @AC:US-010-01/aspect:password-input for the second scenario",
+        "# AC: comment includes '| aspect: <value>' annotation",
+        "Comment annotation mirrors the /aspect: tag value",
+        "Both scenarios map back to AC:US-010-01 via the base AC ID"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "output-format",
+      "prompt": "What tags and header blocks should appear at the Feature level (not the Scenario level) in a generated .feature file for US-007?",
+      "expected_output": "The feature file starts with: (1) a file-level comment block showing the source URL, business value statement, and the full AC list with versions and states; (2) a '@US_ID:US-007' tag immediately before the 'Feature:' keyword; (3) the 'Feature: <title>' block with the As-a/I-can/so-that narrative. The @US_ID: tag provides machine-readable file-level traceability distinct from the per-scenario @AC: tags. The # AC: scenario-level comments appear only immediately above each individual Scenario: block.",
+      "files": [],
+      "expectations": [
+        "File-level comment block with source URL, business value, and AC list",
+        "@US_ID:US-007 tag immediately before Feature: keyword",
+        "Feature: block with As-a/I-can/so-that narrative",
+        "@US_ID: tag is distinct from per-scenario @AC: tags",
+        "Per-scenario @AC: and # AC: appear only directly above individual Scenario: blocks"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "I ran coverage_report.py and it shows AC:US-007-03 is not covered. But I have a scenario for that AC. What might be wrong?",
+      "expected_output": "The most likely causes: (1) the @AC:US-007-03 Cucumber tag is missing or misspelled on the scenario — the script matches on the machine-readable @AC: tag, not the # AC: comment; (2) the tag uses the wrong ID format (e.g. @AC:US-7-03 instead of @AC:US-007-03); (3) the feature file is not in the directory the script was pointed at. Check the @AC: tag on the scenario exactly matches the AC ID in the living doc catalog. Run: scripts/coverage_report.py <living_doc_dir> <features_dir>.",
+      "files": [],
+      "expectations": [
+        "Identifies @AC: tag mismatch/missing as the most likely cause",
+        "Distinguishes machine-readable @AC: tag from human-readable # AC: comment",
+        "Notes ID format must match exactly (zero-padded)",
+        "Provides the coverage_report.py command for diagnosis"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "happy-path",
+      "prompt": "I'm generating scenarios for US-007 and AC:US-007-01 already has an existing scenario that matches the intent exactly. What should I do?",
+      "expected_output": "Skip — the existing scenario already covers the AC intent. Do not create a duplicate. Mark it as covered in the coverage report.",
+      "files": [],
+      "expectations": [
+        "Decision: Skip (do not create duplicate)",
+        "Marks AC as covered"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "The existing scenario for AC:US-007-02 has stale Given/When/Then steps — the step text no longer matches the current AC wording. What is the merge policy?",
+      "expected_output": "Update — the scenario intent still matches but the GWT is stale. Rewrite the Given/When/Then steps to match the current AC wording. Do not create a new scenario; update the existing one in place. Load gherkin-living-doc-sync if the @AC: tag or # AC: comment also needs updating.",
+      "files": [],
+      "expectations": [
+        "Decision: Update (rewrite stale GWT)",
+        "Does not create a new scenario",
+        "Routes @AC: tag sync to gherkin-living-doc-sync if needed"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "edge-case",
+      "prompt": "The existing scenario for AC:US-007-03 has status deprecated/review-needed. What is the correct merge-policy action?",
+      "expected_output": "Propose replacement — the existing scenario is deprecated or flagged for review. Generate a new candidate scenario for the AC and mark the old one as superseded. Present both for human review before deleting the old scenario.",
+      "files": [],
+      "expectations": [
+        "Decision: Propose replacement (not silent delete)",
+        "Generates a new candidate scenario",
+        "Marks old scenario as superseded",
+        "Does not auto-delete without human review"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "edge-case",
+      "prompt": "I find that AC:US-007-04 already has three different scenarios linked to it. What is the merge-policy flag?",
+      "expected_output": "Flag for review — multiple scenarios for a single AC indicates potential duplication or scenario sprawl. Do not generate another scenario. Present the duplicates to the user and ask which one should be the canonical scenario for this AC.",
+      "files": [],
+      "expectations": [
+        "Decision: Flag (do not add another scenario)",
+        "Identifies multiple-scenario-per-AC as a design smell",
+        "Asks user to designate the canonical scenario"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Run the coverage report for US-007 which has three active ACs. The features directory contains one scenario with '@AC:US-007-01' and one scenario that has a '# AC: US-007-02' comment but no @AC: tag. What does the report show?",
+      "expected_output": "Coverage report shows: AC:US-007-01 ✅ covered (matched by @AC: tag). AC:US-007-02 ❌ NOT COVERED — the # AC: comment is human-readable only; coverage is determined solely by the machine-readable @AC: tag. The comment alone does not count as coverage. AC:US-007-03 ❌ NOT COVERED. Summary: 1 covered, 2 gaps. The report does NOT claim AC:US-007-02 is covered just because a comment references it.",
+      "files": [],
+      "expectations": [
+        "Coverage is based exclusively on @AC: tags — not on # AC: comments",
+        "AC:US-007-01 is marked ✅ covered",
+        "AC:US-007-02 is marked ❌ NOT COVERED despite the # AC: comment",
+        "Summary correctly shows 1 covered, 2 gaps",
+        "Report does not invent or infer coverage from comments or scenario text"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "The coverage report is run against a features directory that contains no .feature files at all. US-005 has two active ACs. What does the report output?",
+      "expected_output": "Report shows both ACs as ❌ NOT COVERED. Summary: 2 active ACs, 0 covered, 2 gaps. The report does not hallucinate coverage, does not generate placeholder scenarios, and does not mark ACs as covered. It exits with code 1 to signal gaps. The output clearly identifies the gaps as the scenario generation queue input: 'NOT COVERED — add to scenario generation queue'.",
+      "files": [],
+      "expectations": [
+        "Both ACs reported as ❌ NOT COVERED",
+        "Summary: 0 covered, 2 gaps",
+        "Exits with code 1",
+        "Does not hallucinate coverage or generate placeholder content",
+        "Gap entries explicitly marked as scenario generation queue input"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "regression",
+      "prompt": "The coverage report is run for US-010. AC:US-010-02 has a scenario tagged '@AC:US-10-02' (missing leading zero in the US number). Is it counted as covered?",
+      "expected_output": "No — AC:US-010-02 is NOT covered. The @AC: tag '@AC:US-10-02' does not match the canonical ID 'US-010-02' because the ID format must match exactly (zero-padded). The report shows AC:US-010-02 ❌ NOT COVERED. A warning or note is shown: '@AC:US-10-02 found in <filename> — does not match any known AC ID; check zero-padding'. The report does not guess or fuzzy-match AC IDs.",
+      "files": [],
+      "expectations": [
+        "AC:US-010-02 is marked ❌ NOT COVERED",
+        "Malformed tag @AC:US-10-02 does not count as coverage",
+        "Report emits a warning about the unrecognised tag",
+        "No fuzzy matching or inference — IDs must match exactly"
+      ]
+    },
+    {
+      "id": 19,
+      "category": "happy-path",
+      "prompt": "Run coverage_report.py for US-007. All three active ACs have matching @AC: tags in feature files. What does the summary look like?",
+      "expected_output": "Report shows all three ACs as ✅ covered with the feature file name(s) listed under each. Summary: Active/Implemented ACs: 3. Covered by scenarios: 3 (100%). Gaps: 0. Exits with code 0. The report lists only real file names from the features directory — it does not invent file names or pad coverage.",
+      "files": [],
+      "expectations": [
+        "All three ACs marked ✅ covered",
+        "Each covered entry lists the actual feature file name",
+        "Summary shows 3/3 covered, 100%, 0 gaps",
+        "Exits with code 0",
+        "No invented file names — only real files from the scanned directory"
+      ]
+    },
+    {
+      "id": 20,
+      "category": "happy-path",
+      "prompt": "After running the coverage report I see 4 gaps for US-012. What should happen next?",
+      "expected_output": "The 4 gap ACs become the scenario generation queue. The agent invokes living-doc-scenario-creator to generate scenarios for each uncovered Active AC — one scenario per AC, in order. The coverage report output (the ❌ rows) is the direct input to scenario generation; no manual re-specification is needed. After generation, re-running the report should show 0 gaps. The agent does not skip gaps or reorder them without explicit instruction.",
+      "files": [],
+      "expectations": [
+        "Gap ACs from the report become the scenario generation queue",
+        "Invokes living-doc-scenario-creator for each uncovered Active AC",
+        "Processes gaps in report order — no reordering",
+        "Does not skip gaps silently",
+        "After generation, re-running the report is expected to show 0 gaps"
+      ]
+    },
+    {
+      "id": 21,
+      "category": "output-format",
+      "prompt": "For regression automation, generate the happy-day scenario for US-007 (AC:US-007-01 is the active happy_path AC) and show how it is tagged and where the closeout gate confirms coverage.",
+      "expected_output": "Generates exactly one happy-day scenario for AC:US-007-01 under a '# *** Happy day scenarios ***' banner. The scenario carries both the '@AC:US-007-01' traceability tag and a '@Regression' suite tag, with the '# AC:US-007-01 (v1.0.0 - active) — ...' comment immediately above it. At closeout the skill runs scan_ac_links.py (exits 0) and coverage_report.py, which must show 0 NOT COVERED happy-path ACs before the session closes. Scenarios are emitted in ascending AC-id order so regeneration is byte-stable.",
+      "files": [],
+      "expectations": [
+        "One happy-day scenario for the active happy_path AC under the '# *** Happy day scenarios ***' banner",
+        "Scenario carries both @AC:US-007-01 and @Regression tags",
+        "AC state lowercase ('active') in the # AC: comment",
+        "Closeout runs scan_ac_links.py (exit 0) and coverage_report.py with 0 NOT COVERED happy-path ACs",
+        "Scenarios emitted in ascending AC-id order for byte-stable regeneration"
+      ]
+    }
+  ]
+}

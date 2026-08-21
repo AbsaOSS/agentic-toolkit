@@ -1,0 +1,247 @@
+{
+  "skill_name": "living-doc-create-user-story",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "I want to create a new User Story for the password reset capability.",
+      "expected_output": "Agent asks three elicitation questions in sequence: (1) Who is the user? (2) What do they want to do? (3) Why / what business outcome? After answers, forms the As-a/I-can/so-that narrative. Then asks for domain context (which Feature). Then elicits ACs in Given-When-Then. Checks for error and alternative paths (unregistered email, expired token, already-used token). Outputs canonical User Story JSON with at least 3 ACs (happy path + at least 2 error/alternative).",
+      "files": [],
+      "expectations": [
+        "Asks actor, capability, and business value as distinct questions before writing narrative",
+        "Forms As-a/I-can/so-that narrative correctly from answers",
+        "Asks which Feature(s) this story touches",
+        "Elicits at least one error-path AC (e.g. unregistered email, expired token)",
+        "Warns if only happy-path AC is provided",
+        "Outputs valid canonical UserStory JSON"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Review this User Story and tell me what's missing. File: evals/files/incomplete-user-story.json",
+      "expected_output": "Agent identifies: (1) Important — only one happy-path AC provided; no error or alternative path ACs. Prompts for: what happens with an unregistered email? what happens with an expired reset link? what happens if the link is used twice? Proposes three additional ACs covering these gaps. Does not flag the narrative or Feature link as issues.",
+      "files": [
+        "evals/files/incomplete-user-story.json"
+      ],
+      "expectations": [
+        "Flags that only a happy-path AC exists",
+        "Prompts for error path: unregistered email address",
+        "Prompts for error path: expired reset token",
+        "Prompts for alternative: link already used",
+        "Does not reject the existing happy-path AC",
+        "Proposes at least 2 additional ACs with Given-When-Then"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "The actor in my narrative is 'the system'. Is that OK?",
+      "expected_output": "Using a system actor is strongly discouraged but not strictly prohibited. The agent warns: 'Prefer naming the human role that triggers or benefits from the behavior — system actors make ACs harder to make observable and binary. If the flow is system-initiated with no direct human interaction, it is a better fit for a Functionality entity.' If the user insists on keeping a system actor, the agent ensures the 'so that' clause names a human beneficiary (e.g. 'so that the finance team receives timely reports'). For purely system-driven flows with no human outcome, the agent redirects to living-doc-create-functionality.",
+      "files": [],
+      "expectations": [
+        "Issues a soft warning — does not hard-reject the system actor",
+        "Recommends naming a human role that triggers or benefits from the behavior",
+        "Notes that purely system-initiated flows are better modelled as Functionality entities",
+        "If user insists, ensures the 'so that' clause names a human beneficiary",
+        "Redirects to living-doc-create-functionality only for purely system-driven flows with no human outcome"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "regression",
+      "prompt": "My AC says: 'When the customer submits the form, the database saves a record to the orders table with status=PENDING.' Is this OK?",
+      "expected_output": "No. This AC describes a technical implementation detail (database table, status field). It should be restated as a user-observable outcome. Example fix: 'When the customer confirms the order, then the order is acknowledged and the customer sees a confirmation message.' The internal DB state is an implementation concern — not an E2E AC.",
+      "files": [],
+      "expectations": [
+        "Flags the AC as describing implementation detail, not user outcome",
+        "Provides a rewritten AC in outcome-focused language",
+        "Notes that DB state is an implementation concern",
+        "References the rule: AC must be outcome-focused from the user's perspective"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative",
+      "prompt": "Document the behavior: when discount code is applied to a zero-price item, the discount is silently ignored.",
+      "expected_output": "This is a Functionality-level behavior (atomic, technical, unit-testable) — routes to living-doc-create-functionality. User Story ACs describe E2E user outcomes, not component-level behaviors.",
+      "files": [],
+      "expectations": [
+        "Identifies this as a Functionality AC, not a User Story AC",
+        "Routes to living-doc-create-functionality",
+        "Explains the distinction: atomic technical behavior vs. E2E user outcome"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "paraphrase",
+      "prompt": "Help me write a story for a feature where customers can reset their password via SMS instead of email.",
+      "expected_output": "Agent asks three elicitation questions: (1) Who is the actor? (registered customer who has a phone number on file). (2) What do they want to do? (receive a reset code via SMS). (3) Why? (some customers prefer SMS or don't have email access). Forms narrative: As a registered customer, I can reset my password via SMS, so that I can regain access even without email access. Elicits ACs: happy path (valid phone, code sent), unregistered phone, expired code, wrong code, maximum retries.",
+      "files": [],
+      "expectations": [
+        "Forms As-a/I-can/so-that narrative",
+        "Elicits at least 3 ACs covering happy path and error paths",
+        "Asks actor, capability, and business value as distinct questions",
+        "Outputs valid canonical UserStory JSON"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "The same capability is needed by two different actors: a registered customer can reset their password, and a support agent can trigger a password reset on behalf of a customer. Should these be one User Story or two?",
+      "expected_output": "These should be two separate User Stories — different actors have different permissions, audit requirements, and AC sets. A customer-initiated reset has no audit trail requirement; an agent-initiated reset must be logged with the agent ID, customer consent, and reason. Shared Functionalities (OTP generation, email delivery) can be reused by linking both User Stories to the same Functionality entities. Mixing two actor perspectives in one User Story produces ambiguous ACs.",
+      "files": [],
+      "expectations": [
+        "Recommends two separate User Stories for two distinct actors",
+        "Explains that different actors have different AC sets and audit requirements",
+        "Notes shared Functionalities can be linked to both User Stories",
+        "Warns that mixing actors produces ambiguous ACs"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "output-format",
+      "prompt": "Create a user story: 'A customer service agent needs to view the full order history for any customer to resolve disputes.'",
+      "expected_output": "The output contains a fenced ```json code block with a UserStory entity. Required fields: type ('UserStory'), id (US-<nnn>), title, as_a, i_want, so_that, acceptance_criteria (array of objects with id and description). The as_a/i_want/so_that fields follow the standard user story template. Each AC has a unique id in the format AC:US-<nnn>-<nn>. No Gherkin syntax appears inside the JSON values.",
+      "files": [],
+      "expectations": [
+        "Single fenced ```json code block",
+        "type field is 'UserStory'",
+        "id follows US-<nnn> convention",
+        "as_a/i_want/so_that follow standard template",
+        "Each AC has id in AC:US-<nnn>-<nn> format",
+        "No Gherkin syntax in JSON values"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "Here is my User Story: 'As a customer, I want to browse products and add items to my cart so that I can purchase what I want.' Is this well-formed?",
+      "expected_output": "No. The 'I want' clause contains 'and' — it bundles two distinct capabilities: browsing products and adding items to cart. These should be two separate User Stories. Each has its own failure paths: browsing may fail due to search/filter issues; adding to cart may fail due to stock availability or login state. Split the story at each 'and'. Shared Functionalities (e.g. stock availability check) can be linked to both User Stories.",
+      "files": [],
+      "expectations": [
+        "Detects the 'and' in the 'I want' clause",
+        "Recommends splitting into two separate User Stories",
+        "Explains that each capability has distinct failure paths",
+        "Notes shared Functionalities can be linked to both stories"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "Is this AC correct? 'When the customer submits an invalid {error type}: inline validation message is shown.'",
+      "expected_output": "No. The {placeholder} syntax is only justified when two or more values vary independently. Here only one concrete feedback type applies — the placeholder is unnecessary. Rewrite without the placeholder: 'When the customer submits invalid data, an inline validation message is shown.' If multiple distinct error types each require different handling, write a separate AC per error type rather than bundling them with a placeholder.",
+      "files": [],
+      "expectations": [
+        "Flags single-value placeholder as an anti-pattern",
+        "Provides a rewritten AC without placeholder",
+        "Explains: placeholder only for independently varying values",
+        "Notes: write separate ACs for distinct error types"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "regression",
+      "prompt": "Is this AC valid for a User Story? 'When the customer places an order, a background job processes the payment record asynchronously.'",
+      "expected_output": "No. This AC describes a non-observable outcome — the customer cannot observe a background job. User Story ACs must be observable from the user's perspective. Restate as an observable signal: e.g. 'When the customer places an order, they see an order confirmation and receive a confirmation email.' If the behavior is purely technical, it belongs in a Functionality entity — redirect to living-doc-create-functionality.",
+      "files": [],
+      "expectations": [
+        "Flags the AC as a non-observable outcome",
+        "Provides a rewritten AC with an observable user signal",
+        "Notes that purely technical behaviors belong in Functionality entities",
+        "Routes to living-doc-create-functionality for technical AC"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "edge-case",
+      "prompt": "The same AC appears in both US-007 and US-011: 'A verification email is sent to the customer within 30 seconds.' Should I duplicate it?",
+      "expected_output": "No. Duplicating ACs across User Stories creates a maintenance burden — any change must be applied in every copy, and they can drift. Extract the shared behavior into a Functionality entity (e.g. 'Send verification email within SLA') and link both US-007 and US-011 to it via the Functionality's user_stories field. Use living-doc-create-functionality to create the shared Functionality.",
+      "files": [],
+      "expectations": [
+        "Flags duplicate AC as a maintenance burden anti-pattern",
+        "Recommends creating a shared Functionality entity",
+        "Both User Stories link to the shared Functionality",
+        "Points to living-doc-create-functionality for the extraction"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "regression",
+      "prompt": "Create a new User Story for the password reset capability. The catalog already contains US-001 through US-013.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type US --catalog catalog.json. The script returns US-014. The agent assigns id='US-014'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as US-XXX or US-<nnn>. The final JSON has a fully populated id field before being presented to the user.",
+      "files": [],
+      "expectations": [
+        "Runs next_id.py --type US before assigning the ID",
+        "Assigns the ID returned by the script (e.g. US-014)",
+        "Does not invent, guess, or reuse an ID",
+        "Does not leave a placeholder (US-XXX, US-<nnn>, US-unknown)",
+        "Final JSON has a fully populated id field"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "regression",
+      "prompt": "Create a User Story but the catalog file is missing — next_id.py cannot be run. What should the agent do?",
+      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='US-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type US once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as US-001 without catalog evidence.",
+      "files": [],
+      "expectations": [
+        "Uses US-PENDING placeholder when catalog is unavailable",
+        "Explicitly warns the user that the ID must be assigned before saving",
+        "Does not invent a numeric ID without catalog evidence",
+        "Placeholder is visibly distinct — not a real US-nnn value"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "happy-path",
+      "prompt": "I'm creating US-001 for the promo stacking feature. FUNC-001 and FUNC-002 already exist in the living doc. Should I link them?",
+      "expected_output": "Yes — link both Functionalities in the User Story's 'functionalities' array. Asking about existing Functionalities during US creation prevents ORPHAN_FUNCTIONALITY gaps and makes the entity graph traversable from US down to test coverage. If the Functionalities are relevant, they must be linked.",
+      "files": [],
+      "expectations": [
+        "Confirms the Functionalities should be linked",
+        "Explains the ORPHAN_FUNCTIONALITY consequence if skipped",
+        "Shows how to add them to the functionalities array in the entity"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "regression",
+      "prompt": "Is this AC well-formed? 'The user should be able to reset their password via email.'",
+      "expected_output": "No — two problems. (1) 'The user' is generic; use the named actor from the narrative (e.g. 'a registered customer'). (2) 'Should be able to' is a non-binary modal — the AC cannot be decisively passed or failed. Replace with the correct modal: 'can' for user-initiated capability, or drop the modal for outcome statements. Rewrite: 'A registered customer can reset their password via email.' Also check for present-simple tense: 'will be able to' and 'should be shown' are predictions, not timeless contracts.",
+      "files": [],
+      "expectations": [
+        "Flags 'should' as non-binary — AC cannot be decisively passed or failed",
+        "Flags generic 'the user' — must use the named actor from the narrative",
+        "Provides a rewritten AC using 'can' for user capability in present simple tense",
+        "Notes that 'will be able to' / 'should be shown' are predictions not contracts"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "regression",
+      "prompt": "Is this AC outcome specific enough? 'When the customer confirms the order, a success is shown.'",
+      "expected_output": "No. 'A success is shown' is too vague to test. The AC outcome must be specific enough to write a deterministic assertion: state what the user actually experiences — e.g. 'a confirmation message is displayed with the order reference number' or 'the customer is redirected to the Order Confirmation page showing the order total'. Avoid both too vague ('success is shown', 'an error appears') and too specific (pixel dimensions, CSS class names, component internals).",
+      "files": [],
+      "expectations": [
+        "Flags 'a success is shown' as too vague to test",
+        "Provides a rewritten AC with a specific observable outcome",
+        "Warns against both vague ('success') and over-specific (visual/component) descriptions",
+        "Outcome must be specific enough for a deterministic test assertion"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "regression",
+      "prompt": "Is this AC in the correct voice and tense? 'After clicking Confirm, a confirmation email will be sent to the customer by the system.'",
+      "expected_output": "Two issues. (1) Future tense ('will be sent') — ACs are timeless contracts; use present simple ('a confirmation email is sent'). (2) Passive voice ('will be sent to the customer by the system') — use active voice ('the customer receives a confirmation email') to make the subject and action unambiguous. Rewrite: 'After the customer confirms the order, they receive a confirmation email.'",
+      "files": [],
+      "expectations": [
+        "Flags future tense — must use present simple (timeless contract)",
+        "Flags passive voice — must use active voice",
+        "Provides a rewritten AC in present simple active voice",
+        "Names 'active voice' and 'present simple tense' as the rules"
+      ]
+    }
+  ]
+}

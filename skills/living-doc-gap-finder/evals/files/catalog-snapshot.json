@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-05-15T08:00:00Z",
+  "catalog": {
+    "user_stories": [
+      {"id": "US-001", "title": "Place an online order", "status": "ready", "ac_count": 3},
+      {"id": "US-002", "title": "View order history", "status": "ready", "ac_count": 2},
+      {"id": "US-007", "title": "Apply a promotional discount", "status": "ready", "ac_count": 4}
+    ],
+    "features": [
+      {"id": "FEAT-001", "name": "Checkout Page", "user_stories": ["US-001"]},
+      {"id": "FEAT-002", "name": "Account Dashboard", "user_stories": ["US-002"]},
+      {"id": "FEAT-003", "name": "Promotions Module", "user_stories": []},
+      {"id": "FEAT-004", "name": "Legacy Report Screen", "user_stories": [], "functionalities": []}
+    ],
+    "functionalities": [
+      {
+        "id": "FUNC-001",
+        "parent_feature": "FEAT-001",
+        "ac_count": 3,
+        "linked_tests": ["test_validate_cart.py::test_empty_cart"]
+      },
+      {
+        "id": "FUNC-002",
+        "parent_feature": "FEAT-003",
+        "ac_count": 5,
+        "linked_tests": []
+      }
+    ]
+  },
+  "inventory": {
+    "ui_screens": [
+      "/checkout",
+      "/account/orders",
+      "/account/preferences",
+      "/promotions",
+      "/reports/legacy"
+    ],
+    "test_files": [
+      {"file": "test_validate_cart.py", "linked_ac": "AC:FUNC-001-01"},
+      {"file": "test_order_history.py", "linked_ac": null},
+      {"file": "test_login_flow.feature", "linked_ac": null}
+    ],
+    "bdd_scenarios": [
+      {"scenario": "Customer successfully places an order", "linked_ac": "AC:US-001-01"},
+      {"scenario": "View paginated order history", "linked_ac": null}
+    ]
+  },
+  "known_test_links": {
+    "AC:US-001-01": "tests/features/checkout.feature::Customer successfully places an order",
+    "AC:US-001-02": null,
+    "AC:US-001-03": null,
+    "AC:US-002-01": null,
+    "AC:US-002-02": null,
+    "AC:US-007-01": null,
+    "AC:US-007-02": null,
+    "AC:US-007-03": null,
+    "AC:US-007-04": null
+  }
+}

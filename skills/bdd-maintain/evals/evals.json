@@ -1,0 +1,130 @@
+{
+  "skill_name": "bdd-maintain",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "US-042 was deprecated last sprint. Which BDD files need to be removed and in what order?",
+      "expected_output": "REMOVE mode: (1) Identify all .feature file scenarios tagged @AC:US-042-xx. (2) Remove those scenarios (or the entire feature file if all scenarios belong to US-042). (3) Remove all step definitions only used by those scenarios (run find_unused_steps.py to confirm). (4) Remove the PageObject if no other feature uses it (run find_unused_po_methods.py). (5) Remove fixture registrations in fixtures.ts that import the removed PageObject.",
+      "files": [],
+      "expectations": [
+        "Lists removal order: scenarios → step defs → PageObject → fixtures.ts",
+        "Uses find_unused_steps.py to identify orphaned step defs",
+        "Checks fixtures.ts for PageObject imports",
+        "Does not remove shared artifacts still used by other features"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Run find_unused_steps.py — it reported 12 unused step definitions. What should I do with them?",
+      "expected_output": "Review each unused step against the living doc: (1) If the step belongs to a deprecated entity — delete it. (2) If the step belongs to an active entity but has no scenario — it may be a stale draft; flag for team review before deleting. (3) Never delete without checking whether the step is imported or aliased from another step file.",
+      "files": [],
+      "expectations": [
+        "Does not auto-delete without review",
+        "Distinguishes deprecated entity steps from active-entity orphans",
+        "Warns about aliased/imported steps"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "regression",
+      "prompt": "I removed the CheckoutPage PageObject but forgot to remove it from fixtures.ts. What are the consequences and how do I fix it?",
+      "expected_output": "fixtures.ts now has a broken import pointing to the deleted file, which causes a compile error in the test suite. Fix: (1) Open fixtures.ts. (2) Remove the import statement for CheckoutPage. (3) Remove the checkout parameter from the test fixture function signature and the constructor call. (4) Re-run the test suite to confirm no lingering references.",
+      "files": [],
+      "expectations": [
+        "Identifies compile error as the consequence",
+        "Removes the import statement",
+        "Removes constructor parameter in fixture function",
+        "Verifies by re-running the test suite"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "What is the difference between find_unused_po_methods.py and find_unused_po_components.py?",
+      "expected_output": "find_unused_po_methods.py finds PageObject class methods (e.g. clickConfirmButton()) that are defined but never called by any step definition. find_unused_po_components.py finds entire PageObject classes or component groupings that have no references anywhere in the step files. Use methods script first for fine-grained cleanup; use components script to find entire dead PO files.",
+      "files": [],
+      "expectations": [
+        "Correctly distinguishes method-level vs class/component-level scope",
+        "Recommends methods script for fine-grained, components for file-level",
+        "Both scripts referenced by name"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "regression",
+      "prompt": "find_unused_po_methods.py reports that CheckoutPage.clickConfirmButton() is unused, but I can see it's called in checkout.steps.ts. Why?",
+      "expected_output": "The script likely scans with a string match — if the method is called via a variable reference (e.g. `page.clickConfirmButton()` where `page` is typed as `BasePage`) or through an alias, the static scan may miss it. Review the call site in checkout.steps.ts and verify the import. If the call exists, the script has a false positive — do not delete the method. Report the false positive to the team.",
+      "files": [],
+      "expectations": [
+        "Identifies dynamic dispatch / base-class alias as likely cause",
+        "Does not delete the method on a false positive",
+        "Recommends verifying the actual call site"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "The selectors in CheckoutPage are broken after the UI redesign. Should I use bdd-maintain to fix them?",
+      "expected_output": "No — broken selectors are a HEALING scope concern, not a BDD maintenance task. Load living-doc-pageobject-scan and use HEALING mode to re-scan the page and update selectors. bdd-maintain handles artifact lifecycle (deletion and dead code), not selector repair.",
+      "files": [],
+      "expectations": [
+        "Routes to living-doc-pageobject-scan HEALING",
+        "Explains bdd-maintain does not own selector repair",
+        "Does not attempt to fix selectors"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "edge-case",
+      "prompt": "A step definition in checkout.steps.ts is called by two scenarios — one belongs to deprecated US-042 and one belongs to active US-007. Can I delete the step?",
+      "expected_output": "No — the step is still needed by the active US-007 scenario. Only the scenario linked to US-042 should be removed. The step definition itself must be retained. After removing the US-042 scenario, re-run find_unused_steps.py to confirm the step is still referenced.",
+      "files": [],
+      "expectations": [
+        "Does not delete a step shared with an active scenario",
+        "Only removes the deprecated scenario",
+        "Re-runs script after cleanup to verify"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "happy-path",
+      "prompt": "In what order should I run the three audit scripts for a full dead code audit?",
+      "expected_output": "Recommended order: (1) find_unused_steps.py — identifies step definitions with no scenario callers. (2) find_unused_po_methods.py — identifies PO methods with no step callers. (3) find_unused_po_components.py — identifies entire PO classes/components with no references. Run in this order because deleting steps may free up PO methods, and deleting PO methods may free up entire PO components.",
+      "files": [],
+      "expectations": [
+        "Lists the correct order: steps → PO methods → PO components",
+        "Explains the cascading dependency rationale",
+        "All three script names referenced correctly"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "The product owner wants to re-activate a User Story that was deprecated two sprints ago. Some BDD artifacts were already removed. How do I restore them?",
+      "expected_output": "bdd-maintain does not handle restoration — it handles removal and dead code auditing only. To restore: (1) Update the entity status in living-doc-update (set back to active). (2) Regenerate scenarios with living-doc-scenario-creator. (3) Regenerate PageObjects with living-doc-pageobject-scan if needed. (4) Re-run gherkin-living-doc-sync to re-link @AC: tags.",
+      "files": [],
+      "expectations": [
+        "Routes to living-doc-update to change entity status",
+        "Routes to living-doc-scenario-creator for scenario regeneration",
+        "Routes to living-doc-pageobject-scan for PO regeneration",
+        "Routes to gherkin-living-doc-sync for @AC: re-linking"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "output-format",
+      "prompt": "Show me the expected output of find_unused_steps.py for a suite with 3 unused step definitions.",
+      "expected_output": "Output groups unused step definitions by *.steps.ts file and prints line numbers + step patterns, e.g.:\n\n⚠️ 3 UNUSED step definition(s) found:\n\n playwright/steps/checkout/checkout.steps.ts\n line 42 'the customer applies promo code {string}'\n line 67 'the total price remains unchanged'\n playwright/steps/login/login.steps.ts\n line 103 'the user has an expired session'\n",
+      "files": [],
+      "expectations": [
+        "Shows *.steps.ts file path",
+        "Shows line numbers for each unused step",
+        "Shows step pattern text",
+        "Shows summary count line with warning symbol",
+        "Does not show false positives for steps used by active scenarios"
+      ]
+    }
+  ]
+}

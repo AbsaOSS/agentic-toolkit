@@ -1,0 +1,25 @@
+{
+  "type": "Functionality",
+  "id": "FUNC-001",
+  "name": "Handle checkout",
+  "parent_feature": "FEAT-001",
+  "user_stories": ["US-001"],
+  "acceptance_criteria": [
+    {
+      "id": "AC:FUNC-001-01",
+      "description": "Checkout works correctly",
+      "when": "the customer goes through the checkout process",
+      "then": "the order is placed and everything works",
+      "priority": "critical",
+      "test_type": "unit"
+    },
+    {
+      "id": "AC:FUNC-001-02",
+      "description": "Error handling works",
+      "when": "something goes wrong during checkout",
+      "then": "the system handles it appropriately",
+      "priority": "high",
+      "test_type": "unit"
+    }
+  ]
+}

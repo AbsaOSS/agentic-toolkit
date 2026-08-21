@@ -1,0 +1,140 @@
+[
+  {
+    "id": "t01-impact-explicit",
+    "query": "What living doc entities does PR #217 affect?",
+    "should_trigger": true,
+    "reason": "'impact of PR on living doc' is a listed trigger phrase."
+  },
+  {
+    "id": "t02-trace-affected-us",
+    "query": "Which User Stories are affected by the PromoService refactor?",
+    "should_trigger": true,
+    "reason": "'trace affected user stories' is a listed trigger phrase."
+  },
+  {
+    "id": "t03-affected-features",
+    "query": "Which Features are affected by the checkout module changes?",
+    "should_trigger": true,
+    "reason": "'affected features' is a listed trigger phrase."
+  },
+  {
+    "id": "t04-impact-analysis",
+    "query": "Run a living doc impact analysis for the payment gateway refactor.",
+    "should_trigger": true,
+    "reason": "'impact analysis' is a listed trigger phrase."
+  },
+  {
+    "id": "t05-living-doc-sign-off",
+    "query": "I need a living doc sign-off before releasing the checkout changes.",
+    "should_trigger": true,
+    "reason": "'living doc sign-off' is a listed trigger phrase."
+  },
+  {
+    "id": "t06-what-does-change-affect",
+    "query": "What does the change to ShippingCalculator.java affect in the living doc?",
+    "should_trigger": true,
+    "reason": "'what does this change affect' is a listed trigger phrase."
+  },
+  {
+    "id": "t07-which-scenarios-rerun",
+    "query": "Which scenarios need re-running after we changed the orders endpoint?",
+    "should_trigger": true,
+    "reason": "'which scenarios need re-running' is a listed trigger phrase."
+  },
+  {
+    "id": "t08-pr-impact-docs",
+    "query": "Does PR #300 have any impact on the living doc?",
+    "should_trigger": true,
+    "reason": "'PR impact on docs' is a listed trigger phrase."
+  },
+  {
+    "id": "t09-not-update-entity",
+    "query": "Update US-042 to add a new AC for the expired promo path.",
+    "should_trigger": false,
+    "reason": "Updating entities is handled by living-doc-update, not living-doc-impact-analysis."
+  },
+  {
+    "id": "t10-not-gap-finder",
+    "query": "Which Functionalities don't have any User Stories?",
+    "should_trigger": false,
+    "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
+  },
+  {
+    "id": "t11-not-create",
+    "query": "Create a new User Story for the stacked discount feature.",
+    "should_trigger": false,
+    "reason": "Creating new entities is handled by living-doc-create-user-story."
+  },
+  {
+    "id": "t12-what-needs-retesting",
+    "query": "What do we need to re-test after this refactor?",
+    "should_trigger": true,
+    "reason": "'which scenarios need re-running' pattern — living doc impact re-test checklist."
+  },
+  {
+    "id": "t13-shared-utility-impact",
+    "query": "MoneyUtils was changed — how far does the impact spread in the living doc?",
+    "should_trigger": true,
+    "reason": "Shared utility impact fan-out analysis — 'impact of PR on living doc' trigger."
+  },
+  {
+    "id": "t14-test-only-change",
+    "query": "PR #501 only changes test files. Does it need a living doc update?",
+    "should_trigger": true,
+    "reason": "Still an impact analysis request — expected answer is 'None' impact level; skill should confirm no update needed."
+  },
+  {
+    "id": "t15-not-gap-finder-orphan",
+    "query": "Find all Functionalities with no linked User Stories.",
+    "should_trigger": false,
+    "reason": "Finding coverage gaps is handled by living-doc-gap-finder."
+  },
+  {
+    "id": "t16-not-create-func",
+    "query": "Create a new Functionality for the stacked discount rule",
+    "should_trigger": false,
+    "reason": "Creating a Functionality — routes to living-doc-create-functionality"
+  },
+  {
+    "id": "t17-not-scenario-creator",
+    "query": "Generate BDD scenarios for US-007",
+    "should_trigger": false,
+    "reason": "Generating scenarios — routes to living-doc-scenario-creator"
+  },
+  {
+    "id": "t18-not-sync",
+    "query": "Sync the @AC: tags in the feature files with the AC catalog",
+    "should_trigger": false,
+    "reason": "Feature file sync — routes to gherkin-living-doc-sync"
+  },
+  {
+    "id": "t19-not-step",
+    "query": "Write step definitions for the order placement scenarios",
+    "should_trigger": false,
+    "reason": "Writing step definitions — routes to gherkin-step"
+  },
+  {
+    "id": "t20-not-pageobject",
+    "query": "Scan the webapp and generate PageObjects for the admin portal",
+    "should_trigger": false,
+    "reason": "PageObject scanning — routes to living-doc-pageobject-scan"
+  },
+  {
+    "id": "t21-not-data-cy",
+    "query": "Add data-cy attributes to the checkout form inputs",
+    "should_trigger": false,
+    "reason": "Instrumenting templates — routes to data-cy-instrument"
+  },
+  {
+    "id": "t22-not-bdd-maintain",
+    "query": "Find all unused step definitions in the BDD test suite",
+    "should_trigger": false,
+    "reason": "Dead code audit — routes to bdd-maintain"
+  },
+  {
+    "id": "t23-bootstrap-registry",
+    "query": "The feature_registry is missing — how do I bootstrap it from the codebase?",
+    "should_trigger": true,
+    "reason": "Bootstrapping feature_registry — impact-analysis owns this 4-step procedure"
+  }
+]

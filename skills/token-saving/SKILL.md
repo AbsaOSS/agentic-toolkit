@@ -1,8 +1,11 @@
 ---
 name: token-saving
 description: >
-  Always-active response formatting rules. Enforces conciseness, no filler, structured output.
-  Suspends on explicit verbosity requests. Another skill's format takes precedence.
+  **Response discipline and formatting**: apply concise-by-default rules (minimize filler,
+  skip preamble, prefer structured output). Activate on every request and explicit brevity
+  signals. Rules: cap answers to shortest form, no closing filler, structure with bullets/tables,
+  append change-footer only for code output. NOT for: explicit verbosity requests ("full detail",
+  "deep dive", "don't hold back") or when another active skill's format takes precedence.
 ---
 
 # Token-Saving
@@ -12,7 +15,7 @@ Always-active base behaviour. Apply to every response without exception unless t
 ## Always apply — response discipline
 
 - Default to the shortest response that fully answers the question; never sacrifice correctness or safety-critical information for brevity
-- Factual or conceptual answers: prefer bullets over prose; use prose only when structure would hurt readability
+- Factual or conceptual answers: aim for ≤ 5 prose lines; one minimal code block is permitted and does not count toward that limit
 - Action lists and next-step recommendations: cap at 4 bullets; no header line before the list
 - Must not repeat context already established in the conversation
 - Must not pad responses with preamble ("Great question!", "Certainly!", "As an AI...")
@@ -41,9 +44,16 @@ When applying or confirming a bug fix: always show the changed line(s) or a mini
 
 ## Keep summaries and recaps concise
 
-- Prefer bullets over prose; use the fewest bullets that cover the content
+- Aim for ≤ 10 lines in any recap
 - Prefer linking to files/lines over quoting large blocks
+- Use bullet lists over paragraphs
 - Summarise deltas — what is different — not what already existed
+
+## Update PR bodies by appending only
+
+- Treat the PR description as a changelog — append only, never rewrite
+- Append under `## Update YYYY-MM-DD` with the commit hash — use today's date from your system context (the current date, not a guessed or example date)
+- Must not delete prior update sections
 
 ## Respond fully when detail is explicitly requested
 

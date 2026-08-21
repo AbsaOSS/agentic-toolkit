@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AbsaOSS/agentic-toolkit/skills/shared/references/schemas/manifest.schema.json",
+  "title": "Exploration Manifest (manifest.json)",
+  "description": "Canonical machine contract for .copilot/bdd/manifest.json. routes is a JSON array. Element and coverage_gap objects use normalized 'test_id' (not attribute-specific) and 'suggested_test_id' keys. test_id_attribute at manifest root specifies what attribute (e.g. data-cy, data-testid) these keys map to downstream. Route and manifest levels allow additional properties. See living-doc-bdd-schemas.md > manifest.json.",
+  "type": "object",
+  "required": ["generated", "scan_version", "test_id_attribute", "routes"],
+  "additionalProperties": true,
+  "properties": {
+    "generated": { "type": "string", "minLength": 1 },
+    "scan_version": { "type": "string", "minLength": 1 },
+    "test_id_attribute": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What attribute test_id maps to (e.g., data-cy, data-testid). Mirrors Project Profile test_id_attribute. Used by downstream generators to map normalized test_id keys to actual HTML attributes."
+    },
+    "routes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/route" }
+    }
+  },
+  "definitions": {
+    "route": {
+      "type": "object",
+      "required": [
+        "url",
+        "title",
+        "pageobject_path",
+        "feature_id",
+        "last_scanned",
+        "elements",
+        "coverage_gaps",
+        "navigation_context"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "url": { "type": "string", "minLength": 1 },
+        "title": { "type": "string" },
+        "pageobject_path": { "type": "string", "minLength": 1 },
+        "feature_id": { "type": "string", "pattern": "^FEAT-(\\d{3,}|UNKNOWN)$" },
+        "last_scanned": { "type": "string", "minLength": 1 },
+        "note": { "type": "string" },
+        "navigation_context": {
+          "type": "string",
+          "description": "Prose string — NOT an object. How to reach the route."
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["test_id", "tag"],
+            "additionalProperties": false,
+            "properties": {
+              "test_id": { "type": "string", "minLength": 1, "description": "Normalized test identifier. Maps to manifest root test_id_attribute (e.g., data-cy, data-testid) downstream." },
+              "tag": { "type": "string", "minLength": 1 },
+              "label": { "type": ["string", "null"] },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "coverage_gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tag", "suggested_test_id"],
+            "additionalProperties": false,
+            "anyOf": [
+              { "required": ["text"] },
+              { "required": ["ariaLabel"] },
+              { "required": ["role"] },
+              { "required": ["type"] }
+            ],
+            "properties": {
+              "tag": { "type": "string" },
+              "text": { "type": "string" },
+              "ariaLabel": { "type": "string" },
+              "role": { "type": "string" },
+              "type": { "type": "string" },
+              "suggested_test_id": { "type": "string", "minLength": 1, "description": "Normalized proposed test identifier. Maps to manifest root test_id_attribute downstream." },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "open_actions_menu": { "type": "object" },
+        "field_constraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["field"],
+            "additionalProperties": true,
+            "properties": {
+              "field": { "type": "string" },
+              "max_length": { "type": "integer" },
+              "special_chars": { "type": "string" },
+              "duplicate": { "type": "string" },
+              "duplicate_error_test_id": { "type": "string", "description": "Normalized test identifier for the duplicate-error element. Maps to manifest root test_id_attribute downstream." },
+              "allowed_format": { "type": "string" },
+              "real_world_required": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

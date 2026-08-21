@@ -1,0 +1,355 @@
+{
+  "agent_name": "living-doc-bdd-copilot",
+  "evals": [
+    {
+      "id": 1,
+      "category": "happy-path",
+      "prompt": "Start a BDD session for a new project. The living doc catalog is in docs/living-doc/. The app runs at https://app.example.com. Login is required.",
+      "expected_output": "Agent assembles the Business Seed file at the discovered or default location. Sources: (A) loads Feature names and AC texts from docs/living-doc/; (B) looks for route config (Angular router, React Router, sitemap.xml); (D) checks for an existing manifest.json. Creates seed.yaml with: base_url, credentials using env: references (never literal values), known_routes from catalog Features, and an empty guided_steps list. Proposes adding BDD artifact paths to .github/copilot-instructions.md for future sessions.",
+      "files": [],
+      "expectations": [
+        "Creates seed.yaml with base_url, credentials as env: references, and known_routes",
+        "Never stores literal credentials — always env:VAR_NAME",
+        "Loads Feature names and routes from the living doc catalog (Source A)",
+        "Checks for existing manifest.json before starting (Source D)",
+        "Proposes adding artifact paths to .github/copilot-instructions.md"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "happy-path",
+      "prompt": "Crawl the webapp and generate a PageObject for the checkout screen at /checkout.",
+      "expected_output": "Agent navigates to /checkout via MCP Playwright. Takes a snapshot and identifies interactive elements: promo code input, confirm order button, error banner. Generates CheckoutPage with: file-level living-doc: FEAT-<nnn> | /checkout comment, ALL_CAPS selector constants using data-testid preference, __init__ or constructor taking a page parameter, and method stubs for each interactive element. Adds the surface to manifest.json. If no matching Feature entity exists, loads `living-doc-create-feature` skill to create FEAT-<nnn> before continuing. Flags any element using positional CSS selectors as fragile.",
+      "files": [],
+      "expectations": [
+        "Uses MCP Playwright to navigate and snapshot the page",
+        "Generates CheckoutPage with data-testid selector preference",
+        "File-level living-doc: FEAT-nnn | /checkout comment",
+        "Adds entry to manifest.json",
+        "Loads living-doc-create-feature for missing Feature entities",
+        "Flags positional CSS selectors as fragile"
+      ]
+    },
+    {
+      "id": 3,
+      "category": "happy-path",
+      "prompt": "Generate Gherkin scenarios for US-007 — Place an Online Order. ACs: (1) active — happy path: customer places order with saved payment. (2) active — error: order rejected when card declined.",
+      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated — one per active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 – active) — ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
+      "files": [],
+      "expectations": [
+        "Feature file named us-007-place-an-online-order.feature",
+        "Each Scenario: immediately preceded by a # AC: traceability comment",
+        "Skips planned and deprecated ACs — only active ACs drive generation",
+        "Step text in domain language — no implementation details",
+        "Case A stubs delegate to PageObject methods",
+        "Case B stubs raise NotImplementedError and flag the missing PageObject method"
+      ]
+    },
+    {
+      "id": 4,
+      "category": "happy-path",
+      "prompt": "RE-SCAN mode — the checkout screen had a UI update. Re-validate all manifest entries and discover any new routes.",
+      "expected_output": "Agent reloads seed.yaml and manifest.json. For every existing manifest entry: navigates to the URL, snapshots the DOM, and checks each recorded component_id selector. Selectors that no longer resolve are flagged as BREAKING CHANGE. On each visited page, agent also actively discovers new routes — follows <a href> links, clicks navigation-suggesting buttons, and checks tab panels and side-nav items not yet in the manifest. New surfaces are added to manifest.json. Removed surfaces are marked as deprecated. Stale PageObject selectors are updated.",
+      "files": [],
+      "expectations": [
+        "Reloads both seed.yaml and manifest.json before starting",
+        "Validates every manifest entry's component_id selectors against the current DOM",
+        "Flags broken selectors as BREAKING CHANGE with linked step definition details",
+        "Actively discovers new routes beyond existing manifest entries",
+        "Adds new surfaces to manifest.json; marks removed ones as deprecated",
+        "Updates stale selector constants in PageObjects"
+      ]
+    },
+    {
+      "id": 5,
+      "category": "regression",
+      "prompt": "HEALING mode — the checkout test 'Scenario: Customer successfully places an order' is failing. The confirm button selector is broken.",
+      "expected_output": "Agent enters HEALING mode — scope is limited to the failing test only. Traces the failure to CheckoutPage.CONFIRM_BUTTON and the step 'When the customer confirms the order'. Navigates to /checkout via MCP Playwright, snapshots the DOM, and finds the updated selector. Updates CONFIRM_BUTTON in CheckoutPage only. Verifies the linked step definition binding still resolves. Re-runs only the previously failing test to confirm healing. Does not touch passing tests or unrelated PageObjects.",
+      "files": [],
+      "expectations": [
+        "Scope limited to the failing test — does not touch passing tests",
+        "Navigates to the affected page via MCP Playwright and snapshots DOM",
+        "Updates the broken selector in CheckoutPage only",
+        "Verifies the step definition binding is intact",
+        "Re-runs only the failing test to confirm healing"
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative",
+      "prompt": "Create a User Story for the guest checkout capability.",
+      "expected_output": "Agent switches to catalog-operations mode and loads `living-doc-create-user-story` skill to create a User Story for guest checkout. This agent handles both catalog management and BDD automation.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-user-story skill",
+        "Creates User Story in catalog-operations mode",
+        "Does not hand off to another agent"
+      ]
+    },
+    {
+      "id": 7,
+      "category": "paraphrase",
+      "prompt": "Our BDD tests are all failing after the UI redesign — buttons and inputs have new IDs.",
+      "expected_output": "Agent recognises this as a HEALING mode request. Asks for the list of failing test names or scenario titles. Scopes repair to only those failing scenarios. For each failing scenario: traces to the affected PageObject, navigates to the screen via MCP Playwright, snapshots DOM to find updated selectors, and updates affected PageObject constants. Verifies step definition bindings. Re-runs only the previously failing tests. Does not touch unrelated PageObjects.",
+      "files": [],
+      "expectations": [
+        "Identifies this as HEALING mode",
+        "Asks for the failing test list to scope the repair",
+        "Traces each failure to its PageObject and step definition",
+        "Uses MCP Playwright to discover updated selectors",
+        "Re-runs only previously failing tests after healing"
+      ]
+    },
+    {
+      "id": 8,
+      "category": "edge-case",
+      "prompt": "REMOVE mode — the legacy promo code feature has been removed from the product. Clean up the BDD artifacts.",
+      "expected_output": "Agent enters REMOVE mode. Identifies all .feature files whose scenarios carry # AC: tags matching the removed promo code Feature/US IDs. Finds PageObjects referenced only by those scenarios. Finds step definitions used only by those scenarios. Presents the complete deletion list to the user for confirmation before touching any file. After confirmation: removes confirmed files, updates manifest.json to remove the deprecated entries. Loads `living-doc-update` skill to deprecate the linked US/AC entities in the catalog.",
+      "files": [],
+      "expectations": [
+        "Identifies all .feature file scenarios linked to the removed Feature via # AC: tags",
+        "Identifies PageObjects and step definitions used exclusively by those scenarios",
+        "Presents the full deletion list for user confirmation before any file is touched",
+        "Removes only confirmed files — does not auto-delete",
+        "Updates manifest.json to remove deprecated entries",
+        "Loads living-doc-update skill to deprecate catalog entities"
+      ]
+    },
+    {
+      "id": 9,
+      "category": "regression",
+      "prompt": "The seed.yaml is present at .copilot/bdd/seed.yaml but manifest.json is missing. What should the agent do?",
+      "expected_output": "This is a first exploration run — partial state rule applies. seed.yaml present but manifest.json absent means the session starts fresh: treat this as the first run with a clean slate. Begin the crawl from base_url in seed.yaml; do not assume any surfaces have been discovered. Create manifest.json as crawl progresses. Do not attempt to 'resume' from a non-existent manifest.",
+      "files": [],
+      "expectations": [
+        "Identifies partial state: seed.yaml present, manifest.json absent",
+        "Treats this as a first exploration run — clean slate",
+        "Starts crawl from base_url in seed.yaml",
+        "Creates manifest.json during crawl — does not assume prior discovery",
+        "Does not attempt to resume from a non-existent manifest"
+      ]
+    },
+    {
+      "id": 10,
+      "category": "regression",
+      "prompt": "The seed.yaml contains: 'credentials: {username: admin, password: secret123}'. Is this correct?",
+      "expected_output": "No — literal credentials must never be stored in seed.yaml. This is a security violation. Replace the literal values with environment variable references: 'credentials: {username: env:BDD_USERNAME, password: env:BDD_PASSWORD}'. Literal credentials in a file committed to source control are exposed to anyone with repository access. The agent must flag this immediately and refuse to proceed with the current seed.yaml until the credentials are replaced with env:VAR_NAME references.",
+      "files": [],
+      "expectations": [
+        "Flags literal credentials as a security violation",
+        "Refuses to proceed with literal credentials in seed.yaml",
+        "Provides the corrected env:VAR_NAME format",
+        "Explains the risk: credentials exposed to anyone with repository access"
+      ]
+    },
+    {
+      "id": 11,
+      "category": "edge-case",
+      "prompt": "During crawling, the agent reaches a multi-step checkout wizard (/checkout/step-2) but doesn't know what values to enter in the required 'Delivery Zone Code' field. How should this be handled?",
+      "expected_output": "The agent enters the Source E guided traversal protocol. It takes a screenshot and shows the user what it sees. It asks: 'I've reached a decision point at /checkout/step-2. What should I do next? Please provide the valid Delivery Zone Code value (or another way to progress past this step).' After the user provides the value, the agent executes the action via MCP Playwright and immediately appends the action to guided_steps in seed.yaml so the route can be re-navigated in future sessions without prompting.",
+      "files": [],
+      "expectations": [
+        "Takes a screenshot and shows the user the current state",
+        "Asks the user for the missing business-specific input value",
+        "Executes the guided action via MCP Playwright after receiving the answer",
+        "Appends the action to guided_steps in seed.yaml for future sessions",
+        "Does not invent or guess business-specific field values"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "output-format",
+      "prompt": "After scanning /login and generating a LoginPage, show me what the manifest.json entry for /login looks like.",
+      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements with data_cy and tag), coverage_gaps (empty list initially), and navigation_context with prerequisites, navigation_steps, data_requirements, auth_role, and notes. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and load `living-doc-create-feature` skill to create it.",
+      "files": [],
+      "expectations": [
+        "manifest.json entry has: pageobject_path, feature_id, last_scanned, elements, coverage_gaps, navigation_context",
+        "feature_id is FEAT-UNKNOWN if no matching Feature entity exists",
+        "last_scanned is an ISO timestamp",
+        "navigation_context includes prerequisites, navigation_steps, auth_role",
+        "Missing Feature entity triggers living-doc-create-feature skill load"
+      ]
+    },
+    {
+      "id": 13,
+      "category": "regression",
+      "prompt": "During seed assembly, the living doc catalog at docs/living-doc/ has FEAT-001 (Checkout Page) mapped to route /checkout and FEAT-002 (Account Dashboard) mapped to route /account/orders. No sitemap.xml exists. How should known_routes in seed.yaml be populated?",
+      "expected_output": "Agent loads Source A (living documentation). Extracts Feature-to-route mappings: FEAT-001 → /checkout and FEAT-002 → /account/orders. Adds both to known_routes in seed.yaml. Notes that Source B (sitemap.xml) is absent — no error is raised. Routes not listed in the living doc will be discovered dynamically during the crawl.",
+      "files": [],
+      "expectations": [
+        "Source A: Feature-to-route mappings extracted from the living doc catalog",
+        "Both routes added to known_routes in seed.yaml",
+        "Source B (sitemap) noted as absent — no error raised",
+        "Notes that unlisted routes will be discovered dynamically during crawl"
+      ]
+    },
+    {
+      "id": 14,
+      "category": "skill-dispatch",
+      "prompt": "Run a gap analysis on our living documentation before the v3.0 release. The catalog is at docs/living-doc/.",
+      "expected_output": "Agent switches to catalog-operations mode and loads the `living-doc-gap-finder` skill. Runs AUDIT mode: processes all entities and test files in docs/living-doc/, produces a gap report listing ORPHAN_TEST, STALE_REFERENCE, ORPHAN_FUNCTIONALITY, ORPHAN_FEATURE, EMPTY_FEATURE, and UNDOCUMENTED_SURFACE gaps. Outputs a documentation_coverage percentage and a prioritised gap list (Blocker → Critical → Important → Nit).",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-gap-finder skill",
+        "Runs AUDIT mode — full catalog audit",
+        "Outputs gap report with documentation_coverage percentage",
+        "Prioritised gap list: Blocker → Critical → Important → Nit",
+        "Does not modify any entities — gap-finder is read-only"
+      ]
+    },
+    {
+      "id": 15,
+      "category": "skill-dispatch",
+      "prompt": "What living doc entities does PR #217 affect? It modifies PromoService.java and DiscountController.java.",
+      "expected_output": "Agent loads the `living-doc-impact-analysis` skill. Traces PromoService.java and DiscountController.java through the feature_registry. PromoService maps to FEAT-004 (domain logic — High impact). DiscountController maps to FEAT-006 (API contract — High impact). Output lists: affected Features, affected Functionalities, ACs requiring re-test, and Gherkin scenarios needing re-run. Produces a release sign-off checklist for both impacted Features.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-impact-analysis skill",
+        "Traces changed files through feature_registry",
+        "Classifies each file as domain logic or API contract",
+        "Lists affected Features, Functionalities, ACs, and scenarios",
+        "Produces release sign-off checklist"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "skill-dispatch",
+      "prompt": "The @AC: traceability tags in checkout.feature are out of sync with the living doc. Sync them.",
+      "expected_output": "Agent loads the `gherkin-living-doc-sync` skill. Runs scan_ac_links.py to audit the @AC: tags and # AC: comments across checkout.feature. For each scenario: (1) verifies the @AC: tag matches a live AC in the catalog; (2) checks the # AC: comment format is canonical; (3) flags stale or missing links. Produces a sync diff showing what changed. Does not generate new scenarios — routes new-scenario requests to living-doc-scenario-creator.",
+      "files": [],
+      "expectations": [
+        "Loads gherkin-living-doc-sync skill",
+        "Runs scan_ac_links.py to audit @AC: tags",
+        "Flags stale, missing, or malformed AC links",
+        "Produces a sync diff — does not auto-generate new scenarios",
+        "Routes new-scenario generation to living-doc-scenario-creator"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "skill-dispatch",
+      "prompt": "Write step definitions for the checkout scenarios — I need behave steps for the 'When the customer confirms the order' step.",
+      "expected_output": "Agent loads the `gherkin-step` skill. Generates a Python behave step definition: `@when('the customer confirms the order')` decorated function. The step body accesses `context.checkout_page` (initialised in a Before hook). Uses the CheckoutPage PageObject method `checkout_page.click_confirm_button()`. Follows the naming convention: function named `step_confirm_order`, not the verbose `step_when_the_customer_confirms_the_order`.",
+      "files": [],
+      "expectations": [
+        "Loads gherkin-step skill",
+        "Generates @when decorated behave step function",
+        "Step body delegates to CheckoutPage PageObject method",
+        "Function name follows concise convention (step_confirm_order)",
+        "Does not write the Gherkin scenario itself — routes scenario creation to living-doc-scenario-creator"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "skill-dispatch",
+      "prompt": "Add missing data-cy attributes to the checkout Angular template — the PageObjects have PROPOSED locator comments.",
+      "expected_output": "Agent loads the `data-cy-instrument` skill. Phase 1: scans the checkout Angular template for elements without data-cy attributes; adds data-cy='<element-name>' to each native HTML element. For third-party components that cannot forward attributes, adds a WORK_LOG.md §4 row with library name, version, and issue tracker link. Phase 3: updates CheckoutPage PageObject locators from CSS selectors to getByTestId() calls. Removes PROPOSED comments after update.",
+      "files": [],
+      "expectations": [
+        "Loads data-cy-instrument skill",
+        "Adds data-cy attributes to native HTML elements in the Angular template",
+        "Escalates lib components to WORK_LOG.md §4 — does not silently skip",
+        "Updates PageObject locators to getByTestId()",
+        "Removes PROPOSED comments after locator update"
+      ]
+    },
+    {
+      "id": 19,
+      "category": "skill-dispatch",
+      "prompt": "Delete all BDD artifacts linked to the deprecated FEAT-012 feature — clean up feature files, step definitions, and PageObjects.",
+      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose # AC: tags reference FEAT-012 User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
+      "files": [],
+      "expectations": [
+        "Loads bdd-maintain skill",
+        "REMOVE mode — identifies scenarios via # AC: tags linked to deprecated Feature",
+        "Runs all three audit scripts to identify exclusively-used artifacts",
+        "Checks fixtures.ts for PageObject imports",
+        "Presents deletion list for confirmation before touching any file"
+      ]
+    },
+    {
+      "id": 20,
+      "category": "skill-dispatch",
+      "prompt": "Document the Notifications Service as a Feature entity in the living doc — it exposes a REST API at /api/notifications.",
+      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), type ('api'), route ('/api/notifications'), status ('active'), owners (asks user), and empty functionalities and user_stories arrays. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-feature skill",
+        "Assigns next FEAT-nnn ID using next_id.py",
+        "Creates Feature entity JSON with required fields",
+        "Adds entry to feature_registry.json",
+        "Prompts for Functionality creation as next step"
+      ]
+    },
+    {
+      "id": 21,
+      "category": "skill-dispatch",
+      "prompt": "Document the atomic behavior: apply a 20% discount to all cart items for Gold tier customers. Parent Feature is FEAT-004.",
+      "expected_output": "Agent loads the `living-doc-create-functionality` skill. Assigns the next FUNC-nnn ID via next_id.py. Creates a Functionality entity with: id, name ('Apply Gold Tier Discount'), parent feature_id ('FEAT-004'), status ('planned'), and at least two ACs — a happy-path AC and an error-path AC. After saving, prompts to load living-doc-update to append FUNC-<id> to FEAT-004's functionalities array — otherwise the entity will be flagged as ORPHAN_FUNCTIONALITY.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-functionality skill",
+        "Assigns next FUNC-nnn ID via next_id.py",
+        "Creates Functionality with happy-path and error-path ACs",
+        "Prompts to update parent FEAT-004.functionalities array via living-doc-update",
+        "Warns that skipping the parent link causes ORPHAN_FUNCTIONALITY gap"
+      ]
+    },
+    {
+      "id": 22,
+      "category": "skill-dispatch",
+      "prompt": "Update the AC wording on US-042-AC-1 — the product owner changed the discount threshold from $50 to $75.",
+      "expected_output": "Agent loads the `living-doc-update` skill. Shows the OLD AC-1 text and proposes the NEW text with $75 threshold. Keeps the AC ID (US-042-AC-1) stable — never changes IDs. Bumps the AC version from v1.0.0 to v1.1.0. Flags the linked Gherkin scenario for review — the step 'When the cart total exceeds $50' will need updating. Runs validate_entity.py after the edit to confirm no invariants are broken.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-update skill",
+        "Shows OLD and NEW AC text side by side before committing",
+        "AC ID stays stable — only description/GWT fields updated",
+        "AC version bumped from v1.0.0 to v1.1.0",
+        "Flags linked Gherkin scenario as stale and needing update",
+        "Runs validate_entity.py post-edit"
+      ]
+    },
+    {
+      "id": 23,
+      "category": "skill-dispatch",
+      "prompt": "Generate BDD scenarios for US-007 — Place an Online Order. It has 3 active ACs and 1 planned AC.",
+      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios — one per active AC. The planned AC is skipped (not generated until active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 – active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-scenario-creator skill",
+        "Generates scenarios only for active ACs — skips planned",
+        "Each scenario preceded by # AC: traceability comment",
+        "Applies merge policy decision table for existing scenarios",
+        "Output is a named .feature file: us-007-place-an-online-order.feature"
+      ]
+    },
+    {
+      "id": 24,
+      "category": "skill-dispatch",
+      "prompt": "Create a User Story for the guest checkout feature — a guest should be able to place an order without registering.",
+      "expected_output": "Agent loads the `living-doc-create-user-story` skill. Assigns the next US-nnn ID via next_id.py. Elicits the full narrative: As a [guest customer] / I can [place an order without registering] / so that [I can complete a purchase without commitment]. Guides through AC creation: at least a happy-path AC and one error-path AC. Checks whether existing Functionalities (e.g. FUNC-guest-cart, FUNC-guest-checkout) should be linked in the functionalities array. Routes to living-doc-create-functionality if new Functionalities are needed.",
+      "files": [],
+      "expectations": [
+        "Loads living-doc-create-user-story skill",
+        "Assigns next US-nnn ID via next_id.py",
+        "Elicits complete narrative (As a / I can / so that)",
+        "Requires at least one happy-path and one error-path AC",
+        "Asks about existing Functionalities to link — prevents ORPHAN_FUNCTIONALITY gaps"
+      ]
+    },
+    {
+      "id": 25,
+      "category": "negative",
+      "prompt": "Write a unit test for the applyDiscount() service method.",
+      "expected_output": "Agent declines the request. Explains that writing unit or integration tests is outside its scope. Points to the test-unit-write skill for unit tests. Does not write or stub any test code, and does not leave a TODO comment in any file.",
+      "files": [],
+      "expectations": [
+        "Declines the request — does not write any test code",
+        "Points to the test-unit-write skill",
+        "Does not add a TODO comment to any file",
+        "Does not partially implement or stub the unit test"
+      ]
+    }
+  ]
+}
