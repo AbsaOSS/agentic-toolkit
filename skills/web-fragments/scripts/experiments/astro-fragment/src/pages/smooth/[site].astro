@@ -1,0 +1,8 @@
+---
+import SmoothLayout from '../../layouts/SmoothLayout.astro';
+export function getStaticPaths() {
+  return ['a', 'b', 'c'].map((site) => ({ params: { site } }));
+}
+const { site } = Astro.params;
+---
+<SmoothLayout site={site} />
