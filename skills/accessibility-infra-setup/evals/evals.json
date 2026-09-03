@@ -4,9 +4,15 @@
     {
       "id": "happy-path-fresh-angular-app",
       "category": "happy-path",
-      "prompt": "Set up accessibility check infrastructure in this Angular app.",
+      "prompt": "Set up accessibility check infrastructure in this Angular app. The project is in evals/files/fresh-angular.",
       "expected_output": "Skill detects there is no existing Playwright setup, installs @playwright/test and @axe-core/playwright, scaffolds playwright.config.ts with a dedicated accessibility project, a shared axe-helpers fixture using the WCAG 2.2 AA tag set, one dummy example.accessibility.spec.ts scanning '/', adds test:a11y npm scripts, runs the dummy scan to green, and documents how to run it.",
-      "files": [],
+      "files": [
+        "evals/files/fresh-angular/package.json",
+        "evals/files/fresh-angular/angular.json",
+        "evals/files/fresh-angular/package-lock.json",
+        "evals/files/fresh-angular/src/index.html",
+        "evals/files/fresh-angular/src/app/app.component.ts"
+      ],
       "expectations": [
         "Detects existing test infrastructure before writing files (reads package.json)",
         "Installs @playwright/test and @axe-core/playwright as devDependencies",
@@ -23,9 +29,13 @@
     {
       "id": "happy-path-existing-playwright",
       "category": "happy-path",
-      "prompt": "We already use Playwright for e2e. Add axe-core accessibility scanning on top.",
+      "prompt": "We already use Playwright for e2e. Add axe-core accessibility scanning on top. The project is in evals/files/existing-playwright.",
       "expected_output": "Skill detects the existing playwright.config, does NOT overwrite it, merges in an accessibility project and adds testIgnore /accessibility/ to functional projects, adds the axe fixture and one dummy scan, and validates.",
-      "files": [],
+      "files": [
+        "evals/files/existing-playwright/package.json",
+        "evals/files/existing-playwright/playwright.config.ts",
+        "evals/files/existing-playwright/e2e/example.spec.ts"
+      ],
       "expectations": [
         "Detects the existing playwright.config and does not overwrite it",
         "Merges an accessibility project (testMatch /accessibility/, Desktop Chrome) into the existing config",
@@ -38,9 +48,13 @@
     {
       "id": "regression-cypress-untouched",
       "category": "regression",
-      "prompt": "We use Cypress for e2e. Set up accessibility checks for this Angular app.",
+      "prompt": "We use Cypress for e2e. Set up accessibility checks for this Angular app. The project is in evals/files/cypress-angular.",
       "expected_output": "Skill introduces Playwright + axe-core accessibility infrastructure alongside Cypress and leaves all Cypress config, specs, and dependencies completely untouched.",
-      "files": [],
+      "files": [
+        "evals/files/cypress-angular/package.json",
+        "evals/files/cypress-angular/cypress.config.ts",
+        "evals/files/cypress-angular/cypress/e2e/home.cy.ts"
+      ],
       "expectations": [
         "Detects Cypress and does NOT edit, migrate, or delete any Cypress config, specs, or dependencies",
         "Does NOT fold accessibility scans into Cypress",
@@ -64,9 +78,12 @@
     {
       "id": "regression-do-not-clobber",
       "category": "regression",
-      "prompt": "Add accessibility checks. Our package.json already has a bunch of test scripts and a playwright config.",
+      "prompt": "Add accessibility checks. Our package.json already has a bunch of test scripts and a playwright config. The project is in evals/files/existing-scripts-and-playwright.",
       "expected_output": "Skill preserves existing scripts and config, merging additively rather than overwriting.",
-      "files": [],
+      "files": [
+        "evals/files/existing-scripts-and-playwright/package.json",
+        "evals/files/existing-scripts-and-playwright/playwright.config.ts"
+      ],
       "expectations": [
         "Existing npm scripts are preserved (additive edit only)",
         "Existing playwright.config is merged, not replaced",
