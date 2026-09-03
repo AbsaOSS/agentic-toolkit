@@ -15,14 +15,21 @@
             "outputPath": "dist/sample-angular-app",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "tsConfig": "tsconfig.app.json"
-          }
+            "tsConfig": "tsconfig.json"
+          },
+          "configurations": {
+            "production": { "optimization": true, "outputHashing": "all" },
+            "development": { "optimization": false, "sourceMap": true }
+          },
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "port": 4200
-          }
+          "configurations": {
+            "production": { "buildTarget": "sample-angular-app:build:production" },
+            "development": { "buildTarget": "sample-angular-app:build:development" }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }

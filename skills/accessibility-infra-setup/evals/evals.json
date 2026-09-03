@@ -10,7 +10,9 @@
         "evals/files/fresh-angular/package.json",
         "evals/files/fresh-angular/angular.json",
         "evals/files/fresh-angular/package-lock.json",
+        "evals/files/fresh-angular/tsconfig.json",
         "evals/files/fresh-angular/src/index.html",
+        "evals/files/fresh-angular/src/main.ts",
         "evals/files/fresh-angular/src/app/app.component.ts"
       ],
       "expectations": [
