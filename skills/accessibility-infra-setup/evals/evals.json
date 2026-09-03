@@ -1,0 +1,77 @@
+{
+  "skill_name": "accessibility-infra-setup",
+  "evals": [
+    {
+      "id": "happy-path-fresh-angular-app",
+      "category": "happy-path",
+      "prompt": "Set up accessibility check infrastructure in this Angular app.",
+      "expected_output": "Skill detects there is no existing Playwright setup, installs @playwright/test and @axe-core/playwright, scaffolds playwright.config.ts with a dedicated accessibility project, a shared axe-helpers fixture using the WCAG 2.2 AA tag set, one dummy example.accessibility.spec.ts scanning '/', adds test:a11y npm scripts, runs the dummy scan to green, and documents how to run it.",
+      "files": [],
+      "expectations": [
+        "Detects existing test infrastructure before writing files (reads package.json)",
+        "Installs @playwright/test and @axe-core/playwright as devDependencies",
+        "Installs the Chromium browser via playwright install",
+        "Creates playwright.config.ts with an 'accessibility' project using testMatch /accessibility/ on Desktop Chrome",
+        "Creates a shared axe fixture (axe-helpers) whose makeAxeBuilder uses wcag2a/wcag2aa/wcag21a/wcag21aa/wcag22a/wcag22aa/best-practice tags",
+        "Creates exactly one dummy accessibility spec (filename contains 'accessibility')",
+        "Adds test:a11y npm scripts to package.json without clobbering existing scripts",
+        "Runs npm run test:a11y and confirms it passes green",
+        "Adds documentation describing how to run the checks and where reports are generated",
+        "Does NOT author real per-page accessibility tests beyond the single dummy example"
+      ]
+    },
+    {
+      "id": "happy-path-existing-playwright",
+      "category": "happy-path",
+      "prompt": "We already use Playwright for e2e. Add axe-core accessibility scanning on top.",
+      "expected_output": "Skill detects the existing playwright.config, does NOT overwrite it, merges in an accessibility project and adds testIgnore /accessibility/ to functional projects, adds the axe fixture and one dummy scan, and validates.",
+      "files": [],
+      "expectations": [
+        "Detects the existing playwright.config and does not overwrite it",
+        "Merges an accessibility project (testMatch /accessibility/, Desktop Chrome) into the existing config",
+        "Adds testIgnore /accessibility/ to existing functional projects so a11y scans run once",
+        "Installs @axe-core/playwright but does not reinstall Playwright if already present",
+        "Creates the shared axe fixture and one dummy accessibility spec",
+        "Validates the dummy scan passes"
+      ]
+    },
+    {
+      "id": "regression-cypress-untouched",
+      "category": "regression",
+      "prompt": "We use Cypress for e2e. Set up accessibility checks for this Angular app.",
+      "expected_output": "Skill introduces Playwright + axe-core accessibility infrastructure alongside Cypress and leaves all Cypress config, specs, and dependencies completely untouched.",
+      "files": [],
+      "expectations": [
+        "Detects Cypress and does NOT edit, migrate, or delete any Cypress config, specs, or dependencies",
+        "Does NOT fold accessibility scans into Cypress",
+        "Sets up a fresh Playwright config (no existing playwright.config present) with the accessibility project",
+        "Cypress and Playwright coexist after the change"
+      ]
+    },
+    {
+      "id": "regression-infra-only-scope",
+      "category": "regression",
+      "prompt": "Set up accessibility infrastructure and write full a11y coverage for every page.",
+      "expected_output": "Skill sets up the infrastructure plus exactly one dummy example scan, and explicitly declines to author per-page coverage, noting that is a separate follow-up task.",
+      "files": [],
+      "expectations": [
+        "Only one dummy example accessibility spec is created",
+        "Skill explicitly states per-page/real accessibility test authoring is out of scope",
+        "Infrastructure (config, fixture, scripts, docs) is still fully set up",
+        "Skill does not attempt to fix accessibility violations in application code"
+      ]
+    },
+    {
+      "id": "regression-do-not-clobber",
+      "category": "regression",
+      "prompt": "Add accessibility checks. Our package.json already has a bunch of test scripts and a playwright config.",
+      "expected_output": "Skill preserves existing scripts and config, merging additively rather than overwriting.",
+      "files": [],
+      "expectations": [
+        "Existing npm scripts are preserved (additive edit only)",
+        "Existing playwright.config is merged, not replaced",
+        "New test:a11y scripts are added alongside existing ones"
+      ]
+    }
+  ]
+}

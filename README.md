@@ -77,6 +77,7 @@ its purpose, trigger phrases, and full instructions.
 
 | Skill                                                | Description                                                                                                                         |
 |------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[accessibility-infra-setup](./skills/accessibility-infra-setup/)** | Set up automated accessibility (a11y) check infrastructure in an existing Angular app with Playwright + axe-core (WCAG 2.2 AA) — detects existing test setup, scaffolds config, a shared axe fixture, one dummy example scan, npm scripts, and docs, then validates the sample passes. |
 | **[bdd-maintain](./skills/bdd-maintain/)** | REMOVE and DEAD CODE AUDIT modes — delete feature files, step definitions, and PageObjects linked to 
 | **[create-repository](./skills/create-repository/)** | Creates and configures a GitHub repository under AbsaOSS (open source) or absa-group (internal). Runs a short interview, then shows an annotated `gh` command plan and executes it on confirmation — visibility, naming, admins, CODEOWNERS, labels, merge settings, and project links. |
 | **[data-cy-instrument](./skills/data-cy-instrument/)** | Resolve missing `data-cy` attributes in Angular component templates and sync PageObjects to use `getByTestId()` — run after a crawl when `coverage_gaps` are non-empty. |
