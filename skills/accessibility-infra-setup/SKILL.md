@@ -2,8 +2,8 @@
 name: accessibility-infra-setup
 description: >
   Sets up automated accessibility (a11y) check infrastructure in an existing Angular application
-  using Playwright + axe-core (@axe-core/playwright), asserting WCAG 2.2 AA compliance. Detects the
-  existing test setup, installs and wires Playwright with a dedicated `accessibility` project,
+  using Playwright + axe-core (@axe-core/playwright) to catch automatically detectable WCAG 2.2 AA violations.
+  Detects the existing test setup, installs and wires Playwright with a dedicated `accessibility` project,
   scaffolds a shared axe fixture, adds one dummy example scan, wires npm scripts, documents how to
   run the checks, and validates that the sample passes. Activates on requests like: "set up
   accessibility checks", "add a11y testing infrastructure", "add axe-core to this Angular app",
@@ -96,8 +96,9 @@ npm install -D @playwright/test @axe-core/playwright
 npx playwright install chromium
 ```
 
-`npx playwright install chromium` downloads the browser and needs network access. If Playwright was
-already installed, skip the packages but still ensure the Chromium browser is present.
+ `npx playwright install chromium` downloads the browser and needs network access. If Playwright is
+ already installed, install `@axe-core/playwright` when it is missing, skip reinstalling
+ `@playwright/test`, and still ensure the Chromium browser is present.
 
 ### Step 3 · Scaffold config, fixture, and example spec
 

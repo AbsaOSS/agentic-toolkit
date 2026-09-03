@@ -3,7 +3,7 @@
 Automated accessibility checks for this app, powered by
 [Playwright](https://playwright.dev/) + [axe-core](https://github.com/dequelabs/axe-core)
 (via [`@axe-core/playwright`](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright)).
-Scans assert compliance with **WCAG 2.2 AA** (plus axe best-practice rules).
+Scans assert compliance with **WCAG 2.2 AA** (plus axe best-practice rules); manual testing is still required for full compliance.
 
 ## Layout
 
