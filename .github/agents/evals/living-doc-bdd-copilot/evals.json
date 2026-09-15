@@ -34,7 +34,7 @@
       "id": 3,
       "category": "happy-path",
       "prompt": "Generate Gherkin scenarios for US-007 — Place an Online Order. ACs: (1) active — happy path: customer places order with saved payment. (2) active — error: order rejected when card declined.",
-      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated — one per active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 – active) — ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
+      "expected_output": "Agent generates a .feature file named us-007-place-an-online-order.feature. Feature header uses the As-a/I-can/so-that narrative from US-007. Two scenarios generated - one per active AC. Each Scenario: is immediately preceded by a '# AC: US-007-0n (v1.0.0 - active) - ...' traceability tag. Step text uses domain language (no HTTP calls, selectors, or DB). For steps without a matching step definition, generates stubs: Case A (PageObject method exists) = full stub; Case B (no PageObject method) = stub with NotImplementedError and flag to extend the PageObject.",
       "files": [],
       "expectations": [
         "Feature file named us-007-place-an-online-order.feature",
@@ -215,7 +215,7 @@
       "id": 16,
       "category": "skill-dispatch",
       "prompt": "The @AC: traceability tags in checkout.feature are out of sync with the living doc. Sync them.",
-      "expected_output": "Agent loads the `gherkin-living-doc-sync` skill. Runs scan_ac_links.py to audit the @AC: tags and # AC: comments across checkout.feature. For each scenario: (1) verifies the @AC: tag matches a live AC in the catalog; (2) checks the # AC: comment format is canonical; (3) flags stale or missing links. Produces a sync diff showing what changed. Does not generate new scenarios — routes new-scenario requests to living-doc-scenario-creator.",
+      "expected_output": "Agent loads the `gherkin-living-doc-sync` skill. Runs scan_ac_links.py to audit the @AC: tags and # AC: comments across checkout.feature. For each scenario: (1) verifies the @AC: tag matches a live AC in the catalog; (2) checks the # AC: comment format is canonical; (3) flags stale or missing links. Produces a sync diff showing what changed. Does not generate new scenarios - routes new-scenario requests to living-doc-scenario-creator.",
       "files": [],
       "expectations": [
         "Loads gherkin-living-doc-sync skill",
@@ -261,7 +261,7 @@
       "files": [],
       "expectations": [
         "Loads bdd-maintain skill",
-        "REMOVE mode — identifies scenarios via # AC: tags linked to deprecated Feature",
+        "REMOVE mode - identifies scenarios via # AC: tags linked to deprecated Feature",
         "Runs all three audit scripts to identify exclusively-used artifacts",
         "Checks fixtures.ts for PageObject imports",
         "Presents deletion list for confirmation before touching any file"
@@ -271,7 +271,7 @@
       "id": 20,
       "category": "skill-dispatch",
       "prompt": "Document the Notifications Service as a Feature entity in the living doc — it exposes a REST API at /api/notifications.",
-      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), type ('api'), route ('/api/notifications'), status ('active'), owners (asks user), and empty functionalities and user_stories arrays. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
+      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), surface_type ('API'), route ('/api/notifications'), owners (asks user), and empty functionalities and user_stories arrays — no `status` field, since a Feature's state is derived from its Functionalities. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
       "files": [],
       "expectations": [
         "Loads living-doc-create-feature skill",
@@ -314,7 +314,7 @@
       "id": 23,
       "category": "skill-dispatch",
       "prompt": "Generate BDD scenarios for US-007 — Place an Online Order. It has 3 active ACs and 1 planned AC.",
-      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios — one per active AC. The planned AC is skipped (not generated until active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 – active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
+      "expected_output": "Agent loads the `living-doc-scenario-creator` skill. Generates a .feature file for US-007 with 3 scenarios - one per active AC. The planned AC is skipped (not generated until active). Each scenario is preceded by a '# AC: US-007-0n (v1.0.0 - active)' traceability comment. Merge policy: if a scenario already exists for an AC, applies the 4-row decision table (skip if intent matches, update if GWT is stale, propose replacement if deprecated, flag if multiple scenarios exist per AC).",
       "files": [],
       "expectations": [
         "Loads living-doc-scenario-creator skill",

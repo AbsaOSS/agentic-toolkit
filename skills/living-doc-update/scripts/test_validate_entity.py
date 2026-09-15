@@ -76,7 +76,6 @@ def test_end_to_end_slug_feature_id_flagged():
         "name": "Checkout Page",
         "surface_type": "UI",
         "purpose": "Lets a customer complete a purchase",
-        "status": "active",
         "user_stories": ["US-1"],
         "functionalities": [],
         "owners": ["Team"],
@@ -85,6 +84,44 @@ def test_end_to_end_slug_feature_id_flagged():
     id_issues = [i for i in issues if i["field"] == "id" and i["severity"] == "error"]
     assert id_issues, f"expected an id error for a slug Feature ID, got: {issues}"
     print("✓ End-to-end: a slug Feature ID is flagged as an error")
+
+
+def test_feature_with_status_field_rejected():
+    """A Feature has no status field — its state is derived from its Functionalities."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Checkout Page",
+        "surface_type": "UI",
+        "purpose": "Lets a customer complete a purchase",
+        "status": "active",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+    }
+    issues = validate(feat)
+    status_errors = [i for i in issues if i["field"] == "status" and i["severity"] == "error"]
+    assert status_errors, f"expected a status error for a Feature carrying 'status', got: {issues}"
+    print("✓ A Feature carrying a 'status' field is flagged as an error")
+
+
+def test_orphan_feature_reported_distinctly():
+    """A Feature with no linked User Stories and no Functionalities is an ORPHAN_FEATURE,
+    not a 'candidate' status — there is no status field to tag it with."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-2",
+        "name": "Exploratory Page",
+        "surface_type": "UI",
+        "purpose": "An exploratory surface with no confirmed links yet",
+        "user_stories": [],
+        "functionalities": [],
+        "owners": ["Team"],
+    }
+    issues = validate(feat)
+    orphan_issues = [i for i in issues if i["field"] == "ORPHAN_FEATURE"]
+    assert orphan_issues, f"expected an ORPHAN_FEATURE warning, got: {issues}"
+    print("✓ A Feature with no User Stories and no Functionalities is flagged as ORPHAN_FEATURE")
 
 
 if __name__ == "__main__":
@@ -96,6 +133,8 @@ if __name__ == "__main__":
         test_feat_parent_ac_id_rejected()
         test_end_to_end_user_story_with_single_digit_id_validates_clean()
         test_end_to_end_slug_feature_id_flagged()
+        test_feature_with_status_field_rejected()
+        test_orphan_feature_reported_distinctly()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

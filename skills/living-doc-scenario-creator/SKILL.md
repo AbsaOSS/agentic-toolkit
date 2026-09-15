@@ -30,8 +30,8 @@ license: Apache-2.0
 
 | Mode | When to use |
 |---|---|
-| **Entity mode** | A User Story or Functionality entity exists — generate full feature file with header, `@AC:` tags, and step bodies. |
-| **Standalone mode** | No US/FUNC entity — write Gherkin directly from business descriptions. Use `@AC:STANDALONE` as tag; `gherkin-living-doc-sync` will note it but not flag a traceability gap. |
+| **Entity mode** | A User Story or Functionality entity exists - generate full feature file with header, `@AC:` tags, and step bodies. |
+| **Standalone mode** | No US/FUNC entity - write Gherkin directly from business descriptions. Use `@AC:STANDALONE` as tag; `gherkin-living-doc-sync` will note it but not flag a traceability gap. |
 
 ---
 
@@ -57,7 +57,7 @@ An AC is uncovered if no `.feature` file carries `@AC:<id>`. Use `living-doc-gap
 | Existing scenario state | Action |
 |---|---|
 | Matches AC intent; GWT correct | **Skip** — record `already covered` in the coverage report |
-| Step text stale or AC description changed | **Update** — rewrite GWT in-place; keep `@AC:` tag and title stable |
+| Step text stale or AC description changed | **Update** - rewrite GWT in-place; keep `@AC:` tag and title stable |
 | Tagged `@deprecated` or `@review-needed` | **Propose replacement** — draft new scenario; confirm with user before overwriting |
 | Multiple scenarios for the same AC | **Flag** — list them; ask user: valid aspect split or consolidate? |
 
@@ -73,7 +73,7 @@ For each `active` AC, output `# AC:` comment, `@AC:` tag, `Scenario:` title, and
 **Traceability format** (authoritative — `gherkin-living-doc-sync` validates against this definition):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - active) — customer places an order with a saved payment method
+# AC:US-1-01 (v1.0.0 - active) - customer places an order with a saved payment method
 @AC:US-1-01
 Scenario: Customer successfully places an order
   Given the customer has items in their cart
@@ -84,16 +84,16 @@ Scenario: Customer successfully places an order
 Aspect variant (when one scenario covers only one aspect of a multi-aspect AC):
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - active) — displays {required field} on login screen | aspect: username input
+# AC:US-1-01 (v1.0.0 - active) - displays {required field} on login screen | aspect: username input
 @AC:US-1-01/aspect:username-input
 Scenario: Login form shows the username input field
 ```
 
-Multiple ACs per scenario — one comment + tag pair per AC:
+Multiple ACs per scenario - one comment + tag pair per AC:
 
 ```gherkin
-# AC:US-1-01 (v1.0.0 - active) — invalid credentials show an error message
-# AC:US-1-02 (v1.0.0 - active) — account lockout after 3 failed attempts
+# AC:US-1-01 (v1.0.0 - active) - invalid credentials show an error message
+# AC:US-1-02 (v1.0.0 - active) - account lockout after 3 failed attempts
 @AC:US-1-01
 @AC:US-1-02
 @Regression
@@ -124,8 +124,8 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 #   - Customers can complete an order without calling support.
 
 # Acceptance Criteria:
-#   AC:US-001-01 (v1.0.0 - active) — customer places an order with a saved payment method.
-#   AC:US-001-02 (v1.0.0 - active) — order is rejected when the payment card is declined.
+#   AC:US-001-01 (v1.0.0 - active) - customer places an order with a saved payment method.
+#   AC:US-001-02 (v1.0.0 - active) - order is rejected when the payment card is declined.
 
 @US_ID:US-001
 @domain_orders
@@ -136,7 +136,7 @@ Feature: Place an online order
 
   # *** Happy day scenarios ***
 
-  # AC:US-001-01 (v1.0.0 - active) — customer places an order with a saved payment method
+  # AC:US-001-01 (v1.0.0 - active) - customer places an order with a saved payment method
   @AC:US-001-01
   @Regression
   Scenario: Customer successfully places an order
@@ -146,7 +146,7 @@ Feature: Place an online order
 
   # *** Negative scenarios ***
 
-  # AC:US-001-02 (v1.0.0 - active) — order is rejected when the payment card is declined
+  # AC:US-001-02 (v1.0.0 - active) - order is rejected when the payment card is declined
   @AC:US-001-02
   Scenario: Order rejected when payment card is declined
     Given the customer has items in their cart
@@ -160,7 +160,7 @@ Feature: Place an online order
 @FUNC_ID:FUNC-001
 Feature: Login Page — Validate Password Strength
 
-  # AC:FUNC-001-01 (v1.0.0 - active) — returns valid=true when password satisfies all rules
+  # AC:FUNC-001-01 (v1.0.0 - active) - returns valid=true when password satisfies all rules
   @AC:FUNC-001-01
   Scenario: Password meets all complexity rules
     Given a password with at least 8 characters, one uppercase, one lowercase, and one number
@@ -177,7 +177,7 @@ AC COVERAGE REPORT — US-001
   AC:US-001-01 (active): ✅ covered
   AC:US-001-02 (active): ✅ covered
   AC:US-001-03 (active): ❌ NOT COVERED
-  AC:US-001-04 (planned): ⏭  skipped — not yet active
+  AC:US-001-04 (planned): ⏭  skipped - not yet active
 ```
 
 Coverage-report closeout rules:
@@ -317,7 +317,7 @@ Scenario: Admin can create a new user
 | Assertions in Given/When | Move all assertions to `Then` |
 | Scenario depends on prior scenario state | Make every scenario fully self-contained |
 
-When reviewing an existing scenario, check for a missing `@AC:` tag above each `Scenario:` — call that out as a traceability defect.
+When reviewing an existing scenario, check for a missing `@AC:` tag above each `Scenario:` - call that out as a traceability defect.
 
 ---
 

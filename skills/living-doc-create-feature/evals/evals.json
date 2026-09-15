@@ -33,12 +33,12 @@
       "id": 3,
       "category": "regression",
       "prompt": "My Feature entity has no User Stories linked and no Functionalities. Is that OK?",
-      "expected_output": "Agent warns: an orphaned Feature with no User Stories and no Functionalities contributes no traceable business value. Either link to at least one User Story (or flag as 'candidate' status if it is exploratory), or delete it if it is no longer relevant. Notes that orphan Features will appear in living-doc-gap-finder reports as a gap.",
+      "expected_output": "Agent warns: an orphaned Feature with no User Stories and no Functionalities contributes no traceable business value. A Feature has no `status` field to flag it as exploratory with. Either link to at least one User Story once one exists, or delete it if it is no longer relevant. Notes that orphan Features are reported by living-doc-gap-finder as an ORPHAN_FEATURE condition.",
       "files": [],
       "expectations": [
         "Warns about orphaned Feature",
-        "Suggests linking to at least one User Story or setting status to 'candidate'",
-        "Notes orphan Features appear in gap reports"
+        "Does not suggest a Feature status field (Features have none)",
+        "Notes orphan Features are reported as an ORPHAN_FEATURE condition in gap reports"
       ]
     },
     {
@@ -94,11 +94,12 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a Feature entity for the 'User Profile' screen in our banking app. It is owned by team-identity and depends on the customer-service API.",
-      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",
+      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, user_stories, functionalities, owners, external_dependencies. There is no `status` field — a Feature's state is derived from its Functionalities, never authored. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
-        "All required fields present: type, id, name, surface_type, purpose, status, user_stories, functionalities, owners, external_dependencies",
+        "All required fields present: type, id, name, surface_type, purpose, user_stories, functionalities, owners, external_dependencies",
+        "No `status` field in the JSON",
         "id is a numeric ID from the catalog (FEAT-001, FEAT-002, etc.)",
         "surface_type is one of UI/API/Service/Worker/Module/Library",
         "No prose inside the code block"

@@ -40,7 +40,7 @@ except ImportError:
 
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
-VALID_STATUSES = {"planned", "active", "deprecated"}
+VALID_STATUSES = {"planned", "in_review", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
 # AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
 # Override at runtime with --profile to read the project's own ac_states list.
@@ -64,11 +64,15 @@ ID_PATTERNS: dict[str, re.Pattern] = {
 REQUIRED_FIELDS: dict[str, list[str]] = {
     "User Story": ["id", "name", "status", "features", "acceptance_criteria"],
     "Feature": [
-        "id", "name", "surface_type", "purpose", "status",
+        "id", "name", "surface_type", "purpose",
         "user_stories", "functionalities", "owners",
     ],
     "Functionality": ["id", "name", "parent_feature", "status", "acceptance_criteria"],
 }
+
+# Entity types that carry an authored `status` field. A Feature has none — its state
+# is derived from its Functionalities and must never be authored.
+STATUSED_ENTITY_TYPES = {"User Story", "Functionality"}
 
 DEPRECATION_FIELDS = ["deprecated_at", "deprecation_reason"]
 VERB_PREFIX_RE = re.compile(
@@ -147,7 +151,14 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
 
     # ── Status ───────────────────────────────────────────────────────────────
     status: str = entity.get("status", "")
-    if status and status not in VALID_STATUSES:
+    if entity_type not in STATUSED_ENTITY_TYPES:
+        if "status" in entity:
+            error(
+                "status",
+                f"{entity_type} must not carry a 'status' field — "
+                "its state is derived from its Functionalities, never authored",
+            )
+    elif status and status not in VALID_STATUSES:
         error("status", f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
 
     # ── Deprecation metadata ─────────────────────────────────────────────────
@@ -170,7 +181,15 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
             )
         if isinstance(entity.get("owners"), list) and not entity["owners"]:
             warning("owners", "Feature has no owners — assign a team or individual")
-        if isinstance(entity.get("user_stories"), list) and not entity["user_stories"]:
+        no_user_stories = isinstance(entity.get("user_stories"), list) and not entity["user_stories"]
+        no_functionalities = isinstance(entity.get("functionalities"), list) and not entity["functionalities"]
+        if no_user_stories and no_functionalities:
+            warning(
+                "ORPHAN_FEATURE",
+                "Feature has no linked User Stories and no Functionalities — "
+                "reported as an ORPHAN_FEATURE condition by living-doc-gap-finder",
+            )
+        elif no_user_stories:
             warning(
                 "user_stories",
                 "Feature has no linked User Stories — "
@@ -218,12 +237,13 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
     # ── Functionality-specific ───────────────────────────────────────────────
     if entity_type == "Functionality":
         name = entity.get("name", "")
-        if name and " – " not in name and " - " not in name:
+        if name and " - " not in name:
             warning(
                 "name",
                 "Functionality name should follow the pattern "
-                "'<Feature name> – <behavior phrase>' "
-                "(e.g. 'Login Page – Validate Password Strength')",
+                "'<Feature name> - <behavior phrase>' "
+                "(e.g. 'Login Page - Validate Password Strength'). "
+                "The canonical separator is a plain hyphen, never an en or em dash.",
             )
         parent: str = entity.get("parent_feature", "")
         if parent and not re.match(r"^FEAT-", parent):

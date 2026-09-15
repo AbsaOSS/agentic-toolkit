@@ -178,7 +178,7 @@ When a User Story or Feature is deprecated, three skills fire in sequence. Compl
 
 | Step | Skill | Action |
 |---|---|---|
-| 1 | `living-doc-update` | Set entity `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
+| 1 | `living-doc-update` | For a User Story, set `status: deprecated`. A Feature has no `status` field — its state is derived from its Functionalities; deprecate the Feature by deprecating every Functionality it owns instead. Either way, add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
 | 2 | `gherkin-living-doc-sync` | Find all scenarios tagged `@AC:<id>` for the deprecated entity's ACs; add `@deprecated` and `@review-needed` |
 | 3 | `bdd-maintain` (REMOVE) | Confirm file deletion list with user; remove confirmed `.feature` files, PageObjects, and step definitions; update `manifest.json` |
 
@@ -275,12 +275,12 @@ Full model: [living-doc-glossary](skills/shared/references/living-doc-glossary.m
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 
-**AC reference format:** `AC:<parent-id>-<nn> (v<version> – <state>) — <description>`
+**AC reference format:** `AC:<parent-id>-<nn> (v<version> - <state>) - <description>`
 State: `planned | in_review | active | deprecated`
 
 **Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:
 ```gherkin
-# AC:US-1-01 (v1.0.0 - active) — <description>
+# AC:US-1-01 (v1.0.0 - active) - <description>
 @AC:US-1-01
 Scenario: ...
 ```

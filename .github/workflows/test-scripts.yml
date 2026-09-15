@@ -4,12 +4,44 @@ on:
   pull_request:
     paths:
       - "skills/**/*.py"
+      - "scripts/**"
+      - "skills/shared/references/living-doc-glossary.md"
       - ".github/workflows/test-scripts.yml"
 
 permissions:
   contents: read
 
 jobs:
+  glossary-sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract synced ref from the glossary header
+        id: ref
+        run: |
+          set -euo pipefail
+          header="$(head -n1 skills/shared/references/living-doc-glossary.md)"
+          ref="$(echo "$header" | sed -nE 's/.*synced from AbsaOSS\/living-doc@([^ ]+).*/\1/p')"
+          if [ -z "$ref" ]; then
+            echo "Error: could not find a 'synced from AbsaOSS/living-doc@<ref>' header comment on line 1 of the glossary." >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Re-run the sync script and diff against the committed copy
+        run: |
+          set -euo pipefail
+          cp skills/shared/references/living-doc-glossary.md /tmp/committed-glossary.md
+          bash scripts/sync-living-doc-glossary.sh "${{ steps.ref.outputs.ref }}"
+          if ! diff -u /tmp/committed-glossary.md skills/shared/references/living-doc-glossary.md; then
+            echo
+            echo "skills/shared/references/living-doc-glossary.md is out of sync with AbsaOSS/living-doc@${{ steps.ref.outputs.ref }}." >&2
+            echo "Run: scripts/sync-living-doc-glossary.sh ${{ steps.ref.outputs.ref }}" >&2
+            exit 1
+          fi
+
   run-tests:
     runs-on: ubuntu-latest
     steps:
@@ -22,7 +54,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install pyyaml jsonschema
 
       - name: Discover and run test_*.py scripts
         env:

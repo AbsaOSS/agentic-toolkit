@@ -11,7 +11,7 @@ The skill updates and validates entity changes:
 | Operation | Effect |
 |-----------|--------|
 | **Add/modify/remove AC** | Version tracked; may trigger scenario sync |
-| **Change status** | draft → ready → in_review → deprecated |
+| **Change status** | planned → in_review → active → deprecated (User Story / Functionality only — a Feature has no status field) |
 | **Change ownership** | Update team responsible for entity |
 | **Link entities** | Connect User Stories to Features, Functionalities to Features |
 | **Deprecate entity** | Tag dependent scenarios `@deprecated`; cleanup triggered |
@@ -40,9 +40,9 @@ change entity status
 |------|------------------|
 | **Add AC** | None — create scenarios via [Living Doc Scenario Creator](./living-doc-scenario-creator.md) |
 | **Modify AC** | [Gherkin ↔ Living Doc Sync](./gherkin-living-doc-sync.md) to sync scenarios |
-| **Descope AC** | Gherkin sync tags scenarios `@deprecated` |
+| **Descope AC** | AC drops back to `planned` (no `descoped` state); Gherkin sync tags scenarios `@wip` + `@review-needed` |
 | **Deprecate entity** | [BDD Maintain](./bdd-maintain.md) removes test files |
-| **Change status to ready** | Scenario creation enabled |
+| **Change status to active** | Scenario creation enabled |
 
 ---
 

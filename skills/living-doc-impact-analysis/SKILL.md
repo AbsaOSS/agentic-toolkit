@@ -171,9 +171,9 @@ IMPACT MAP — PR #217: "Refactor promo validation to support stacked discounts"
     User Stories:     US-042 (high impact), US-067 (high impact), US-089 (medium impact)
 
   ACs requiring review:
-    AC:US-042-01  — Happy path: single promo applied correctly
-    AC:US-042-03  — Stacked promos applied in priority order  ← NEW BEHAVIOUR
-    AC:US-067-02  — Expired promo returns 422
+    AC:US-042-01  - Happy path: single promo applied correctly
+    AC:US-042-03  - Stacked promos applied in priority order  ← NEW BEHAVIOUR
+    AC:US-067-02  - Expired promo returns 422
 
   Recommended actions:
     1. Update living-doc: add AC for stacked discount priority order (AC:US-042-03 is new)

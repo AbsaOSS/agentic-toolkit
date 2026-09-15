@@ -76,8 +76,9 @@ Ask: *Which User Stories rely on this Feature?*
 If unknown at creation time, leave empty `[]` but warn:
 
 > "An orphaned Feature (not linked to any User Story) contributes no traceable business value.
-> Link at least one User Story or mark this as exploratory with status: 'candidate'.
-> Orphaned Features are surfaced as gaps in living-doc-gap-finder reports."
+> Link at least one User Story once one exists — a Feature has no `status` field to mark it
+> exploratory with.
+> Orphaned Features are reported as an `ORPHAN_FEATURE` condition in living-doc-gap-finder reports."
 
 ## Step 4 — Enumerate Functionalities
 
@@ -122,7 +123,7 @@ Use `[]` only when the relationship is truly unknown and you cannot infer a sens
 > `Ran: python scripts/next_id.py --type FEAT --catalog catalog.json -> FEAT-012`
 > and use that returned ID in the JSON.
 
-Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. The block must contain **only** the JSON object — no prose, no bullets, no warnings inside the fence. The literal first line of the block must be ````json` and the closing line must be ``` . Code fences are required plain text, not optional formatting. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, `status: "planned"`, and `[]` only where nothing sensible can be inferred. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
+Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. The block must contain **only** the JSON object — no prose, no bullets, no warnings inside the fence. The literal first line of the block must be ````json` and the closing line must be ``` . Code fences are required plain text, not optional formatting. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, and `[]` only where nothing sensible can be inferred. A Feature never carries a `status` field — its state is derived from its Functionalities, never authored. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
 
 Use this exact output shape for create/document requests:
 - Optional brief line with only the missing questions.
@@ -132,7 +133,6 @@ Use this exact output shape for create/document requests:
   - `name`
   - `surface_type`
   - `purpose`
-  - `status`
   - `user_stories`
   - `functionalities`
   - `owners`
@@ -147,7 +147,6 @@ Use this exact output shape for create/document requests:
     "name": "Example Surface",
     "surface_type": "UI",
     "purpose": "Business-language summary of the surface responsibility.",
-    "status": "planned",
     "user_stories": ["US-example"],
     "functionalities": ["FUNC-001"],
     "owners": ["team-example"],
@@ -171,7 +170,6 @@ Canonical JSON fields:
 | `name` | Yes | Noun phrase (e.g. "Login Page") |
 | `surface_type` | Yes | `UI` \| `API` \| `Service` \| `Worker` \| `Module` \| `Library` |
 | `purpose` | Yes | One-to-two sentence description in business language |
-| `status` | Yes | `planned` \| `active` \| `candidate` \| `deprecated` |
 | `user_stories` | Yes | List of `US-<...>` IDs (use `[]` if unknown) |
 | `functionalities` | Yes | List of `FUNC-<...>` IDs (use `[]` if unknown or still only candidates) |
 | `owners` | Yes | Team name(s) |
@@ -185,7 +183,7 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 |---|---|
 | Feature covers multiple unrelated screens | Split into one Feature per distinct screen |
 | Feature name is a verb (e.g. "Process Payment") | Feature names should be nouns — name the surface. Verb phrases describe *what the surface does*, which belongs in a Functionality entity (use **living-doc-create-functionality**). If it could be a PageObject or service/module class name, it is usually a better Feature name. |
-| Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story, mark it as `candidate` if it is still exploratory, or delete it if it is no longer relevant. Orphan Features will be surfaced as gaps in living-doc-gap-finder reports. |
+| Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story once one exists, or delete it if it is no longer relevant. A Feature has no `status` field to flag it as exploratory with; living-doc-gap-finder reports it as an `ORPHAN_FEATURE` condition instead. |
 | Shared utility library documented as a Feature | By default, a shared utility library is not a Feature — document it as an `external_dependency` on the consumer Features. Only create a standalone Feature when the library is substantial enough to be treated as a distinct shared surface; in that case use `surface_type: "Library"` and mark it as a shared internal dependency. Features should map 1:1 to distinct/deployable surfaces. |
 | Feature name encodes implementation technology (e.g. "React Login Component", "Spring Payment Controller") | Feature names describe the business surface, not the stack. Use "Login Screen" (UI) or "Payment API" (API) — technology choice is an implementation detail that changes without the surface changing. |
 | `surface_type` is `UI` for a backend REST controller or service | A REST endpoint group is an `API` surface. `UI` is reserved for screens a human interacts with directly. Misclassification breaks impact analysis routing between frontend and backend changes. |
@@ -225,4 +223,4 @@ python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog
 python skills/living-doc-update/scripts/validate_entity.py entity.json --profile .copilot/bdd/.project-profile.yaml
 ```
 
-Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, or the status or `surface_type` value is invalid.
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, or the `surface_type` value is invalid.

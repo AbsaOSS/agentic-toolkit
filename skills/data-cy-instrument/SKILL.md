@@ -204,8 +204,7 @@ When answering a locator-conversion question, explicitly say: replace the old lo
 If all four checks pass and the gap remains, add or update a `WORK_LOG.md` §4 row so the remaining blocker is tracked.
 
 **Update PageObject header comments:**
-- Change `status: candidate` → `status: active` if all locators for the page are now resolved.
-- Remove `stub-reason:` line if no un-instrumented elements remain.
+- Remove the `stub-reason:` line if no un-instrumented elements remain — a PageObject header carries no `status:` field to flip; the surface is instrumented once `stub-reason:` is gone.
 
 ---
 
@@ -268,7 +267,7 @@ Report the following at the end of the run:
 | `living-doc-pageobject-scan` | Upstream — produces `manifest.json` with `coverage_gaps` and may leave `⚠️ PROPOSED` locator comments when test-id attributes are missing. `data-cy-instrument` consumes both signals, adds the attributes to templates, and updates PageObjects to use `getByTestId()`. |
 | `living-doc-pageobject-scan` RE-SCAN scope | Upstream — re-generates `coverage_gaps` after a UI change. Trigger this skill after RE-SCAN if new gaps appear. |
 | `living-doc-scenario-creator` | Downstream — after Functionalities are promoted from `planned` to `active`, generate Gherkin scenarios for them. |
-| `living-doc-update` | Downstream — if PageObject header `status` changes, the corresponding Feature entity in the living doc may also need a status update. |
+| `living-doc-update` | Downstream — after `stub-reason:` is removed from a PageObject header, `living-doc-update` promotes the matching Functionality from `planned` to `active` (a Feature has no status field to update). |
 
 When describing the relationship, state it in this order: `living-doc-pageobject-scan` is upstream, `data-cy-instrument` resolves missing test-id gaps and `⚠️ PROPOSED` locators, and `living-doc-scenario-creator` is downstream and uses the stable locators.
 

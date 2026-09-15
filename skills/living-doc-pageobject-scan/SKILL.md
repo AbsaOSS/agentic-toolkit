@@ -111,7 +111,7 @@ After interacting with a required field (e.g. `cps-radio-group`), re-check wheth
 
 ### Step 4 — Generate PageObject skeleton
 
-Create one class per screen named `<ScreenName>Page`. Every PageObject file starts with the full living-doc header block (`surface_type`, `route`, `owners`, `status`, `purpose`, `user_stories`, `functionalities`, `external_dependencies`, `page-object`) — see [living-doc-bdd-schemas — PageObject File Header](../shared/references/living-doc-bdd-schemas.md#pageobject-file-header). Secondary files sharing one Feature use the cross-reference header. Locators use `getByTestId()`.
+Create one class per screen named `<ScreenName>Page`. Every PageObject file starts with the full living-doc header block (`surface_type`, `route`, `owners`, `purpose`, `user_stories`, `functionalities`, `external_dependencies`, `page-object`) — see [living-doc-bdd-schemas — PageObject File Header](../shared/references/living-doc-bdd-schemas.md#pageobject-file-header). The header carries no `status` field. Secondary files sharing one Feature use the cross-reference header. Locators use `getByTestId()`.
 
 For starter bootstrap answers, say **Create mode** and emit real code, not pseudocode. For `/checkout`, materialise concrete members/methods for the promo input, confirm-order button, and error banner (`enterPromoCode` / `enter_promo_code`, `confirmOrder` / `confirm_order`, `assertErrorVisible` / `assert_error_visible`) in the class body — never as TODOs. If no matching Feature exists in the catalog, explicitly propose drafting it via `living-doc-create-feature`.
 
@@ -120,7 +120,6 @@ For starter bootstrap answers, say **Create mode** and emit real code, not pseud
  * surface_type: UI
  * route: /checkout
  * owners: <Team>
- * status: active
  * purpose: Checkout screen to confirm and pay for an order.
  * user_stories: US-7
  * functionalities: FUNC-005
@@ -172,11 +171,11 @@ One PageObject ≈ one `UI` Feature. Write the full living-doc header block (see
 
 ### Step 6 — Generate Functionality stubs
 
-For each discovered behavior, propose a stub named `<Feature name> – <behavior phrase>`:
+For each discovered behavior, propose a stub named `<Feature name> - <behavior phrase>`:
 
-- Button → `"Checkout Page – Confirm Order"`
-- Form → `"Login Page – Submit Credentials"`
-- Table → `"Order History Page – Display Order List"`
+- Button → `"Checkout Page - Confirm Order"`
+- Form → `"Login Page - Submit Credentials"`
+- Table → `"Order History Page - Display Order List"`
 
 Output to `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (default `features/liv_doc_func/`) with `@FUNC_ID:FUNC-UNKNOWN`. Promote via `living-doc-create-functionality` once IDs are assigned.
 
