@@ -3,7 +3,7 @@ name: living-doc-update
 description: >
   Update, amend, or deprecate existing living documentation entities (User Stories, Features,
   Functionalities). Use when adding new ACs to an existing User Story, descoping or removing
-  an AC, changing a Feature's ownership or status, updating the Feature Registry after a team
+  an AC, changing a Feature's ownership or deprecation metadata, updating the Feature Registry after a team
   restructure, deprecating a Functionality whose code has been deleted, or promoting a User
   Story from draft to ready.
   Triggers on: "update user story", "add AC to user story", "descope AC", "deprecate feature",
