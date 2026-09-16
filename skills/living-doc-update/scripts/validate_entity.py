@@ -162,7 +162,16 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
         error("status", f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
 
     # ── Deprecation metadata ─────────────────────────────────────────────────
-    if status == "deprecated":
+    # A Feature carries no `status`, so it is deprecated when it carries any
+    # deprecation marker directly (deprecated_at / deprecation_reason / superseded_by).
+    is_deprecated = (
+        status == "deprecated"
+        if entity_type in STATUSED_ENTITY_TYPES
+        else bool(
+            entity.get("deprecated_at") or entity.get("deprecation_reason") or entity.get("superseded_by")
+        )
+    )
+    if is_deprecated:
         for dep_field in DEPRECATION_FIELDS:
             if not entity.get(dep_field):
                 warning(

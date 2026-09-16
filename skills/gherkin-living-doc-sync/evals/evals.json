@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "checkout.feature has 3 scenarios but none of them have a # AC: comment above them. What should I do?",
-      "expected_output": "Agent identifies all three scenarios as missing AC link headers (sync direction: feature file → living doc). For each scenario, it proposes a matching AC from the living doc catalog and outputs a SYNC ACTION block per scenario showing the proposed # AC: line to insert. Format: 'SYNC ACTION: checkout.feature:<line> - Missing AC link header - Proposed link: # AC: <id> (<version> - <State>) - <description>'. Asks the developer to confirm each mapping before applying.",
+      "expected_output": "Agent identifies all three scenarios as missing AC link headers (sync direction: feature file → living doc). For each scenario, it proposes a matching AC from the living doc catalog and outputs a SYNC ACTION block per scenario showing the proposed # AC: line to insert. Format: 'SYNC ACTION: checkout.feature:<line> - Missing AC link header - Proposed link: # AC:<id> (<version> - <state>) - <description>'. Asks the developer to confirm each mapping before applying.",
       "files": [],
       "expectations": [
         "Identifies all scenarios missing # AC: comments",
@@ -19,7 +19,7 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "The product owner changed the description of AC:US-001-01 in the living doc. The linked scenario in checkout.feature still has the old # AC: description text. How do I fix this?",
-      "expected_output": "Sync direction is living doc → feature file. Agent updates the # AC: comment text above the linked scenario to reflect the new AC description. The AC ID itself is never changed - only the description text in the comment. Outputs: OLD: '# AC: US-001-01 (v1.0.0 - Active) - <old text>' and NEW: '# AC: US-001-01 (v1.1.0 - Active) - <new text>'. Flags any step text that may also need updating to match the revised AC intent.",
+      "expected_output": "Sync direction is living doc → feature file. Agent updates the # AC: comment text above the linked scenario to reflect the new AC description. The AC ID itself is never changed - only the description text in the comment. Outputs: OLD: '# AC:US-001-01 (v1.0.0 - active) - <old text>' and NEW: '# AC:US-001-01 (v1.1.0 - active) - <new text>'. Flags any step text that may also need updating to match the revised AC intent.",
       "files": [],
       "expectations": [
         "Sync direction: living doc → feature file",
@@ -139,7 +139,7 @@
       "id": 11,
       "category": "regression",
       "prompt": "A scenario has '@AC:US-001-01/aspect:username-input' but the # AC: comment above it just reads '# AC:US-001-01 (v1.0.0 - Active) - displays login form fields'. Is this a sync issue?",
-      "expected_output": "Yes - this is a SYNC ACTION. The @AC: tag encodes an aspect param (/aspect:username-input) but the # AC: comment does not mirror it. Per the skill spec, the comment must include '| aspect: username input' to match the tag. Apply: change the comment to '# AC:US-001-01 (v1.0.0 - Active) - displays login form fields | aspect: username input'. The comment mirrors the human-readable form of the tag's /aspect: param. Confirm before applying.",
+      "expected_output": "Yes - this is a SYNC ACTION. The @AC: tag encodes an aspect param (/aspect:username-input) but the # AC: comment does not mirror it. Per the skill spec, the comment must include '| aspect: username input' to match the tag. Apply: change the comment to '# AC:US-001-01 (v1.0.0 - active) - displays login form fields | aspect: username input'. The comment mirrors the human-readable form of the tag's /aspect: param. Confirm before applying.",
       "files": [],
       "expectations": [
         "Identifies mismatch between @AC: tag aspect param and # AC: comment as a SYNC ACTION",
@@ -166,7 +166,7 @@
       "id": 13,
       "category": "edge-case",
       "prompt": "AC:US-001-02 was split into two separate ACs: AC:US-001-02 (happy path) and AC:US-001-04 (alt path: guest checkout). The feature file still has one scenario linked to AC:US-001-02. What does the sync output look like?",
-      "expected_output": "Two SYNC ACTIONs are emitted. (1) Existing scenario: the '@AC:US-001-02' tag is updated to the primary (happy path) AC - it stays unchanged since it was always the primary AC. (2) A SYNC ACTION proposes creating a new scenario for AC:US-001-04 with the required '# AC: US-001-04' header and '@AC:US-001-04' tag. The existing scenario is never modified or deleted. Developer confirms both actions before any change is applied.",
+      "expected_output": "Two SYNC ACTIONs are emitted. (1) Existing scenario: the '@AC:US-001-02' tag is updated to the primary (happy path) AC - it stays unchanged since it was always the primary AC. (2) A SYNC ACTION proposes creating a new scenario for AC:US-001-04 with the required '# AC:US-001-04' header and '@AC:US-001-04' tag. The existing scenario is never modified or deleted. Developer confirms both actions before any change is applied.",
       "files": [],
       "expectations": [
         "Existing scenario's @AC: tag is updated to point to the primary AC (US-001-02)",

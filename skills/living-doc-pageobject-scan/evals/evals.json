@@ -115,11 +115,11 @@
       "id": 9,
       "category": "happy-path",
       "prompt": "During a Create mode scan of the checkout page, the agent discovers a 'Confirm Order' button and an 'Apply Promo Code' form input. What Functionality stubs should be generated?",
-      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page – Confirm Order' (for the button) and (2) 'Checkout Page – Apply Promo Code' (for the form input). Both are output to the profile Functionality feature directory (feature_dirs.functionality, default features/liv_doc_func/) as func-<nnn>-<kebab>.feature with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
+      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page - Confirm Order' (for the button) and (2) 'Checkout Page - Apply Promo Code' (for the form input). Both are output to the profile Functionality feature directory (feature_dirs.functionality, default features/liv_doc_func/) as func-<nnn>-<kebab>.feature with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
       "files": [],
       "expectations": [
         "Generates one Functionality stub per distinct behavior (button → action, form input → action)",
-        "Stub names follow: '<Feature name> – <behavior phrase>'",
+        "Stub names follow: '<Feature name> - <behavior phrase>'",
         "Stubs output to the profile feature_dirs.functionality directory (default features/liv_doc_func/)",
         "Stubs use @FUNC_ID:FUNC-UNKNOWN placeholder tags",
         "Notes formal definition via living-doc-create-functionality is the next step"

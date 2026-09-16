@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "Generate BDD scenarios for US-007 - Place an Online Order.\n\nACs:\n- AC:US-007-01 (v1.0.0 - active) - happy_path: Customer places an order with a saved payment method\n- AC:US-007-02 (v1.0.0 - active) - error: Order is rejected when the payment card is declined\n- AC:US-007-03 (v1.0.0 - active) - alternative: Customer places an order using a guest checkout",
-      "expected_output": "Outputs a .feature file named 'us-007-place-an-online-order.feature'. Feature header uses the As-a/I-can/so-that narrative. Three Scenarios generated - one per active AC. Each Scenario: is preceded immediately by a '# AC: US-007-0n (v1.0.0 - active) - ...' comment. Scenario names follow the AC type conventions: US-007-01 is a Scenario: (happy_path), US-007-02 is titled 'Order rejected when payment card is declined' (error), US-007-03 is titled 'Place an Online Order - guest checkout' (alternative). All step text is domain language with no implementation details.",
+      "expected_output": "Outputs a .feature file named 'us-007-place-an-online-order.feature'. Feature header uses the As-a/I-can/so-that narrative. Three Scenarios generated - one per active AC. Each Scenario: is preceded immediately by a '# AC:US-007-0n (v1.0.0 - active) - ...' comment. Scenario names follow the AC type conventions: US-007-01 is a Scenario: (happy_path), US-007-02 is titled 'Order rejected when payment card is declined' (error), US-007-03 is titled 'Place an Online Order - guest checkout' (alternative). All step text is domain language with no implementation details.",
       "files": [],
       "expectations": [
         "Feature file named us-007-place-an-online-order.feature",
@@ -98,7 +98,7 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Show the expected structure of a .feature file generated for US-007 with two active ACs: one happy_path and one error AC.",
-      "expected_output": "Output is a gherkin code block. Filename in a comment or header: us-007-place-an-online-order.feature. Feature: block with As-a/I-can/so-that narrative from the User Story. First scenario: '# AC: US-007-01 (v1.0.0 - active) - ...' immediately above 'Scenario: <happy path title>'. Second scenario: '# AC: US-007-02 (v1.0.0 - active) - ...' immediately above 'Scenario: <US title> - <error condition>'. All steps use domain language. A coverage table appears after the feature file block.",
+      "expected_output": "Output is a gherkin code block. Filename in a comment or header: us-007-place-an-online-order.feature. Feature: block with As-a/I-can/so-that narrative from the User Story. First scenario: '# AC:US-007-01 (v1.0.0 - active) - ...' immediately above 'Scenario: <happy path title>'. Second scenario: '# AC:US-007-02 (v1.0.0 - active) - ...' immediately above 'Scenario: <US title> - <error condition>'. All steps use domain language. A coverage table appears after the feature file block.",
       "files": [],
       "expectations": [
         "Output is a gherkin code block with Feature: header",

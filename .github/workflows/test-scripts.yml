@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "skills/**/*.py"
+      - "skills/shared/references/schemas/*.schema.json"
       - "scripts/**"
       - "skills/shared/references/living-doc-glossary.md"
       - ".github/workflows/test-scripts.yml"
