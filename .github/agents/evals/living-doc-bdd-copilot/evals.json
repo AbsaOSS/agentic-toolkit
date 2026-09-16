@@ -259,11 +259,11 @@
       "id": 19,
       "category": "skill-dispatch",
       "prompt": "Delete all BDD artifacts linked to the deprecated FEAT-012 feature — clean up feature files, step definitions, and PageObjects.",
-      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose # AC: tags reference FEAT-012 User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
+      "expected_output": "Agent loads the `bdd-maintain` skill in REMOVE mode. Identifies all .feature file scenarios whose @AC: tags reference FEAT-012 User Stories. Runs find_unused_steps.py to find step definitions only used by those scenarios. Runs find_unused_po_methods.py and find_unused_po_components.py to identify exclusively-used PageObject artifacts. Presents the full deletion list to the user for confirmation before touching any file. Also checks fixtures.ts for PageObject imports to remove. After confirmation, removes the identified files.",
       "files": [],
       "expectations": [
         "Loads bdd-maintain skill",
-        "REMOVE mode - identifies scenarios via # AC: tags linked to deprecated Feature",
+        "REMOVE mode - identifies scenarios via @AC: tags linked to deprecated Feature",
         "Runs all three audit scripts to identify exclusively-used artifacts",
         "Checks fixtures.ts for PageObject imports",
         "Presents deletion list for confirmation before touching any file"

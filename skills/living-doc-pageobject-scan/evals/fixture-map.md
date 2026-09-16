@@ -19,6 +19,10 @@ No fixture files for this skill. All evals are conversational or reference live 
 | 9 | happy-path | _(none)_ | Create mode Step 5: Functionality stubs from discovered behaviors |
 | 10 | output-format | _(none)_ | TypeScript CheckoutPage: readonly Locators, async methods, living-doc header |
 | 11 | edge-case | _(none)_ | Maintain mode: multi-step auth route — navigation_context string with sequential steps |
+| 12 | negative | _(none)_ | MCP pre-flight check: Create mode stops when Playwright MCP server is unavailable |
+| 13 | negative | _(none)_ | MCP pre-flight check: Maintain mode stops when Playwright MCP server is unavailable |
+| 14 | output-format | _(none)_ | manifest.json contract: object-shaped root, normalized `test_id`/`suggested_test_id` keys, string navigation_context |
+| 15 | output-format | _(none)_ | Closeout validation gate: validate_artifacts.py on manifest (--canonicalize) and seed before reporting done |
 
 ## Trigger eval summary
 

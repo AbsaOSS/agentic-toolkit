@@ -359,6 +359,23 @@ def test_profile_ac_states_non_string_item_rejected():
     print("✓ --profile ac_states with a non-string item is rejected instead of crashing")
 
 
+def test_profile_ac_states_duplicate_rejected():
+    """A profile's `ac_states` list containing a duplicate value is schema-invalid — it must
+    be rejected up front through the CLI, not just through the separate JSON Schema check, so
+    a regression in load_ac_states_from_profile()'s own duplicate check would fail this test
+    even if the schema-level test still passed."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: [active, active]\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "invalid `ac_states`" in result.stderr, result.stderr
+    assert "duplicates" in result.stderr, result.stderr
+    print("✓ --profile ac_states: [active, active] is rejected instead of silently applied")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -379,6 +396,7 @@ if __name__ == "__main__":
         test_profile_ac_states_empty_list_rejected()
         test_profile_ac_states_wrong_type_rejected()
         test_profile_ac_states_non_string_item_rejected()
+        test_profile_ac_states_duplicate_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")
