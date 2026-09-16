@@ -313,6 +313,36 @@ def test_profile_ac_states_outside_canon_rejected():
     print("✓ --profile ac_states outside the canonical set is rejected instead of applied")
 
 
+def test_profile_ac_states_empty_list_rejected():
+    """A profile's `ac_states: []` is schema-invalid (minItems: 1) — it must be rejected
+    up front, not treated the same as an omitted field. Regression for a bug where
+    load_ac_states_from_profile() returned None for both cases, so --profile silently
+    fell back to the canonical defaults instead of enforcing the configured vocabulary."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: []\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "invalid `ac_states`" in result.stderr, result.stderr
+    print("✓ --profile ac_states: [] is rejected instead of silently falling back to canonical defaults")
+
+
+def test_profile_ac_states_wrong_type_rejected():
+    """A profile's `ac_states` that isn't an array (e.g. a string) is schema-invalid —
+    it must be rejected up front rather than silently ignored like an omitted field."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: active\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "invalid `ac_states`" in result.stderr, result.stderr
+    print("✓ --profile ac_states of the wrong type is rejected instead of silently applied")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -330,6 +360,8 @@ if __name__ == "__main__":
         test_profile_ac_states_subset_accepted()
         test_profile_narrows_entity_status_too()
         test_profile_ac_states_outside_canon_rejected()
+        test_profile_ac_states_empty_list_rejected()
+        test_profile_ac_states_wrong_type_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

@@ -92,7 +92,10 @@ ERROR_KEYWORDS_RE = re.compile(
 # ── Validation logic ───────────────────────────────────────────────────────────
 
 def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
-    """Read `ac_states` from a Project Profile YAML. Returns None if unavailable."""
+    """Read `ac_states` from a Project Profile YAML. Returns None if the field is
+    omitted (valid — the schema allows omitting it). Exits nonzero if the field is
+    present but schema-invalid (not a non-empty array), instead of silently falling
+    back to the canonical defaults as if it had been omitted."""
     try:
         import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
 
@@ -101,10 +104,17 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     except (FileNotFoundError, ImportError, ValueError) as exc:
         print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
         return None
-    states = profile.get("ac_states")
-    if isinstance(states, list) and states:
-        return {str(s) for s in states}
-    return None
+    if "ac_states" not in profile:
+        return None
+    states = profile["ac_states"]
+    if not isinstance(states, list) or not states:
+        print(
+            f"Error: profile '{profile_path}' has an invalid `ac_states` — "
+            f"must be a non-empty array of strings, got: {states!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    return {str(s) for s in states}
 
 
 def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
