@@ -104,6 +104,13 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     except (FileNotFoundError, ImportError, ValueError) as exc:
         print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
         return None
+    if not isinstance(profile, dict):
+        print(
+            f"Error: profile '{profile_path}' is malformed — "
+            f"root must be a mapping, got: {type(profile).__name__}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     if "ac_states" not in profile:
         return None
     states = profile["ac_states"]

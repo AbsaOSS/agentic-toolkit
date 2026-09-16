@@ -19,8 +19,8 @@
     {
       "id": 2,
       "category": "happy-path",
-      "prompt": "Generate scenarios for US-007 which has these ACs:\n- AC:US-007-01 (active) - happy_path\n- AC:US-007-04 (deprecated) - error: old payment timeout path\n- AC:US-007-05 (planned) - alternative: loyalty points checkout\n\nWhat scenarios get generated and what appears in the coverage report?",
-      "expected_output": "Only AC:US-007-01 is active - one Scenario is generated for it. AC:US-007-04 (deprecated) and AC:US-007-05 (planned) are excluded from generation. Coverage report shows: AC:US-007-01 (active): generated. AC:US-007-04 (deprecated): skipped - deprecated AC. AC:US-007-05 (planned): skipped - not yet active. No scenarios are generated for deprecated or planned ACs.",
+      "prompt": "Generate scenarios for US-007 which has these ACs:\n- AC:US-007-01 (v1.0.0 - active) - happy_path\n- AC:US-007-04 (v1.2.0 - deprecated - removal planned v2.0.0) - error: old payment timeout path\n- AC:US-007-05 (planned) - alternative: loyalty points checkout\n\nWhat scenarios get generated and what appears in the coverage report?",
+      "expected_output": "Only AC:US-007-01 is active - one Scenario is generated for it. AC:US-007-04 (deprecated) and AC:US-007-05 (planned) are excluded from generation. Coverage report shows: AC:US-007-01 (v1.0.0 - active): generated. AC:US-007-04 (v1.2.0 - deprecated - removal planned v2.0.0): skipped - deprecated AC. AC:US-007-05 (planned): skipped - not yet active. No scenarios are generated for deprecated or planned ACs.",
       "files": [],
       "expectations": [
         "Only active ACs drive scenario generation",

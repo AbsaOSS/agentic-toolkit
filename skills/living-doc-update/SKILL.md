@@ -60,9 +60,10 @@ When modifying an existing AC **keep the AC ID stable** — changing the ID brea
 to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
-**AC versioning:** ACs carry a `(vMAJOR.MINOR.PATCH - state)` annotation.
+**AC versioning:** Once an AC is targeted at a version, it carries a `(vMAJOR.MINOR.PATCH - state)` annotation. A backlog AC with no target version yet stays `(planned)` — do not invent a version for it.
 - Bump the **minor** version for any business-rule change to an `active` AC (e.g. `v1.0.0 → v1.1.0`).
 - Bump the **patch** version for a wording clarification that does not change the rule (e.g. `v1.0.0 → v1.0.1`).
+- Deprecating an AC requires a removal note: `(v<version> - deprecated - removal planned v<version>)`.
 - The version must appear in the `# AC:` comment in linked Gherkin feature files - trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
 
 ## Promote a Functionality from planned to active

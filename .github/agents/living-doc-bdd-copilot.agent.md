@@ -275,7 +275,7 @@ Full model: [living-doc-glossary](skills/shared/references/living-doc-glossary.m
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 
-**AC reference format:** `AC:<parent-id>-<nn> (v<version> - <state>) - <description>`
+**AC reference format:** `AC:<parent-id>-<nn> (v<version> - <state>) - <description>`. A backlog AC with no target version yet uses `(planned)` instead of a version. A `deprecated` AC requires a removal note: `(v<version> - deprecated - removal planned v<version>)`.
 State: `planned | in_review | active | deprecated`
 
 **Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:

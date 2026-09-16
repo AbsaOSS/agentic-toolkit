@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "checkout.feature has 3 scenarios but none of them have a # AC: comment above them. What should I do?",
-      "expected_output": "Agent identifies all three scenarios as missing AC link headers (sync direction: feature file → living doc). For each scenario, it proposes a matching AC from the living doc catalog and outputs a SYNC ACTION block per scenario showing the proposed # AC: line to insert. Format: 'SYNC ACTION: checkout.feature:<line> - Missing AC link header - Proposed link: # AC:<id> (<version> - <state>) - <description>'. Asks the developer to confirm each mapping before applying.",
+      "expected_output": "Agent identifies all three scenarios as missing AC link headers (sync direction: feature file → living doc). For each scenario, it proposes a matching AC from the living doc catalog and outputs a SYNC ACTION block per scenario showing the proposed # AC: line to insert. Format: 'SYNC ACTION: checkout.feature:<line> - Missing AC link header - Proposed link: # AC:<id> (v<version> - <state>) - <description>'. Asks the developer to confirm each mapping before applying.",
       "files": [],
       "expectations": [
         "Identifies all scenarios missing # AC: comments",

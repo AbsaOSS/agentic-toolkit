@@ -376,6 +376,37 @@ def test_profile_ac_states_duplicate_rejected():
     print("✓ --profile ac_states: [active, active] is rejected instead of silently applied")
 
 
+def test_profile_scalar_root_rejected():
+    """A profile whose YAML root is a scalar (e.g. `42`) is schema-invalid — it must be
+    rejected up front with a diagnostic, not reach the `"ac_states" not in profile`
+    membership test and crash with an unhandled TypeError."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("42\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "must be a mapping" in result.stderr, result.stderr
+    assert "Traceback" not in result.stderr, result.stderr
+    print("✓ --profile with a scalar YAML root is rejected instead of crashing")
+
+
+def test_profile_list_root_rejected():
+    """A profile whose YAML root is a list is schema-invalid — it must be rejected up
+    front, not silently treated as though `ac_states` were omitted (the `in` membership
+    test on a list checks its elements, not mapping keys, so it never matches)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("- active\n- planned\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "must be a mapping" in result.stderr, result.stderr
+    print("✓ --profile with a list YAML root is rejected instead of silently ignored")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -397,6 +428,8 @@ if __name__ == "__main__":
         test_profile_ac_states_wrong_type_rejected()
         test_profile_ac_states_non_string_item_rejected()
         test_profile_ac_states_duplicate_rejected()
+        test_profile_scalar_root_rejected()
+        test_profile_list_root_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")
