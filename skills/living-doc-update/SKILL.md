@@ -5,7 +5,7 @@ description: >
   Functionalities). Use when adding new ACs to an existing User Story, descoping or removing
   an AC, changing a Feature's ownership or deprecation metadata, updating the Feature Registry after a team
   restructure, deprecating a Functionality whose code has been deleted, or promoting a User
-  Story from draft to ready.
+  Story from planned to active.
   Triggers on: "update user story", "add AC to user story", "descope AC", "deprecate feature",
   "mark US ready", "change feature owner", "update functionality", "deprecate functionality",
   "living doc update", "update living doc entity", "mark feature deprecated", "update AC",

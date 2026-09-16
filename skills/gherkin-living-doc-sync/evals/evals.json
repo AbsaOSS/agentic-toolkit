@@ -19,12 +19,13 @@
       "id": 2,
       "category": "happy-path",
       "prompt": "The product owner changed the description of AC:US-001-01 in the living doc. The linked scenario in checkout.feature still has the old # AC: description text. How do I fix this?",
-      "expected_output": "Sync direction is living doc → feature file. Agent updates the # AC: comment text above the linked scenario to reflect the new AC description. The AC ID itself is never changed - only the description text in the comment. Outputs: OLD: '# AC:US-001-01 (v1.0.0 - active) - <old text>' and NEW: '# AC:US-001-01 (v1.1.0 - active) - <new text>'. Flags any step text that may also need updating to match the revised AC intent.",
+      "expected_output": "Sync direction is living doc → feature file. Agent updates the # AC: comment text above the linked scenario to reflect the new AC description. The AC ID itself is never changed - only the description text in the comment. Outputs: OLD: '# AC:US-001-01 (v1.0.0 - active) - <old text>' and NEW: '# AC:US-001-01 (v1.1.0 - active) - <new text>'. In the same sync action, also updates the matching AC:US-001-01 entry in the file header's `# acceptance_criteria:` block to the same version, state, and description — that entry is mined US metadata and must not be left stale. Flags any step text that may also need updating to match the revised AC intent.",
       "files": [],
       "expectations": [
         "Sync direction: living doc → feature file",
         "Updates comment description text only — AC ID remains stable",
         "Shows old and new comment text clearly labelled",
+        "Also updates the matching AC:US-001-01 entry in the file header's # acceptance_criteria: block to the same version/state/description",
         "Flags step text for review if the AC intent changed significantly",
         "Does not change the scenario structure"
       ]
@@ -152,7 +153,7 @@
       "id": 12,
       "category": "edge-case",
       "prompt": "I have a scenario linked to AC:US-042-03 which has just been descoped in the living doc — it dropped back to AC:US-042-03 (planned) with a Rationale bullet. What should the sync skill do?",
-      "expected_output": "Sync direction: living doc → feature file. There is no `descoped` state — the AC keeps its `planned` state and dropped its target version. Update the existing '# AC:US-042-03' comment's header to '(planned)' while keeping its original description unchanged, e.g. '# AC:US-042-03 (planned) - customer can stack multiple promo codes at checkout' — the canonical # AC: comment always carries the AC's description, never the Rationale in its place. Add a separate comment line mirroring the AC's Rationale bullet: '# Rationale: promo stacking deferred to a future release'. Tag the scenario with @wip and @review-needed to indicate it is not active. Never delete the scenario - it preserves the intent for when the AC is re-targeted to a release.",
+      "expected_output": "Sync direction: living doc → feature file. There is no `descoped` state — the AC keeps its `planned` state and dropped its target version. Update the existing '# AC:US-042-03' comment's header to '(planned)' while keeping its original description unchanged, e.g. '# AC:US-042-03 (planned) - customer can stack multiple promo codes at checkout' — the canonical # AC: comment always carries the AC's description, never the Rationale in its place. Add a separate comment line mirroring the AC's Rationale bullet: '# Rationale: promo stacking deferred to a future release'. In the same sync action, also update the matching AC:US-042-03 entry in the file header's `# acceptance_criteria:` block — drop its target version so it reads 'AC:US-042-03 (planned)' and add a '- Rationale: promo stacking deferred to a future release' bullet there too, since a collector mining that block would otherwise still see the old target version. Tag the scenario with @wip and @review-needed to indicate it is not active. Never delete the scenario - it preserves the intent for when the AC is re-targeted to a release.",
       "files": [],
       "expectations": [
         "Sync direction: living doc → feature file",
@@ -160,6 +161,7 @@
         "Tags scenario with @wip and @review-needed — does not delete it",
         "Keeps the # AC: comment's description unchanged, only updating the version/state header",
         "Adds the Rationale as a separate comment line rather than replacing the description",
+        "Also updates the matching AC:US-042-03 entry in the file header's # acceptance_criteria: block — drops the target version and adds the Rationale bullet",
         "Preserves the scenario for when the AC is re-targeted to a release"
       ]
     },

@@ -191,7 +191,7 @@
       "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the normalized key 'test_id' (not attribute-specific 'data-cy' or 'data_cy'), and each coverage_gap uses 'suggested_test_id' (not 'suggestedDataCy' or 'suggested_data_cy'). The root-level 'test_id_attribute' tells downstream generators what HTML attribute (e.g. data-cy) these normalized keys map to. 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
       "files": [],
       "expectations": [
-        "routes is a JSON array of route objects (manifest_shape: array)",
+        "routes is a JSON array of route objects, inside an object-shaped manifest root (manifest_shape: object)",
         "Element keys use normalized 'test_id', not 'data-cy' or 'data_cy'",
         "Gap keys use normalized 'suggested_test_id', not 'suggestedDataCy' or 'suggested_data_cy'",
         "navigation_context is a string, not an object",
