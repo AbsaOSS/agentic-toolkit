@@ -258,6 +258,46 @@ def test_profile_ac_states_subset_accepted():
     print("✓ --profile ac_states that is a canonical subset narrows validation as expected")
 
 
+def test_profile_narrows_entity_status_too():
+    """--profile must narrow the authored entity `status` field (User Story / Functionality),
+    not just AC `state` — both are the same canonical vocabulary (living-doc-bdd-schemas.md).
+    Regression for a bug where --profile reassigned only VALID_AC_STATUSES, so a profile with
+    ac_states: [planned, active] still accepted an entity with status: in_review."""
+
+    def make_us(status: str) -> dict:
+        return {
+            "entity_type": "User Story",
+            "id": "US-1",
+            "name": "Place an order",
+            "status": status,
+            "features": ["FEAT-1"],
+            "acceptance_criteria": [
+                {"id": "AC:US-1-01", "description": "Order fails when payment is invalid", "state": "active"},
+            ],
+        }
+
+    with tempfile.TemporaryDirectory() as tmp:
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: [planned, active]\n", encoding="utf-8")
+
+        in_subset_path = Path(tmp) / "entity-in-subset.json"
+        in_subset_path.write_text(json.dumps(make_us("active")), encoding="utf-8")
+        result = _run_validate_entity(str(in_subset_path), "--profile", str(profile_path), "--json")
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        status_issues = [i for i in payload["issues"] if i["field"] == "status"]
+        assert not status_issues, f"did not expect a status issue for 'active' inside the narrowed profile, got: {status_issues}"
+
+        excluded_path = Path(tmp) / "entity-excluded.json"
+        excluded_path.write_text(json.dumps(make_us("in_review")), encoding="utf-8")
+        result = _run_validate_entity(str(excluded_path), "--profile", str(profile_path), "--json")
+        payload = json.loads(result.stdout)
+        status_issues = [i for i in payload["issues"] if i["field"] == "status"]
+        assert status_issues, f"expected a status issue for 'in_review' excluded by the narrowed profile, got: {payload}"
+
+    print("✓ --profile ac_states narrows the entity 'status' field, not just AC 'state'")
+
+
 def test_profile_ac_states_outside_canon_rejected():
     """A profile's ac_states containing a value outside the canonical four states must be
     rejected up front, not silently substituted for the canonical set — otherwise an AC in
@@ -288,6 +328,7 @@ if __name__ == "__main__":
         test_orphan_feature_with_functionalities_still_reported()
         test_orphan_feature_suppressed_by_catalog_back_link()
         test_profile_ac_states_subset_accepted()
+        test_profile_narrows_entity_status_too()
         test_profile_ac_states_outside_canon_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:

@@ -114,18 +114,25 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 - Scenario-level: the `@AC:<id>` tag(s), plus optional suite tags such as `@Regression`.
 - Section banners may group scenarios, e.g. `# *** Happy day scenarios ***` and `# *** Negative scenarios ***`.
 
-**US feature file example** — copy this skeleton verbatim and replace only the `<...>` placeholders and AC lines; do not reorder the header blocks or rename the tags:
+**US feature file example** — copy this skeleton verbatim and replace only the `<...>` placeholders and AC lines; do not reorder the header blocks or rename the tags. The header comment block follows the canonical schema in [living-doc-bdd-schemas.md](../shared/references/living-doc-bdd-schemas.md#us-feature-file-header) exactly — do not shorten it:
 
 ```gherkin
-# us-001-place-an-online-order.feature
-
-# Source: <living_doc_url>/us/US-001
-# Business Value:
+# =============================================================================
+# LIVING DOC — US-001 · Place an online order
+# =============================================================================
+# source:          <living_doc_url>/us/US-001
+# status:          active
+# business_value:
 #   - Customers can complete an order without calling support.
-
-# Acceptance Criteria:
-#   AC:US-001-01 (v1.0.0 - active) - customer places an order with a saved payment method.
-#   AC:US-001-02 (v1.0.0 - active) - order is rejected when the payment card is declined.
+#
+# acceptance_criteria:
+#
+#   AC:US-001-01 (v1.0.0 - active)
+#     - customer places an order with a saved payment method
+#
+#   AC:US-001-02 (v1.0.0 - active)
+#     - order is rejected when the payment card is declined
+# =============================================================================
 
 @US_ID:US-001
 @domain_orders
@@ -154,9 +161,22 @@ Feature: Place an online order
     Then an error message is shown and the order is not placed
 ```
 
-**Functionality feature file example:**
+**Functionality feature file example** — the header comment block follows the canonical schema in [living-doc-bdd-schemas.md](../shared/references/living-doc-bdd-schemas.md#functionality-feature-file-header) exactly — do not start the file at the `@FUNC_ID:` tag:
 
 ```gherkin
+# =============================================================================
+# LIVING DOC — FUNC-001 · Login Page - Validate Password Strength
+# =============================================================================
+# status:    active
+# parent:    FEAT-010
+# func_type: field_validation
+#
+# acceptance_criteria:
+#
+#   AC:FUNC-001-01 (v1.0.0 - active)
+#     - returns valid=true when password satisfies all rules
+# =============================================================================
+
 @FUNC_ID:FUNC-001
 Feature: Login Page - Validate Password Strength
 
@@ -327,7 +347,7 @@ When no User Story or Functionality entity exists, generate scenarios directly f
 
 - Apply all GWT rules and ubiquitous language rules above.
 - Use `@AC:STANDALONE` as an optional tag to signal intentionally unlinked scenarios.
-- Omit the header block (`# Business Value:`, `# Acceptance Criteria:`, `@US_ID:`) — start directly with `Feature:`.
+- Omit the header block (`# status:`, `# business_value:`, `# acceptance_criteria:`, `@US_ID:`) — start directly with `Feature:`.
 - File location is at the user's discretion; `gherkin-living-doc-sync` will note `@AC:STANDALONE` but not flag a traceability gap.
 
 ---

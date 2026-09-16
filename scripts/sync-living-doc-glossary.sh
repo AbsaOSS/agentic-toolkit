@@ -30,7 +30,29 @@ if [ "${1:-}" = "" ]; then
 fi
 REF="$1"
 
-RAW_URL="https://raw.githubusercontent.com/${LIVING_DOC_REPO}/${REF}/${SOURCE_PATH}"
+# Percent-encode REF for safe use inside a URL path segment, preserving '/' so refs that
+# contain one (e.g. "feature/foo") still address the right nested path. REF is attacker/PR
+# controlled (any branch, tag, or SHA in AbsaOSS/living-doc) and is dropped unescaped into
+# both the curl fetch URL and the doc links rewritten below. Reserved URL characters such as
+# '#' are delimiters — curl (and a browser, for the links below) treats everything from '#'
+# onward as a fragment and never sends it — so a ref containing one silently truncates the
+# request instead of failing loudly. Percent-encoding leaves only unreserved characters and
+# '/' in the result, so the sed replacements further down need no separate escaping either.
+url_encode_ref() {
+  local LC_ALL=C ref="$1" i c encoded=""
+  for (( i = 0; i < ${#ref}; i++ )); do
+    c="${ref:i:1}"
+    case "$c" in
+      [a-zA-Z0-9._~-]|/) encoded+="$c" ;;
+      *) encoded+=$(printf '%%%02X' "'$c") ;;
+    esac
+  done
+  printf '%s' "$encoded"
+}
+
+REF_URL_SAFE="$(url_encode_ref "${REF}")"
+
+RAW_URL="https://raw.githubusercontent.com/${LIVING_DOC_REPO}/${REF_URL_SAFE}/${SOURCE_PATH}"
 
 TMP_FILE="$(mktemp)"
 trap 'rm -f "${TMP_FILE}"' EXIT
@@ -53,12 +75,10 @@ fi
 #   - "living-doc-header-types.md" / "living-doc-document-types.md" — sibling under docs/guides/
 #   - "../examples/..."                                             — under docs/examples/
 #
-# REF is attacker-controllable input (any branch/tag name) and lands in the replacement side
-# of the sed commands below. Escape backslash, ampersand (sed's "insert the match" token), and
-# the "|" delimiter those commands use, so a ref like "release&docs" can't corrupt the rewritten
-# links or break the command.
-REF_SED_SAFE="$(printf '%s' "${REF}" | sed -e 's/[\&|]/\\&/g')"
-BLOB_BASE="https://github.com/${LIVING_DOC_REPO}/blob/${REF_SED_SAFE}"
+# REF_URL_SAFE is already percent-encoded (see above), so it contains only unreserved URL
+# characters and '/' — none of which are special to sed's s|...|...| syntax — and can be
+# dropped straight into the replacement text below with no separate escaping pass.
+BLOB_BASE="https://github.com/${LIVING_DOC_REPO}/blob/${REF_URL_SAFE}"
 sed -E \
   -e "s|\(living-doc-header-types\.md|(${BLOB_BASE}/docs/guides/living-doc-header-types.md|g" \
   -e "s|\(living-doc-document-types\.md|(${BLOB_BASE}/docs/guides/living-doc-document-types.md|g" \

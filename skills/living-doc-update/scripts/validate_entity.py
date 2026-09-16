@@ -40,13 +40,15 @@ except ImportError:
 
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
-VALID_STATUSES = {"planned", "in_review", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
-# AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
-# CANONICAL_AC_STATUSES never changes; VALID_AC_STATUSES may be narrowed at runtime with
-# --profile to a subset of it (see main()) — a profile can restrict, never extend, the canon.
-CANONICAL_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
-VALID_AC_STATUSES = set(CANONICAL_AC_STATUSES)
+# Status/AC-state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
+# The same vocabulary backs both an authored entity `status` (User Story / Functionality) and
+# an AC `state` (see living-doc-bdd-schemas.md) — they are not independent sets. CANONICAL_STATUSES
+# never changes; VALID_STATUSES and VALID_AC_STATUSES may both be narrowed together at runtime
+# with --profile to a subset of it (see main()) — a profile can restrict, never extend, the canon.
+CANONICAL_STATUSES = {"planned", "in_review", "active", "deprecated"}
+VALID_STATUSES = set(CANONICAL_STATUSES)
+VALID_AC_STATUSES = set(CANONICAL_STATUSES)
 
 # Numeric only, any digit count (US-1 and US-001 are both valid — matches
 # living_doc_id.py's ENTITY_TYPE_MAP and scan_ac_links.py). Feature IDs are numeric
@@ -399,15 +401,16 @@ def main() -> None:
     if args.profile:
         profile_states = load_ac_states_from_profile(args.profile)
         if profile_states:
-            invalid_states = profile_states - CANONICAL_AC_STATUSES
+            invalid_states = profile_states - CANONICAL_STATUSES
             if invalid_states:
                 print(
                     f"Error: profile ac_states {sorted(invalid_states)} are not a subset of the "
-                    f"canonical AC states {sorted(CANONICAL_AC_STATUSES)}",
+                    f"canonical states {sorted(CANONICAL_STATUSES)}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
-            global VALID_AC_STATUSES
+            global VALID_STATUSES, VALID_AC_STATUSES
+            VALID_STATUSES = profile_states
             VALID_AC_STATUSES = profile_states
 
     try:
