@@ -279,6 +279,20 @@
         "Closeout runs scan_ac_links.py (exit 0) and coverage_report.py with 0 NOT COVERED happy-path ACs",
         "Scenarios emitted in ascending AC-id order for byte-stable regeneration"
       ]
+    },
+    {
+      "id": 22,
+      "category": "regression",
+      "prompt": "Generate a Functionality feature file for FUNC-001 (parent Feature: FEAT-001 'Login Page') with one active AC:\n- AC:FUNC-001-01 (v1.0.0 - active) - happy_path: returns valid=true when password satisfies all rules",
+      "expected_output": "Outputs a .feature file named 'func-001-<kebab>.feature'. The block starts with '@FUNC_ID:FUNC-001' immediately above 'Feature: Login Page - Validate Password Strength' - the separator between the Feature name and the Functionality name is a plain hyphen ' - ', never an en dash '–' or em dash '—'. One Scenario is generated for AC:FUNC-001-01, preceded immediately by its '# AC:' comment and '@AC:FUNC-001-01' tag. Step text is domain language with no implementation details.",
+      "files": [],
+      "expectations": [
+        "Feature file named func-001-<kebab>.feature",
+        "@FUNC_ID:FUNC-001 tag immediately before the Feature: line",
+        "Feature: line uses a plain hyphen ' - ' between Feature name and Functionality name - not an em dash or en dash",
+        "One Scenario for AC:FUNC-001-01 with # AC: comment and @AC: tag immediately above it",
+        "Business language steps — no HTTP, selectors, or DB"
+      ]
     }
   ]
 }

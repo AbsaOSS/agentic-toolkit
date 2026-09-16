@@ -19,6 +19,7 @@ No fixture files for this skill. All evals use inline User Story/AC definitions 
 | 9 | edge-case | _(none)_ | /aspect:value param encoding for multi-aspect ACs |
 | 10 | output-format | _(none)_ | Feature-level @US_ID: tag vs. per-scenario @AC: tags |
 | 11 | regression | _(none)_ | coverage_report.py: @AC: tag mismatch causing false "not covered" result |
+| 22 | regression | _(none — inline FUNC/AC definition in prompt)_ | Functionality feature file: @FUNC_ID: tag, Feature: name uses plain hyphen separator (not em/en dash), # AC:/@AC: pairing |
 
 ## Trigger eval summary
 

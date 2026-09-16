@@ -1,15 +1,15 @@
-<!-- synced from AbsaOSS/living-doc@bfcc402ff998085cbf7bb91a7fd55ea8ac12c911 — run scripts/sync-living-doc-glossary.sh bfcc402ff998085cbf7bb91a7fd55ea8ac12c911 to refresh -->
+<!-- synced from AbsaOSS/living-doc@47694672ad26c2f66b084cb92813a18a405a1675 — run scripts/sync-living-doc-glossary.sh 47694672ad26c2f66b084cb92813a18a405a1675 to refresh -->
 
 # Living Doc Glossary
 
 Core entity contracts: IDs, status vocabulary, relationships, and AC format. Every `living-doc-*` repo and `agentic-toolkit`'s `living-doc-bdd-copilot` agent operate on this canonical entity model.
 
-For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md).
+For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md).
 
 > **Source of truth.** This page is the canonical definition of the entity model. `agentic-toolkit`'s `skills/shared/references/living-doc-glossary.md` is synced from it.
 
 > **Worked examples & sync obligation.** A minimal, copyable example of each entity lives in
-> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/examples/README.md). When a field or rule on this page changes, the matching
+> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/examples/README.md). When a field or rule on this page changes, the matching
 > example changes in the same PR.
 
 ---
@@ -40,8 +40,8 @@ For the file-header schemas that carry these entities (feature file headers, Pag
 > `# deprecated_at:`, `# deprecation_reason:` and `# superseded_by:` as keys in a feature-file
 > header. Of these only the status is required, and only on a User Story and a Functionality — a
 > Feature has no authored status at all. See the
-> [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/examples/README.md#github-issue-body-layout-canonical) and
-> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md).
+> [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/examples/README.md#github-issue-body-layout-canonical) and
+> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md).
 
 ### User Story (US)
 
@@ -65,7 +65,7 @@ so that <business outcome>.
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity
 
-> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
+> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
 
 ### Feature
 
@@ -98,7 +98,7 @@ A named system surface — the structural layer between User Stories and atomic 
   - `owner_changed_at` — date of ownership transfer
   - `owner_change_reason` — reason for the transfer
 
-> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
+> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
 
 ### Functionality (FUNC)
 
@@ -139,7 +139,7 @@ If an AC belongs to the wrong entity type, redirect:
 - AC too atomic / technical inside a US → move to a **Functionality**
 - AC describes a full user journey inside a FUNC → move to a **User Story**
 
-> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
+> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
 
 ### Acceptance Criterion (AC)
 
@@ -164,7 +164,7 @@ AC:<parent-id>-<nn> (v<version> - <state>)
 | State | Meaning |
 |---|---|
 | `planned` | Agreed, not built yet |
-| `in_review` | Built, not yet accepted |
+| `in_review` | Built on a branch, not yet accepted into `master` |
 | `active` | Accepted, part of the shipped solution |
 | `deprecated` | Shipped behaviour on its way out; carries a removal note |
 
@@ -297,14 +297,14 @@ wrong AC, producing a coverage matrix that is wrong in a way no downstream tool 
 prefix or namespace IDs per source to dodge a collision — a collision inside one project means that
 project has two entities claiming one ID, and that is the thing to fix.
 
-This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-document-types.md#coverage-matrix)
+This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-document-types.md#coverage-matrix)
 and the `Data Flows & Schemas` spec §8 ("Multiple sources and multiple generators"). The toolkit
 [`coverage_matrix` service README](https://github.com/AbsaOSS/living-doc-toolkit/blob/master/packages/services/coverage_matrix/README.md)
 describes the false-gap failure mode when the two sides of the join do not describe the same system.
 
 ---
 
-> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/bfcc402ff998085cbf7bb91a7fd55ea8ac12c911/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
+> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/47694672ad26c2f66b084cb92813a18a405a1675/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
 
 ---
 

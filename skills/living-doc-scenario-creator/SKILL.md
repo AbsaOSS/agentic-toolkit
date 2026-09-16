@@ -107,7 +107,7 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 | Type | Location (default) | Feature block |
 |---|---|---|
 | User Story (E2E) | `<feature_dirs.user_story>/us-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_us/`) | `Feature: <US title>` with As-a/I-can/so-that + `@US_ID:US-<n>` |
-| Functionality | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) | `Feature: <Feature name> — <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
+| Functionality | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) | `Feature: <Feature name> - <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
 
 **Feature-level and scenario tags** (when `scenario_conventions` enables them in the profile):
 - Feature-level: the entity tag (`@US_ID:US-<n>` / `@FUNC_ID:FUNC-<nnn>`) plus an optional domain tag, e.g. `@domain_create`.
@@ -158,7 +158,7 @@ Feature: Place an online order
 
 ```gherkin
 @FUNC_ID:FUNC-001
-Feature: Login Page — Validate Password Strength
+Feature: Login Page - Validate Password Strength
 
   # AC:FUNC-001-01 (v1.0.0 - active) - returns valid=true when password satisfies all rules
   @AC:FUNC-001-01

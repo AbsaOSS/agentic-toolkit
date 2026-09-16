@@ -105,6 +105,32 @@ def test_feature_with_status_field_rejected():
     print("✓ A Feature carrying a 'status' field is flagged as an error")
 
 
+def test_feature_surface_type_full_canonical_set():
+    """VALID_SURFACE_TYPES previously only allowed {UI, API}, rejecting Service/Worker/Module/
+    Library even though living-doc-create-feature/SKILL.md documents all 6 as valid values."""
+    def make_feature(surface_type: str) -> dict:
+        return {
+            "entity_type": "Feature",
+            "id": "FEAT-1",
+            "name": "Order Processor",
+            "surface_type": surface_type,
+            "purpose": "Processes orders in the background",
+            "user_stories": ["US-1"],
+            "functionalities": [],
+            "owners": ["Team"],
+        }
+
+    for surface_type in ("Service", "Worker", "Module", "Library"):
+        issues = validate(make_feature(surface_type))
+        surface_errors = [i for i in issues if i["field"] == "surface_type"]
+        assert not surface_errors, f"expected no surface_type error for '{surface_type}', got: {surface_errors}"
+
+    issues = validate(make_feature("Frontend"))
+    surface_errors = [i for i in issues if i["field"] == "surface_type" and i["severity"] == "error"]
+    assert surface_errors, f"expected a surface_type error for 'Frontend', got: {issues}"
+    print("✓ Feature surface_type accepts the full canonical set (Service/Worker/Module/Library) and still rejects invalid values")
+
+
 def test_orphan_feature_reported_distinctly():
     """A Feature with no linked User Stories and no Functionalities is an ORPHAN_FEATURE,
     not a 'candidate' status — there is no status field to tag it with."""
@@ -134,6 +160,7 @@ if __name__ == "__main__":
         test_end_to_end_user_story_with_single_digit_id_validates_clean()
         test_end_to_end_slug_feature_id_flagged()
         test_feature_with_status_field_rejected()
+        test_feature_surface_type_full_canonical_set()
         test_orphan_feature_reported_distinctly()
         print("\n✓ All tests passed!")
     except AssertionError as e:

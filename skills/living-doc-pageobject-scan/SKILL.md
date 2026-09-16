@@ -89,7 +89,7 @@ Repeat until coverage plateau — no new surfaces in the last full iteration.
 
 ### Step 3 — Form traversal (deep exploration)
 
-Resolve field values using the **ExplorationFixture sourcing cascade** (see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md#explorationfixture)): (1) `seed.yaml form_fixtures`; (2) copied/derived value from an existing entity; (3) inferred `fake` value from label + placeholder + tooltip; (4) user-assist pause for `real-world` fields and record `source: user_provided`.
+Resolve field values using the **`form_fixtures` sourcing cascade** (see [living-doc-bdd-schemas](../shared/references/living-doc-bdd-schemas.md#form_fixtures-sourcing-cascade-how-the-agent-resolves-a-field-value)): (1) `seed.yaml form_fixtures`; (2) copied/derived value from an existing entity; (3) inferred `fake` value from label + placeholder + tooltip; (4) user-assist pause for `real-world` fields and record `source: user_provided`.
 
 Skip `condition`-gated fields until the controlling field has the required value. After submit, probe each text input for special characters (`<>'"&\``), oversized input (200+ chars), wrong type, and duplicate value; after each probe, run the core scan to capture error elements (in the profile `test_id_attribute`) visible only in error state and record them in `field_constraints[]`.
 

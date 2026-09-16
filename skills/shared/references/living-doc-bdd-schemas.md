@@ -406,10 +406,12 @@ Feature: <Feature Name> - <Functionality Name>
 
 ## seed.yaml (Business Seed)
 
-`seed.yaml` lives at `<paths.bdd_artifacts>/seed.yaml` (default `.copilot/bdd/seed.yaml`). It is the
-durable, human-curated input to every scan session: app entry point, business domains → routes,
-known entities for parameterised routes, test-user roles, and pre-declared form values. **Re-read it
-in full at the start of every scan session.** The agent appends to it as it discovers entities.
+`seed.yaml` lives at `<paths.bdd_artifacts>/seed.yaml` (default `.copilot/bdd/seed.yaml`). It is
+**the agent's local memory, not a human-authored file** — its durable record of the app's business
+surface between scan sessions: app entry point, business domains → routes, known entities for
+parameterised routes, test-user roles, and pre-declared form values. The agent creates it, re-reads
+it in full at the start of every scan session, and appends to it as it discovers entities. A human
+may pre-seed known values or correct them, but is not expected to write the file.
 
 ```yaml
 # .copilot/bdd/seed.yaml
@@ -523,9 +525,10 @@ manifest route's optional `field_constraints[]` (see Manifest schema below).
 ## manifest.json (Exploration Manifest)
 
 `manifest.json` lives at `<paths.bdd_artifacts>/manifest.json` (default `.copilot/bdd/manifest.json`).
-It is the machine record of every scanned surface. The manifest is a JSON object; **`routes` is a JSON array** of route objects
-(profile `manifest_shape: object`). Load targeted entries by route during a session; load the full file
-only for a RE-SCAN.
+It is **the agent's local memory, not a human-authored file** — its machine record of every scanned
+surface, written and read by the tooling across runs. The manifest is a JSON object; **`routes` is a
+JSON array** of route objects (profile `manifest_shape: object`). Load targeted entries by route
+during a session; load the full file only for a RE-SCAN.
 
 The manifest uses **normalized test_id keys** (not attribute-specific). The root-level `test_id_attribute` metadata
 tells downstream generators (PageObject, data-cy-instrument) how to map these normalized keys to the actual HTML attribute.

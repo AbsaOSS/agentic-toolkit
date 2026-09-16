@@ -41,7 +41,7 @@ except ImportError:
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
 VALID_STATUSES = {"planned", "in_review", "active", "deprecated"}
-VALID_SURFACE_TYPES = {"UI", "API"}
+VALID_SURFACE_TYPES = {"UI", "API", "Service", "Worker", "Module", "Library"}
 # AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
 # Override at runtime with --profile to read the project's own ac_states list.
 VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
