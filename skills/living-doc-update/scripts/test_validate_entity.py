@@ -105,9 +105,11 @@ def test_feature_with_status_field_rejected():
     print("✓ A Feature carrying a 'status' field is flagged as an error")
 
 
-def test_feature_surface_type_full_canonical_set():
-    """VALID_SURFACE_TYPES previously only allowed {UI, API}, rejecting Service/Worker/Module/
-    Library even though living-doc-create-feature/SKILL.md documents all 6 as valid values."""
+def test_feature_surface_type_canonical_set_only():
+    """VALID_SURFACE_TYPES must match the canonical living-doc-glossary exactly: UI and API
+    are the only surface types. Service/Worker/Module/Library are not canon and must be
+    rejected, even though an older living-doc-create-feature/SKILL.md draft once documented
+    them — that skill has since been realigned to UI/API only."""
     def make_feature(surface_type: str) -> dict:
         return {
             "entity_type": "Feature",
@@ -120,15 +122,16 @@ def test_feature_surface_type_full_canonical_set():
             "owners": ["Team"],
         }
 
-    for surface_type in ("Service", "Worker", "Module", "Library"):
+    for surface_type in ("UI", "API"):
         issues = validate(make_feature(surface_type))
         surface_errors = [i for i in issues if i["field"] == "surface_type"]
         assert not surface_errors, f"expected no surface_type error for '{surface_type}', got: {surface_errors}"
 
-    issues = validate(make_feature("Frontend"))
-    surface_errors = [i for i in issues if i["field"] == "surface_type" and i["severity"] == "error"]
-    assert surface_errors, f"expected a surface_type error for 'Frontend', got: {issues}"
-    print("✓ Feature surface_type accepts the full canonical set (Service/Worker/Module/Library) and still rejects invalid values")
+    for surface_type in ("Service", "Worker", "Module", "Library", "Frontend"):
+        issues = validate(make_feature(surface_type))
+        surface_errors = [i for i in issues if i["field"] == "surface_type" and i["severity"] == "error"]
+        assert surface_errors, f"expected a surface_type error for '{surface_type}', got: {issues}"
+    print("✓ Feature surface_type accepts only the canonical UI/API set and rejects everything else")
 
 
 def test_orphan_feature_reported_distinctly():
@@ -150,6 +153,28 @@ def test_orphan_feature_reported_distinctly():
     print("✓ A Feature with no User Stories and no Functionalities is flagged as ORPHAN_FEATURE")
 
 
+def test_orphan_feature_with_functionalities_still_reported():
+    """gap-finder's ORPHAN_FEATURE gap (compute_gaps.py) fires on a missing User Story link
+    alone. A Feature that owns Functionalities but has no User Stories must still be flagged
+    as ORPHAN_FEATURE, not downgraded to a generic 'user_stories' warning."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-3",
+        "name": "Reporting Engine",
+        "surface_type": "UI",
+        "purpose": "Generates account activity reports for internal review",
+        "user_stories": [],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+    }
+    issues = validate(feat)
+    orphan_issues = [i for i in issues if i["field"] == "ORPHAN_FEATURE"]
+    assert orphan_issues, f"expected an ORPHAN_FEATURE warning, got: {issues}"
+    func_issues = [i for i in issues if i["field"] == "functionalities"]
+    assert not func_issues, f"did not expect a functionalities warning, got: {func_issues}"
+    print("✓ A Feature with Functionalities but no User Stories is still flagged as ORPHAN_FEATURE")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -160,8 +185,9 @@ if __name__ == "__main__":
         test_end_to_end_user_story_with_single_digit_id_validates_clean()
         test_end_to_end_slug_feature_id_flagged()
         test_feature_with_status_field_rejected()
-        test_feature_surface_type_full_canonical_set()
+        test_feature_surface_type_canonical_set_only()
         test_orphan_feature_reported_distinctly()
+        test_orphan_feature_with_functionalities_still_reported()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

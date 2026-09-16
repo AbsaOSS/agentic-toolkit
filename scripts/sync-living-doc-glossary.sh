@@ -36,7 +36,7 @@ TMP_FILE="$(mktemp)"
 trap 'rm -f "${TMP_FILE}"' EXIT
 
 echo "Fetching ${SOURCE_PATH} from ${LIVING_DOC_REPO}@${REF} ..." >&2
-if ! curl -fsSL "${RAW_URL}" -o "${TMP_FILE}"; then
+if ! curl -fsSL --connect-timeout 10 --max-time 30 --retry 2 "${RAW_URL}" -o "${TMP_FILE}"; then
   echo "Error: failed to fetch ${RAW_URL}" >&2
   echo "Check that the ref exists and ${SOURCE_PATH} is still the canon glossary path." >&2
   exit 1

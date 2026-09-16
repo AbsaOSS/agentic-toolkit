@@ -41,7 +41,7 @@ except ImportError:
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
 VALID_STATUSES = {"planned", "in_review", "active", "deprecated"}
-VALID_SURFACE_TYPES = {"UI", "API", "Service", "Worker", "Module", "Library"}
+VALID_SURFACE_TYPES = {"UI", "API"}
 # AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
 # Override at runtime with --profile to read the project's own ac_states list.
 VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
@@ -192,17 +192,20 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
             warning("owners", "Feature has no owners — assign a team or individual")
         no_user_stories = isinstance(entity.get("user_stories"), list) and not entity["user_stories"]
         no_functionalities = isinstance(entity.get("functionalities"), list) and not entity["functionalities"]
-        if no_user_stories and no_functionalities:
+        # gap-finder's ORPHAN_FEATURE gap fires on the absence of a linked User Story alone
+        # (compute_gaps.py), regardless of Functionality links — so mirror that here rather
+        # than requiring both lists to be empty.
+        if no_user_stories:
             warning(
                 "ORPHAN_FEATURE",
-                "Feature has no linked User Stories and no Functionalities — "
+                "Feature has no linked User Stories — "
                 "reported as an ORPHAN_FEATURE condition by living-doc-gap-finder",
             )
-        elif no_user_stories:
+        if no_functionalities:
             warning(
-                "user_stories",
-                "Feature has no linked User Stories — "
-                "orphan Features appear in gap-finder reports",
+                "functionalities",
+                "Feature has no Functionalities — "
+                "a Feature should own at least one Functionality",
             )
         purpose: str = entity.get("purpose", "")
         if purpose and len(purpose.split()) < 5:

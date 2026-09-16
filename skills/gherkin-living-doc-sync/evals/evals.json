@@ -152,13 +152,14 @@
       "id": 12,
       "category": "edge-case",
       "prompt": "I have a scenario linked to AC:US-042-03 which has just been descoped in the living doc — it dropped back to AC:US-042-03 (planned) with a Rationale bullet. What should the sync skill do?",
-      "expected_output": "Sync direction: living doc → feature file. There is no `descoped` state — the AC keeps its `planned` state and dropped its target version. The linked scenario should be tagged with @wip and @review-needed to indicate it is not active. Add a comment above the scenario mirroring the AC's Rationale bullet: '# AC:US-042-03 (planned) - Rationale: promo stacking deferred to a future release'. Never delete the scenario - it preserves the intent for when the AC is re-targeted to a release. Flag the scenario with @review-needed for developer decision.",
+      "expected_output": "Sync direction: living doc → feature file. There is no `descoped` state — the AC keeps its `planned` state and dropped its target version. Update the existing '# AC:US-042-03' comment's header to '(planned)' while keeping its original description unchanged, e.g. '# AC:US-042-03 (planned) - customer can stack multiple promo codes at checkout' — the canonical # AC: comment always carries the AC's description, never the Rationale in its place. Add a separate comment line mirroring the AC's Rationale bullet: '# Rationale: promo stacking deferred to a future release'. Tag the scenario with @wip and @review-needed to indicate it is not active. Never delete the scenario - it preserves the intent for when the AC is re-targeted to a release.",
       "files": [],
       "expectations": [
         "Sync direction: living doc → feature file",
         "Does not use a 'descoped' state — the AC is 'planned' with no target version",
         "Tags scenario with @wip and @review-needed — does not delete it",
-        "Adds a comment mirroring the AC's Rationale bullet",
+        "Keeps the # AC: comment's description unchanged, only updating the version/state header",
+        "Adds the Rationale as a separate comment line rather than replacing the description",
         "Preserves the scenario for when the AC is re-targeted to a release"
       ]
     },

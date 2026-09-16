@@ -87,7 +87,7 @@
     "id": 15,
     "query": "Register the notification background worker in the living doc as a system surface",
     "should_trigger": true,
-    "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=Worker)"
+    "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=API, representing its public contract)"
   },
   {
     "id": 16,
@@ -99,7 +99,7 @@
     "id": 17,
     "query": "Document the Orders Service — it exposes a REST API to place and cancel orders",
     "should_trigger": true,
-    "reason": "Documenting a backend service surface — Feature creation (surface_type=Service or API)"
+    "reason": "Documenting a backend service surface — Feature creation (surface_type=API)"
   },
   {
     "id": 18,

@@ -1,10 +1,10 @@
 ---
 name: living-doc-create-feature
 description: >
-  Define a system surface (UI screen, API endpoint, service, or module) as a Feature entity,
-  enabling impact analysis and traceability in the living documentation. Use when documenting
-  a new screen, API, service, or module; mapping surfaces to User Stories; or resolving
-  Feature naming conflicts.
+  Define a system surface (UI screen or API endpoint, including a backend service's public
+  contract) as a Feature entity, enabling impact analysis and traceability in the living
+  documentation. Use when documenting a new screen, API, or backend service; mapping surfaces
+  to User Stories; or resolving Feature naming conflicts.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
   feature", "system surface documentation", "feature owners", "feature dependencies",
@@ -41,21 +41,17 @@ When information is missing, phrase the discovery as a short numbered checklist 
 When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
 - `Checkout Page` → `surface_type: "UI"`; dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
 - `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
-- `Notification Service` / notification worker → default to `surface_type: "Worker"` (or `API` if it is clearly a synchronous contract surface); do **not** simply mirror the word "Service" into `surface_type`; dependencies often include `smtp-relay` and `template-store`.
-- `PaymentEventProcessor` / event consumer → `surface_type: "Worker"`; include the Kafka topic or event stream in `external_dependencies`.
+- `Notification Service` / async notification worker → `surface_type: "API"`, documenting its public contract (the topic or endpoint it exposes); do **not** simply mirror the word "Service" into `surface_type` — there is no separate `Service` or `Worker` type; dependencies often include `smtp-relay` and `template-store`.
+- `PaymentEventProcessor` / event consumer → `surface_type: "API"`, with the Kafka topic or event stream documented as its public contract in `external_dependencies`.
 
 Ask only for what is missing: *What system surface does this Feature represent?*
 
-Select the surface type:
+Select the surface type — only two exist:
 
 | Type | Examples |
 |---|---|
 | `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) |
-| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public API contract (e.g. Orders API, Payment Gateway API) |
-| `Service` | A named backend/service surface with its own contract (e.g. Customer Profile Service) |
-| `Worker` | An asynchronous/background processor (e.g. Notification Worker) |
-| `Module` | A distinct internal module with a stable contract or bounded responsibility |
-| `Library` | A substantial shared internal library that is intentionally tracked as its own surface |
+| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's or async worker's public contract (e.g. Orders API, Payment Gateway API, Notification Service) |
 
 Feature names should be **noun phrases** that name the surface. If it could plausibly be a PageObject or service/module class name (for example `PaymentPage`), it is usually a good Feature name.
 
@@ -159,7 +155,7 @@ Use this exact output shape for create/document requests:
 Worked starter patterns:
 - `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* Run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
 - `Orders API` starter links: `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`
-- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `surface_type: "Worker"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
+- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `surface_type: "API"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
 
 Canonical JSON fields:
 
@@ -168,7 +164,7 @@ Canonical JSON fields:
 | `type` | Yes | `Feature` |
 | `id` | Yes | `FEAT-NNN` (zero-padded numeric ID from catalog, e.g. `FEAT-001`) |
 | `name` | Yes | Noun phrase (e.g. "Login Page") |
-| `surface_type` | Yes | `UI` \| `API` \| `Service` \| `Worker` \| `Module` \| `Library` |
+| `surface_type` | Yes | `UI` \| `API` |
 | `purpose` | Yes | One-to-two sentence description in business language |
 | `user_stories` | Yes | List of `US-<...>` IDs (use `[]` if unknown) |
 | `functionalities` | Yes | List of `FUNC-<...>` IDs (use `[]` if unknown or still only candidates) |
@@ -184,7 +180,7 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 | Feature covers multiple unrelated screens | Split into one Feature per distinct screen |
 | Feature name is a verb (e.g. "Process Payment") | Feature names should be nouns — name the surface. Verb phrases describe *what the surface does*, which belongs in a Functionality entity (use **living-doc-create-functionality**). If it could be a PageObject or service/module class name, it is usually a better Feature name. |
 | Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story once one exists, or delete it if it is no longer relevant. A Feature has no `status` field to flag it as exploratory with; living-doc-gap-finder reports it as an `ORPHAN_FEATURE` condition instead. |
-| Shared utility library documented as a Feature | By default, a shared utility library is not a Feature — document it as an `external_dependency` on the consumer Features. Only create a standalone Feature when the library is substantial enough to be treated as a distinct shared surface; in that case use `surface_type: "Library"` and mark it as a shared internal dependency. Features should map 1:1 to distinct/deployable surfaces. |
+| Shared utility library documented as a Feature | A shared utility library is never a Feature — there is no `surface_type` for it (only `UI` and `API` exist). Document it as an `external_dependency` on the consumer Features instead, however substantial it is. Features should map 1:1 to distinct/deployable UI or API surfaces. |
 | Feature name encodes implementation technology (e.g. "React Login Component", "Spring Payment Controller") | Feature names describe the business surface, not the stack. Use "Login Screen" (UI) or "Payment API" (API) — technology choice is an implementation detail that changes without the surface changing. |
 | `surface_type` is `UI` for a backend REST controller or service | A REST endpoint group is an `API` surface. `UI` is reserved for screens a human interacts with directly. Misclassification breaks impact analysis routing between frontend and backend changes. |
 | Feature shares a name with an existing Feature | Check for duplicates before creating. Identical names indicate a merge candidate or a scope overlap — clarify the boundary before proceeding. |

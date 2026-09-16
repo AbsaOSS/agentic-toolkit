@@ -68,11 +68,12 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "I want to add the Notification Service to the living doc as a system component. Where do I start?",
-      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: what type of surface is it (API, Worker, UI)? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? Runs next_id.py to get the numeric ID from the catalog. Outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker or API, at least one User Story link, owners, and external_dependencies.",
+      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: what type of surface is it (only UI and API exist — a backend service is documented as an API Feature representing its public contract)? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? Runs next_id.py to get the numeric ID from the catalog. Outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API, at least one User Story link, owners, and external_dependencies.",
       "files": [],
       "expectations": [
         "Identifies this as a Feature creation request despite 'system component' phrasing",
-        "Asks for surface_type (Worker/API for a notification service)",
+        "Asks for surface_type, noting only UI and API exist",
+        "Classifies the notification service as surface_type=API (its public contract)",
         "Asks for User Story links, owners, and external dependencies",
         "Outputs valid canonical Feature JSON"
       ]
@@ -81,12 +82,12 @@
       "id": 7,
       "category": "edge-case",
       "prompt": "We have a shared utility library used by three different services. Should it be documented as a Feature entity?",
-      "expected_output": "A shared utility library is not a Feature — it is not a system surface with its own UI, API, or event stream. Document it as an external_dependency in the Feature entities of the services that consume it. If the library is substantial enough to warrant its own living doc entry, create it as a Feature with surface_type=Library and explicitly mark it as a shared internal dependency. Note: Features map 1:1 to deployable/distinct surfaces — shared libraries are infrastructure, not surfaces.",
+      "expected_output": "A shared utility library is never a Feature — only UI and API surface_type values exist, and a library has neither a screen nor a public API contract. Document it as an external_dependency in the Feature entities of the services that consume it, however substantial the library is. Note: Features map 1:1 to deployable/distinct UI or API surfaces — shared libraries are infrastructure, not surfaces.",
       "files": [],
       "expectations": [
-        "Advises against creating a Feature for a shared utility library by default",
+        "Advises against creating a Feature for a shared utility library, regardless of size",
         "Recommends listing it as external_dependency in consumer Feature entities",
-        "Notes the surface_type=Library option for substantial libraries",
+        "Does not offer a surface_type=Library option",
         "Explains the 1:1 Feature-to-surface mapping rule"
       ]
     },
@@ -94,14 +95,14 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a Feature entity for the 'User Profile' screen in our banking app. It is owned by team-identity and depends on the customer-service API.",
-      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, user_stories, functionalities, owners, external_dependencies. There is no `status` field — a Feature's state is derived from its Functionalities, never authored. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is one of: UI, API, Service, Worker, Module, Library. No prose appears inside the JSON code block.",
+      "expected_output": "The output contains a single fenced ```json code block with a valid Feature entity. The JSON object includes all required fields: type, id, name, surface_type, purpose, user_stories, functionalities, owners, external_dependencies. There is no `status` field — a Feature's state is derived from its Functionalities, never authored. The id field is a numeric ID from the catalog (e.g. FEAT-001). The surface_type value is UI or API — this is a screen, so surface_type=UI. No prose appears inside the JSON code block.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
         "All required fields present: type, id, name, surface_type, purpose, user_stories, functionalities, owners, external_dependencies",
         "No `status` field in the JSON",
         "id is a numeric ID from the catalog (FEAT-001, FEAT-002, etc.)",
-        "surface_type is one of UI/API/Service/Worker/Module/Library",
+        "surface_type is UI or API (surface_type=UI for this screen)",
         "No prose inside the code block"
       ]
     },
@@ -151,10 +152,11 @@
       "id": 12,
       "category": "happy-path",
       "prompt": "Document a Feature for our PaymentEventProcessor — an asynchronous worker that listens on a Kafka topic and processes payment events in the background.",
-      "expected_output": "Agent identifies surface_type as Worker (asynchronous/background processor). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Runs next_id.py to get the numeric ID from the catalog. Outputs Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=Worker, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",
+      "expected_output": "Agent identifies surface_type as API — only UI and API surface types exist, and an async worker is documented as an API Feature representing its public contract (the Kafka topic it consumes). Purpose describes the business contract: processes payment events asynchronously from the Kafka topic. Runs next_id.py to get the numeric ID from the catalog. Outputs Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API, purpose in business language describing the event processing responsibility, and external_dependencies including the Kafka topic and any downstream services.",
       "files": [],
       "expectations": [
-        "Identifies surface_type as Worker",
+        "Identifies surface_type as API, not a separate Worker type",
+        "Explains a backend/async surface is documented as an API Feature representing its public contract",
         "Feature name is a noun phrase: 'Payment Event Processor'",
         "Purpose describes the business contract, not the technology",
         "external_dependencies includes the Kafka topic or downstream services",
