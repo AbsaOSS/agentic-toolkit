@@ -195,7 +195,7 @@
       "id": 15,
       "category": "regression",
       "prompt": "AC:US-042-01 is currently ACTIVE at v1.0.0. The discount threshold rule changed — the minimum order value is now £75 instead of £50. I need to update the AC.",
-      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC: US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
+      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC:US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
         "Version bumped from v1.0.0 to v1.1.0",

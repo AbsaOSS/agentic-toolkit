@@ -95,13 +95,24 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     """Read `ac_states` from a Project Profile YAML. Returns None if the field is
     omitted (valid — the schema allows omitting it). Exits nonzero if the field is
     present but schema-invalid (not a non-empty array), instead of silently falling
-    back to the canonical defaults as if it had been omitted."""
+    back to the canonical defaults as if it had been omitted. Also exits nonzero if
+    pyyaml itself is unavailable — that means `ac_states` can never be inspected, so
+    treating it as "omitted" would silently validate against the unrestricted
+    canonical set instead of the profile's configured vocabulary."""
     try:
         import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
+    except ImportError as exc:
+        print(
+            f"Error: --profile requires pyyaml, which is not installed: {exc}\n"
+            "Install it with: pip install pyyaml",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
+    try:
         with open(profile_path, encoding="utf-8") as f:
             profile = yaml.safe_load(f) or {}
-    except (FileNotFoundError, ImportError, ValueError) as exc:
+    except (FileNotFoundError, ValueError) as exc:
         print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
         return None
     if not isinstance(profile, dict):
@@ -232,13 +243,15 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
         # than requiring both lists to be empty. compute_gaps.py also honours the back-link
         # from a User Story's own `features` list (features_linked_from_us), not just the
         # Feature's forward `user_stories` — mirror that here too so a Feature linked only
-        # from the User Story side isn't falsely flagged when --catalog is supplied.
+        # from the User Story side isn't falsely flagged when --catalog is supplied. gap-finder's
+        # EMPTY_FEATURE gap applies the same union-of-forward-and-back-link treatment to
+        # Functionality.parent_feature (feature_func_counts) — mirror that here too.
+        catalog_inner = catalog.get("catalog", catalog) if catalog is not None else None
         linked_from_catalog_us = False
-        if no_user_stories and catalog is not None:
-            inner = catalog.get("catalog", catalog)
+        if no_user_stories and catalog_inner is not None:
             linked_from_catalog_us = any(
                 entity_id in (us.get("features") or [])
-                for us in inner.get("user_stories", [])
+                for us in catalog_inner.get("user_stories", [])
             )
         if no_user_stories and not linked_from_catalog_us:
             warning(
@@ -246,7 +259,13 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
                 "Feature has no linked User Stories — "
                 "reported as an ORPHAN_FEATURE condition by living-doc-gap-finder",
             )
-        if no_functionalities:
+        linked_from_catalog_func = False
+        if no_functionalities and catalog_inner is not None:
+            linked_from_catalog_func = any(
+                fn.get("parent_feature") == entity_id
+                for fn in catalog_inner.get("functionalities", [])
+            )
+        if no_functionalities and not linked_from_catalog_func:
             warning(
                 "functionalities",
                 "Feature has no Functionalities — "

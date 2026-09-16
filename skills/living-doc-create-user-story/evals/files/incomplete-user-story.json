@@ -2,7 +2,7 @@
   "type": "UserStory",
   "id": "US-042",
   "title": "Reset account password",
-  "status": "draft",
+  "status": "planned",
   "narrative": {
     "as_a": "registered customer",
     "i_can": "reset my password using my email address",

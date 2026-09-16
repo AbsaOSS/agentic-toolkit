@@ -70,19 +70,23 @@ if [ ! -s "${TMP_FILE}" ]; then
 fi
 
 # Rewrite the canon's relative links to absolute living-doc URLs so the synced copy reads
-# correctly from inside agentic-toolkit. Same-page anchors (#section) are left untouched.
-# Known relative link shapes in the source file:
-#   - "living-doc-header-types.md" / "living-doc-document-types.md" — sibling under docs/guides/
-#   - "../examples/..."                                             — under docs/examples/
+# correctly from inside agentic-toolkit. Same-page anchors (#section) are left untouched, as
+# are already-absolute links (http/https) — none of the patterns below can match those, since
+# each requires "(" to be followed immediately by a slash-free, colon-free relative segment.
+# Handled shapes, generic rather than a fixed filename list so a newly-added sibling doc or
+# example asset in the upstream source needs no change here:
+#   - "(../foo)"      — parent-relative, resolves under docs/ (the source lives in docs/guides/)
+#   - "(./foo)"       — explicit same-dir relative, resolves under docs/guides/
+#   - "(foo.md)"      — bare sibling filename (no path separator), resolves under docs/guides/
 #
 # REF_URL_SAFE is already percent-encoded (see above), so it contains only unreserved URL
 # characters and '/' — none of which are special to sed's s|...|...| syntax — and can be
 # dropped straight into the replacement text below with no separate escaping pass.
 BLOB_BASE="https://github.com/${LIVING_DOC_REPO}/blob/${REF_URL_SAFE}"
 sed -E \
-  -e "s|\(living-doc-header-types\.md|(${BLOB_BASE}/docs/guides/living-doc-header-types.md|g" \
-  -e "s|\(living-doc-document-types\.md|(${BLOB_BASE}/docs/guides/living-doc-document-types.md|g" \
-  -e "s|\(\.\./examples/|(${BLOB_BASE}/docs/examples/|g" \
+  -e "s|\(\.\./([^)]+)\)|(${BLOB_BASE}/docs/\1)|g" \
+  -e "s|\(\./([^)]+)\)|(${BLOB_BASE}/docs/guides/\1)|g" \
+  -e "s|\(([A-Za-z0-9_.-]+\.md)(#[^)]*)?\)|(${BLOB_BASE}/docs/guides/\1\2)|g" \
   "${TMP_FILE}" > "${TMP_FILE}.rewritten"
 mv "${TMP_FILE}.rewritten" "${TMP_FILE}"
 

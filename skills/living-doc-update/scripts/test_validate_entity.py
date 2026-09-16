@@ -17,7 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from validate_entity import ID_PATTERNS, AC_ID_PATTERN, validate
+from validate_entity import ID_PATTERNS, AC_ID_PATTERN, validate, load_ac_states_from_profile
 
 VALIDATE_ENTITY_PY = Path(__file__).parent / "validate_entity.py"
 
@@ -206,6 +206,86 @@ def test_orphan_feature_suppressed_by_catalog_back_link():
     orphan_issues = [i for i in issues if i["field"] == "ORPHAN_FEATURE"]
     assert not orphan_issues, f"did not expect ORPHAN_FEATURE for a catalog back-linked Feature, got: {orphan_issues}"
     print("✓ A Feature linked only via a catalog User Story's forward link is not flagged orphan")
+
+
+def test_functionality_warning_suppressed_by_catalog_back_link():
+    """A Feature with an empty own `functionalities` list, but referenced via a
+    Functionality's `parent_feature` back-link in the catalog, must not get the
+    'functionalities' warning — matches compute_gaps.py's EMPTY_FEATURE gap, which unions
+    a Feature's forward `functionalities` list with the catalog back-link
+    (feature_func_counts), the same treatment ORPHAN_FEATURE already gets for user_stories."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-5",
+        "name": "Back-linked Surface",
+        "surface_type": "UI",
+        "purpose": "A surface whose Functionality is linked only from the Functionality side",
+        "user_stories": ["US-1"],
+        "functionalities": [],
+        "owners": ["Team"],
+    }
+    catalog = {
+        "catalog": {
+            "user_stories": [],
+            "features": [],
+            "functionalities": [{"id": "FUNC-1", "parent_feature": "FEAT-5"}],
+        },
+    }
+    issues = validate(feat, catalog)
+    func_issues = [i for i in issues if i["field"] == "functionalities"]
+    assert not func_issues, f"did not expect a functionalities warning for a catalog back-linked Feature, got: {func_issues}"
+    print("✓ A Feature linked only via a catalog Functionality's parent_feature back-link is not flagged")
+
+
+def test_functionality_warning_still_reported_without_back_link():
+    """The catalog back-link suppression must not swallow a genuine gap — a Feature with
+    an empty `functionalities` list and no matching catalog back-link still warns."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-6",
+        "name": "Genuinely Empty Surface",
+        "surface_type": "UI",
+        "purpose": "A surface with no Functionalities anywhere in the catalog",
+        "user_stories": ["US-1"],
+        "functionalities": [],
+        "owners": ["Team"],
+    }
+    catalog = {
+        "catalog": {
+            "user_stories": [],
+            "features": [],
+            "functionalities": [{"id": "FUNC-1", "parent_feature": "FEAT-OTHER"}],
+        },
+    }
+    issues = validate(feat, catalog)
+    func_issues = [i for i in issues if i["field"] == "functionalities"]
+    assert func_issues, f"expected a functionalities warning when no catalog back-link matches, got: {issues}"
+    print("✓ A Feature with no Functionalities and no matching catalog back-link is still flagged")
+
+
+def test_profile_missing_pyyaml_hard_fails():
+    """Missing pyyaml must hard-fail with a clear message, not silently fall back to
+    unrestricted canonical validation as if --profile had been omitted. Regression: a
+    prior version caught ImportError in the same except clause as 'profile file not
+    found' and returned None with just a stderr warning, so a profile narrowing
+    ac_states would be silently ignored in any environment without pyyaml installed."""
+    original = sys.modules.get("yaml", "__absent__")
+    sys.modules["yaml"] = None  # forces `import yaml` to raise ImportError
+    try:
+        try:
+            load_ac_states_from_profile("irrelevant-path.yaml")
+        except SystemExit as exc:
+            assert exc.code == 1, f"expected exit code 1, got: {exc.code}"
+        else:
+            raise AssertionError(
+                "expected load_ac_states_from_profile to exit(1) when pyyaml is unavailable"
+            )
+    finally:
+        if original == "__absent__":
+            del sys.modules["yaml"]
+        else:
+            sys.modules["yaml"] = original
+    print("✓ Missing pyyaml hard-fails instead of silently falling back to unrestricted validation")
 
 
 def _run_validate_entity(*args: str) -> subprocess.CompletedProcess:
@@ -421,6 +501,9 @@ if __name__ == "__main__":
         test_orphan_feature_reported_distinctly()
         test_orphan_feature_with_functionalities_still_reported()
         test_orphan_feature_suppressed_by_catalog_back_link()
+        test_functionality_warning_suppressed_by_catalog_back_link()
+        test_functionality_warning_still_reported_without_back_link()
+        test_profile_missing_pyyaml_hard_fails()
         test_profile_ac_states_subset_accepted()
         test_profile_narrows_entity_status_too()
         test_profile_ac_states_outside_canon_rejected()

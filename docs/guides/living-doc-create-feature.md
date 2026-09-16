@@ -1,6 +1,6 @@
 # Living Doc Create Feature Skill
 
-The `living-doc-create-feature` skill helps you document a system surface (UI screen, API endpoint, worker, module) as a Feature entity. It establishes ownership, enables impact analysis, and links User Stories to the surfaces they exercise.
+The `living-doc-create-feature` skill helps you document a system surface (UI screen or API endpoint, including a backend service's public contract) as a Feature entity. It establishes ownership, enables impact analysis, and links User Stories to the surfaces they exercise.
 
 ---
 
@@ -34,12 +34,14 @@ feature dependencies
 
 ## Feature types
 
-| Type | Example |
-|------|---------|
-| **UI Screen** | Login, Dashboard, Checkout |
-| **API Endpoint** | POST /orders, GET /users/:id |
-| **Worker/Service** | Order processor, Email sender |
-| **Module** | Payment library, Auth service |
+Only two surface types exist — each requires the matching test abstraction to actually exist for this surface:
+
+| Type | Example | Required anchor |
+|------|---------|------------------|
+| **UI** | Login, Dashboard, Checkout | A PageObject for the screen |
+| **API** | POST /orders, GET /users/:id, including a backend service's public contract (REST/GraphQL or an annotated message-broker contract) | An annotated endpoint method, or an annotated event handler |
+
+A worker, module, or service with neither anchor is not a Feature yet — record it as an `external_dependencies` entry on the Feature(s) that interact with it. See [living-doc-glossary](../../skills/shared/references/living-doc-glossary.md) for details.
 
 ---
 
@@ -63,7 +65,7 @@ One Python utility available in `skills/living-doc-create-feature/scripts/`:
 
 This skill has been validated with **17 test cases** covering:
 - Feature entity creation
-- Multiple Feature types (UI, API, service, module)
+- Feature types (UI, API)
 - Ownership and dependency tracking
 - Feature Registry integration
 - User Story linkage
