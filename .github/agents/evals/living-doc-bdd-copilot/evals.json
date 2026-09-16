@@ -271,7 +271,7 @@
       "id": 20,
       "category": "skill-dispatch",
       "prompt": "Document the Notifications Service as a Feature entity in the living doc — it exposes a REST API at /api/notifications.",
-      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), surface_type ('API'), route ('/api/notifications'), owners (asks user), and empty functionalities and user_stories arrays — no `status` field, since a Feature's state is derived from its Functionalities. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
+      "expected_output": "Agent loads the `living-doc-create-feature` skill. Assigns the next sequential FEAT-nnn ID using next_id.py. Creates a Feature entity JSON with: id, name ('Notifications Service'), surface_type ('API'), purpose, owners (asks user), external_dependencies, and provisional functionalities/user_stories arrays seeded with placeholder IDs rather than left empty — the prompt does not say the links are unknown — no `status` field, since a Feature's state is derived from its Functionalities. Adds the Feature to feature_registry.json. Prompts: 'Do you want to create Functionality entities for specific behaviors of this service?'",
       "files": [],
       "expectations": [
         "Loads living-doc-create-feature skill",

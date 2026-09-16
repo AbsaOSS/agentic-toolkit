@@ -52,7 +52,13 @@ fi
 # Known relative link shapes in the source file:
 #   - "living-doc-header-types.md" / "living-doc-document-types.md" — sibling under docs/guides/
 #   - "../examples/..."                                             — under docs/examples/
-BLOB_BASE="https://github.com/${LIVING_DOC_REPO}/blob/${REF}"
+#
+# REF is attacker-controllable input (any branch/tag name) and lands in the replacement side
+# of the sed commands below. Escape backslash, ampersand (sed's "insert the match" token), and
+# the "|" delimiter those commands use, so a ref like "release&docs" can't corrupt the rewritten
+# links or break the command.
+REF_SED_SAFE="$(printf '%s' "${REF}" | sed -e 's/[\&|]/\\&/g')"
+BLOB_BASE="https://github.com/${LIVING_DOC_REPO}/blob/${REF_SED_SAFE}"
 sed -E \
   -e "s|\(living-doc-header-types\.md|(${BLOB_BASE}/docs/guides/living-doc-header-types.md|g" \
   -e "s|\(living-doc-document-types\.md|(${BLOB_BASE}/docs/guides/living-doc-document-types.md|g" \

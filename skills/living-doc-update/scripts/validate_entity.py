@@ -43,8 +43,10 @@ except ImportError:
 VALID_STATUSES = {"planned", "in_review", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
 # AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
-# Override at runtime with --profile to read the project's own ac_states list.
-VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
+# CANONICAL_AC_STATUSES never changes; VALID_AC_STATUSES may be narrowed at runtime with
+# --profile to a subset of it (see main()) — a profile can restrict, never extend, the canon.
+CANONICAL_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
+VALID_AC_STATUSES = set(CANONICAL_AC_STATUSES)
 
 # Numeric only, any digit count (US-1 and US-001 are both valid — matches
 # living_doc_id.py's ENTITY_TYPE_MAP and scan_ac_links.py). Feature IDs are numeric
@@ -194,8 +196,18 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
         no_functionalities = isinstance(entity.get("functionalities"), list) and not entity["functionalities"]
         # gap-finder's ORPHAN_FEATURE gap fires on the absence of a linked User Story alone
         # (compute_gaps.py), regardless of Functionality links — so mirror that here rather
-        # than requiring both lists to be empty.
-        if no_user_stories:
+        # than requiring both lists to be empty. compute_gaps.py also honours the back-link
+        # from a User Story's own `features` list (features_linked_from_us), not just the
+        # Feature's forward `user_stories` — mirror that here too so a Feature linked only
+        # from the User Story side isn't falsely flagged when --catalog is supplied.
+        linked_from_catalog_us = False
+        if no_user_stories and catalog is not None:
+            inner = catalog.get("catalog", catalog)
+            linked_from_catalog_us = any(
+                entity_id in (us.get("features") or [])
+                for us in inner.get("user_stories", [])
+            )
+        if no_user_stories and not linked_from_catalog_us:
             warning(
                 "ORPHAN_FEATURE",
                 "Feature has no linked User Stories — "
@@ -387,6 +399,14 @@ def main() -> None:
     if args.profile:
         profile_states = load_ac_states_from_profile(args.profile)
         if profile_states:
+            invalid_states = profile_states - CANONICAL_AC_STATUSES
+            if invalid_states:
+                print(
+                    f"Error: profile ac_states {sorted(invalid_states)} are not a subset of the "
+                    f"canonical AC states {sorted(CANONICAL_AC_STATUSES)}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
             global VALID_AC_STATUSES
             VALID_AC_STATUSES = profile_states
 

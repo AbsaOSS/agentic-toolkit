@@ -11,9 +11,15 @@ alongside this).
 """
 __test__ = False  # pytest: ignore this helper script
 
+import json
+import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 from validate_entity import ID_PATTERNS, AC_ID_PATTERN, validate
+
+VALIDATE_ENTITY_PY = Path(__file__).parent / "validate_entity.py"
 
 
 def test_single_digit_entity_ids_accepted():
@@ -175,6 +181,82 @@ def test_orphan_feature_with_functionalities_still_reported():
     print("✓ A Feature with Functionalities but no User Stories is still flagged as ORPHAN_FEATURE")
 
 
+def test_orphan_feature_suppressed_by_catalog_back_link():
+    """A Feature with an empty own `user_stories` list, but referenced via a User
+    Story's forward `features` link in the catalog, must not be flagged ORPHAN_FEATURE —
+    matches compute_gaps.py's Gap 3, which honours both link directions."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-4",
+        "name": "Back-linked Surface",
+        "surface_type": "UI",
+        "purpose": "A surface linked only from the User Story side",
+        "user_stories": [],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+    }
+    catalog = {
+        "catalog": {
+            "user_stories": [{"id": "US-1", "name": "Do a thing", "features": ["FEAT-4"]}],
+            "features": [],
+            "functionalities": [],
+        },
+    }
+    issues = validate(feat, catalog)
+    orphan_issues = [i for i in issues if i["field"] == "ORPHAN_FEATURE"]
+    assert not orphan_issues, f"did not expect ORPHAN_FEATURE for a catalog back-linked Feature, got: {orphan_issues}"
+    print("✓ A Feature linked only via a catalog User Story's forward link is not flagged orphan")
+
+
+def _run_validate_entity(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(VALIDATE_ENTITY_PY), *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+
+def test_profile_ac_states_subset_accepted():
+    """A profile's ac_states that is a subset of the canonical set narrows validation —
+    an AC state outside that narrower subset (but still canonical) must be rejected."""
+    us = {
+        "entity_type": "User Story",
+        "id": "US-1",
+        "name": "Place an order",
+        "status": "active",
+        "features": ["FEAT-1"],
+        "acceptance_criteria": [
+            {"id": "AC:US-1-01", "description": "Order fails when payment is invalid", "state": "active"},
+        ],
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps(us), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: [planned, active]\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["valid"], payload
+    print("✓ --profile ac_states that is a canonical subset narrows validation as expected")
+
+
+def test_profile_ac_states_outside_canon_rejected():
+    """A profile's ac_states containing a value outside the canonical four states must be
+    rejected up front, not silently substituted for the canonical set — otherwise an AC in
+    a made-up state (e.g. 'done') would validate successfully."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: [done]\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "not a subset of the canonical" in result.stderr, result.stderr
+    print("✓ --profile ac_states outside the canonical set is rejected instead of applied")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -188,6 +270,9 @@ if __name__ == "__main__":
         test_feature_surface_type_canonical_set_only()
         test_orphan_feature_reported_distinctly()
         test_orphan_feature_with_functionalities_still_reported()
+        test_orphan_feature_suppressed_by_catalog_back_link()
+        test_profile_ac_states_subset_accepted()
+        test_profile_ac_states_outside_canon_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

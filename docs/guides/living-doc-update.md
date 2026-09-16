@@ -66,7 +66,7 @@ One Python utility available in `skills/living-doc-update/scripts/`:
 
 This skill has been validated with **16 test cases** covering:
 - Adding/modifying/removing ACs
-- Status transitions (draft → ready → deprecated)
+- Status transitions (planned → in_review → active → deprecated)
 - Ownership changes and notifications
 - Entity linking workflows
 - Propagation to downstream skills
