@@ -161,13 +161,14 @@
       "id": 12,
       "category": "output-format",
       "prompt": "After scanning /login and generating a LoginPage, show me what the manifest.json entry for /login looks like.",
-      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements with data_cy and tag), coverage_gaps (empty list initially), and navigation_context with prerequisites, navigation_steps, data_requirements, auth_role, and notes. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and load `living-doc-create-feature` skill to create it.",
+      "expected_output": "The manifest.json entry for /login includes: pageobject_path (path to the generated LoginPage file), feature_id (FEAT-<nnn> or FEAT-UNKNOWN if unlinked), last_scanned (ISO timestamp), elements (list of discovered elements, each with the normalized test_id key and tag — not data_cy), coverage_gaps (empty list initially), and navigation_context as a prose STRING describing how to reach the route (e.g. prerequisites, navigation steps, auth role) — not an object. The feature_id is FEAT-UNKNOWN if no matching Feature entity exists in the living doc — flag this route as 'needs Feature entity' and load `living-doc-create-feature` skill to create it.",
       "files": [],
       "expectations": [
         "manifest.json entry has: pageobject_path, feature_id, last_scanned, elements, coverage_gaps, navigation_context",
         "feature_id is FEAT-UNKNOWN if no matching Feature entity exists",
         "last_scanned is an ISO timestamp",
-        "navigation_context includes prerequisites, navigation_steps, auth_role",
+        "elements use the normalized 'test_id' key, not 'data_cy'",
+        "navigation_context is a prose string (not an object) describing prerequisites, navigation steps, and auth role",
         "Missing Feature entity triggers living-doc-create-feature skill load"
       ]
     },

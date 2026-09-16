@@ -188,12 +188,12 @@
       "id": 14,
       "category": "output-format",
       "prompt": "Show the structure of the manifest.json a Create-mode scan should write for the /login route.",
-      "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the literal key 'data-cy' (not snake_case 'data_cy'), and each coverage_gap uses camelCase 'suggestedDataCy' (not 'suggested_data_cy'). 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
+      "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the normalized key 'test_id' (not attribute-specific 'data-cy' or 'data_cy'), and each coverage_gap uses 'suggested_test_id' (not 'suggestedDataCy' or 'suggested_data_cy'). The root-level 'test_id_attribute' tells downstream generators what HTML attribute (e.g. data-cy) these normalized keys map to. 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
       "files": [],
       "expectations": [
         "routes is a JSON array of route objects (manifest_shape: array)",
-        "Element keys use literal 'data-cy', not 'data_cy'",
-        "Gap keys use camelCase 'suggestedDataCy', not 'suggested_data_cy'",
+        "Element keys use normalized 'test_id', not 'data-cy' or 'data_cy'",
+        "Gap keys use normalized 'suggested_test_id', not 'suggestedDataCy' or 'suggested_data_cy'",
         "navigation_context is a string, not an object",
         "References validating/canonicalizing via validate_artifacts.py before closeout"
       ]
@@ -202,12 +202,12 @@
       "id": 15,
       "category": "output-format",
       "prompt": "Before you report the scan complete, what validation do you run on the artifacts?",
-      "expected_output": "Runs the mandatory closeout validation gate: 'python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize' and 'validate_artifacts.py seed <bdd_artifacts>/seed.yaml' (and 'validate_artifacts.py profile' if a profile is present). The manifest check rejects snake_case keys and an object navigation_context; --canonicalize sorts routes/elements and rewrites with sorted keys. The seed check rejects inline credential literals. The session is not reported complete until every validator exits 0.",
+      "expected_output": "Runs the mandatory closeout validation gate: 'python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize' and 'validate_artifacts.py seed <bdd_artifacts>/seed.yaml' (and 'validate_artifacts.py profile' if a profile is present). The manifest check rejects non-canonical element/gap keys (e.g. 'data-cy', 'data_cy', 'suggestedDataCy' instead of the normalized 'test_id' / 'suggested_test_id') and an object navigation_context; --canonicalize sorts routes/elements and rewrites with sorted keys. The seed check rejects inline credential literals. The session is not reported complete until every validator exits 0.",
       "files": [],
       "expectations": [
         "Runs validate_artifacts.py on the manifest with --canonicalize",
         "Runs validate_artifacts.py on the seed",
-        "Notes the manifest check rejects snake_case keys and object navigation_context",
+        "Notes the manifest check rejects non-canonical keys (e.g. data-cy/data_cy/suggestedDataCy) and an object navigation_context",
         "Notes the seed check rejects inline credential literals",
         "Does not report done until validators exit 0"
       ]

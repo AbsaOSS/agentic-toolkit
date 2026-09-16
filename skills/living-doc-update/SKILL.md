@@ -96,21 +96,22 @@ When promotion is blocked because only a happy-path AC exists, give a concrete e
 
 After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `active` AC if they do not yet exist.
 
-## Deprecate a Feature or Functionality
+## Deprecate a Feature, Functionality, or User Story
 
 Use this workflow when code backing an entity is deleted or a business capability is retired.
 Set the relevant fields in the project's Storage Profile format:
 
 | Field | Value | Applies to |
 |---|---|---|
-| `status` | `deprecated` | Functionality only — a Feature has no `status` field |
-| `deprecated_at` | Date of deprecation | Feature and Functionality |
-| `deprecation_reason` | Why it was deprecated | Feature and Functionality |
+| `status` | `deprecated` | Functionality and User Story only — a Feature has no `status` field |
+| `deprecated_at` | Date of deprecation | Feature, Functionality, and User Story |
+| `deprecation_reason` | Why it was deprecated | Feature, Functionality, and User Story |
 | `deprecated_code_commit` | Commit SHA or URL that removed the backing code (if applicable) | Feature and Functionality |
-| `superseded_by` | ID of the replacement entity (if applicable) | Feature and Functionality |
+| `superseded_by` | ID of the replacement entity (if applicable) | Feature, Functionality, and User Story |
 
 Rules:
 - Always deprecate — never delete entities (preserves audit trail)
+- A Functionality or User Story being deprecated gets `status: deprecated` — never leave it on its prior status while adding deprecation metadata, or it reads as still active
 - Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
 - A Feature never gets a `status` field, deprecated or otherwise — its state is derived from its Functionalities. Retiring a Feature means deprecating every Functionality it owns; the Feature entity itself only gains `deprecated_at` / `deprecation_reason` / `superseded_by` as a record of when the surface was retired.
