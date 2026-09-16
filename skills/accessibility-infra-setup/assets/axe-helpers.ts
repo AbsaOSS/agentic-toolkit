@@ -1,7 +1,8 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 type Violations = Awaited<ReturnType<AxeBuilder['analyze']>>['violations'];
+type Incomplete = Awaited<ReturnType<AxeBuilder['analyze']>>['incomplete'];
 
 type AxeFixture = {
   makeAxeBuilder: () => AxeBuilder;
@@ -41,6 +42,22 @@ export function formatViolations(violations: Violations): string {
 
 export function expectNoViolations(violations: Violations) {
   expect(violations, formatViolations(violations)).toHaveLength(0);
+}
+
+/**
+ * Surface axe "incomplete" results (checks axe couldn't confirm without human
+ * judgement, e.g. combobox aria-controls patterns) as a non-blocking warning
+ * annotation instead of failing the test. Visible in the HTML report and
+ * printable via `print-a11y-warnings.js` without opening it.
+ */
+export function annotateIncomplete(incomplete: Incomplete, testInfo: TestInfo) {
+  if (incomplete.length === 0) return;
+  testInfo.annotations.push({
+    type: 'warning',
+    description: incomplete
+      .map((r) => `[${r.impact ?? 'unknown'}] ${r.id} (${r.nodes.length} node(s))`)
+      .join('; ')
+  });
 }
 
 /**

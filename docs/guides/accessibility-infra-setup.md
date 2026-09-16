@@ -30,7 +30,8 @@ After the skill runs, the repository contains:
 ```
 playwright/
 ├── fixtures/
-│   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion helpers
+│   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion/incomplete-warning helpers
+├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of the "/" route — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
@@ -38,6 +39,9 @@ docs/accessibility.md                   # How to run, where reports land
 ```
 
 Running `npm run test:a11y` starts the dev server, runs the dummy scan on Desktop Chrome, and passes green.
+axe `violations` fail the test; `incomplete` results (findings axe couldn't confirm without human
+judgement) are non-blocking — they're surfaced as a warning annotation instead. Run
+`npm run test:a11y:incomplete` to print any without opening the HTML report.
 
 ---
 

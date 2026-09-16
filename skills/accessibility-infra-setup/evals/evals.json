@@ -21,8 +21,9 @@
         "Installs the Chromium browser via playwright install",
         "Creates playwright.config.ts with an 'accessibility' project using testMatch /accessibility/ on Desktop Chrome",
         "Creates a shared axe fixture (axe-helpers) whose makeAxeBuilder uses wcag2a/wcag2aa/wcag21a/wcag21aa/wcag22a/wcag22aa/best-practice tags",
-        "Creates exactly one dummy accessibility spec (filename contains 'accessibility')",
-        "Adds test:a11y npm scripts to package.json without clobbering existing scripts",
+        "axe-helpers exports an annotateIncomplete helper that reports axe 'incomplete' results as a non-blocking warning annotation instead of failing the test",
+        "Creates exactly one dummy accessibility spec (filename contains 'accessibility') that calls annotateIncomplete on results.incomplete and only asserts expectNoViolations on results.violations",
+        "Adds test:a11y npm scripts (including test:a11y:incomplete) to package.json without clobbering existing scripts",
         "Runs npm run test:a11y and confirms it passes green",
         "Adds documentation describing how to run the checks and where reports are generated",
         "Does NOT author real per-page accessibility tests beyond the single dummy example"
@@ -43,7 +44,7 @@
         "Merges an accessibility project (testMatch /accessibility/, Desktop Chrome) into the existing config",
         "Adds testIgnore /accessibility/ to existing functional projects so a11y scans run once",
         "Installs @axe-core/playwright but does not reinstall Playwright if already present",
-        "Creates the shared axe fixture and one dummy accessibility spec",
+        "Creates the shared axe fixture (with annotateIncomplete) and one dummy accessibility spec that reports incomplete results as warnings rather than failures",
         "Validates the dummy scan passes"
       ]
     },

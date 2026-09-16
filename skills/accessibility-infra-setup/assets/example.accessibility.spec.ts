@@ -1,6 +1,7 @@
 import {
   test,
   expectNoViolations,
+  annotateIncomplete,
   waitForAnimationsToFinish
 } from '../fixtures/axe-helpers';
 
@@ -22,6 +23,8 @@ test.describe('Accessibility - example scan', () => {
       contentType: 'application/json'
     });
 
+    // "incomplete" results need human judgement - report, don't fail the build.
+    annotateIncomplete(results.incomplete, testInfo);
     expectNoViolations(results.violations);
   });
 });

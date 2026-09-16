@@ -32,7 +32,8 @@ After this skill runs, the repository contains:
 ```
 playwright/
 ├── fixtures/
-│   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion helpers
+│   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion + incomplete-warning helpers
+├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of the "/" route — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
@@ -40,9 +41,11 @@ docs/accessibility.md                   # How to run, where reports land (or pla
 ```
 
 - `package.json` gains `@playwright/test` + `@axe-core/playwright` (devDependencies) and
-  `test:a11y*` scripts.
+  `test:a11y*` scripts, including `test:a11y:incomplete`.
 - `npm run test:a11y` starts the dev server, runs the dummy scan on Desktop Chrome, and **passes
   green**. That green run is the definition of done.
+- axe `violations` fail the test; axe `incomplete` results (checks axe couldn't confirm without
+  human judgement) are non-blocking — reported as a warning annotation instead, never as a failure.
 
 ## Workflow
 
@@ -107,11 +110,16 @@ Create these files (templates live in this skill's `assets/`):
 1. `playwright.config.ts` (root) — from `assets/playwright.config.ts` (fresh setup only; otherwise
    merge as in Step 1). Adjust `baseURL`, `webServer.command`, and port if the app differs.
 2. `playwright/fixtures/axe-helpers.ts` — copy verbatim from `assets/axe-helpers.ts`. This is the
-   single source of the WCAG 2.2 AA tag set; every scan must build from `makeAxeBuilder`.
+   single source of the WCAG 2.2 AA tag set; every scan must build from `makeAxeBuilder`. It also
+   exports `annotateIncomplete`, which every scan must call on `results.incomplete` so those
+   findings are reported as a warning annotation instead of silently dropped or failing the build.
 3. `playwright/a11y/example.accessibility.spec.ts` — from `assets/example.accessibility.spec.ts`.
    Verify the import path resolves to the fixture (`../fixtures/axe-helpers`) given where you place
    the spec, and point `page.goto('/')` at a route that renders without auth. If the app's landing
    route requires login, use a known public route instead and note it.
+4. `playwright/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Reads
+   the JSON reporter output and prints every test carrying an incomplete-result warning, so they can
+   be reviewed without opening the HTML report.
 
 The `accessibility` substring in the spec filename is what routes it to the accessibility project —
 keep it.
@@ -123,8 +131,13 @@ Add to `package.json` `scripts` (do not clobber existing entries):
 ```jsonc
 "test:a11y": "playwright test --project=accessibility",
 "test:a11y:headed": "playwright test --project=accessibility --headed",
-"test:a11y:report": "playwright show-report"
+"test:a11y:report": "playwright show-report",
+"test:a11y:incomplete": "node playwright/print-a11y-warnings.js"
 ```
+
+`test:a11y:incomplete` reads the JSON report from the most recent `test:a11y` run (the shipped
+`playwright.config.ts` already writes it to `playwright-report/summary.json`) — run it after
+`test:a11y`, not instead of it.
 
 ### Step 5 · Validate — run the dummy scan
 
@@ -166,6 +179,9 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
 - **git-ignore artifacts.** Ensure `test-results/` and `playwright-report/` are git-ignored.
 - **WCAG tag set lives in one place.** Never inline `withTags(...)` in a spec — always go through
   `makeAxeBuilder`, so the standard stays consistent as scans are added later.
+- **Incomplete ≠ violation.** Never assert `expectNoViolations(results.incomplete)` in a fresh setup
+  — `incomplete` results need human judgement and must only be surfaced via `annotateIncomplete`
+  (a non-blocking warning annotation), never used to fail the build.
 
 ## Out of scope
 
