@@ -35,15 +35,17 @@ playwright/
 │   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion + incomplete-warning helpers
 ├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
 └── a11y/
-    └── example.accessibility.spec.ts   # ONE dummy scan of the "/" route — passes
+    └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
 docs/accessibility.md                   # How to run, where reports land (or playwright/README.md)
 ```
 
 - `package.json` gains `@playwright/test` + `@axe-core/playwright` (devDependencies) and
   `test:a11y*` scripts, including `test:a11y:incomplete`.
-- `npm run test:a11y` starts the dev server, runs the dummy scan on Desktop Chrome, and **passes
-  green**. That green run is the definition of done.
+- `npm run test:a11y` starts the dev server and runs the dummy scan on Desktop Chrome against static,
+  known-compliant HTML (via `page.setContent`, not a real app route) — it **passes green**
+  regardless of whether the app itself is WCAG-compliant yet. That green run is the definition of
+  done; fixing app violations is a separate, out-of-scope concern.
 - axe `violations` fail the test; axe `incomplete` results (checks axe couldn't confirm without
   human judgement) are non-blocking — reported as a warning annotation instead, never as a failure.
 
@@ -56,7 +58,7 @@ Copy this checklist and track progress:
 - [ ] Step 2: Install dependencies
 - [ ] Step 3: Scaffold config + fixture + example spec
 - [ ] Step 4: Wire npm scripts
-- [ ] Step 5: Validate (run the dummy scan → green)
+- [ ] Step 5: Validate (run the dummy scan, confirm the pipeline itself works)
 - [ ] Step 6: Document
 ```
 
@@ -114,9 +116,10 @@ Create these files (templates live in this skill's `assets/`):
    exports `annotateIncomplete`, which every scan must call on `results.incomplete` so those
    findings are reported as a warning annotation instead of silently dropped or failing the build.
 3. `playwright/a11y/example.accessibility.spec.ts` — from `assets/example.accessibility.spec.ts`.
-   Verify the import path resolves to the fixture (`../fixtures/axe-helpers`) given where you place
-   the spec, and point `page.goto('/')` at a route that renders without auth. If the app's landing
-   route requires login, use a known public route instead and note it.
+   It scans static, known-compliant HTML via `page.setContent(...)` rather than a real app route, so
+   the dummy proof stays green independent of whether the app itself is WCAG-compliant yet. Do not
+   point it at a real route (e.g. `page.goto('/')`) — that reintroduces exactly the failure mode this
+   avoids. Copy the template's HTML as-is; it only needs a landmark, a heading, and text.
 4. `playwright/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Reads
    the JSON reporter output and prints every test carrying an incomplete-result warning, so they can
    be reviewed without opening the HTML report.
@@ -148,12 +151,10 @@ npm run test:a11y
 ```
 
 1. If it **passes**, the infrastructure is proven. Done.
-2. If it **fails on a real WCAG violation** on the chosen route, switch the example to a simpler
-   public route (the dummy test must pass to prove the plumbing — fixing app violations is out of
-   scope). Note the finding for the user.
-3. If it fails on **setup** (missing browser, wrong port, dev server timeout, import error), fix the
-   config/paths and re-run. Common causes: dev server not on 4200, `webServer.command` wrong,
-   Chromium not installed, fixture import path incorrect.
+2. If it fails, it is a **setup** problem (missing browser, wrong port, dev server timeout, import
+   error) — the dummy HTML is fixed and known-compliant, so a real WCAG violation should never be
+   the cause. Fix the config/paths and re-run. Common causes: dev server not on 4200,
+   `webServer.command` wrong, Chromium not installed, fixture import path incorrect.
 
 Do not finish until `npm run test:a11y` exits green.
 
@@ -182,6 +183,11 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
 - **Incomplete ≠ violation.** Never assert `expectNoViolations(results.incomplete)` in a fresh setup
   — `incomplete` results need human judgement and must only be surfaced via `annotateIncomplete`
   (a non-blocking warning annotation), never used to fail the build.
+- **Dummy scan uses static HTML, not a real route.** The example spec calls `page.setContent(...)`
+  with known-compliant markup instead of `page.goto('/')`, so it proves the plumbing without
+  depending on whether the app itself is WCAG-compliant. Do not repoint it at a real route — real
+  per-page coverage belongs in dedicated specs added later, once the app's actual violations (if any)
+  are a separate, tracked concern.
 
 ## Out of scope
 
