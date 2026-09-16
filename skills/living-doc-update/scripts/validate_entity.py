@@ -115,6 +115,12 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     except (FileNotFoundError, ValueError) as exc:
         print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
         return None
+    except yaml.YAMLError as exc:
+        print(
+            f"Error: profile '{profile_path}' is malformed — invalid YAML: {exc}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     if not isinstance(profile, dict):
         print(
             f"Error: profile '{profile_path}' is malformed — "
