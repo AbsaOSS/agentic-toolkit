@@ -343,6 +343,22 @@ def test_profile_ac_states_wrong_type_rejected():
     print("✓ --profile ac_states of the wrong type is rejected instead of silently applied")
 
 
+def test_profile_ac_states_non_string_item_rejected():
+    """A profile's `ac_states` list containing a non-string item (e.g. a YAML mapping) is
+    schema-invalid — it must be rejected up front with a diagnostic, not reach `set(states)`
+    and crash with an unhandled TypeError on the unhashable item."""
+    with tempfile.TemporaryDirectory() as tmp:
+        entity_path = Path(tmp) / "entity.json"
+        entity_path.write_text(json.dumps({"entity_type": "User Story"}), encoding="utf-8")
+        profile_path = Path(tmp) / ".project-profile.yaml"
+        profile_path.write_text("ac_states: [{foo: bar}, active]\n", encoding="utf-8")
+        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path))
+    assert result.returncode == 1, result.stdout
+    assert "invalid `ac_states`" in result.stderr, result.stderr
+    assert "Traceback" not in result.stderr, result.stderr
+    print("✓ --profile ac_states with a non-string item is rejected instead of crashing")
+
+
 if __name__ == "__main__":
     try:
         test_single_digit_entity_ids_accepted()
@@ -362,6 +378,7 @@ if __name__ == "__main__":
         test_profile_ac_states_outside_canon_rejected()
         test_profile_ac_states_empty_list_rejected()
         test_profile_ac_states_wrong_type_rejected()
+        test_profile_ac_states_non_string_item_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:
         print(f"✗ Test failed: {e}")

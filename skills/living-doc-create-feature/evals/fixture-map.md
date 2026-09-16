@@ -21,7 +21,7 @@
 | 9 | file-based | `raw-feature-notes.md` | Notifications Centre — extract surface from rough notes |
 | 10 | regression | _(none)_ | Anti-pattern: technology-encoded Feature name (Spring Payment Controller) |
 | 11 | edge-case | _(none)_ | Anti-pattern: surface_type=UI for a REST controller |
-| 12 | happy-path | _(none)_ | Async worker mapped to surface_type=API: PaymentEventProcessor |
+| 12 | happy-path | _(none)_ | Pure Kafka-topic worker (PaymentEventProcessor) — no UI/API anchor, Feature creation declined, recorded as external_dependencies |
 | 13 | regression | _(none)_ | Candidate Functionalities not formally defined — leave functionalities=[] |
 | 14 | regression | _(none)_ | Duplicate Feature name conflict resolution |
 

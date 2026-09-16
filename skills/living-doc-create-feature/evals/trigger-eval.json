@@ -87,7 +87,7 @@
     "id": 15,
     "query": "Register the notification background worker in the living doc as a system surface",
     "should_trigger": true,
-    "reason": "Documenting a background worker as a system surface — Feature creation (surface_type=API, representing its public contract)"
+    "reason": "Documenting a background worker as a system surface — Feature creation workflow triggers to assess whether it has a REST/GraphQL endpoint (surface_type=API) or is a pure topic/queue worker with no Feature anchor (see evals.json id 12)"
   },
   {
     "id": 16,
