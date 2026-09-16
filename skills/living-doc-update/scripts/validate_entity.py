@@ -114,6 +114,13 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
             file=sys.stderr,
         )
         sys.exit(1)
+    if len(set(states)) != len(states):
+        print(
+            f"Error: profile '{profile_path}' has an invalid `ac_states` — "
+            f"must not contain duplicates, got: {states!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     return {str(s) for s in states}
 
 

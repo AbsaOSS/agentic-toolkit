@@ -138,6 +138,18 @@
         "getByTestId() resolves to the profile test_id_attribute",
         "Does not hardcode data-cy when a profile is present"
       ]
+    },
+    {
+      "id": 12,
+      "category": "regression",
+      "prompt": "A PageObject header has no remaining un-instrumented elements — every locator now uses getByTestId(). The header still carries a `stub-reason:` line. What do I update, and do I write a status field?",
+      "expected_output": "Remove the `stub-reason:` line from the PageObject header now that no un-instrumented elements remain — its absence is what marks the surface as instrumented. Do not add, write, or promote any `status:` field on the PageObject header: a PageObject header carries no `status:` field at all, since Feature/PageObject state is derived from Functionalities, never authored.",
+      "files": [],
+      "expectations": [
+        "Removes the stub-reason: line once no un-instrumented elements remain",
+        "Does not write or promote a status field on the PageObject header",
+        "States a PageObject header carries no status field"
+      ]
     }
   ]
 }

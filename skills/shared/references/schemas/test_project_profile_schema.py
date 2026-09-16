@@ -61,6 +61,12 @@ def test_ac_states_unknown_value_rejected():
     print("✓ ac_states: [done] is rejected")
 
 
+def test_ac_states_duplicate_rejected():
+    profile = {**BASE_PROFILE, "ac_states": ["active", "active"]}
+    assert not is_valid(profile), "ac_states: [active, active] must be rejected"
+    print("✓ ac_states: [active, active] is rejected")
+
+
 def test_pageobject_statuses_key_rejected():
     profile = {**BASE_PROFILE, "pageobject_statuses": ["planned", "candidate", "active", "deprecated"]}
     assert not is_valid(profile), "a pageobject_statuses key must be rejected"
@@ -73,6 +79,7 @@ if __name__ == "__main__":
         test_ac_states_field_omission_allowed()
         test_ac_states_title_case_rejected()
         test_ac_states_unknown_value_rejected()
+        test_ac_states_duplicate_rejected()
         test_pageobject_statuses_key_rejected()
         print("\n✓ All tests passed!")
     except AssertionError as e:

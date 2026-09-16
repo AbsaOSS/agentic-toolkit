@@ -41,17 +41,19 @@ When information is missing, phrase the discovery as a short numbered checklist 
 When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
 - `Checkout Page` → `surface_type: "UI"`; dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
 - `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
-- `Notification Service` / async notification worker → `surface_type: "API"`, documenting its public contract (the topic or endpoint it exposes); do **not** simply mirror the word "Service" into `surface_type` — there is no separate `Service` or `Worker` type; dependencies often include `smtp-relay` and `template-store`.
-- `PaymentEventProcessor` / event consumer → `surface_type: "API"`, with the Kafka topic or event stream documented as its public contract in `external_dependencies`.
+- `Notification Service` / async notification worker → if it exposes a REST/GraphQL endpoint with an annotated endpoint method (the canonical `API` contract anchor), `surface_type: "API"` documenting that endpoint; do **not** simply mirror the word "Service" into `surface_type` — there is no separate `Service` or `Worker` type. If its only contract is a topic or queue with no annotated endpoint method, it has no canonical test-abstraction anchor (see table below) — do **not** create a Feature for it; instead record it as an `external_dependencies` entry on the Feature(s) that publish to or consume it. Dependencies often include `smtp-relay` and `template-store`.
+- `PaymentEventProcessor` / event consumer with only a Kafka topic or event-stream contract and no annotated endpoint method → **not** a Feature — it has no `UI` (PageObject) or `API` (annotated endpoint method) test-abstraction anchor in the canon. Record the topic as an `external_dependencies` entry on the Feature(s) that publish or consume it. If this class of surface needs first-class tracking, that requires an upstream `living-doc` canon change (a new surface type with its own test abstraction) before `agentic-toolkit` can assign one — do not invent a local `surface_type` value to work around it.
 
 Ask only for what is missing: *What system surface does this Feature represent?*
 
-Select the surface type — only two exist:
+Select the surface type — only two exist, and each requires the matching test abstraction to actually exist for this surface:
 
-| Type | Examples |
-|---|---|
-| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) |
-| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's or async worker's public contract (e.g. Orders API, Payment Gateway API, Notification Service) |
+| Type | Examples | Requires |
+|---|---|---|
+| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) | A PageObject for the screen |
+| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public contract (e.g. Orders API, Payment Gateway API) | An **annotated endpoint method** (OpenAPI annotation, JSDoc, etc.) as the living contract anchor — see [living-doc-glossary](../shared/references/living-doc-glossary.md) |
+
+A surface with neither anchor — for example a pure event consumer or async worker whose only contract is a topic/queue — is **not** a Feature. Document it as an `external_dependencies` entry on the Feature(s) that interact with it instead of forcing it into `surface_type: "API"`.
 
 Feature names should be **noun phrases** that name the surface. If it could plausibly be a PageObject or service/module class name (for example `PaymentPage`), it is usually a good Feature name.
 
@@ -155,7 +157,7 @@ Use this exact output shape for create/document requests:
 Worked starter patterns:
 - `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* Run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
 - `Orders API` starter links: `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`
-- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `surface_type: "API"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
+- `Notification Service` starter draft: explicitly ask: *Does it expose a REST/GraphQL endpoint (e.g. a trigger-notification call), or is it purely topic/queue-driven? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If it exposes an endpoint with an annotated endpoint method, run next_id.py to get the numeric ID, then emit a Feature JSON with `surface_type: "API"` documenting that endpoint, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`. If the prompt still sounds like purely asynchronous alert delivery (topic/queue only, no annotated endpoint) after those questions, do **not** create a Feature — explain there is no `UI`/`API` test-abstraction anchor for it, and record it as an `external_dependencies` entry on the Feature(s) that publish to or consume it instead.
 
 Canonical JSON fields:
 
