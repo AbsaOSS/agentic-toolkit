@@ -168,7 +168,7 @@ Every PageObject file opens with a living-doc header block. Use this format so e
 
 | Field | Canonical values |
 |---|---|
-| `surface_type` | `UI` · `API` |
+| `surface_type` | `UI` — a PageObject is the test abstraction for a UI surface only (see [Living Doc Glossary — Feature](./living-doc-glossary.md#feature)); an API surface has no PageObject and carries no header here |
 | `route` | URL path — use `{param}` for dynamic segments |
 | `owners` | Team name(s), comma-separated |
 | `purpose` | One-to-two sentence description in business language |

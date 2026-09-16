@@ -68,14 +68,14 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "I want to add the Notification Service to the living doc as a system component. Where do I start?",
-      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: only UI and API exist — does it expose a REST/GraphQL endpoint with an annotated endpoint method (its API contract anchor), or is it purely topic/queue-driven with no such endpoint? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? If it exposes an annotated endpoint, runs next_id.py and outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API documenting that endpoint, at least one User Story link, owners, and external_dependencies. If it is purely topic/queue-driven with no annotated endpoint, explains it has no UI/API test-abstraction anchor and should instead be recorded as an external_dependencies entry on the Features that use it, rather than created as a Feature itself.",
+      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: only UI and API exist — does it expose a REST/GraphQL endpoint with an annotated endpoint method, or a message-broker topic (e.g. Kafka) with an AsyncAPI (or equivalent) annotation on the producer/consumer handler (either is its API contract anchor), or is it purely topic/queue-driven with no such annotation at all? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? If it exposes an annotated endpoint or an annotated event handler, runs next_id.py and outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API documenting that contract, at least one User Story link, owners, and external_dependencies. If it is purely topic/queue-driven with no annotation at all, explains it has no UI/API test-abstraction anchor yet and should instead be recorded as an external_dependencies entry on the Features that use it, rather than created as a Feature itself.",
       "files": [],
       "expectations": [
         "Identifies this as a Feature creation request despite 'system component' phrasing",
         "Asks for surface_type, noting only UI and API exist",
-        "Distinguishes an annotated REST/GraphQL endpoint (surface_type=API) from a purely topic/queue-driven contract (no Feature)",
+        "Distinguishes an annotated REST/GraphQL endpoint or an AsyncAPI-annotated event handler (surface_type=API) from an unannotated topic/queue-driven contract (no Feature)",
         "Asks for User Story links, owners, and external dependencies",
-        "Outputs valid canonical Feature JSON only when an annotated endpoint exists"
+        "Outputs valid canonical Feature JSON only when an annotated endpoint or event handler exists"
       ]
     },
     {
@@ -152,14 +152,14 @@
       "id": 12,
       "category": "happy-path",
       "prompt": "Document a Feature for our PaymentEventProcessor — an asynchronous worker that listens on a Kafka topic and processes payment events in the background.",
-      "expected_output": "Agent explains that only UI and API surface types exist, and this worker qualifies for neither: it has no PageObject (not a UI) and no annotated REST/GraphQL endpoint method (not an API) — a Kafka topic alone is not a canonical test-abstraction anchor. Agent does NOT create a Feature entity for it. Instead it recommends recording the Kafka topic as an external_dependencies entry on the Feature(s) that publish to or consume from it, and asks whether PaymentEventProcessor also exposes any REST/GraphQL endpoint (e.g. for replay or manual triggering) — if so, that endpoint could anchor an API Feature instead.",
+      "expected_output": "Agent explains that only UI and API surface types exist, and that a message-broker topic now qualifies as an API contract when its producer/consumer handler carries an AsyncAPI (or equivalent schema-registry) annotation — a bare topic name alone is not a canonical anchor. Agent asks whether PaymentEventProcessor's Kafka consumer handler is documented via AsyncAPI (or equivalent). If yes, agent treats that annotated handler as the API contract anchor and drafts a Feature with surface_type='API' (e.g. 'Payment Event Processor API'). If no such annotation exists yet, agent does NOT create a Feature entity for it, and instead recommends recording the Kafka topic as an external_dependencies entry on the Feature(s) that publish to or consume it, noting that annotating the handler is what would unlock Feature-level tracking.",
       "files": [],
       "expectations": [
-        "Does not assign surface_type=API to a pure Kafka-topic consumer",
-        "Explains the topic alone is not a canonical UI/API test-abstraction anchor",
-        "Does not output a Feature JSON for this surface as described",
-        "Recommends recording the topic as an external_dependencies entry on the Features that use it",
-        "Asks whether an annotated endpoint exists that could anchor an API Feature instead"
+        "Recognizes a Kafka/message-broker topic documented via AsyncAPI (or equivalent) as a valid API contract anchor, not just REST/GraphQL",
+        "Asks whether the producer/consumer handler carries an AsyncAPI (or equivalent) annotation",
+        "If annotated: drafts a Feature with surface_type=API anchored on that handler",
+        "If not annotated: does not create a Feature and recommends recording the topic as an external_dependencies entry instead",
+        "Does not treat the bare topic name alone (unannotated) as a canonical anchor"
       ]
     },
     {
