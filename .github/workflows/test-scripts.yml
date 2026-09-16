@@ -32,14 +32,16 @@ jobs:
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
       - name: Re-run the sync script and diff against the committed copy
+        env:
+          GLOSSARY_REF: ${{ steps.ref.outputs.ref }}
         run: |
           set -euo pipefail
           cp skills/shared/references/living-doc-glossary.md /tmp/committed-glossary.md
-          bash scripts/sync-living-doc-glossary.sh "${{ steps.ref.outputs.ref }}"
+          bash scripts/sync-living-doc-glossary.sh "$GLOSSARY_REF"
           if ! diff -u /tmp/committed-glossary.md skills/shared/references/living-doc-glossary.md; then
             echo
-            echo "skills/shared/references/living-doc-glossary.md is out of sync with AbsaOSS/living-doc@${{ steps.ref.outputs.ref }}." >&2
-            echo "Run: scripts/sync-living-doc-glossary.sh ${{ steps.ref.outputs.ref }}" >&2
+            echo "skills/shared/references/living-doc-glossary.md is out of sync with AbsaOSS/living-doc@${GLOSSARY_REF}." >&2
+            echo "Run: scripts/sync-living-doc-glossary.sh ${GLOSSARY_REF}" >&2
             exit 1
           fi
 

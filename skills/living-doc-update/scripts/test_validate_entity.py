@@ -219,26 +219,42 @@ def _run_validate_entity(*args: str) -> subprocess.CompletedProcess:
 
 def test_profile_ac_states_subset_accepted():
     """A profile's ac_states that is a subset of the canonical set narrows validation —
-    an AC state outside that narrower subset (but still canonical) must be rejected."""
-    us = {
-        "entity_type": "User Story",
-        "id": "US-1",
-        "name": "Place an order",
-        "status": "active",
-        "features": ["FEAT-1"],
-        "acceptance_criteria": [
-            {"id": "AC:US-1-01", "description": "Order fails when payment is invalid", "state": "active"},
-        ],
-    }
+    an AC state inside that narrower subset validates clean, and a state that is still
+    canonical but excluded by the profile must be flagged. Asserting only `valid` on the
+    in-subset case would pass even if --profile narrowing were a silent no-op, so this
+    also checks the excluded case actually produces a state issue."""
+    def make_us(state: str) -> dict:
+        return {
+            "entity_type": "User Story",
+            "id": "US-1",
+            "name": "Place an order",
+            "status": "active",
+            "features": ["FEAT-1"],
+            "acceptance_criteria": [
+                {"id": "AC:US-1-01", "description": "Order fails when payment is invalid", "state": state},
+            ],
+        }
+
     with tempfile.TemporaryDirectory() as tmp:
-        entity_path = Path(tmp) / "entity.json"
-        entity_path.write_text(json.dumps(us), encoding="utf-8")
         profile_path = Path(tmp) / ".project-profile.yaml"
         profile_path.write_text("ac_states: [planned, active]\n", encoding="utf-8")
-        result = _run_validate_entity(str(entity_path), "--profile", str(profile_path), "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["valid"], payload
+
+        in_subset_path = Path(tmp) / "entity-in-subset.json"
+        in_subset_path.write_text(json.dumps(make_us("active")), encoding="utf-8")
+        result = _run_validate_entity(str(in_subset_path), "--profile", str(profile_path), "--json")
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert payload["valid"], payload
+        state_issues = [i for i in payload["issues"] if i["field"].endswith(".state")]
+        assert not state_issues, f"did not expect a state issue for 'active' inside the narrowed profile, got: {state_issues}"
+
+        excluded_path = Path(tmp) / "entity-excluded.json"
+        excluded_path.write_text(json.dumps(make_us("in_review")), encoding="utf-8")
+        result = _run_validate_entity(str(excluded_path), "--profile", str(profile_path), "--json")
+        payload = json.loads(result.stdout)
+        state_issues = [i for i in payload["issues"] if i["field"].endswith(".state")]
+        assert state_issues, f"expected a state issue for 'in_review' excluded by the narrowed profile, got: {payload}"
+
     print("✓ --profile ac_states that is a canonical subset narrows validation as expected")
 
 

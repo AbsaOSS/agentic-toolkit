@@ -117,7 +117,7 @@ All three scripts exit `0` on clean, `1` on findings, `2` on bad arguments — s
 **Recommended script order for a full audit:** run in the sequence steps → PO methods → PO components. Deleting unused steps can expose unused PO methods; deleting unused PO methods can then expose unused PO classes. Running in this order ensures each pass builds on the previous one rather than missing transitively dead code.
 
 **Unused step def — distinguish before deleting:**
-- If the step belongs to a **deprecated entity** — a User Story with `status: deprecated`, or a Feature whose Functionalities are all deprecated (a Feature carries no `status` field) — delete it, the coverage it provided is no longer needed.
+- If the step belongs to a **deprecated entity** — a User Story with `status: deprecated`, a Functionality with `status: deprecated`, or a Feature whose Functionalities are all deprecated (a Feature carries no `status` field itself) — delete it, the coverage it provided is no longer needed.
 - If the step belongs to an **active entity** but has no exercising scenario, it is a stale draft or an orphan; flag it for team review before deleting. Someone may be about to add a scenario for it.
 - Never delete without first verifying the step is not imported or re-exported by another step file — grep for the step file name as an import target as well.
 
