@@ -210,7 +210,7 @@ If all four checks pass and the gap remains, add or update a `WORK_LOG.md` §4 r
 
 ## Phase 6 · Living Doc Promotion
 
-For each Functionality whose `status: planned` was solely due to missing `data-cy`, act only after **Instrument** (template instrumentation) and **Sync** (PageObject update) are complete.
+For each Functionality whose `status: planned` was solely due to missing `data-cy`, act only after **Instrument** (template instrumentation) and **Sync** (PageObject update) are complete. Resolving the `data-cy` gap removes one blocker but is not by itself sufficient to promote — `living-doc-update` still requires every AC on the Functionality to have a passing `test_coverage` entry (see `living-doc-update/SKILL.md` § Promote a Functionality from planned to active) before the status actually flips.
 
 1. Open `<feature_dirs.functionality>/func-{NNN}-*.feature` (e.g. `aul-ui/playwright/features/liv_doc_func/`).
 2. Change `# status: planned` → `# status: active` in the comment header.
@@ -219,7 +219,7 @@ For each Functionality whose `status: planned` was solely due to missing `data-c
 
 Only promote if the data-cy attributes required by that Functionality's ACs were all added during **Instrument**. If a Functionality depends on multiple elements and only some were instrumented, leave it as `planned` and add a comment listing the remaining blockers.
 
-Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Instrument and Sync, load `living-doc-update`. Do **not** lead with manual feature-file edits.
+Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`, provided its own promotion gate is satisfied (every AC has a passing `test_coverage` entry) — clearing the `data-cy` gap is necessary but not sufficient on its own. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Instrument and Sync, load `living-doc-update`. Do **not** lead with manual feature-file edits.
 
 Preferred promotion wording: `After Instrument and Sync complete, invoke living-doc-update and change FUNC-001 status from 'planned' to 'active'.`
 
@@ -267,7 +267,7 @@ Report the following at the end of the run:
 | `living-doc-pageobject-scan` | Upstream — produces `manifest.json` with `coverage_gaps` and may leave `⚠️ PROPOSED` locator comments when test-id attributes are missing. `data-cy-instrument` consumes both signals, adds the attributes to templates, and updates PageObjects to use `getByTestId()`. |
 | `living-doc-pageobject-scan` RE-SCAN scope | Upstream — re-generates `coverage_gaps` after a UI change. Trigger this skill after RE-SCAN if new gaps appear. |
 | `living-doc-scenario-creator` | Downstream — after Functionalities are promoted from `planned` to `active`, generate Gherkin scenarios for them. |
-| `living-doc-update` | Downstream — after `stub-reason:` is removed from a PageObject header, `living-doc-update` promotes the matching Functionality from `planned` to `active` (a Feature has no status field to update). |
+| `living-doc-update` | Downstream — after `stub-reason:` is removed from a PageObject header, `living-doc-update` promotes the matching Functionality from `planned` to `active` once its own promotion gate is also satisfied (every AC has a passing `test_coverage` entry — a Feature has no status field to update). |
 
 When describing the relationship, state it in this order: `living-doc-pageobject-scan` is upstream, `data-cy-instrument` resolves missing test-id gaps and `⚠️ PROPOSED` locators, and `living-doc-scenario-creator` is downstream and uses the stable locators.
 

@@ -93,12 +93,12 @@ ERROR_KEYWORDS_RE = re.compile(
 
 def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     """Read `ac_states` from a Project Profile YAML. Returns None if the field is
-    omitted (valid — the schema allows omitting it). Exits nonzero if the field is
-    present but schema-invalid (not a non-empty array), instead of silently falling
-    back to the canonical defaults as if it had been omitted. Also exits nonzero if
-    pyyaml itself is unavailable — that means `ac_states` can never be inspected, so
-    treating it as "omitted" would silently validate against the unrestricted
-    canonical set instead of the profile's configured vocabulary."""
+    omitted (valid — the schema allows omitting it) or the file is genuinely empty.
+    Exits nonzero for anything that means the requested profile could not actually be
+    consulted — missing/unreadable file, invalid YAML, a non-mapping root, or a
+    present-but-schema-invalid `ac_states` — instead of silently falling back to the
+    unrestricted canonical set as if `--profile` had never been passed. Also exits
+    nonzero if pyyaml itself is unavailable, for the same reason."""
     try:
         import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
     except ImportError as exc:
@@ -111,16 +111,18 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
 
     try:
         with open(profile_path, encoding="utf-8") as f:
-            profile = yaml.safe_load(f) or {}
-    except (FileNotFoundError, ValueError) as exc:
-        print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
-        return None
+            profile = yaml.safe_load(f)
+    except (OSError, ValueError) as exc:
+        print(f"Error: could not load profile '{profile_path}': {exc}", file=sys.stderr)
+        sys.exit(1)
     except yaml.YAMLError as exc:
         print(
             f"Error: profile '{profile_path}' is malformed — invalid YAML: {exc}",
             file=sys.stderr,
         )
         sys.exit(1)
+    if profile is None:
+        return None
     if not isinstance(profile, dict):
         print(
             f"Error: profile '{profile_path}' is malformed — "
