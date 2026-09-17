@@ -16,7 +16,11 @@ function printWarnings(report) {
   let count = 0;
   for (const spec of walkSpecs(report.suites ?? [])) {
     for (const test of spec.tests ?? []) {
-      const warnings = (test.annotations ?? []).filter((a) => a.type === 'warning');
+      // TestResult.annotations only exists from Playwright 1.52+; older versions
+      // (e.g. 1.47, still in use by some projects) only populate test.annotations.
+      const resultAnnotations = (test.results ?? []).flatMap((r) => r.annotations ?? []);
+      const annotations = resultAnnotations.length > 0 ? resultAnnotations : (test.annotations ?? []);
+      const warnings = annotations.filter((a) => a.type === 'warning');
       if (warnings.length === 0) continue;
       count++;
       console.log(`\n${spec.file}:${spec.line} - ${spec.title} [${test.projectName}]`);
