@@ -33,7 +33,8 @@ After this skill runs, the repository contains:
 playwright/
 ├── fixtures/
 │   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion + incomplete-warning helpers
-├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
+├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings (reusable module + CLI)
+├── run-a11y-incomplete.js              # Runs the accessibility project, then prints incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
@@ -120,9 +121,14 @@ Create these files (templates live in this skill's `assets/`):
    the dummy proof stays green independent of whether the app itself is WCAG-compliant yet. Do not
    point it at a real route (e.g. `page.goto('/')`) — that reintroduces exactly the failure mode this
    avoids. Copy the template's HTML as-is; it only needs a landmark, a heading, and text.
-4. `playwright/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Reads
-   the JSON reporter output and prints every test carrying an incomplete-result warning, so they can
-   be reviewed without opening the HTML report.
+4. `playwright/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Exports a
+   `printWarnings(report)` helper (plus a `<report.json>` CLI mode) that prints every test carrying an
+   incomplete-result warning, so they can be reviewed without opening the HTML report.
+5. `playwright/run-a11y-incomplete.js` — copy verbatim from `assets/run-a11y-incomplete.js`. The
+   cross-platform entry point behind `test:a11y:incomplete`: it spawns the accessibility project
+   itself with `--reporter=json` piped to a temp file (never a fixed path, and never stdout — test
+   attachments like screenshots/videos are base64-inlined and can blow past `spawnSync`'s stdout
+   buffer), calls `printWarnings` on it, then exits with the underlying test run's own exit code.
 
 The `accessibility` substring in the spec filename is what routes it to the accessibility project —
 keep it.
@@ -135,12 +141,12 @@ Add to `package.json` `scripts` (do not clobber existing entries):
 "test:a11y": "playwright test --project=accessibility",
 "test:a11y:headed": "playwright test --project=accessibility --headed",
 "test:a11y:report": "playwright show-report",
-"test:a11y:incomplete": "node playwright/print-a11y-warnings.js"
+"test:a11y:incomplete": "node playwright/run-a11y-incomplete.js"
 ```
 
-`test:a11y:incomplete` reads the JSON report from the most recent `test:a11y` run (the shipped
-`playwright.config.ts` already writes it to `playwright-report/summary.json`) — run it after
-`test:a11y`, not instead of it.
+`test:a11y:incomplete` is self-contained — it runs its own accessibility-project pass (JSON reporter
+only, written to a temp file) and prints any incomplete-result warnings, then exits with that run's
+status. Run it standalone; it does not depend on `test:a11y` having run first.
 
 ### Step 5 · Validate — run the dummy scan
 

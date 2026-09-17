@@ -17,7 +17,8 @@ opening the HTML report.
 playwright/
 ├── fixtures/
 │   └── axe-helpers.ts                    # Shared axe fixture (WCAG 2.2 AA tag set) + assertion helpers
-├── print-a11y-warnings.js                # Prints tests with incomplete-result warnings
+├── print-a11y-warnings.js                # Prints tests with incomplete-result warnings (reusable module + CLI)
+├── run-a11y-incomplete.js                 # Runs the accessibility project, then prints incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts     # Dummy example scan of static, known-compliant HTML
 playwright.config.ts                      # `accessibility` project routes any *accessibility* spec here
@@ -32,7 +33,7 @@ Any spec file with `accessibility` in its name runs under the dedicated
 npm run test:a11y            # run all accessibility scans (auto-starts the dev server)
 npm run test:a11y:headed     # same, with the browser visible
 npm run test:a11y:report     # open the last HTML report
-npm run test:a11y:incomplete # print incomplete-result warnings from the last run
+npm run test:a11y:incomplete # re-run the accessibility project and print incomplete-result warnings
 ```
 
 Playwright auto-starts `npm run start` (the Angular dev server) and waits for
