@@ -34,7 +34,7 @@ playwright/
 ├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
-playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
+playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /\.accessibility\.spec\.ts$/)
 docs/accessibility.md                   # How to run, where reports land
 ```
 
