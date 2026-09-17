@@ -46,14 +46,14 @@ When details are missing but the surface name makes the domain obvious, infer a 
 
 Ask only for what is missing: *What system surface does this Feature represent?*
 
-Select the surface type — only two exist, and each requires the matching test abstraction to actually exist for this surface:
+Select the surface type — only two exist, and each is paired with a matching test abstraction that anchors it as a Feature:
 
-| Type | Examples | Requires |
+| Type | Examples | Eventual test-abstraction anchor |
 |---|---|---|
-| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) | A PageObject for the screen |
+| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) | A PageObject for the screen — create it together with the Feature (e.g. via `living-doc-pageobject-scan`) if it doesn't exist yet |
 | `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public contract (e.g. Orders API, Payment Gateway API), or a message-broker topic (e.g. Kafka) documented via an AsyncAPI (or equivalent) specification | An **annotated endpoint method** (OpenAPI annotation, JSDoc, etc.) for request/response, or an **annotated event handler** (AsyncAPI or equivalent schema-registry annotation on the producer/consumer) for event-driven — either serves as the living contract anchor, see [living-doc-glossary](../shared/references/living-doc-glossary.md) |
 
-A surface with neither anchor — for example a pure event consumer or async worker whose topic/queue contract carries no AsyncAPI (or equivalent) annotation — is **not** a Feature yet. Document it as an `external_dependencies` entry on the Feature(s) that interact with it until the contract is formally annotated.
+A surface where the anchor is not even achievable — for example a pure event consumer or async worker whose topic/queue contract carries no AsyncAPI (or equivalent) annotation — is **not** a Feature yet. Document it as an `external_dependencies` entry on the Feature(s) that interact with it until the contract is formally annotated. A UI or API surface whose anchor simply hasn't been built yet is still a valid Feature — create the Feature and its anchor together rather than blocking on sequencing.
 
 Feature names should be **noun phrases** that name the surface. If it could plausibly be a PageObject or service/module class name (for example `PaymentPage`), it is usually a good Feature name.
 
@@ -144,8 +144,8 @@ Use this exact output shape for create/document requests:
     "name": "Example Surface",
     "surface_type": "UI",
     "purpose": "Business-language summary of the surface responsibility.",
-    "user_stories": ["US-example"],
-    "functionalities": ["FUNC-001"],
+    "user_stories": [],
+    "functionalities": [],
     "owners": ["team-example"],
     "external_dependencies": ["example-service"]
   }

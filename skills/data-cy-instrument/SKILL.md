@@ -221,7 +221,7 @@ Only promote if the data-cy attributes required by that Functionality's ACs were
 
 Primary downstream action: `living-doc-update` changes the matching catalog entity from `planned` to `active`, provided its own promotion gate is satisfied (every AC has a passing `test_coverage` entry) — clearing the `data-cy` gap is necessary but not sufficient on its own. If the task also updates the BDD feature-file header, keep it in sync. For promotion questions, answer in routing form: after Instrument and Sync, load `living-doc-update`. Do **not** lead with manual feature-file edits.
 
-Preferred promotion wording: `After Instrument and Sync complete, invoke living-doc-update and change FUNC-001 status from 'planned' to 'active'.`
+Preferred promotion wording: `After Instrument and Sync complete, invoke living-doc-update, which changes FUNC-001 status from 'planned' to 'active' only once every AC has a passing test_coverage entry.`
 
 ---
 

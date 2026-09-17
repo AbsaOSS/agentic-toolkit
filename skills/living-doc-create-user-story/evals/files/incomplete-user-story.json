@@ -3,11 +3,9 @@
   "id": "US-042",
   "name": "Reset account password",
   "status": "planned",
-  "narrative": {
-    "as_a": "registered customer",
-    "i_can": "reset my password using my email address",
-    "so_that": "I can regain access to my account if I forget my password"
-  },
+  "as_a": "registered customer",
+  "i_want": "reset my password using my email address",
+  "so_that": "I can regain access to my account if I forget my password",
   "features": ["FEAT-001"],
   "acceptance_criteria": [
     {

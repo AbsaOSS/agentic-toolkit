@@ -54,11 +54,12 @@
       "id": 5,
       "category": "happy-path",
       "prompt": "FUNC-001 has status 'planned' because the data-cy attributes are missing. After Instrument and Sync are complete, what do I do to promote it?",
-      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-001 status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
+      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update, which changes FUNC-001 status from 'planned' to 'active' only if every AC on the Functionality already has a passing test_coverage entry — clearing the data-cy gap is necessary but not sufficient on its own. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
       "files": [],
       "expectations": [
         "Routes to living-doc-update for status promotion",
-        "Status changes from planned to active",
+        "Status changes from planned to active only once every AC has a passing test_coverage entry",
+        "Does not treat Instrument+Sync completion alone as sufficient for promotion",
         "Only after Instrument and Sync are complete"
       ]
     },

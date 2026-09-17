@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to document the Checkout Page as a Feature entity.",
-      "expected_output": "Agent identifies surface type as UI. Asks for: purpose and scope (what user interactions it owns), linked User Stories, known Functionalities, owners, external dependencies. Runs next_id.py to get the next Feature ID from the catalog. Outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=UI, at least one US link, at least two Functionality references, owners, and external_dependencies including payment-gateway and order-service.",
+      "expected_output": "Agent identifies surface type as UI. Asks for: purpose and scope (what user interactions it owns), linked User Stories, known Functionalities, owners, external dependencies. Runs next_id.py to get the next Feature ID from the catalog. Since the prompt supplies no catalog relationship data, outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=UI, user_stories=[] and functionalities=[] with the orphan/candidate warnings, owners, and external_dependencies including payment-gateway and order-service.",
       "files": [],
       "expectations": [
         "Identifies surface_type as UI for a web page",
@@ -14,6 +14,7 @@
         "Asks for Functionalities owned by this Feature",
         "Asks for owners and external dependencies",
         "Runs next_id.py to get numeric Feature ID from catalog",
+        "Does not fabricate user_stories or functionalities links absent catalog evidence",
         "Notes: 1 Feature ≈ 1 PageObject"
       ]
     },
@@ -68,14 +69,15 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "I want to add the Notification Service to the living doc as a system component. Where do I start?",
-      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: only UI and API exist — does it expose a REST/GraphQL endpoint with an annotated endpoint method, or a message-broker topic (e.g. Kafka) with an AsyncAPI (or equivalent) annotation on the producer/consumer handler (either is its API contract anchor), or is it purely topic/queue-driven with no such annotation at all? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? If it exposes an annotated endpoint or an annotated event handler, runs next_id.py and outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API documenting that contract, at least one User Story link, owners, and external_dependencies. If it is purely topic/queue-driven with no annotation at all, explains it has no UI/API test-abstraction anchor yet and should instead be recorded as an external_dependencies entry on the Features that use it, rather than created as a Feature itself.",
+      "expected_output": "Agent identifies this as a Feature entity creation (system surface). Asks: only UI and API exist — does it expose a REST/GraphQL endpoint with an annotated endpoint method, or a message-broker topic (e.g. Kafka) with an AsyncAPI (or equivalent) annotation on the producer/consumer handler (either is its API contract anchor), or is it purely topic/queue-driven with no such annotation at all? What User Stories does it enable? What Functionalities does it own? Who are the owners? What are the external dependencies (SMTP relay, template store)? If it exposes an annotated endpoint or an annotated event handler, runs next_id.py and outputs a canonical Feature JSON with id=FEAT-001 (or next numeric ID), surface_type=API documenting that contract, owners, and external_dependencies — with user_stories=[] and functionalities=[] plus the orphan/candidate warnings, since the prompt supplies no catalog relationship data. If it is purely topic/queue-driven with no annotation at all, explains it has no UI/API test-abstraction anchor yet and should instead be recorded as an external_dependencies entry on the Features that use it, rather than created as a Feature itself.",
       "files": [],
       "expectations": [
         "Identifies this as a Feature creation request despite 'system component' phrasing",
         "Asks for surface_type, noting only UI and API exist",
         "Distinguishes an annotated REST/GraphQL endpoint or an AsyncAPI-annotated event handler (surface_type=API) from an unannotated topic/queue-driven contract (no Feature)",
         "Asks for User Story links, owners, and external dependencies",
-        "Outputs valid canonical Feature JSON only when an annotated endpoint or event handler exists"
+        "Outputs valid canonical Feature JSON only when an annotated endpoint or event handler exists",
+        "Does not fabricate a User Story link absent catalog evidence"
       ]
     },
     {
