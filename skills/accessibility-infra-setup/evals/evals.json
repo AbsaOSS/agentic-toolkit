@@ -106,7 +106,12 @@
       "expected_output": "Skill preserves existing scripts and config, merging additively rather than overwriting.",
       "files": [
         "evals/files/existing-scripts-and-playwright/package.json",
-        "evals/files/existing-scripts-and-playwright/playwright.config.ts"
+        "evals/files/existing-scripts-and-playwright/playwright.config.ts",
+        "evals/files/existing-scripts-and-playwright/angular.json",
+        "evals/files/existing-scripts-and-playwright/tsconfig.json",
+        "evals/files/existing-scripts-and-playwright/src/index.html",
+        "evals/files/existing-scripts-and-playwright/src/main.ts",
+        "evals/files/existing-scripts-and-playwright/src/app/app.component.ts"
       ],
       "expectations": [
         "Existing npm scripts are preserved (additive edit only)",
