@@ -58,7 +58,12 @@
       "files": [
         "evals/files/cypress-angular/package.json",
         "evals/files/cypress-angular/cypress.config.ts",
-        "evals/files/cypress-angular/cypress/e2e/home.cy.ts"
+        "evals/files/cypress-angular/cypress/e2e/home.cy.ts",
+        "evals/files/cypress-angular/angular.json",
+        "evals/files/cypress-angular/tsconfig.json",
+        "evals/files/cypress-angular/src/index.html",
+        "evals/files/cypress-angular/src/main.ts",
+        "evals/files/cypress-angular/src/app/app.component.ts"
       ],
       "expectations": [
         "Detects Cypress and does NOT edit, migrate, or delete any Cypress config, specs, or dependencies",
