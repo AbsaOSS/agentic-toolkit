@@ -300,9 +300,11 @@ def _run_validate_entity(*args: str) -> subprocess.CompletedProcess:
 def test_profile_ac_states_subset_accepted():
     """A profile's ac_states that is a subset of the canonical set narrows validation —
     an AC state inside that narrower subset validates clean, and a state that is still
-    canonical but excluded by the profile must be flagged. Asserting only `valid` on the
-    in-subset case would pass even if --profile narrowing were a silent no-op, so this
-    also checks the excluded case actually produces a state issue."""
+    canonical but excluded by the profile must be flagged AND must actually block:
+    `valid: false` and a nonzero exit code, not just an advisory issue entry. Regression
+    for a bug where the excluded-state check was a warning, not an error, so it produced
+    a state issue but still returned exit code 0 / valid: true — silently failing to
+    enforce the configured vocabulary (PR #40 review 5234392828)."""
     def make_us(state: str) -> dict:
         return {
             "entity_type": "User Story",
@@ -334,8 +336,17 @@ def test_profile_ac_states_subset_accepted():
         payload = json.loads(result.stdout)
         state_issues = [i for i in payload["issues"] if i["field"].endswith(".state")]
         assert state_issues, f"expected a state issue for 'in_review' excluded by the narrowed profile, got: {payload}"
+        assert not payload["valid"], (
+            f"a profile-excluded AC state must make the entity invalid, got valid=True: {payload}"
+        )
+        assert result.returncode == 1, (
+            f"a profile-excluded AC state must exit nonzero, got {result.returncode}: {payload}"
+        )
+        assert state_issues[0]["severity"] == "error", (
+            f"a profile-excluded AC state must be an error, not a warning, got: {state_issues}"
+        )
 
-    print("✓ --profile ac_states that is a canonical subset narrows validation as expected")
+    print("✓ --profile ac_states that is a canonical subset narrows validation as expected, and actually blocks")
 
 
 def test_profile_narrows_entity_status_too():
@@ -749,9 +760,10 @@ def test_ac_missing_id_and_description_flagged():
     print("✓ An AC missing 'id' and 'description' is flagged for both, independently")
 
 
-def test_ac_unrecognized_state_warns():
-    """An AC 'state' outside the canonical vocabulary must warn — the same vocabulary
-    the --profile narrowing tests exercise via the CLI."""
+def test_ac_unrecognized_state_errors():
+    """An AC 'state' outside the canonical vocabulary must be an error, not a warning —
+    it is the same vocabulary as the entity-level `status` field (already an error), and
+    only an error actually blocks validation for a --profile-narrowed subset."""
     us = {
         "entity_type": "User Story",
         "id": "US-1",
@@ -763,8 +775,10 @@ def test_ac_unrecognized_state_warns():
         ],
     }
     issues = validate(us)
-    assert any(i["field"] == "acceptance_criteria[0].state" for i in issues), issues
-    print("✓ An AC with an unrecognised state is flagged")
+    state_issues = [i for i in issues if i["field"] == "acceptance_criteria[0].state"]
+    assert state_issues, issues
+    assert state_issues[0]["severity"] == "error", f"expected an error, got: {state_issues}"
+    print("✓ An AC with an unrecognised state is flagged as an error")
 
 
 def test_functionality_name_missing_separator_warns():
@@ -1052,7 +1066,7 @@ if __name__ == "__main__":
         test_deprecated_user_story_missing_metadata_warns()
         test_deprecated_feature_via_markers_warns()
         test_ac_missing_id_and_description_flagged()
-        test_ac_unrecognized_state_warns()
+        test_ac_unrecognized_state_errors()
         test_functionality_name_missing_separator_warns()
         test_functionality_parent_feature_bad_format_flagged()
         test_user_story_no_features_warns()

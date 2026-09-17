@@ -374,9 +374,15 @@ def _validate_ac(
         error_fn(f"{field_prefix}.description", "AC is missing a 'description'")
     ac_status = ac.get("state", "")
     if ac_status and ac_status not in VALID_AC_STATUSES:
-        warning_fn(
+        # Error, not warning — an AC `state` and an entity `status` are the same
+        # vocabulary (see the VALID_STATUSES/VALID_AC_STATUSES comment above) and must
+        # be enforced identically. As a warning this was non-blocking regardless of
+        # whether VALID_AC_STATUSES was the full canonical set or a --profile-narrowed
+        # subset, so a profile-excluded AC state still produced exit code 0 / valid:
+        # true — defeating the entire purpose of `--profile` (restrict, never extend).
+        error_fn(
             f"{field_prefix}.state",
-            f"Unrecognised AC state '{ac_status}'. "
+            f"Invalid AC state '{ac_status}'. "
             f"Expected one of: {sorted(VALID_AC_STATUSES)}",
         )
 
