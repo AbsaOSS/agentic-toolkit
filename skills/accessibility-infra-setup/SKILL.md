@@ -27,7 +27,8 @@ tests here — that is a separate follow-up task.
 
 ## Expected outcome
 
-After this skill runs, the repository contains:
+After this skill runs, the repository contains (fresh setup; see Step 3 for where these land instead
+when merging into an existing `testDir`):
 
 ```
 playwright/
@@ -115,29 +116,36 @@ npx playwright install chromium
 
 ### Step 3 · Scaffold config, fixture, and example spec
 
-Create these files (templates live in this skill's `assets/`):
+Create these files (templates live in this skill's `assets/`). The root is `playwright/` on a fresh
+setup; when merging into an existing config, use the existing `testDir` as the root instead and keep
+the same relative layout below it — otherwise Playwright's `testDir` never discovers the new files.
 
 1. `playwright.config.ts` (root) — from `assets/playwright.config.ts` (fresh setup only; otherwise
    merge as in Step 1). Adjust `baseURL`, `webServer.command`, and port if the app differs.
-2. `playwright/fixtures/axe-helpers.ts` — copy verbatim from `assets/axe-helpers.ts`. This is the
+2. `<root>/fixtures/axe-helpers.ts` — copy verbatim from `assets/axe-helpers.ts`. This is the
    single source of the WCAG 2.2 AA tag set; every scan must build from `makeAxeBuilder`. It also
    exports `annotateIncomplete`, which every scan must call on `results.incomplete` so those
    findings are reported as a warning annotation instead of silently dropped or failing the build.
-3. `playwright/a11y/example.accessibility.spec.ts` — from `assets/example.accessibility.spec.ts`.
+3. `<root>/a11y/example.accessibility.spec.ts` — from `assets/example.accessibility.spec.ts`.
    It scans static, known-compliant HTML via `page.setContent(...)` rather than a real app route, so
    the dummy proof stays green independent of whether the app itself is WCAG-compliant yet. Do not
    point it at a real route (e.g. `page.goto('/')`) — that reintroduces exactly the failure mode this
    avoids. Copy the template's HTML as-is; it only needs a landmark, a heading, and text.
-4. `playwright/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Exports a
+4. `<root>/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Exports a
    `printWarnings(report)` helper (plus a `<report.json>` CLI mode) that prints every test carrying an
    incomplete-result warning, so they can be reviewed without opening the HTML report.
-5. `playwright/run-a11y-incomplete.js` — copy verbatim from `assets/run-a11y-incomplete.js`. The
+5. `<root>/run-a11y-incomplete.js` — copy verbatim from `assets/run-a11y-incomplete.js`. The
    cross-platform entry point behind `test:a11y:incomplete`: it spawns the accessibility project
    itself with `--reporter=json` piped to a temp file (never a fixed path, and never stdout — test
    attachments like screenshots/videos are base64-inlined and can blow past `spawnSync`'s stdout
    buffer), calls `printWarnings` on it, then exits with the underlying test run's own exit code.
 
-The `accessibility` substring in the spec filename is what routes it to the accessibility project —
+`<root>` is `playwright/` on a fresh setup, or the existing `testDir` when merging — e.g. with
+`testDir: './e2e'` the fixture lands at `e2e/fixtures/axe-helpers.ts` and the dummy spec at
+`e2e/a11y/example.accessibility.spec.ts`. Adjust import paths (e.g. `../fixtures/axe-helpers`) to
+match wherever `<root>` ends up; the relative layout between the files stays the same either way.
+
+The `.accessibility.spec.ts` filename suffix is what routes a spec to the accessibility project —
 keep it.
 
 ### Step 4 · Wire npm scripts
@@ -187,7 +195,9 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
   untouched — add Playwright alongside it rather than migrating or editing anything Cypress owns.
 - **Extend, don't recreate Playwright.** When a `playwright.config.*` already exists, merge the
   `accessibility` project into it and reuse any existing axe fixture — do not generate a second
-  config or a duplicate fixture.
+  config or a duplicate fixture. Scaffold the fixture and dummy spec under the existing `testDir`,
+  not a hardcoded `playwright/` — otherwise Playwright's own `testDir` setting never discovers them
+  and validation fails with "no tests found".
 - **Filename routing.** A spec only lands in the accessibility project if its filename ends in
   `.accessibility.spec.ts`. This is `testMatch: /\.accessibility\.spec\.ts$/`, anchored to the
   filename suffix rather than a bare `/accessibility/` substring — a directory named e.g.
