@@ -178,7 +178,7 @@ When a User Story or Feature is deprecated, three skills fire in sequence. Compl
 
 | Step | Skill | Action |
 |---|---|---|
-| 1 | `living-doc-update` | Set entity `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
+| 1 | `living-doc-update` | For a User Story, set `status: deprecated`. A Feature has no `status` field — its state is derived from its Functionalities; deprecate the Feature by deprecating every Functionality it owns instead. Either way, add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
 | 2 | `gherkin-living-doc-sync` | Find all scenarios tagged `@AC:<id>` for the deprecated entity's ACs; add `@deprecated` and `@review-needed` |
 | 3 | `bdd-maintain` (REMOVE) | Confirm file deletion list with user; remove confirmed `.feature` files, PageObjects, and step definitions; update `manifest.json` |
 
@@ -186,7 +186,7 @@ Do not skip steps or run them out of order. Complete catalog changes (step 1) be
 
 **Manifest loading rule:** Use targeted line ranges for the current route(s). Load full manifest only for RE-SCAN. `seed.yaml`: always load in full. When PageObject generation discovers a route with no linked Feature entity, set `feature_id: FEAT-UNKNOWN`, flag the route as needing a Feature entity, and cross-load `living-doc-create-feature` to create it before continuing.
 
-**living-doc-bdd-schemas:** Load [skills/shared/references/living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, ExplorationFixture entries, seed.yaml form_fixtures, or manifest.json route entries.
+**living-doc-bdd-schemas:** Load [skills/shared/references/living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) only when generating or validating feature file headers, PageObject headers, seed.yaml form_fixtures, or manifest.json route entries.
 
 ---
 
@@ -275,12 +275,12 @@ Full model: [living-doc-glossary](skills/shared/references/living-doc-glossary.m
 
 **Entity IDs:** `US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>`
 
-**AC reference format:** `AC:<parent-id>-<nn> (v<version> – <state>) — <description>`
+**AC reference format:** `AC:<parent-id>-<nn> (v<version> - <state>) - <description>`. A backlog AC with no target version yet uses `(planned)` instead of a version. A `deprecated` AC requires a removal note: `(v<version> - deprecated - removal planned v<version>)`.
 State: `planned | in_review | active | deprecated`
 
 **Gherkin traceability:** every scenario in the living-doc feature directories (`feature_dirs.user_story` and `feature_dirs.functionality` from the Project Profile, defaults `features/liv_doc_us/` and `features/liv_doc_func/`) requires:
 ```gherkin
-# AC:US-1-01 (v1.0.0 - active) — <description>
+# AC:US-1-01 (v1.0.0 - active) - <description>
 @AC:US-1-01
 Scenario: ...
 ```

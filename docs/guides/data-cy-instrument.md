@@ -54,7 +54,7 @@ coverage gaps
 
 ## Testing Evals
 
-This skill has been validated with **11 test cases** covering:
+This skill has been validated with **12 test cases** covering:
 - Gap audit workflows
 - Angular/React/Vue template instrumentation
 - PageObject selector updates

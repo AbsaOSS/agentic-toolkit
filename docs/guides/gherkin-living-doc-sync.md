@@ -12,7 +12,7 @@ The skill audits traceability and produces sync reports:
 |--------|-------------|
 | **AC link audit** | Finds missing `@AC:` tags, stale links, orphaned scenarios |
 | **Step text drift** | Flags scenarios where step text diverged from AC descriptions |
-| **Deprecation tagging** | Tags scenarios `@deprecated` when ACs are descoped |
+| **Deprecation / descope tagging** | Tags scenarios `@deprecated` + `@review-needed` when their AC is deprecated, or `@wip` + `@review-needed` when their AC is descoped back to `planned` |
 | **AC change propagation** | Maps AC edits back to affected scenarios |
 
 ---

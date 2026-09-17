@@ -8,6 +8,10 @@ Templates and schemas for BDD automation files. Load this file when writing or v
 
 For entity definitions (IDs, status vocabulary, AC format, relationship diagram) see [living-doc-glossary](./living-doc-glossary.md).
 
+> **Canon source.** This file mirrors `living-doc`'s
+> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/master/docs/guides/living-doc-header-types.md),
+> which is the canonical definition of this format. Keep both in sync when either changes.
+
 **Schema reference:** For JSON schema validation, see [schemas/](./schemas/) directory:
 - [project-profile.schema.json](./schemas/project-profile.schema.json) — Project Profile validation
 - [seed.schema.json](./schemas/seed.schema.json) — seed.yaml validation  
@@ -42,9 +46,6 @@ paths:
 # AC state vocabulary as written inside `# AC:` blocks and feature-file headers (lowercase with underscores).
 ac_states: [planned, in_review, active, deprecated]
 
-# PageObject header `status:` vocabulary (lowercase).
-pageobject_statuses: [planned, candidate, active, deprecated]
-
 # Scenario tagging conventions (see "Feature file tags" below).
 scenario_conventions:
   feature_tag:        true     # @US_ID:<id> / @FUNC_ID:<id> on the Feature
@@ -63,13 +64,13 @@ manifest_shape: object         # manifest is an object with routes array (see Ma
 | `paths.bdd_artifacts` | pageobject-scan, data-cy-instrument | `.copilot/bdd` |
 | `paths.pageobjects` / `paths.steps` | pageobject-scan, gherkin-step | `playwright/pages` / `playwright/steps` |
 | `ac_states` | all catalog skills, scenario-creator, gherkin-living-doc-sync | `active` etc. (lowercase with underscores) |
-| `pageobject_statuses` | pageobject-scan | `active` etc. (lowercase) |
 | `scenario_conventions` | scenario-creator, gherkin-living-doc-sync | as shown |
 
-> **Casing rule:** AC states use **lowercase with underscores** inside `# AC:` blocks and entity files
-> (e.g. `- active`, `- in_review`). PageObject header `status:` is also lowercase (`status: active`).
-> Wherever this document or a skill shows `ACTIVE`/`PLANNED` in upper-case prose, it refers to the
-> *logical* state; the *written* form is always lowercase with underscores.
+> **Casing rule:** AC and entity states use **lowercase with underscores** inside `# AC:` blocks,
+> entity files, and issue bodies (e.g. `- active`, `- in_review`). Wherever this document or a skill
+> shows `ACTIVE`/`PLANNED` in upper-case prose, it refers to the *logical* state; the *written* form
+> is always lowercase with underscores. There is no PageObject `status:` field — see
+> [Feature in a PageObject File](#pageobject-file-header).
 
 ---
 
@@ -85,6 +86,9 @@ Holds all US metadata and is mined during living documentation output generation
 # =============================================================================
 # source:          https://github.com/<org>/<repo>/issues/<n>    ← optional
 # status:          active        ← one of profile `ac_states` (planned | in_review | active | deprecated)
+# deprecated_at:   <date>                                        ← optional; with status: deprecated
+# deprecation_reason: <why the User Story was deprecated>        ← optional; with status: deprecated
+# superseded_by:   US-<n>                                        ← optional; replacement entity
 # business_value:
 #   - <bullet describing the business outcome>
 # preconditions:                                                 ← optional; inherited by all ACs
@@ -94,7 +98,7 @@ Holds all US metadata and is mined during living documentation output generation
 #
 # acceptance_criteria:
 #
-#   AC:US-<n>-01 (v<version> - <State>)
+#   AC:US-<n>-01 (v<version> - <state>)          ← `(planned)` with no version = backlog
 #     - <description of the AC>
 #     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed in AC text
 #     preconditions:                      ← optional; extends feature-level preconditions for this AC only
@@ -102,11 +106,10 @@ Holds all US metadata and is mined during living documentation output generation
 #     not_in_scope:                       ← optional; extends feature-level not_in_scope for this AC only
 #       - <AC-specific exclusion>
 #
-#   AC:US-<n>-02 (v<version> - <State>)
+#   AC:US-<n>-02 (v<version> - <state>)
 #     - <description of the AC with optional {placeholder-name} for parameterised variants>
 #     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
-```
 
 @US_ID:US-<n>
 Feature: <US Title>
@@ -115,17 +118,17 @@ Feature: <US Title>
   Background:                              ← optional
     Given <shared precondition>
 
-  # AC:US-<n>-01 (v<version> - <State>) — <AC description>
+  # AC:US-<n>-01 (v<version> - <state>) - <AC description>
   @AC:US-<n>-01
   Scenario: <scenario title>             ← single scenario = full AC coverage (no aspect split)
     ...
 
-  # — when Aspect values are declared and need individual scenarios:
+  # - when Aspect values are declared and need individual scenarios:
   @AC:US-<n>-01/aspect:<value1>
   Scenario: <scenario title for value1 branch>
     ...
 
-  # — when a custom {placeholder-name} keyword is used (both US and Func):
+  # - when a custom {placeholder-name} keyword is used (both US and Func):
   @AC:US-<n>-02/<placeholder-name>:<value1>
   Scenario: <scenario title for value1>
     ...
@@ -140,12 +143,170 @@ Feature: <US Title>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`) |
+| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`). A User Story always carries an authored status. |
+| `# deprecated_at:` | Optional | Date the User Story was deprecated; authored with `status: deprecated` |
+| `# deprecation_reason:` | Optional | Why it was deprecated |
+| `# superseded_by:` | Optional | ID of the replacement entity |
 | `# business_value:` | Yes | Why this User Story exists (bullets) |
 | `# preconditions:` | Optional | System-level state required before test execution; inherited and extended by all ACs |
 | `# not_in_scope:` | Optional | Explicit exclusions at US level; inherited and extended by all ACs |
 | `# acceptance_criteria:` | Yes | Full AC listing with IDs, versions, and states; each AC may extend inherited preconditions and not_in_scope |
 | `@US_ID:US-<n>` tag | Yes | Machine-parseable User Story ID (feature-level tag) |
+
+---
+
+## PageObject File Header
+
+Every PageObject file opens with a living-doc header block. Use this format so each file is self-describing and traceable without opening a separate registry.
+
+> **No surface status.** A PageObject header carries **no `status:` field**. The Feature it documents
+> has no authored status either — a Feature's state is derived from its Functionalities. A surface
+> that is known but not yet instrumented for test automation says so with `stub-reason:`, not with a
+> status value.
+
+### Required fields
+
+| Field | Canonical values |
+|---|---|
+| `surface_type` | `UI` — a PageObject is the test abstraction for a UI surface only (see [Living Doc Glossary — Feature](./living-doc-glossary.md#feature)); an API surface has no PageObject and carries no header here |
+| `route` | URL path — use `{param}` for dynamic segments |
+| `owners` | Team name(s), comma-separated |
+| `purpose` | One-to-two sentence description in business language |
+| `user_stories` | `US-N` IDs, comma-separated — or `none` (triggers orphan warning in gap reports) |
+| `functionalities` | `FUNC-N` IDs, comma-separated — or `none` (triggers a reminder to define FUNCs) |
+| `external_dependencies` | Service or API names this surface calls — or `none` |
+| `page-object` | Filename of this PageObject |
+
+**Optional fields:**
+
+| Field | When |
+|---|---|
+| `wizard-steps` | Multi-step wizard UI — list the named steps in order |
+| `stub-reason` | The surface is documented but not yet fully instrumented — one-to-two sentence statement of **why**; treated as tech-debt resolvable by instrumenting the template and re-scanning. Its presence *is* the marker; there is no status value for this. |
+
+### Two header formats: Full vs Cross-reference
+
+A PageObject file uses one of two formats depending on whether it is the **primary surface owner** or a **secondary file** that implements part of a surface already owned elsewhere.
+
+| Situation | Format |
+|---|---|
+| One PageObject = one distinct navigable surface (URL or modal) | **Full header** |
+| Multiple PageObjects share one URL (e.g. wizard steps, sub-pages, dialogs) — one file is the primary owner, the others are implementation helpers | **Cross-reference header** — secondary files only |
+
+**Rule:** exactly one file per Feature carries the full header. Every other file that contributes to the same Feature carries a cross-reference header with `parent-feat` pointing to the Feature ID. This keeps traceability fields (`user_stories`, `functionalities`, `external_dependencies`) in a single authoritative location.
+
+**Wizard example:** FEAT-042 (Account Setup Wizard) lives at one URL. `AccountSetupWizardPage.ts` is the primary file and carries the full header. `AccountSetupWizardProfilePage.ts`, `AccountSetupWizardPreferencesPage.ts`, and the other step files each carry a cross-reference header pointing `parent-feat: FEAT-042`. Adding a wizard step never requires editing the Feature registry or duplicating traceability data.
+
+---
+
+**Full header example:**
+
+```typescript
+/* =============================================================================
+ * LIVING DOC — FEAT-042 · Account Setup Wizard
+ * =============================================================================
+ * surface_type:          UI
+ * route:                 /app/accounts/setup
+ * owners:                Platform Team
+ * wizard-steps:          Profile · Preferences · Review · Confirm
+ * purpose:               Multi-step wizard for creating and configuring a new account.
+ * user_stories:          US-10, US-12
+ * functionalities:       FUNC-005, FUNC-006
+ * external_dependencies: accounts-api
+ * page-object:           AccountSetupWizardPage.ts
+ * ============================================================================= */
+```
+
+---
+
+**Cross-reference header required fields:**
+
+| Field | Canonical values |
+|---|---|
+| `parent-feat` | `FEAT-<nnn>` — ID of the primary Feature that owns this surface. **Required.** |
+| `route` | URL path of this specific sub-surface — use `{param}` for dynamic segments |
+| `owners` | Team name(s), comma-separated |
+| `purpose` | One sentence: what this step or sub-surface does, in business language — no FEAT IDs |
+| `page-object` | Filename of this PageObject |
+| `functionalities` | Optional: `FUNC-<nnn>, ...` — subset of parent Feature's Functionalities that this step implements. Omit if all sub-pages equally implement all parent Feature Functionalities. |
+
+The following fields are **intentionally omitted** from the cross-reference header — they belong only on the primary Feature file: `surface_type`, `user_stories`, `external_dependencies`.
+
+**Optional inclusion of `functionalities`:** You may list this field in a cross-reference header to scope step-specific atomic behaviors to that sub-page. Use this when a step implements distinct Functionalities not shared across the entire Feature. If the sub-page's Functionality list is identical to the parent Feature's, omit this field to avoid duplication and keep the primary Feature as the authoritative source.
+
+**Cross-reference header example:**
+
+```typescript
+/* =============================================================================
+ * LIVING DOC — FEAT-042 · Account Setup Wizard  [cross-reference]
+ * =============================================================================
+ * This file implements Step 1 (Profile) of the Account Setup Wizard.
+ * The authoritative Feature header is in AccountSetupWizardPage.ts.
+ *
+ * parent-feat:     FEAT-042
+ * route:           /app/accounts/setup  (wizard stays on this URL)
+ * owners:          Platform Team
+ * functionalities: FUNC-005              ← Step 1 (Profile) implements profile-specific field validation
+ * purpose:         Step 1 (Profile) — user profile fields: display name, email address,
+ *                  and role selection.
+ * page-object:     AccountSetupWizardProfilePage.ts
+ * ============================================================================= */
+```
+
+### Where operational notes belong
+
+The PageObject **header block and class JSDoc are living-doc contracts** — they encode identity and traceability. They are not a changelog, scan diary, or issue tracker.
+
+| Information type | Correct location | NOT in |
+|---|---|---|
+| Missing `data-cy` attributes discovered during a scan | `manifest.json` → `coverage_gaps[]` | Header or class JSDoc |
+| Reason a surface is not yet fully instrumented | Header field `stub-reason:` (one or two lines) | Free-text NOTE block |
+| Proposed `data-cy` names for missing elements | `manifest.json` → `coverage_gaps[].suggested_test_id` (normalized; maps to root `test_id_attribute`) | Header or class body |
+| Open issue reference (e.g. OI-08, P1) | `manifest.json` → `coverage_gaps[].note` | Header or class JSDoc |
+| Scan date or scan session tag | `manifest.json` → `last_scanned` | Header or class JSDoc |
+| `@stub` / `@pending` JSDoc tags on the class | — (use `stub-reason:`) | Class JSDoc |
+| Implementation note explaining a locator strategy | Inline code comment on the locator or method | Header block |
+
+**`stub-reason:` as resolvable tech-debt**
+
+A surface carrying `stub-reason:` is **not in a permanent state** — it is a living-doc tech-debt item. The surface is known, documented, and linked to User Stories; what is missing is template instrumentation (`data-cy` attributes) that would allow full PageObject locators to be written. `stub-reason:` is the instrumentation marker: while it is present the surface is not fully instrumented, and removing it is what records that it now is. The resolution path is always:
+
+1. Instrument the component template with the `data-cy` values listed in `manifest.json` `coverage_gaps[]` (use the `data-cy-instrument` skill).
+2. Re-scan — the scan session updates the PageObject locators.
+3. Remove `stub-reason:` — the surface is instrumented.
+
+`stub-reason:` records the factual state at time of discovery (≤ two lines). The value must be free of:
+- internal tool or file references (e.g. `issue-missing-data-cy.md`)
+- data-cy attribute names or implementation detail
+- action items ("raise with dev team", "will resolve once…")
+- scan session tags except as a factual date anchor (e.g. `discovered [scan: 2026-05-28-b]`)
+
+**`@pending` JSDoc on an individual locator property** is acceptable — it explains why that specific locator uses a fallback strategy and what resolves it. It is implementation-level, not an operational note on the surface as a whole.
+
+### Common mistakes
+
+| Anti-pattern | Correct |
+|---|---|
+| `type: screen` | `surface_type: UI` |
+| `owner: Team` | `owners: Team` (plural key) |
+| `status:` on a PageObject header (any value) | Remove it — a surface has no status; a Feature's state is derived from its Functionalities |
+| `status: STUB` / `status: candidate` | Remove `status`, keep `stub-reason:` |
+| `functionalities:` omitted | `functionalities: none` |
+| `user_stories:` omitted | `user_stories: none` |
+| `external_dependencies:` omitted | `external_dependencies: none` |
+| `parent-feat:` omitted from cross-reference file | Every secondary file for a shared Feature must declare `parent-feat` |
+| `page-object:` omitted from cross-reference file | `page-object:` is required in both formats — it names the file being read |
+| `user_stories:` duplicated in cross-reference file | These fields live only on the primary Feature file; omit from cross-references |
+| Multiple files claiming the same Feature without `[cross-reference]` tag | Only one file carries the full header; all others must use `[cross-reference]` format |
+| NOTE block in header about missing `data-cy` or open issues | Move to `manifest.json` `coverage_gaps[]`; keep only `stub-reason:` in the header |
+| `@stub` or `@pending` on the class JSDoc | Use `stub-reason:` in the header instead |
+| `purpose: Step 1 of FEAT-006 — ...` | `purpose` must not contain FEAT IDs — use `Step 1 (About) — ...` instead; the ID is already in the title line and `parent-feat` |
+| `purpose:` contains "NOT a …" or "Accessed via …" | Purpose describes what the surface does; exclude defensive statements and navigation instructions |
+| `route:` contains a `data-cy` attribute name (e.g. `btn-import-domain`) | `route:` is a URL path or "modal overlay — no dedicated URL"; locator IDs belong in the PageObject body |
+| `wizard-steps:` contains `[scan: …]` tag | `wizard-steps:` is a clean ordered list; scan provenance belongs in `manifest.json` |
+| Non-spec field added to header (e.g. `query_params:`) | Only use fields defined in the Required or Optional tables; extra fields are ignored by miners and silently dropped |
+| Cross-reference prose mentions FUNC IDs or file names | Cross-reference prose is mined as-is — keep it to one human-readable sentence: which step/sub-surface this file implements and where the authoritative header lives |
+| `stub-reason:` contains action items, internal tool refs, or data-cy names | `stub-reason:` states only the factual reason (≤ two lines); action items go in `manifest.json` `coverage_gaps[]` |
 
 ---
 
@@ -156,10 +317,13 @@ Header comment block at the top of every Functionality feature file —
 
 ```gherkin
 # =============================================================================
-# LIVING DOC — FUNC-<nnn> · <Feature Name> — <Functionality Name>
+# LIVING DOC — FUNC-<nnn> · <Feature Name> - <Functionality Name>
 # =============================================================================
 # source:    https://github.com/<org>/<repo>/issues/<n>          ← optional
 # status:    planned | in_review | active | deprecated
+# deprecated_at:      <date>                                     ← optional; with status: deprecated
+# deprecation_reason: <why this Functionality was deprecated>    ← optional; with status: deprecated
+# superseded_by:      FUNC-<nnn>                                 ← optional; replacement entity
 # parent:    FEAT-<nnn>
 # func_type: component_state | component_action | button_action |
 #            field_validation | calculation | visibility | navigation_rule
@@ -172,7 +336,7 @@ Header comment block at the top of every Functionality feature file —
 #
 # acceptance_criteria:
 #
-#   AC:FUNC-<nnn>-01 (v<version> - <State>)
+#   AC:FUNC-<nnn>-01 (v<version> - <state>)      ← `(planned)` with no version = backlog
 #     - <description in business language — no data-cy IDs in AC text>
 #     - Aspect: <value1>, <value2>        ← optional; default keyword — no {placeholder} needed
 #     preconditions:                      ← optional; extends feature-level preconditions for this AC only
@@ -180,14 +344,13 @@ Header comment block at the top of every Functionality feature file —
 #     not_in_scope:                       ← optional; extends feature-level not_in_scope for this AC only
 #       - <AC-specific exclusion>
 #
-#   AC:FUNC-<nnn>-02 (v<version> - <State>)
+#   AC:FUNC-<nnn>-02 (v<version> - <state>)
 #     - <description — may contain a {placeholder-name} for parameterised variants>
 #     - <placeholder-name>: <value1>, <value2>  ← optional; custom keyword — matches {placeholder-name} in AC text; ALL values must be covered
 # =============================================================================
-```
 
 @FUNC_ID:FUNC-<nnn>
-Feature: <Feature Name> — <Functionality Name>
+Feature: <Feature Name> - <Functionality Name>
   <Purpose: one-to-two sentences describing what this FUNC covers, in business
   language. Present only when purpose adds context beyond the title.>   ← optional
 
@@ -201,7 +364,10 @@ Feature: <Feature Name> — <Functionality Name>
 | Field | Required | Purpose |
 |---|---|---|
 | `# source:` | Optional | Link to the original issue tracker entry or the pre-BDD living doc location |
-| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`) |
+| `# status:` | Yes | `planned` · `in_review` · `active` · `deprecated` (lowercase with underscores per profile `ac_states`). A Functionality always carries an authored status. |
+| `# deprecated_at:` | Optional | Date the Functionality was deprecated; authored with `status: deprecated` |
+| `# deprecation_reason:` | Optional | Why it was deprecated |
+| `# superseded_by:` | Optional | ID of the replacement entity |
 | `# parent:` | Yes | Parent Feature ID (`FEAT-<nnn>`) |
 | `# func_type:` | Yes | Category of behavior this Functionality represents (see table below) |
 | `# rationale:` | Optional | **Why** this FUNC is scoped the way it is — business context, a deliberate design decision, or a constraint that explains the boundary. Not for implementation notes. |
@@ -238,160 +404,14 @@ Feature: <Feature Name> — <Functionality Name>
 
 ---
 
-## PageObject File Header
-
-Every PageObject file opens with a living-doc header block. Use this format so each file is self-describing and traceable without opening a separate registry.
-
-### Required fields
-
-| Field | Canonical values |
-|---|---|
-| `surface_type` | `UI` · `API` · `Service` · `Worker` · `Module` · `Library` |
-| `route` | URL path — use `{param}` for dynamic segments |
-| `owners` | Team name(s), comma-separated |
-| `status` | `active` · `planned` · `candidate` · `deprecated` |
-| `purpose` | One-to-two sentence description in business language |
-| `user_stories` | `US-N` IDs, comma-separated — or `none` (triggers orphan warning in gap reports) |
-| `functionalities` | `FUNC-N` IDs, comma-separated — or `none` (triggers a reminder to define FUNCs) |
-| `external_dependencies` | Service or API names this surface calls — or `none` |
-| `page-object` | Filename of this PageObject |
-
-**Optional fields:**
-
-| Field | When |
-|---|---|
-| `wizard-steps` | Multi-step wizard UI — list the named steps in order |
-| `stub-reason` | `status: candidate` — one-to-two sentence statement of **why** the surface is not yet fully instrumented; treated as tech-debt resolvable by instrumenting the template and re-scanning |
-
-### Two header formats: Full vs Cross-reference
-
-A PageObject file uses one of two formats depending on whether it is the **primary surface owner** or a **secondary file** that implements part of a surface already owned elsewhere.
-
-| Situation | Format |
-|---|---|
-| One PageObject = one distinct navigable surface (URL or modal) | **Full header** |
-| Multiple PageObjects share one URL (e.g. wizard steps, sub-pages, dialogs) — one file is the primary owner, the others are implementation helpers | **Cross-reference header** — secondary files only |
-
-**Rule:** exactly one file per Feature carries the full header. Every other file that contributes to the same Feature carries a cross-reference header with `parent-feat` pointing to the Feature ID. This keeps traceability fields (`user_stories`, `functionalities`, `external_dependencies`) in a single authoritative location.
-
-**Wizard example:** FEAT-042 (Account Setup Wizard) lives at one URL. `AccountSetupWizardPage.ts` is the primary file and carries the full header. `AccountSetupWizardProfilePage.ts`, `AccountSetupWizardPreferencesPage.ts`, and the other step files each carry a cross-reference header pointing `parent-feat: FEAT-042`. Adding a wizard step never requires editing the Feature registry or duplicating traceability data.
-
----
-
-**Full header example:**
-
-```typescript
-/* =============================================================================
- * LIVING DOC — FEAT-042 · Account Setup Wizard
- * =============================================================================
- * surface_type:          UI
- * route:                 /app/accounts/setup
- * owners:                Platform Team
- * status:                active
- * wizard-steps:          Profile · Preferences · Review · Confirm
- * purpose:               Multi-step wizard for creating and configuring a new account.
- * user_stories:          US-10, US-12
- * functionalities:       FUNC-005, FUNC-006
- * external_dependencies: accounts-api
- * page-object:           AccountSetupWizardPage.ts
- * ============================================================================= */
-```
-
----
-
-**Cross-reference header required fields:**
-
-| Field | Canonical values |
-|---|---|
-| `parent-feat` | `FEAT-<nnn>` — ID of the primary Feature that owns this surface. **Required.** |
-| `route` | URL path of this specific sub-surface — use `{param}` for dynamic segments |
-| `owners` | Team name(s), comma-separated |
-| `status` | `active` · `planned` · `candidate` · `deprecated` |
-| `purpose` | One sentence: what this step or sub-surface does, in business language — no FEAT IDs |
-| `page-object` | Filename of this PageObject |
-| `functionalities` | Optional: `FUNC-<nnn>, ...` — subset of parent Feature's Functionalities that this step implements. Omit if all sub-pages equally implement all parent Feature Functionalities. |
-
-The following fields are **intentionally omitted** from the cross-reference header — they belong only on the primary Feature file: `surface_type`, `user_stories`, `external_dependencies`.
-
-**Optional inclusion of `functionalities`:** You may list this field in a cross-reference header to scope step-specific atomic behaviors to that sub-page. Use this when a step implements distinct Functionalities not shared across the entire Feature. If the sub-page's Functionality list is identical to the parent Feature's, omit this field to avoid duplication and keep the primary Feature as the authoritative source.
-
-**Cross-reference header example:**
-
-```typescript
-/* =============================================================================
- * LIVING DOC — FEAT-042 · Account Setup Wizard  [cross-reference]
- * =============================================================================
- * This file implements Step 1 (Profile) of the Account Setup Wizard.
- * The authoritative Feature header is in AccountSetupWizardPage.ts.
- *
- * parent-feat:     FEAT-042
- * route:           /app/accounts/setup  (wizard stays on this URL)
- * owners:          Platform Team
- * status:          active
- * functionalities: FUNC-005              ← Step 1 (Profile) implements profile-specific field validation
- * purpose:         Step 1 (Profile) — user profile fields: display name, email address,
- *                  and role selection.
- * page-object:     AccountSetupWizardProfilePage.ts
- * ============================================================================= */
-```
-
-### Where operational notes belong
-
-The PageObject **header block and class JSDoc are living-doc contracts** — they encode identity, traceability, and status. They are not a changelog, scan diary, or issue tracker.
-
-| Information type | Correct location | NOT in |
-|---|---|---|
-| Missing `data-cy` attributes discovered during a scan | `manifest.json` → `coverage_gaps[]` | Header or class JSDoc |
-| Reason a surface is not yet fully instrumented | Header field `stub-reason:` (one or two lines) | Free-text NOTE block |
-| Proposed `data-cy` names for missing elements | `manifest.json` → `coverage_gaps[].suggestedDataCy` | Header or class body |
-| Open issue reference (e.g. OI-08, P1) | `manifest.json` → `coverage_gaps[].note` | Header or class JSDoc |
-| Scan date or scan session tag | `manifest.json` → `last_scanned` | Header or class JSDoc |
-| `@stub` / `@pending` JSDoc tags on the class | — (use `status: candidate` + `stub-reason:`) | Class JSDoc |
-| Implementation note explaining a locator strategy | Inline code comment on the locator or method | Header block |
-
-**`status: candidate` and `stub-reason:` as resolvable tech-debt**
-
-A `status: candidate` surface is **not a permanent state**. The surface is known, documented, and linked to User Stories; what is missing is template instrumentation (`data-cy` attributes). Resolution path:
-
-1. Instrument the component template with the `data-cy` values listed in `manifest.json` `coverage_gaps[]` (use the `data-cy-instrument` skill).
-2. Re-scan — the scan session updates the PageObject locators.
-3. Promote `status: candidate` → `status: active` and remove `stub-reason:`.
-
-`stub-reason:` records the factual state at time of discovery (≤ two lines). Must not contain: internal tool or file references, data-cy attribute names, action items, or scan session tags except as a factual date anchor.
-
-### Common mistakes
-
-| Anti-pattern | Correct |
-|---|---|
-| `type: screen` | `surface_type: UI` |
-| `owner: Team` | `owners: Team` (plural key) |
-| `status: ACTIVE` | `status: active` (lowercase) |
-| `status: STUB` | `status: candidate` + `stub-reason:` field |
-| `functionalities:` omitted | `functionalities: none` |
-| `user_stories:` omitted | `user_stories: none` |
-| `external_dependencies:` omitted | `external_dependencies: none` |
-| `parent-feat:` omitted from cross-reference file | Every secondary file for a shared Feature must declare `parent-feat` |
-| `page-object:` omitted from cross-reference file | `page-object:` is required in both formats |
-| `user_stories:` duplicated in cross-reference file | These fields live only on the primary Feature file |
-| Multiple files claiming the same Feature without `[cross-reference]` tag | Only one file carries the full header |
-| NOTE block in header about missing `data-cy` or open issues | Move to `manifest.json` `coverage_gaps[]`; keep only `stub-reason:` in the header |
-| `@stub` or `@pending` on the class JSDoc | Use `status: candidate` + `stub-reason:` in the header instead |
-| `purpose:` contains FEAT IDs | `purpose` must not contain FEAT IDs — ID is already in the title line and `parent-feat` |
-| `purpose:` contains "NOT a …" or "Accessed via …" | Purpose describes what the surface does; exclude defensive statements and navigation instructions |
-| `route:` contains a `data-cy` attribute name | `route:` is a URL path; locator IDs belong in the PageObject body |
-| `wizard-steps:` contains `[scan: …]` tag | `wizard-steps:` is a clean ordered list; scan provenance belongs in `manifest.json` |
-| Non-spec field added to header | Only use fields defined in the Required or Optional tables |
-| Cross-reference prose mentions FUNC IDs or file names | Keep to one human-readable sentence: which step/sub-surface this file implements and where the authoritative header lives |
-| `stub-reason:` contains action items or internal tool refs | `stub-reason:` states only the factual reason (≤ two lines) |
-
----
-
 ## seed.yaml (Business Seed)
 
-`seed.yaml` lives at `<paths.bdd_artifacts>/seed.yaml` (default `.copilot/bdd/seed.yaml`). It is the
-durable, human-curated input to every scan session: app entry point, business domains → routes,
-known entities for parameterised routes, test-user roles, and pre-declared form values. **Re-read it
-in full at the start of every scan session.** The agent appends to it as it discovers entities.
+`seed.yaml` lives at `<paths.bdd_artifacts>/seed.yaml` (default `.copilot/bdd/seed.yaml`). It is
+**the agent's local memory, not a human-authored file** — its durable record of the app's business
+surface between scan sessions: app entry point, business domains → routes, known entities for
+parameterised routes, test-user roles, and pre-declared form values. The agent creates it, re-reads
+it in full at the start of every scan session, and appends to it as it discovers entities. A human
+may pre-seed known values or correct them, but is not expected to write the file.
 
 ```yaml
 # .copilot/bdd/seed.yaml
@@ -505,9 +525,10 @@ manifest route's optional `field_constraints[]` (see Manifest schema below).
 ## manifest.json (Exploration Manifest)
 
 `manifest.json` lives at `<paths.bdd_artifacts>/manifest.json` (default `.copilot/bdd/manifest.json`).
-It is the machine record of every scanned surface. The manifest is a JSON object; **`routes` is a JSON array** of route objects
-(profile `manifest_shape: object`). Load targeted entries by route during a session; load the full file
-only for a RE-SCAN.
+It is **the agent's local memory, not a human-authored file** — its machine record of every scanned
+surface, written and read by the tooling across runs. The manifest is a JSON object; **`routes` is a
+JSON array** of route objects (profile `manifest_shape: object`). Load targeted entries by route
+during a session; load the full file only for a RE-SCAN.
 
 The manifest uses **normalized test_id keys** (not attribute-specific). The root-level `test_id_attribute` metadata
 tells downstream generators (PageObject, data-cy-instrument) how to map these normalized keys to the actual HTML attribute.

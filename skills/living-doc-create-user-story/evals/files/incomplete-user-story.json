@@ -1,13 +1,11 @@
 {
-  "type": "UserStory",
+  "type": "User Story",
   "id": "US-042",
-  "title": "Reset account password",
-  "status": "draft",
-  "narrative": {
-    "as_a": "registered customer",
-    "i_can": "reset my password using my email address",
-    "so_that": "I can regain access to my account if I forget my password"
-  },
+  "name": "Reset account password",
+  "status": "planned",
+  "as_a": "registered customer",
+  "i_want": "reset my password using my email address",
+  "so_that": "I can regain access to my account if I forget my password",
   "features": ["FEAT-001"],
   "acceptance_criteria": [
     {

@@ -19,7 +19,7 @@ No fixture files for this skill. All evals are conversational — the skill oper
 | 9 | happy-path | _(none)_ | @AC: Cucumber tag vs # AC: comment — both required, each serves a distinct purpose |
 | 10 | happy-path | _(none)_ | scan_ac_links.py audit command and output interpretation |
 | 11 | regression | _(none)_ | Aspect param mismatch: @AC: tag has /aspect: but # AC: comment does not mirror it |
-| 12 | edge-case | _(none)_ | Descoped AC: tag scenario @wip/@pending, add comment, never delete |
+| 12 | edge-case | _(none)_ | Descoped AC (dropped back to `planned`): tag scenario @wip + @review-needed, mirror the Rationale bullet, never delete |
 
 ## Trigger eval summary
 

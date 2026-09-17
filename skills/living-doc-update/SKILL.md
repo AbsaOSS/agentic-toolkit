@@ -3,9 +3,9 @@ name: living-doc-update
 description: >
   Update, amend, or deprecate existing living documentation entities (User Stories, Features,
   Functionalities). Use when adding new ACs to an existing User Story, descoping or removing
-  an AC, changing a Feature's ownership or status, updating the Feature Registry after a team
+  an AC, changing a Feature's ownership or deprecation metadata, updating the Feature Registry after a team
   restructure, deprecating a Functionality whose code has been deleted, or promoting a User
-  Story from draft to ready.
+  Story from planned to active.
   Triggers on: "update user story", "add AC to user story", "descope AC", "deprecate feature",
   "mark US ready", "change feature owner", "update functionality", "deprecate functionality",
   "living doc update", "update living doc entity", "mark feature deprecated", "update AC",
@@ -30,10 +30,11 @@ If the user says "update the story" but the substance is a newly discovered edge
 |---|---|---|
 | Add a new AC | User Story / Functionality | Append a new AC entry with the next sequential AC ID |
 | Modify AC description | User Story / Functionality | Edit the description; keep the AC ID stable |
-| Change status | Any entity | Update `status` field; record the transition event |
+| Change status | User Story / Functionality | Update `status` field; record the transition event — a Feature has no `status` field to change; its state is derived from its Functionalities |
 | Change owner | Feature | Update `owners` field; add `owner_changed_at` (ISO date) and `owner_change_reason` fields; notify the new owner if open User Stories are linked to the Feature |
 | Add a linked User Story | Feature | Append to `user_stories` |
-| Deprecate an entity | Any entity | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
+| Deprecate a User Story or Functionality | User Story / Functionality | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
+| Deprecate a Feature | Feature | Add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` — never set a `status` field; the surface's retirement is recorded through its Functionalities being deprecated |
 | Delete a Functionality | Functionality | Do not delete — deprecate it and link to the commit that removed the code |
 
 ## Update a User Story — add or modify ACs
@@ -42,7 +43,7 @@ When adding a new AC to an existing User Story:
 
 1. Load the existing User Story entity
 2. Assign the next sequential AC ID in the canonical `AC:<parent-id>-<nn>` format
-   (for example `AC:US-042-04`) — see [living-doc-glossary](../shared/references/living-doc-glossary.md#acceptance-criterion-ac)
+   (for example `AC:US-042-04`) - see [living-doc-glossary](../shared/references/living-doc-glossary.md#acceptance-criterion-ac)
 3. Elicit the new AC using the same completeness checklist as `living-doc-create-user-story` and
    capture it in `description`, `given`, `when`, `then` form:
    - Happy path covered?
@@ -59,10 +60,11 @@ When modifying an existing AC **keep the AC ID stable** — changing the ID brea
 to linked tests. Only update the `description`, `given`, `when`, `then`, or
 state fields. If the changed AC text affects linked tests, flag them for update.
 
-**AC versioning:** ACs carry a `(vMAJOR.MINOR.PATCH – state)` annotation.
+**AC versioning:** Once an AC is targeted at a version, it carries a `(vMAJOR.MINOR.PATCH - state)` annotation. A backlog AC with no target version yet stays `(planned)` — do not invent a version for it.
 - Bump the **minor** version for any business-rule change to an `active` AC (e.g. `v1.0.0 → v1.1.0`).
 - Bump the **patch** version for a wording clarification that does not change the rule (e.g. `v1.0.0 → v1.0.1`).
-- The version must appear in the `# AC:` comment in linked Gherkin feature files — trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
+- Deprecating an AC requires a removal note: `(v<version> - deprecated - removal planned v<version>)`.
+- The version must appear in the `# AC:` comment in linked Gherkin feature files - trigger `gherkin-living-doc-sync` to propagate the new version into those comments.
 
 ## Promote a Functionality from planned to active
 
@@ -95,23 +97,25 @@ When promotion is blocked because only a happy-path AC exists, give a concrete e
 
 After promoting a User Story to `active`, trigger `living-doc-scenario-creator` to generate BDD feature files for each `active` AC if they do not yet exist.
 
-## Deprecate a Feature or Functionality
+## Deprecate a Feature, Functionality, or User Story
 
 Use this workflow when code backing an entity is deleted or a business capability is retired.
 Set the relevant fields in the project's Storage Profile format:
 
-| Field | Value |
-|---|---|
-| `status` | `deprecated` |
-| `deprecated_at` | Date of deprecation |
-| `deprecation_reason` | Why it was deprecated |
-| `deprecated_code_commit` | Commit SHA or URL that removed the backing code (if applicable) |
-| `superseded_by` | ID of the replacement entity (if applicable) |
+| Field | Value | Applies to |
+|---|---|---|
+| `status` | `deprecated` | Functionality and User Story only — a Feature has no `status` field |
+| `deprecated_at` | Date of deprecation | Feature, Functionality, and User Story |
+| `deprecation_reason` | Why it was deprecated | Feature, Functionality, and User Story |
+| `deprecated_code_commit` | Commit SHA or URL that removed the backing code (if applicable) | Feature and Functionality |
+| `superseded_by` | ID of the replacement entity (if applicable) | Feature, Functionality, and User Story |
 
 Rules:
 - Always deprecate — never delete entities (preserves audit trail)
+- A Functionality or User Story being deprecated gets `status: deprecated` — never leave it on its prior status while adding deprecation metadata, or it reads as still active
 - Add `deprecated_code_commit` when the code was removed in a commit
 - Add `superseded_by` when a replacement entity exists
+- A Feature never gets a `status` field, deprecated or otherwise — its state is derived from its Functionalities. Retiring a Feature means deprecating every Functionality it owns; the Feature entity itself only gains `deprecated_at` / `deprecation_reason` / `superseded_by` as a record of when the surface was retired.
 - If a deprecated Feature owns Functionalities, flag every owned Functionality for deprecation review before closing the change.
 - Flag any tests linked to the deprecated entity for update or removal
 - If the deprecated entity has `ACTIVE` ACs with linked Gherkin scenarios, trigger
@@ -138,26 +142,29 @@ When a team changes ownership of a Feature, update the `owners` field and set `o
 
 ## Descope an AC mid-sprint
 
-When an AC is moved out of the current sprint but not permanently removed:
+There is no `descoped` state. When an AC is moved out of the current sprint but not permanently
+removed, it keeps its `planned` state and gains no extra fields — do not delete the AC (preserves
+audit trail and reinstating intent):
 
-- Set `status: descoped` — do not delete the AC (preserves audit trail and reinstating intent)
-- Add `descoped_at` (date) and `descoped_reason` fields
-- Add `future_release` field if the work is planned for a later sprint
-- Flag any linked Gherkin scenarios for `@wip` or `@pending` tagging via `gherkin-living-doc-sync`
-
-```
+- Drop the target version so the AC reads `AC:<id> (planned)` - backlog, agreed, no target version yet
+- Record why on the AC's `- Rationale:` bullet
+- Flag any linked Gherkin scenarios for `@wip` + `@review-needed` tagging via `gherkin-living-doc-sync`
 
 For **business-rule changes to an active AC**, first show the AC side-by-side for confirmation, then apply the version bump:
 
 ```
-OLD: AC:US-042-01 (v1.0.0 - active) — Minimum order value is £50.
-NEW: AC:US-042-01 (v1.1.0 - active) — Minimum order value is £75.
+OLD: AC:US-042-01 (v1.0.0 - active) - Minimum order value is £50.
+NEW: AC:US-042-01 (v1.1.0 - active) - Minimum order value is £75.
 ```
-AC:US-042-03 (v1.2.0 – descoped)
-   – Promo codes can be stacked and applied in defined priority order.
-   – descoped_at: 2026-05-15
-   – descoped_reason: Promo stacking rule deferred — too complex for current sprint
-   – future_release: sprint-52
+
+For an AC **descoped** out of the current release (was targeting `v1.2.0`, no longer is):
+
+```
+OLD: AC:US-042-03 (v1.2.0 - planned)
+       - Promo codes can be stacked and applied in defined priority order.
+NEW: AC:US-042-03 (planned)
+       - Promo codes can be stacked and applied in defined priority order.
+       - Rationale: Promo stacking rule deferred - too complex for current sprint; reinstate when re-prioritised.
 ```
 
 ## Out-of-scope routing
@@ -206,7 +213,7 @@ new values clearly labelled, and list any linked tests that need updating:
 LIVING DOC UPDATE — 2026-05-15
   Entity:  US-042 — Customer applies a promotional discount
   Changes:
-    + Added AC AC:US-042-04 (state: planned) — Promo code expired returns 422 with error message
+    + Added AC AC:US-042-04 (planned) - Promo code expired returns 422 with error message
     ~ Modified AC AC:US-042-01:
         OLD: "Payment must complete within 3 seconds under normal load (p99 SLA)"
         NEW: "Payment must complete within 2 seconds under normal load (p99 SLA)"
@@ -222,7 +229,7 @@ For **added ACs**, use the same summary pattern rather than ending with validati
 LIVING DOC UPDATE — 2026-05-15
   Entity:  US-089 — Delivery restrictions
   Changes:
-    + Added AC AC:US-089-04 (state: planned)
+    + Added AC AC:US-089-04 (planned)
       GIVEN a customer enters an address outside the shipping zone
       WHEN they place the order
       THEN the order is blocked with SHIPPING_ZONE_EXCLUDED and a clear message

@@ -40,11 +40,15 @@ except ImportError:
 
 # ── Canonical constraints (from living-doc-glossary.md) ───────────────────────
 
-VALID_STATUSES = {"planned", "active", "deprecated"}
 VALID_SURFACE_TYPES = {"UI", "API"}
-# AC state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
-# Override at runtime with --profile to read the project's own ac_states list.
-VALID_AC_STATUSES = {"planned", "in_review", "active", "deprecated"}
+# Status/AC-state vocabulary — lowercase with underscores per the Project Profile `ac_states`.
+# The same vocabulary backs both an authored entity `status` (User Story / Functionality) and
+# an AC `state` (see living-doc-bdd-schemas.md) — they are not independent sets. CANONICAL_STATUSES
+# never changes; VALID_STATUSES and VALID_AC_STATUSES may both be narrowed together at runtime
+# with --profile to a subset of it (see main()) — a profile can restrict, never extend, the canon.
+CANONICAL_STATUSES = {"planned", "in_review", "active", "deprecated"}
+VALID_STATUSES = set(CANONICAL_STATUSES)
+VALID_AC_STATUSES = set(CANONICAL_STATUSES)
 
 # Numeric only, any digit count (US-1 and US-001 are both valid — matches
 # living_doc_id.py's ENTITY_TYPE_MAP and scan_ac_links.py). Feature IDs are numeric
@@ -64,13 +68,22 @@ ID_PATTERNS: dict[str, re.Pattern] = {
 REQUIRED_FIELDS: dict[str, list[str]] = {
     "User Story": ["id", "name", "status", "features", "acceptance_criteria"],
     "Feature": [
-        "id", "name", "surface_type", "purpose", "status",
+        "id", "name", "surface_type", "purpose",
         "user_stories", "functionalities", "owners",
     ],
     "Functionality": ["id", "name", "parent_feature", "status", "acceptance_criteria"],
 }
 
+# Entity types that carry an authored `status` field. A Feature has none — its state
+# is derived from its Functionalities and must never be authored.
+STATUSED_ENTITY_TYPES = {"User Story", "Functionality"}
+
 DEPRECATION_FIELDS = ["deprecated_at", "deprecation_reason"]
+# Markers that only signal deprecation for a non-statused entity (Feature) — never
+# required, so they stay out of DEPRECATION_FIELDS' missing-field warning loop.
+# Per SKILL.md's deprecation table: superseded_by applies to Feature/Functionality/
+# User Story, deprecated_code_commit applies to Feature and Functionality.
+FEATURE_DEPRECATION_MARKERS = ("superseded_by", "deprecated_code_commit")
 VERB_PREFIX_RE = re.compile(
     r"^(process|handle|manage|do|perform|run|execute|validate|create|update|delete)\b",
     re.IGNORECASE,
@@ -84,19 +97,69 @@ ERROR_KEYWORDS_RE = re.compile(
 # ── Validation logic ───────────────────────────────────────────────────────────
 
 def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
-    """Read `ac_states` from a Project Profile YAML. Returns None if unavailable."""
+    """Read `ac_states` from a Project Profile YAML. Returns None if the field is
+    omitted (valid — the schema allows omitting it) or the file is genuinely empty.
+    Exits nonzero for anything that means the requested profile could not actually be
+    consulted — missing/unreadable file, invalid YAML, a non-mapping root, or a
+    present-but-schema-invalid `ac_states` — instead of silently falling back to the
+    unrestricted canonical set as if `--profile` had never been passed. Also exits
+    nonzero if pyyaml itself is unavailable, for the same reason."""
     try:
         import yaml  # noqa: PLC0415 — optional, only needed when --profile is passed
+    except ImportError as exc:
+        print(
+            f"Error: --profile requires pyyaml, which is not installed: {exc}\n"
+            "Install it with: pip install pyyaml",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
+    try:
         with open(profile_path, encoding="utf-8") as f:
-            profile = yaml.safe_load(f) or {}
-    except (FileNotFoundError, ImportError, ValueError) as exc:
-        print(f"Warning: could not load profile '{profile_path}': {exc}", file=sys.stderr)
+            profile = yaml.safe_load(f)
+    except (OSError, ValueError) as exc:
+        print(f"Error: could not load profile '{profile_path}': {exc}", file=sys.stderr)
+        sys.exit(1)
+    except yaml.YAMLError as exc:
+        print(
+            f"Error: profile '{profile_path}' is malformed — invalid YAML: {exc}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if profile is None:
         return None
-    states = profile.get("ac_states")
-    if isinstance(states, list) and states:
-        return {str(s) for s in states}
-    return None
+    if not isinstance(profile, dict):
+        print(
+            f"Error: profile '{profile_path}' is malformed — "
+            f"root must be a mapping, got: {type(profile).__name__}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if "ac_states" not in profile:
+        return None
+    states = profile["ac_states"]
+    if not isinstance(states, list) or not states:
+        print(
+            f"Error: profile '{profile_path}' has an invalid `ac_states` — "
+            f"must be a non-empty array of strings, got: {states!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not all(isinstance(s, str) for s in states):
+        print(
+            f"Error: profile '{profile_path}' has an invalid `ac_states` — "
+            f"all items must be strings, got: {states!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if len(set(states)) != len(states):
+        print(
+            f"Error: profile '{profile_path}' has an invalid `ac_states` — "
+            f"must not contain duplicates, got: {states!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    return {str(s) for s in states}
 
 
 def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
@@ -147,11 +210,31 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
 
     # ── Status ───────────────────────────────────────────────────────────────
     status: str = entity.get("status", "")
-    if status and status not in VALID_STATUSES:
+    if entity_type not in STATUSED_ENTITY_TYPES:
+        if "status" in entity:
+            error(
+                "status",
+                f"{entity_type} must not carry a 'status' field — "
+                "its state is derived from its Functionalities, never authored",
+            )
+    elif status and status not in VALID_STATUSES:
         error("status", f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
 
     # ── Deprecation metadata ─────────────────────────────────────────────────
-    if status == "deprecated":
+    # A Feature carries no `status`, so it is deprecated when it carries any
+    # deprecation marker directly (deprecated_at / deprecation_reason / superseded_by /
+    # deprecated_code_commit — see SKILL.md's deprecation table for which entity types
+    # each marker applies to).
+    # Presence of the key is what signals deprecation, not truthiness — an empty-string
+    # value (e.g. `"deprecated_at": ""`) is still a deprecation attempt with malformed
+    # metadata, and must fall through to the missing-field warnings below rather than
+    # being silently treated as "not deprecated".
+    is_deprecated = (
+        status == "deprecated"
+        if entity_type in STATUSED_ENTITY_TYPES
+        else any(field in entity for field in (*DEPRECATION_FIELDS, *FEATURE_DEPRECATION_MARKERS))
+    )
+    if is_deprecated:
         for dep_field in DEPRECATION_FIELDS:
             if not entity.get(dep_field):
                 warning(
@@ -170,11 +253,40 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
             )
         if isinstance(entity.get("owners"), list) and not entity["owners"]:
             warning("owners", "Feature has no owners — assign a team or individual")
-        if isinstance(entity.get("user_stories"), list) and not entity["user_stories"]:
+        no_user_stories = isinstance(entity.get("user_stories"), list) and not entity["user_stories"]
+        no_functionalities = isinstance(entity.get("functionalities"), list) and not entity["functionalities"]
+        # gap-finder's ORPHAN_FEATURE gap fires on the absence of a linked User Story alone
+        # (compute_gaps.py), regardless of Functionality links — so mirror that here rather
+        # than requiring both lists to be empty. compute_gaps.py also honours the back-link
+        # from a User Story's own `features` list (features_linked_from_us), not just the
+        # Feature's forward `user_stories` — mirror that here too so a Feature linked only
+        # from the User Story side isn't falsely flagged when --catalog is supplied. gap-finder's
+        # EMPTY_FEATURE gap applies the same union-of-forward-and-back-link treatment to
+        # Functionality.parent_feature (feature_func_counts) — mirror that here too.
+        catalog_inner = catalog.get("catalog", catalog) if catalog is not None else None
+        linked_from_catalog_us = False
+        if no_user_stories and catalog_inner is not None:
+            linked_from_catalog_us = any(
+                entity_id in (us.get("features") or [])
+                for us in catalog_inner.get("user_stories", [])
+            )
+        if no_user_stories and not linked_from_catalog_us:
             warning(
-                "user_stories",
+                "ORPHAN_FEATURE",
                 "Feature has no linked User Stories — "
-                "orphan Features appear in gap-finder reports",
+                "reported as an ORPHAN_FEATURE condition by living-doc-gap-finder",
+            )
+        linked_from_catalog_func = False
+        if no_functionalities and catalog_inner is not None:
+            linked_from_catalog_func = any(
+                fn.get("parent_feature") == entity_id
+                for fn in catalog_inner.get("functionalities", [])
+            )
+        if no_functionalities and not linked_from_catalog_func:
+            warning(
+                "functionalities",
+                "Feature has no Functionalities — "
+                "a Feature should own at least one Functionality",
             )
         purpose: str = entity.get("purpose", "")
         if purpose and len(purpose.split()) < 5:
@@ -218,12 +330,13 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
     # ── Functionality-specific ───────────────────────────────────────────────
     if entity_type == "Functionality":
         name = entity.get("name", "")
-        if name and " – " not in name and " - " not in name:
+        if name and " - " not in name:
             warning(
                 "name",
                 "Functionality name should follow the pattern "
-                "'<Feature name> – <behavior phrase>' "
-                "(e.g. 'Login Page – Validate Password Strength')",
+                "'<Feature name> - <behavior phrase>' "
+                "(e.g. 'Login Page - Validate Password Strength'). "
+                "The canonical separator is a plain hyphen, never an en or em dash.",
             )
         parent: str = entity.get("parent_feature", "")
         if parent and not re.match(r"^FEAT-", parent):
@@ -270,9 +383,15 @@ def _validate_ac(
         error_fn(f"{field_prefix}.description", "AC is missing a 'description'")
     ac_status = ac.get("state", "")
     if ac_status and ac_status not in VALID_AC_STATUSES:
-        warning_fn(
+        # Error, not warning — an AC `state` and an entity `status` are the same
+        # vocabulary (see the VALID_STATUSES/VALID_AC_STATUSES comment above) and must
+        # be enforced identically. As a warning this was non-blocking regardless of
+        # whether VALID_AC_STATUSES was the full canonical set or a --profile-narrowed
+        # subset, so a profile-excluded AC state still produced exit code 0 / valid:
+        # true — defeating the entire purpose of `--profile` (restrict, never extend).
+        error_fn(
             f"{field_prefix}.state",
-            f"Unrecognised AC state '{ac_status}'. "
+            f"Invalid AC state '{ac_status}'. "
             f"Expected one of: {sorted(VALID_AC_STATUSES)}",
         )
 
@@ -355,7 +474,16 @@ def main() -> None:
     if args.profile:
         profile_states = load_ac_states_from_profile(args.profile)
         if profile_states:
-            global VALID_AC_STATUSES
+            invalid_states = profile_states - CANONICAL_STATUSES
+            if invalid_states:
+                print(
+                    f"Error: profile ac_states {sorted(invalid_states)} are not a subset of the "
+                    f"canonical states {sorted(CANONICAL_STATUSES)}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            global VALID_STATUSES, VALID_AC_STATUSES
+            VALID_STATUSES = profile_states
             VALID_AC_STATUSES = profile_states
 
     try:

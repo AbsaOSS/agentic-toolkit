@@ -1,10 +1,10 @@
 ---
 name: living-doc-create-feature
 description: >
-  Define a system surface (UI screen, API endpoint, service, or module) as a Feature entity,
-  enabling impact analysis and traceability in the living documentation. Use when documenting
-  a new screen, API, service, or module; mapping surfaces to User Stories; or resolving
-  Feature naming conflicts.
+  Define a system surface (UI screen or API endpoint, including a backend service's public
+  contract) as a Feature entity, enabling impact analysis and traceability in the living
+  documentation. Use when documenting a new screen, API, or backend service; mapping surfaces
+  to User Stories; or resolving Feature naming conflicts.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
   "document an API endpoint", "feature registry", "what feature owns this", "map user story to
   feature", "system surface documentation", "feature owners", "feature dependencies",
@@ -38,24 +38,22 @@ When information is missing, phrase the discovery as a short numbered checklist 
 5. external dependencies
 6. surface type, if still ambiguous
 
-When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking. If the prompt does **not** explicitly say the links are unknown, seed provisional `US-...` / `FUNC-...` references instead of leaving both arrays empty. Common examples:
-- `Checkout Page` → `surface_type: "UI"`; dependencies often include `payment-gateway` and `order-service`; starter Functionalities can be `FUNC-001`, `FUNC-002`, `FUNC-003`.
+When details are missing but the surface name makes the domain obvious, infer a sensible starter draft instead of blocking — purpose, `surface_type`, and `external_dependencies` can be inferred confidently from the surface name. `user_stories` and `functionalities` are the exception: leave them `[]` unless the catalog already contains the linked entity (see Step 3 and Step 4). Common examples:
+- `Checkout Page` → `surface_type: "UI"`; dependencies often include `payment-gateway` and `order-service`.
 - `Orders API` / REST controller → `surface_type: "API"`; dependencies often include `order-db` and `notification-service`.
-- `Notification Service` / notification worker → default to `surface_type: "Worker"` (or `API` if it is clearly a synchronous contract surface); do **not** simply mirror the word "Service" into `surface_type`; dependencies often include `smtp-relay` and `template-store`.
-- `PaymentEventProcessor` / event consumer → `surface_type: "Worker"`; include the Kafka topic or event stream in `external_dependencies`.
+- `Notification Service` / async notification worker → if it exposes a REST/GraphQL endpoint with an annotated endpoint method, or a message-broker contract (e.g. a Kafka topic) with an AsyncAPI (or equivalent schema-registry) annotation on the producer/consumer handler, `surface_type: "API"` documenting that contract; do **not** simply mirror the word "Service" into `surface_type` — there is no separate `Service` or `Worker` type. If it has neither an annotated endpoint method nor an annotated event handler, it has no canonical test-abstraction anchor yet (see table below) — do **not** create a Feature for it; instead record it as an `external_dependencies` entry on the Feature(s) that publish to or consume it. Dependencies often include `smtp-relay` and `template-store`.
+- `PaymentEventProcessor` / event consumer on a Kafka topic → ask whether the producer/consumer handler carries an AsyncAPI (or equivalent schema-registry) annotation. If it does, that annotated handler is the `API` contract anchor — create the Feature with `surface_type: "API"`. If the topic contract is not yet annotated, it has no canonical test-abstraction anchor: do **not** create a Feature for it; record the topic as an `external_dependencies` entry on the Feature(s) that publish or consume it, and note that annotating the handler (AsyncAPI or equivalent) is what unlocks Feature-level tracking.
 
 Ask only for what is missing: *What system surface does this Feature represent?*
 
-Select the surface type:
+Select the surface type — only two exist, and each is paired with a matching test abstraction that anchors it as a Feature:
 
-| Type | Examples |
-|---|---|
-| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) |
-| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public API contract (e.g. Orders API, Payment Gateway API) |
-| `Service` | A named backend/service surface with its own contract (e.g. Customer Profile Service) |
-| `Worker` | An asynchronous/background processor (e.g. Notification Worker) |
-| `Module` | A distinct internal module with a stable contract or bounded responsibility |
-| `Library` | A substantial shared internal library that is intentionally tracked as its own surface |
+| Type | Examples | Eventual test-abstraction anchor |
+|---|---|---|
+| `UI` | A web page, modal, or named screen (e.g. Checkout Page, Login Screen) | A PageObject for the screen — create it together with the Feature (e.g. via `living-doc-pageobject-scan`) if it doesn't exist yet |
+| `API` | A REST/GraphQL endpoint or endpoint group, including a backend service's public contract (e.g. Orders API, Payment Gateway API), or a message-broker topic (e.g. Kafka) documented via an AsyncAPI (or equivalent) specification | An **annotated endpoint method** (OpenAPI annotation, JSDoc, etc.) for request/response, or an **annotated event handler** (AsyncAPI or equivalent schema-registry annotation on the producer/consumer) for event-driven — either serves as the living contract anchor, see [living-doc-glossary](../shared/references/living-doc-glossary.md) |
+
+A surface where the anchor is not even achievable — for example a pure event consumer or async worker whose topic/queue contract carries no AsyncAPI (or equivalent) annotation — is **not** a Feature yet. Document it as an `external_dependencies` entry on the Feature(s) that interact with it until the contract is formally annotated. A UI or API surface whose anchor simply hasn't been built yet is still a valid Feature — create the Feature and its anchor together rather than blocking on sequencing.
 
 Feature names should be **noun phrases** that name the surface. If it could plausibly be a PageObject or service/module class name (for example `PaymentPage`), it is usually a good Feature name.
 
@@ -76,8 +74,9 @@ Ask: *Which User Stories rely on this Feature?*
 If unknown at creation time, leave empty `[]` but warn:
 
 > "An orphaned Feature (not linked to any User Story) contributes no traceable business value.
-> Link at least one User Story or mark this as exploratory with status: 'candidate'.
-> Orphaned Features are surfaced as gaps in living-doc-gap-finder reports."
+> Link at least one User Story once one exists — a Feature has no `status` field to mark it
+> exploratory with.
+> Orphaned Features are reported as an `ORPHAN_FEATURE` condition in living-doc-gap-finder reports."
 
 ## Step 4 — Enumerate Functionalities
 
@@ -98,11 +97,10 @@ FUNC entries), leave the array as `[]` and add a warning:
 | `external_dependencies` | Services or systems this Feature calls (e.g. payment-gateway, order-service) |
 
 For starter drafts, prefer **provisional inferred values** over empty strings when the domain is obvious:
-- `user_stories`: use starter IDs such as `US-checkout`, `US-order-management`, `US-payment-processing`
-- `functionalities`: use starter IDs such as `FUNC-001`, `FUNC-002`, `FUNC-003`
 - `owners`: always emit an array, even for one owner: `["team-identity"]`
+- `external_dependencies`: infer the systems this kind of surface typically calls (e.g. `payment-gateway`, `order-service`)
 
-Use `[]` only when the relationship is truly unknown and you cannot infer a sensible starter link.
+`user_stories` and `functionalities` are never fabricated: use `[]` unless the catalog already contains the linked entity (see Step 3 and Step 4), and pair `[]` with the orphan/candidate warnings from those steps.
 
 ## Step 6 — Output canonical Feature entity
 
@@ -122,7 +120,7 @@ Use `[]` only when the relationship is truly unknown and you cannot infer a sens
 > `Ran: python scripts/next_id.py --type FEAT --catalog catalog.json -> FEAT-012`
 > and use that returned ID in the JSON.
 
-Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. The block must contain **only** the JSON object — no prose, no bullets, no warnings inside the fence. The literal first line of the block must be ````json` and the closing line must be ``` . Code fences are required plain text, not optional formatting. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type, `status: "planned"`, and `[]` only where nothing sensible can be inferred. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
+Output the entity as a **single fenced `json` code block** whenever you have enough information to draft it. The block must contain **only** the JSON object — no prose, no bullets, no warnings inside the fence. The literal first line of the block must be ````json` and the closing line must be ``` . Code fences are required plain text, not optional formatting. Keep any warnings or follow-up questions **outside** the code block. If the user gives a named surface but not all metadata, ask the missing questions and still include a starter draft in the same reply, using inferred purpose/surface type/external_dependencies, and `[]` for `user_stories`/`functionalities` unless the catalog already backs the link. A Feature never carries a `status` field — its state is derived from its Functionalities, never authored. If the request explicitly asks to create the entity from the given details, emit the draft immediately.
 
 Use this exact output shape for create/document requests:
 - Optional brief line with only the missing questions.
@@ -132,7 +130,6 @@ Use this exact output shape for create/document requests:
   - `name`
   - `surface_type`
   - `purpose`
-  - `status`
   - `user_stories`
   - `functionalities`
   - `owners`
@@ -147,9 +144,8 @@ Use this exact output shape for create/document requests:
     "name": "Example Surface",
     "surface_type": "UI",
     "purpose": "Business-language summary of the surface responsibility.",
-    "status": "planned",
-    "user_stories": ["US-example"],
-    "functionalities": ["FUNC-001"],
+    "user_stories": [],
+    "functionalities": [],
     "owners": ["team-example"],
     "external_dependencies": ["example-service"]
   }
@@ -158,9 +154,9 @@ Use this exact output shape for create/document requests:
   Do not replace the fenced block with raw JSON. Do not emit `owners` as a string. Use a spaced noun phrase for the `name` field (for example `Payment Event Processor`, not `PaymentEventProcessor`).
 
 Worked starter patterns:
-- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* Run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`, `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
-- `Orders API` starter links: `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002", "FUNC-003"]`
-- `Notification Service` starter draft: emit a Feature JSON even when the user asks "where do I start?", but explicitly ask: *What type of surface is it (API, Worker, or UI)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, etc.)?* If the prompt still sounds like asynchronous alert delivery after those questions, run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `surface_type: "Worker"`, `user_stories: ["US-001"]`, `functionalities: ["FUNC-001", "FUNC-002"]`, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`
+- `Checkout Page` starter links: explicitly ask *What user interactions does it own? Which User Stories rely on it? What Functionalities does it own? Who owns it? What external dependencies does it call?* Run next_id.py to get the numeric ID, then use `id: "FEAT-001"` (or next number), `user_stories: []` and `functionalities: []` unless the catalog already contains the linked entities (repeat the Step 3/Step 4 warnings), `owners: ["team-checkout"]`, `external_dependencies: ["payment-gateway", "order-service"]`
+- `Orders API` starter links: `user_stories: []`, `functionalities: []` unless the catalog already contains the linked entities
+- `Notification Service` starter draft: explicitly ask: *Does it expose a REST/GraphQL endpoint (e.g. a trigger-notification call), or a message-broker topic with an annotated event handler (a producer/consumer documented via AsyncAPI or an equivalent schema-registry annotation)? Which User Stories rely on it? What Functionalities does it own? Who owns it? What are the external dependencies (SMTP relay, template store, message broker, etc.)?* If it exposes either an annotated endpoint method or an annotated event handler, run next_id.py to get the numeric ID, then emit a Feature JSON with `surface_type: "API"` documenting that contract (the REST/GraphQL endpoint, or the AsyncAPI-annotated producer/consumer handler), `user_stories: []` and `functionalities: []` unless the catalog already contains the linked entities, `owners: ["team-notifications"]`, and `external_dependencies: ["smtp-relay", "template-store"]`. Only if the prompt still describes purely asynchronous alert delivery with **neither** an annotated endpoint **nor** an annotated event handler (no documented AsyncAPI/schema-registry contract at all) after those questions, do **not** create a Feature — explain there is no `UI`/`API` test-abstraction anchor for it, and record it as an `external_dependencies` entry on the Feature(s) that publish to or consume it instead.
 
 Canonical JSON fields:
 
@@ -169,9 +165,8 @@ Canonical JSON fields:
 | `type` | Yes | `Feature` |
 | `id` | Yes | `FEAT-NNN` (zero-padded numeric ID from catalog, e.g. `FEAT-001`) |
 | `name` | Yes | Noun phrase (e.g. "Login Page") |
-| `surface_type` | Yes | `UI` \| `API` \| `Service` \| `Worker` \| `Module` \| `Library` |
+| `surface_type` | Yes | `UI` \| `API` |
 | `purpose` | Yes | One-to-two sentence description in business language |
-| `status` | Yes | `planned` \| `active` \| `candidate` \| `deprecated` |
 | `user_stories` | Yes | List of `US-<...>` IDs (use `[]` if unknown) |
 | `functionalities` | Yes | List of `FUNC-<...>` IDs (use `[]` if unknown or still only candidates) |
 | `owners` | Yes | Team name(s) |
@@ -185,8 +180,8 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 |---|---|
 | Feature covers multiple unrelated screens | Split into one Feature per distinct screen |
 | Feature name is a verb (e.g. "Process Payment") | Feature names should be nouns — name the surface. Verb phrases describe *what the surface does*, which belongs in a Functionality entity (use **living-doc-create-functionality**). If it could be a PageObject or service/module class name, it is usually a better Feature name. |
-| Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story, mark it as `candidate` if it is still exploratory, or delete it if it is no longer relevant. Orphan Features will be surfaced as gaps in living-doc-gap-finder reports. |
-| Shared utility library documented as a Feature | By default, a shared utility library is not a Feature — document it as an `external_dependency` on the consumer Features. Only create a standalone Feature when the library is substantial enough to be treated as a distinct shared surface; in that case use `surface_type: "Library"` and mark it as a shared internal dependency. Features should map 1:1 to distinct/deployable surfaces. |
+| Feature has no User Stories and no Functionalities | Orphan Feature — it contributes no traceable business value. Link at least one User Story once one exists, or delete it if it is no longer relevant. A Feature has no `status` field to flag it as exploratory with; living-doc-gap-finder reports it as an `ORPHAN_FEATURE` condition instead. |
+| Shared utility library documented as a Feature | A shared utility library is never a Feature — there is no `surface_type` for it (only `UI` and `API` exist). Document it as an `external_dependency` on the consumer Features instead, however substantial it is. Features should map 1:1 to distinct/deployable UI or API surfaces. |
 | Feature name encodes implementation technology (e.g. "React Login Component", "Spring Payment Controller") | Feature names describe the business surface, not the stack. Use "Login Screen" (UI) or "Payment API" (API) — technology choice is an implementation detail that changes without the surface changing. |
 | `surface_type` is `UI` for a backend REST controller or service | A REST endpoint group is an `API` surface. `UI` is reserved for screens a human interacts with directly. Misclassification breaks impact analysis routing between frontend and backend changes. |
 | Feature shares a name with an existing Feature | Check for duplicates before creating. Identical names indicate a merge candidate or a scope overlap — clarify the boundary before proceeding. |
@@ -225,4 +220,4 @@ python skills/living-doc-update/scripts/validate_entity.py entity.json --catalog
 python skills/living-doc-update/scripts/validate_entity.py entity.json --profile .copilot/bdd/.project-profile.yaml
 ```
 
-Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, or the status or `surface_type` value is invalid.
+Exits 0 if valid (warnings are non-blocking). Exits 1 if any required field is missing, the ID format is wrong, or the `surface_type` value is invalid.

@@ -234,12 +234,12 @@ IDs are stable — never change an ID after creation. Bump the `version` field f
 ### Gherkin traceability tag format
 
 ```gherkin
-# AC:US-007-01 (v1.0.0 - active) — <description>
+# AC:US-007-01 (v1.0.0 - active) - <description>
 @AC:US-007-01
 Scenario: ...
 ```
 
-One `# AC:` + `@AC:` pair per AC. The `@AC:` tag is the machine-readable traceability anchor — never delete or rename it without syncing the catalog entity.
+One `# AC:` + `@AC:` pair per AC. The `@AC:` tag is the machine-readable traceability anchor - never delete or rename it without syncing the catalog entity.
 
 ### Cooperating agent boundary
 
