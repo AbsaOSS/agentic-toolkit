@@ -54,7 +54,12 @@ Both directories are git-ignored.
 2. Import the shared fixture:
 
    ```ts
-   import { test, expectNoViolations, waitForAnimationsToFinish } from '../fixtures/axe-helpers';
+   import {
+     test,
+     expectNoViolations,
+     annotateIncomplete,
+     waitForAnimationsToFinish
+   } from '../fixtures/axe-helpers';
    ```
 
 3. Navigate, wait for animations, scan with `makeAxeBuilder()`, call
