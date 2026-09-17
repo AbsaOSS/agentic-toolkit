@@ -19,7 +19,7 @@
         "Detects existing test infrastructure before writing files (reads package.json)",
         "Installs @playwright/test and @axe-core/playwright as devDependencies",
         "Installs the Chromium browser via playwright install",
-        "Creates playwright.config.ts with an 'accessibility' project using testMatch /accessibility/ on Desktop Chrome",
+        "Creates playwright.config.ts with an 'accessibility' project using a filename-anchored testMatch (e.g. /\\.accessibility\\.spec\\.ts$/, not a bare /accessibility/ substring match) on Desktop Chrome",
         "Creates a shared axe fixture (axe-helpers) whose makeAxeBuilder uses wcag2a/wcag2aa/wcag21a/wcag21aa/wcag22a/wcag22aa/best-practice tags",
         "axe-helpers exports an annotateIncomplete helper that reports axe 'incomplete' results as a non-blocking warning annotation instead of failing the test",
         "Creates exactly one dummy accessibility spec (filename contains 'accessibility') that scans static, known-compliant HTML via page.setContent (not a real app route), calls annotateIncomplete on results.incomplete and only asserts expectNoViolations on results.violations",
@@ -33,7 +33,7 @@
       "id": "happy-path-existing-playwright",
       "category": "happy-path",
       "prompt": "We already use Playwright for e2e. Add axe-core accessibility scanning on top. The project is in evals/files/existing-playwright.",
-      "expected_output": "Skill detects the existing playwright.config, does NOT overwrite it, merges in an accessibility project and adds testIgnore /accessibility/ to functional projects, adds the axe fixture and one dummy scan, and validates.",
+      "expected_output": "Skill detects the existing playwright.config, does NOT overwrite it, merges in an accessibility project and adds a filename-anchored testIgnore to functional projects, adds the axe fixture and one dummy scan, and validates.",
       "files": [
         "evals/files/existing-playwright/package.json",
         "evals/files/existing-playwright/playwright.config.ts",
@@ -46,8 +46,8 @@
       ],
       "expectations": [
         "Detects the existing playwright.config and does not overwrite it",
-        "Merges an accessibility project (testMatch /accessibility/, Desktop Chrome) into the existing config",
-        "Adds testIgnore /accessibility/ to existing functional projects so a11y scans run once",
+        "Merges an accessibility project (testMatch anchored to the filename suffix, e.g. /\\.accessibility\\.spec\\.ts$/ rather than a bare /accessibility/ substring, on Desktop Chrome) into the existing config",
+        "Adds a matching filename-anchored testIgnore to existing functional projects so a11y scans run once, without false-matching unrelated specs under a path segment like 'accessibility-app/'",
         "Installs @axe-core/playwright but does not reinstall Playwright if already present",
         "Creates the shared axe fixture (with annotateIncomplete) and one dummy accessibility spec that reports incomplete results as warnings rather than failures",
         "Validates the dummy scan passes",

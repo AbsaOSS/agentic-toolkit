@@ -3,9 +3,11 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Playwright configuration with a dedicated `accessibility` project.
  *
- * Any spec whose filename contains `accessibility` runs axe-core scans on
+ * Any spec whose filename ends in `.accessibility.spec.ts` runs axe-core scans on
  * Desktop Chrome only — axe evaluates rendered DOM/ARIA state, so cross-browser
- * variation adds no value. Functional specs (if any) run under `chromium`.
+ * variation adds no value. The pattern is anchored to the filename (not just
+ * `/accessibility/`) so a path segment like `accessibility-app/` can't false-match
+ * unrelated specs. Functional specs (if any) run under `chromium`.
  *
  * See https://playwright.dev/docs/test-configuration
  */
@@ -30,12 +32,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /accessibility/,
+      testIgnore: /\.accessibility\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'] }
     },
     {
       name: 'accessibility',
-      testMatch: /accessibility/,
+      testMatch: /\.accessibility\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'] }
     }
   ],

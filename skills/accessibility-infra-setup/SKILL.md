@@ -37,7 +37,7 @@ playwright/
 ├── run-a11y-incomplete.js              # Runs the accessibility project, then prints incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
-playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /accessibility/)
+playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /\.accessibility\.spec\.ts$/)
 docs/accessibility.md                   # How to run, where reports land (or playwright/README.md)
 ```
 
@@ -77,14 +77,17 @@ Pick exactly one path based on what Playwright infra exists — Cypress never ch
 
 - **Playwright already configured** (a `playwright.config.*` exists) → **adjust it in place, do not
   recreate it.** Merge in an `accessibility` project
-  `{ name: 'accessibility', testMatch: /accessibility/, use: { ...devices['Desktop Chrome'] } }`,
-  add `testIgnore: /accessibility/` to existing functional projects, and ensure `webServer` starts
-  the Angular dev server. Keep the user's existing `testDir` and place a11y specs (and the axe
-  fixture, if new) underneath it, with import paths adjusted to resolve from that location — do not
-  introduce a separate top-level `playwright/` directory alongside it. Reuse any existing axe
-  fixture instead of adding a second one. Merge the `reporter` array so the existing reporter(s) (e.g.
-  `'html'` or `['html']`) are kept as-is and a `['json', { outputFile: 'playwright-report/summary.json' }]`
-  entry is added alongside — never replace an existing reporter outright.
+  `{ name: 'accessibility', testMatch: /\.accessibility\.spec\.ts$/, use: { ...devices['Desktop Chrome'] } }`,
+  add `testIgnore: /\.accessibility\.spec\.ts$/` to existing functional projects, and ensure `webServer`
+  starts the Angular dev server. The pattern is anchored to the filename suffix, not a bare
+  `/accessibility/` substring match, so a directory segment (e.g. a checkout under
+  `accessibility-app/`) can't cause unrelated specs to be picked up or excluded. Keep the user's
+  existing `testDir` and place a11y specs (and the axe fixture, if new) underneath it, with import
+  paths adjusted to resolve from that location — do not introduce a separate top-level `playwright/`
+  directory alongside it. Reuse any existing axe fixture instead of adding a second one. Merge the
+  `reporter` array so the existing reporter(s) (e.g. `'html'` or `['html']`) are kept as-is and a
+  `['json', { outputFile: 'playwright-report/summary.json' }]` entry is added alongside — never
+  replace an existing reporter outright.
 - **No Playwright yet** → fresh setup. Copy `assets/playwright.config.ts` to the repo root and
   scaffold the full structure in Step 3.
 
@@ -185,8 +188,10 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
 - **Extend, don't recreate Playwright.** When a `playwright.config.*` already exists, merge the
   `accessibility` project into it and reuse any existing axe fixture — do not generate a second
   config or a duplicate fixture.
-- **Filename routing.** A spec only lands in the accessibility project if `accessibility` is in its
-  filename. This is `testMatch: /accessibility/`, not a folder.
+- **Filename routing.** A spec only lands in the accessibility project if its filename ends in
+  `.accessibility.spec.ts`. This is `testMatch: /\.accessibility\.spec\.ts$/`, anchored to the
+  filename suffix rather than a bare `/accessibility/` substring — a directory named e.g.
+  `accessibility-app/` must never cause unrelated specs to match.
 - **git-ignore artifacts.** Ensure `test-results/` and `playwright-report/` are git-ignored.
 - **WCAG tag set lives in one place.** Never inline `withTags(...)` in a spec — always go through
   `makeAxeBuilder`, so the standard stays consistent as scans are added later.
