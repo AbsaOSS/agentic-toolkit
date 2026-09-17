@@ -45,7 +45,9 @@
         "Adds testIgnore /accessibility/ to existing functional projects so a11y scans run once",
         "Installs @axe-core/playwright but does not reinstall Playwright if already present",
         "Creates the shared axe fixture (with annotateIncomplete) and one dummy accessibility spec that reports incomplete results as warnings rather than failures",
-        "Validates the dummy scan passes"
+        "Validates the dummy scan passes",
+        "Places the axe fixture and dummy accessibility spec under the existing testDir ('./e2e'), not a new default 'playwright/' directory, with import paths that resolve correctly from that location",
+        "Merges the reporter config to keep the existing 'html' reporter while adding the 'json' reporter with outputFile 'playwright-report/summary.json', rather than replacing 'html' outright"
       ]
     },
     {

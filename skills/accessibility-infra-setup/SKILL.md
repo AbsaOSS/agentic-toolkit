@@ -79,8 +79,12 @@ Pick exactly one path based on what Playwright infra exists — Cypress never ch
   recreate it.** Merge in an `accessibility` project
   `{ name: 'accessibility', testMatch: /accessibility/, use: { ...devices['Desktop Chrome'] } }`,
   add `testIgnore: /accessibility/` to existing functional projects, and ensure `webServer` starts
-  the Angular dev server. Keep the user's existing `testDir` and place a11y specs accordingly. Reuse
-  any existing axe fixture instead of adding a second one.
+  the Angular dev server. Keep the user's existing `testDir` and place a11y specs (and the axe
+  fixture, if new) underneath it, with import paths adjusted to resolve from that location — do not
+  introduce a separate top-level `playwright/` directory alongside it. Reuse any existing axe
+  fixture instead of adding a second one. Merge the `reporter` array so the existing reporter(s) (e.g.
+  `'html'` or `['html']`) are kept as-is and a `['json', { outputFile: 'playwright-report/summary.json' }]`
+  entry is added alongside — never replace an existing reporter outright.
 - **No Playwright yet** → fresh setup. Copy `assets/playwright.config.ts` to the repo root and
   scaffold the full structure in Step 3.
 
