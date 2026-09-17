@@ -37,7 +37,12 @@
       "files": [
         "evals/files/existing-playwright/package.json",
         "evals/files/existing-playwright/playwright.config.ts",
-        "evals/files/existing-playwright/e2e/example.spec.ts"
+        "evals/files/existing-playwright/e2e/example.spec.ts",
+        "evals/files/existing-playwright/angular.json",
+        "evals/files/existing-playwright/tsconfig.json",
+        "evals/files/existing-playwright/src/index.html",
+        "evals/files/existing-playwright/src/main.ts",
+        "evals/files/existing-playwright/src/app/app.component.ts"
       ],
       "expectations": [
         "Detects the existing playwright.config and does not overwrite it",
