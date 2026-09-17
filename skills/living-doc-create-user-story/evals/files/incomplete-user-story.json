@@ -1,7 +1,7 @@
 {
-  "type": "UserStory",
+  "type": "User Story",
   "id": "US-042",
-  "title": "Reset account password",
+  "name": "Reset account password",
   "status": "planned",
   "narrative": {
     "as_a": "registered customer",

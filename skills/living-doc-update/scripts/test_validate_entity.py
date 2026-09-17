@@ -743,6 +743,29 @@ def test_deprecated_feature_via_markers_warns():
     print("✓ A Feature deprecated via markers (no status field) is still checked for deprecation metadata")
 
 
+def test_deprecated_feature_with_empty_marker_still_warns():
+    """A Feature with `deprecated_at: ""` (key present, value falsy) must still be treated
+    as a deprecation attempt — presence of the key drives is_deprecated, not truthiness.
+    Before the fix, `entity.get("deprecated_at") or ...` treated an empty string the same
+    as an absent key, so the whole deprecation-metadata check was skipped and the missing
+    deprecation_reason went unreported."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Legacy Reports",
+        "surface_type": "UI",
+        "purpose": "Generates legacy account reports, replaced by the new dashboard",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+        "deprecated_at": "",
+    }
+    issues = validate(feat)
+    assert any(i["field"] == "deprecated_at" for i in issues), issues
+    assert any(i["field"] == "deprecation_reason" for i in issues), issues
+    print("✓ A Feature with an empty-string deprecation marker is still flagged for missing metadata")
+
+
 def test_ac_missing_id_and_description_flagged():
     """An AC missing 'id' or 'description' must each raise their own error —
     _validate_ac() checks them independently."""
@@ -1065,6 +1088,7 @@ if __name__ == "__main__":
         test_required_field_missing_flagged()
         test_deprecated_user_story_missing_metadata_warns()
         test_deprecated_feature_via_markers_warns()
+        test_deprecated_feature_with_empty_marker_still_warns()
         test_ac_missing_id_and_description_flagged()
         test_ac_unrecognized_state_errors()
         test_functionality_name_missing_separator_warns()

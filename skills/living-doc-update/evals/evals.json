@@ -29,11 +29,11 @@
     {
       "id": 3,
       "category": "regression",
-      "prompt": "The `LegacyPaymentGatewayService` has been deleted from the codebase. How do I handle this in the living doc?",
-      "expected_output": "Agent sets status to deprecated on the entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
+      "prompt": "The `FUNC-018` Functionality (Legacy Payment Gateway Retry Logic) has had its backing code deleted from the codebase. How do I handle this in the living doc?",
+      "expected_output": "Agent sets status to deprecated on the Functionality entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
-        "Sets status: deprecated — never deletes the entity file",
+        "Sets status: deprecated on the Functionality — never deletes the entity file",
         "Adds deprecated_at and deprecation_reason fields",
         "Links to the commit that deleted the code if possible",
         "Flags linked Gherkin scenarios for gherkin-living-doc-sync"
