@@ -79,6 +79,11 @@ REQUIRED_FIELDS: dict[str, list[str]] = {
 STATUSED_ENTITY_TYPES = {"User Story", "Functionality"}
 
 DEPRECATION_FIELDS = ["deprecated_at", "deprecation_reason"]
+# Markers that only signal deprecation for a non-statused entity (Feature) — never
+# required, so they stay out of DEPRECATION_FIELDS' missing-field warning loop.
+# Per SKILL.md's deprecation table: superseded_by applies to Feature/Functionality/
+# User Story, deprecated_code_commit applies to Feature and Functionality.
+FEATURE_DEPRECATION_MARKERS = ("superseded_by", "deprecated_code_commit")
 VERB_PREFIX_RE = re.compile(
     r"^(process|handle|manage|do|perform|run|execute|validate|create|update|delete)\b",
     re.IGNORECASE,
@@ -217,7 +222,9 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
 
     # ── Deprecation metadata ─────────────────────────────────────────────────
     # A Feature carries no `status`, so it is deprecated when it carries any
-    # deprecation marker directly (deprecated_at / deprecation_reason / superseded_by).
+    # deprecation marker directly (deprecated_at / deprecation_reason / superseded_by /
+    # deprecated_code_commit — see SKILL.md's deprecation table for which entity types
+    # each marker applies to).
     # Presence of the key is what signals deprecation, not truthiness — an empty-string
     # value (e.g. `"deprecated_at": ""`) is still a deprecation attempt with malformed
     # metadata, and must fall through to the missing-field warnings below rather than
@@ -225,7 +232,7 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
     is_deprecated = (
         status == "deprecated"
         if entity_type in STATUSED_ENTITY_TYPES
-        else any(field in entity for field in (*DEPRECATION_FIELDS, "superseded_by"))
+        else any(field in entity for field in (*DEPRECATION_FIELDS, *FEATURE_DEPRECATION_MARKERS))
     )
     if is_deprecated:
         for dep_field in DEPRECATION_FIELDS:

@@ -766,6 +766,30 @@ def test_deprecated_feature_with_empty_marker_still_warns():
     print("✓ A Feature with an empty-string deprecation marker is still flagged for missing metadata")
 
 
+def test_deprecated_feature_via_deprecated_code_commit_marker_warns():
+    """A Feature deprecated via `deprecated_code_commit` alone (no status field, and no
+    deprecated_at/deprecation_reason/superseded_by) must still be detected as a
+    deprecation attempt and warned for the missing deprecated_at/deprecation_reason.
+    SKILL.md's deprecation table lists deprecated_code_commit as applicable to Feature
+    and Functionality, so is_deprecated's marker check must include it alongside
+    deprecated_at/deprecation_reason/superseded_by."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Legacy Reports",
+        "surface_type": "UI",
+        "purpose": "Generates legacy account reports, replaced by the new dashboard",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+        "deprecated_code_commit": "abc1234",
+    }
+    issues = validate(feat)
+    assert any(i["field"] == "deprecated_at" for i in issues), issues
+    assert any(i["field"] == "deprecation_reason" for i in issues), issues
+    print("✓ A Feature deprecated via deprecated_code_commit alone is still flagged for missing metadata")
+
+
 def test_ac_missing_id_and_description_flagged():
     """An AC missing 'id' or 'description' must each raise their own error —
     _validate_ac() checks them independently."""
@@ -1089,6 +1113,7 @@ if __name__ == "__main__":
         test_deprecated_user_story_missing_metadata_warns()
         test_deprecated_feature_via_markers_warns()
         test_deprecated_feature_with_empty_marker_still_warns()
+        test_deprecated_feature_via_deprecated_code_commit_marker_warns()
         test_ac_missing_id_and_description_flagged()
         test_ac_unrecognized_state_errors()
         test_functionality_name_missing_separator_warns()
