@@ -159,6 +159,11 @@ Add to `package.json` `scripts` (do not clobber existing entries):
 "test:a11y:incomplete": "node playwright/run-a11y-incomplete.js"
 ```
 
+Substitute `playwright/` in `test:a11y:incomplete` with the actual `<root>` from Step 3 — e.g. for an
+existing `testDir: './e2e'` the script must read `"node e2e/run-a11y-incomplete.js"`. The hardcoded
+`playwright/` only applies on a fresh setup; using it verbatim when merging into an existing `testDir`
+points at a path that was never created, and the script fails with `MODULE_NOT_FOUND`.
+
 `test:a11y:incomplete` is self-contained — it runs its own accessibility-project pass (JSON reporter
 only, written to a temp file) and prints any incomplete-result warnings, then exits with that run's
 status. Run it standalone; it does not depend on `test:a11y` having run first.
