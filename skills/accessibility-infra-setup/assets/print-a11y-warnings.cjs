@@ -2,6 +2,7 @@
 // Reads a Playwright JSON-reporter report and prints every test that carries
 // a 'warning' annotation (pushed by annotateIncomplete() for axe "incomplete"
 // results) - lets you find those without opening the HTML report.
+// .cjs (not .js): keeps this CommonJS regardless of the host package's "type": "module".
 const fs = require('fs');
 
 function* walkSpecs(suites) {
@@ -11,7 +12,7 @@ function* walkSpecs(suites) {
   }
 }
 
-// Exported so run-a11y-incomplete.js can reuse it on an in-memory report.
+// Exported so run-a11y-incomplete.cjs can reuse it on an in-memory report.
 function printWarnings(report) {
   let count = 0;
   for (const spec of walkSpecs(report.suites ?? [])) {
@@ -37,7 +38,7 @@ function printWarnings(report) {
 if (require.main === module) {
   const reportPath = process.argv[2];
   if (!reportPath) {
-    console.error('Usage: node playwright/print-a11y-warnings.js <report.json>');
+    console.error('Usage: node playwright/print-a11y-warnings.cjs <report.json>');
     process.exit(1);
   }
   printWarnings(JSON.parse(fs.readFileSync(reportPath, 'utf8')));

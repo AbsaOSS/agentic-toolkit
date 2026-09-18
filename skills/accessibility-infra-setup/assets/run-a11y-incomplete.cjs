@@ -6,12 +6,13 @@
 // screenshots/videos are base64-inlined and can exceed spawnSync's stdout
 // buffer), prints axe "incomplete" warnings, then exits with the test run's
 // own exit code.
-// Usage: node playwright/run-a11y-incomplete.js [specFile]
+// Usage: node playwright/run-a11y-incomplete.cjs [specFile]
+// .cjs (not .js): keeps this CommonJS regardless of the host package's "type": "module".
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { printWarnings } = require('./print-a11y-warnings');
+const { printWarnings } = require('./print-a11y-warnings.cjs');
 
 const specArgs = process.argv.slice(2);
 const playwrightCli = require.resolve('@playwright/test/cli');

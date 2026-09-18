@@ -34,8 +34,8 @@ when merging into an existing `testDir`):
 playwright/
 ├── fixtures/
 │   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion + incomplete-warning helpers
-├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings (reusable module + CLI)
-├── run-a11y-incomplete.js              # Runs the accessibility project, then prints incomplete-result warnings
+├── print-a11y-warnings.cjs             # Prints tests carrying incomplete-result warnings (reusable module + CLI)
+├── run-a11y-incomplete.cjs              # Runs the accessibility project, then prints incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /\.accessibility\.spec\.ts$/)
@@ -131,14 +131,19 @@ the same relative layout below it — otherwise Playwright's `testDir` never dis
    the dummy proof stays green independent of whether the app itself is WCAG-compliant yet. Do not
    point it at a real route (e.g. `page.goto('/')`) — that reintroduces exactly the failure mode this
    avoids. Copy the template's HTML as-is; it only needs a landmark, a heading, and text.
-4. `<root>/print-a11y-warnings.js` — copy verbatim from `assets/print-a11y-warnings.js`. Exports a
+4. `<root>/print-a11y-warnings.cjs` — copy verbatim from `assets/print-a11y-warnings.cjs`. Exports a
    `printWarnings(report)` helper (plus a `<report.json>` CLI mode) that prints every test carrying an
    incomplete-result warning, so they can be reviewed without opening the HTML report.
-5. `<root>/run-a11y-incomplete.js` — copy verbatim from `assets/run-a11y-incomplete.js`. The
+5. `<root>/run-a11y-incomplete.cjs` — copy verbatim from `assets/run-a11y-incomplete.cjs`. The
    cross-platform entry point behind `test:a11y:incomplete`: it spawns the accessibility project
    itself with `--reporter=json` piped to a temp file (never a fixed path, and never stdout — test
    attachments like screenshots/videos are base64-inlined and can blow past `spawnSync`'s stdout
    buffer), calls `printWarnings` on it, then exits with the underlying test run's own exit code.
+
+   Both scripts use the `.cjs` extension (not `.js`) so they load as CommonJS even in an Angular app
+   with `"type": "module"` in `package.json` — plain `.js` there is parsed as ESM and `require` throws
+   `ReferenceError: require is not defined`. Keep the `.cjs` extension regardless of the host
+   package's `type` field.
 
 `<root>` is `playwright/` on a fresh setup, or the existing `testDir` when merging — e.g. with
 `testDir: './e2e'` the fixture lands at `e2e/fixtures/axe-helpers.ts` and the dummy spec at
@@ -156,11 +161,11 @@ Add to `package.json` `scripts` (do not clobber existing entries):
 "test:a11y": "playwright test --project=accessibility",
 "test:a11y:headed": "playwright test --project=accessibility --headed",
 "test:a11y:report": "playwright show-report",
-"test:a11y:incomplete": "node playwright/run-a11y-incomplete.js"
+"test:a11y:incomplete": "node playwright/run-a11y-incomplete.cjs"
 ```
 
 Substitute `playwright/` in `test:a11y:incomplete` with the actual `<root>` from Step 3 — e.g. for an
-existing `testDir: './e2e'` the script must read `"node e2e/run-a11y-incomplete.js"`. The hardcoded
+existing `testDir: './e2e'` the script must read `"node e2e/run-a11y-incomplete.cjs"`. The hardcoded
 `playwright/` only applies on a fresh setup; using it verbatim when merging into an existing `testDir`
 points at a path that was never created, and the script fails with `MODULE_NOT_FOUND`.
 
@@ -208,6 +213,11 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
   filename suffix rather than a bare `/accessibility/` substring — a directory named e.g.
   `accessibility-app/` must never cause unrelated specs to match.
 - **git-ignore artifacts.** Ensure `test-results/` and `playwright-report/` are git-ignored.
+- **Helper scripts must stay `.cjs`.** `print-a11y-warnings.cjs` and `run-a11y-incomplete.cjs` use
+  CommonJS `require`/`module.exports`. If the host `package.json` has `"type": "module"`, a plain
+  `.js` copy is loaded as ESM and fails immediately with `ReferenceError: require is not defined`.
+  Copy them with the `.cjs` extension regardless of the app's `type` field, and keep the `require`
+  between them pointed at `./print-a11y-warnings.cjs`.
 - **WCAG tag set lives in one place.** Never inline `withTags(...)` in a spec — always go through
   `makeAxeBuilder`, so the standard stays consistent as scans are added later.
 - **Incomplete ≠ violation.** Never assert `expectNoViolations(results.incomplete)` in a fresh setup

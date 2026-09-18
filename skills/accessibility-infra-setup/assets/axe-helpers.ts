@@ -48,7 +48,7 @@ export function expectNoViolations(violations: Violations) {
  * Surface axe "incomplete" results (checks axe couldn't confirm without human
  * judgement, e.g. combobox aria-controls patterns) as a non-blocking warning
  * annotation instead of failing the test. Visible in the HTML report and
- * printable via `print-a11y-warnings.js` without opening it.
+ * printable via `print-a11y-warnings.cjs` without opening it.
  */
 export function annotateIncomplete(incomplete: Incomplete, testInfo: TestInfo) {
   if (incomplete.length === 0) return;
