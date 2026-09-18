@@ -24,8 +24,9 @@ playwright/
 playwright.config.ts                      # `accessibility` project routes any *accessibility* spec here
 ```
 
-Any spec file with `accessibility` in its name runs under the dedicated
-`accessibility` Playwright project (Desktop Chrome only).
+Any spec file whose name ends in `.accessibility.spec.ts` runs under the dedicated
+`accessibility` Playwright project (Desktop Chrome only) — e.g. `accessibility-home.spec.ts` does
+**not** match and is silently excluded.
 
 ## Running
 
@@ -49,7 +50,7 @@ Both directories are git-ignored.
 
 ## Adding a scan
 
-1. Create a spec whose filename contains `accessibility`, e.g.
+1. Create a spec whose filename ends in `.accessibility.spec.ts`, e.g.
    `playwright/a11y/checkout.accessibility.spec.ts`.
 2. Import the shared fixture:
 
