@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Set up accessibility check infrastructure in this Angular app.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a11y testing infrastructure with Playwright and axe-core.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to add WCAG 2.2 AA accessibility scans to our frontend.",
+    "should_trigger": true
+  },
+  {
+    "query": "Bootstrap axe-core accessibility testing for this Angular application.",
+    "should_trigger": true
+  },
+  {
+    "query": "We already use Playwright — add accessibility scanning on top.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up automated accessibility checks and a sample test.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add an accessibility infrastructure setup so we can catch WCAG issues.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a full accessibility test for the checkout page.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the color contrast violation on the login button.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add unit tests for the discount service.",
+    "should_trigger": false
+  },
+  {
+    "query": "Set up a CI pipeline for our Angular app.",
+    "should_trigger": false
+  },
+  {
+    "query": "Migrate our Cypress e2e tests to Playwright.",
+    "should_trigger": false
+  }
+]
