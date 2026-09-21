@@ -43,6 +43,7 @@ export default defineConfig({
   ],
   /* Start the Angular dev server before running tests. */
   webServer: {
+    // Replace with the detected package manager's run command, e.g. `yarn start` / `pnpm start`.
     command: 'npm run start',
     url: 'http://localhost:4200',
     /* Reuse a running dev server locally; CI always starts fresh. */

@@ -8,8 +8,9 @@ Scans assert compliance with **WCAG 2.2 AA** (plus axe best-practice rules); man
 axe-core's `violations` fail the test; `incomplete` results (checks axe couldn't confirm without
 human judgement, e.g. combobox `aria-controls` patterns) are non-blocking and instead surfaced as a
 `warning` annotation on the test, visible in the HTML report and the attached scan JSON. Run
-`npm run test:a11y:incomplete` after a scan to print every test carrying such a warning without
-opening the HTML report.
+`npm run test:a11y:incomplete` (or `yarn test:a11y:incomplete` / `pnpm test:a11y:incomplete`,
+matching this repo's package manager) after a scan to print every test carrying such a warning
+without opening the HTML report.
 
 ## Layout
 
@@ -30,6 +31,8 @@ Any spec file whose name ends in `.accessibility.spec.ts` runs under the dedicat
 
 ## Running
 
+Commands below use npm; substitute `yarn` or `pnpm` if that's this repo's package manager.
+
 ```bash
 npm run test:a11y            # run all accessibility scans (auto-starts the dev server)
 npm run test:a11y:headed     # same, with the browser visible
@@ -37,8 +40,8 @@ npm run test:a11y:report     # open the last HTML report
 npm run test:a11y:incomplete # re-run the accessibility project and print incomplete-result warnings
 ```
 
-Playwright auto-starts `npm run start` (the Angular dev server) and waits for
-`http://localhost:4200`. If a dev server is already running locally, it is reused.
+Playwright auto-starts the Angular dev server and waits for `http://localhost:4200`. If a dev server
+is already running locally, it is reused.
 
 ## Reports and artifacts
 

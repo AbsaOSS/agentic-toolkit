@@ -3,17 +3,19 @@ name: accessibility-infra-setup
 description: >
   Sets up automated accessibility (a11y) check infrastructure in an existing Angular application
   using Playwright + axe-core (@axe-core/playwright) to catch automatically detectable WCAG 2.2 AA violations.
-  Detects the existing test setup, installs and wires Playwright with a dedicated `accessibility` project,
-  scaffolds a shared axe fixture, adds one dummy example scan, wires npm scripts, documents how to
-  run the checks, and validates that the sample passes. Activates on requests like: "set up
+  Detects the existing test setup (including package manager), installs and wires Playwright with a
+  dedicated `accessibility` project, scaffolds a shared axe fixture, adds one dummy example scan,
+  wires package.json scripts, documents how to run the checks, and validates that the sample passes.
+  Activates on requests like: "set up
   accessibility checks", "add a11y testing infrastructure", "add axe-core to this Angular app",
   "set up WCAG testing", "add accessibility scans with Playwright", "bootstrap a11y infra".
   Scope is infrastructure only plus ONE dummy example test — authoring real accessibility tests is
   a separate concern and out of scope.
 license: Apache-2.0
 compatibility: >
-  Requires an existing Angular application with a runnable dev server (`npm run start` on port 4200)
-  and Node.js 22+. Installs Playwright browsers, which needs network access on first run.
+  Requires an existing Angular application with a runnable dev server (`start` script on port 4200,
+  run via npm, Yarn, or pnpm) and Node.js 22+. Installs Playwright browsers, which needs network
+  access on first run.
 ---
 
 # accessibility-infra-setup
@@ -44,10 +46,11 @@ docs/accessibility.md                   # How to run, where reports land (or pla
 
 - `package.json` gains `@playwright/test` + `@axe-core/playwright` (devDependencies) and
   `test:a11y*` scripts, including `test:a11y:incomplete`.
-- `npm run test:a11y` starts the dev server and runs the dummy scan on Desktop Chrome against static,
-  known-compliant HTML (via `page.setContent`, not a real app route) — it **passes green**
-  regardless of whether the app itself is WCAG-compliant yet. That green run is the definition of
-  done; fixing app violations is a separate, out-of-scope concern.
+- Running `test:a11y` through the repo's detected package manager (see Step 1) starts the dev server
+  and runs the dummy scan on Desktop Chrome against static, known-compliant HTML (via
+  `page.setContent`, not a real app route) — it **passes green** regardless of whether the app
+  itself is WCAG-compliant yet. That green run is the definition of done; fixing app violations is a
+  separate, out-of-scope concern.
 - axe `violations` fail the test; axe `incomplete` results (checks axe couldn't confirm without
   human judgement) are non-blocking — reported as a warning annotation instead, never as a failure.
 
@@ -56,10 +59,10 @@ docs/accessibility.md                   # How to run, where reports land (or pla
 Copy this checklist and track progress:
 
 ```
-- [ ] Step 1: Detect existing test infrastructure
+- [ ] Step 1: Detect existing test infrastructure (incl. package manager)
 - [ ] Step 2: Install dependencies
 - [ ] Step 3: Scaffold config + fixture + example spec
-- [ ] Step 4: Wire npm scripts
+- [ ] Step 4: Wire package.json scripts
 - [ ] Step 5: Validate (run the dummy scan, confirm the pipeline itself works)
 - [ ] Step 6: Document
 ```
@@ -69,10 +72,17 @@ Copy this checklist and track progress:
 Inspect the repo before writing anything — the goal is to **extend, not clobber**.
 
 1. Read `package.json`: note the dev-server script (usually `start` → `ng serve`, port 4200), the
-   package manager (from `package-lock.json` / `yarn.lock` / `pnpm-lock.yaml`), and any existing
-   `@playwright/test`, `@axe-core/playwright`, Cypress, or Karma entries.
+   package manager (from `package-lock.json` / `yarn.lock` / `pnpm-lock.yaml`, or a `packageManager`
+   field — distinguish Yarn Classic from Yarn Berry/PnP via `.yarnrc.yml`'s `nodeLinker`), and any
+   existing `@playwright/test`, `@axe-core/playwright`, Cypress, or Karma entries.
 2. Check for an existing `playwright.config.*` and for Cypress (`cypress.config.*`, a `cypress/`
    folder, or a `cypress` devDependency).
+
+**Carry the detected package manager through every later step.** All install and run commands below
+are shown for npm, Yarn (Classic and Berry/PnP), and pnpm — use the one matching this repo, not npm
+by default. This matters most under Yarn PnP: it doesn't hoist packages into `node_modules/.bin`, so
+a plain `npm run ...` or bare `npx playwright ...` there fails to resolve the Playwright binary even
+though setup is otherwise correct.
 
 Pick exactly one path based on what Playwright infra exists — Cypress never changes the decision:
 
@@ -98,21 +108,32 @@ The two runners coexist — Playwright owns accessibility, Cypress keeps whateve
 Cypress existing does **not** make this a "fresh" or "adjust" decision; only the presence/absence of
 a `playwright.config.*` does.
 
-Confirm the dev-server command and port with the user only if they differ from `npm run start` /
-`4200`; otherwise proceed.
+Confirm the dev-server command and port with the user only if they differ from `start` / `4200`;
+otherwise proceed.
 
 ### Step 2 · Install dependencies
 
-Use the repo's package manager. For npm:
+Use the package manager detected in Step 1 — not npm by default:
 
 ```bash
+# npm
 npm install -D @playwright/test @axe-core/playwright
 npx playwright install chromium
+
+# Yarn (Classic or Berry/PnP)
+yarn add -D @playwright/test @axe-core/playwright
+yarn playwright install chromium
+
+# pnpm
+pnpm add -D @playwright/test @axe-core/playwright
+pnpm exec playwright install chromium
 ```
 
- `npx playwright install chromium` downloads the browser and needs network access. If Playwright is
- already installed, install `@axe-core/playwright` when it is missing, skip reinstalling
- `@playwright/test`, and still ensure the Chromium browser is present.
+Under Yarn PnP there is no `node_modules/.bin`, so a bare `npx playwright ...` cannot resolve the
+binary — always go through `yarn playwright ...` (or `yarn dlx playwright ...`) instead. The browser
+download step needs network access regardless of package manager. If Playwright is already
+installed, install `@axe-core/playwright` when it is missing, skip reinstalling `@playwright/test`,
+and still ensure the Chromium browser is present.
 
 ### Step 3 · Scaffold config, fixture, and example spec
 
@@ -121,7 +142,9 @@ setup; when merging into an existing config, use the existing `testDir` as the r
 the same relative layout below it — otherwise Playwright's `testDir` never discovers the new files.
 
 1. `playwright.config.ts` (root) — from `assets/playwright.config.ts` (fresh setup only; otherwise
-   merge as in Step 1). Adjust `baseURL`, `webServer.command`, and port if the app differs.
+   merge as in Step 1). Adjust `baseURL`, `webServer.command`, and port if the app differs, and set
+   `webServer.command` to launch the dev server through the package manager detected in Step 1
+   (`npm run start`, `yarn start`, or `pnpm start`) rather than defaulting to npm.
 2. `<root>/fixtures/axe-helpers.ts` — copy verbatim from `assets/axe-helpers.ts`. This is the
    single source of the WCAG 2.2 AA tag set; every scan must build from `makeAxeBuilder`. It also
    exports `annotateIncomplete`, which every scan must call on `results.incomplete` so those
@@ -153,9 +176,11 @@ match wherever `<root>` ends up; the relative layout between the files stays the
 The `.accessibility.spec.ts` filename suffix is what routes a spec to the accessibility project —
 keep it.
 
-### Step 4 · Wire npm scripts
+### Step 4 · Wire package.json scripts
 
-Add to `package.json` `scripts` (do not clobber existing entries):
+Add to `package.json` `scripts` (do not clobber existing entries). These entries are invoked via
+whichever package manager Step 1 detected (`npm run test:a11y`, `yarn test:a11y`, or
+`pnpm test:a11y`), so the script bodies themselves don't need to vary:
 
 ```jsonc
 "test:a11y": "playwright test --project=accessibility",
@@ -175,24 +200,31 @@ status. Run it standalone; it does not depend on `test:a11y` having run first.
 
 ### Step 5 · Validate — run the dummy scan
 
-Run the feedback loop until green:
+Run the feedback loop until green, invoking the script through the package manager detected in
+Step 1 (never assume npm):
 
 ```bash
-npm run test:a11y
+npm run test:a11y    # npm
+yarn test:a11y        # Yarn (Classic or Berry/PnP)
+pnpm test:a11y        # pnpm
 ```
 
 1. If it **passes**, the infrastructure is proven. Done.
 2. If it fails, it is a **setup** problem (missing browser, wrong port, dev server timeout, import
-   error) — the dummy HTML is fixed and known-compliant, so a real WCAG violation should never be
-   the cause. Fix the config/paths and re-run. Common causes: dev server not on 4200,
-   `webServer.command` wrong, Chromium not installed, fixture import path incorrect.
+   error, or — under Yarn PnP — a package-manager mismatch where the wrong command was used to
+   invoke the script) — the dummy HTML is fixed and known-compliant, so a real WCAG violation should
+   never be the cause. Fix the config/paths and re-run. Common causes: dev server not on 4200,
+   `webServer.command` wrong, Chromium not installed, fixture import path incorrect, script run via
+   the wrong package manager.
 
-Do not finish until `npm run test:a11y` exits green.
+Do not finish until `test:a11y` exits green through the detected package manager.
 
 ### Step 6 · Document
 
 Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
-`playwright/README.md`). Adjust file paths/scripts to match what you created. Add a short
+`playwright/README.md`). Adjust file paths/scripts to match what you created, and rewrite the
+`npm run ...` commands in it to match the package manager detected in Step 1 (`yarn ...` / `pnpm ...`)
+so the docs don't point users at a command that can't resolve the binary. Add a short
 "Accessibility" note with the run command to the main `README.md` if one exists.
 
 ## Gotchas
@@ -203,6 +235,10 @@ Add `assets/accessibility-README.md` to the repo as `docs/accessibility.md` (or
   violations. `waitForAnimationsToFinish` (in the fixture) prevents this — call it before every scan.
 - **Never touch Cypress.** If the repo uses Cypress, leave its config, specs, and dependencies
   untouched — add Playwright alongside it rather than migrating or editing anything Cypress owns.
+- **Never default to npm.** Step 1 detects the repo's package manager (npm, Yarn Classic, Yarn
+  Berry/PnP, or pnpm) — use it consistently for installs, `webServer.command`, the validation run,
+  and the docs. Yarn PnP in particular has no `node_modules/.bin`, so a bare `npm run ...` or
+  `npx playwright ...` there fails to resolve the binary even when the rest of the setup is correct.
 - **Extend, don't recreate Playwright.** When a `playwright.config.*` already exists, merge the
   `accessibility` project into it and reuse any existing axe fixture — do not generate a second
   config or a duplicate fixture. Scaffold the fixture and dummy spec under the existing `testDir`,
