@@ -31,7 +31,8 @@ After the skill runs, the repository contains:
 playwright/
 ├── fixtures/
 │   └── axe-helpers.ts                  # Shared axe fixture (WCAG 2.2 AA tags) + assertion/incomplete-warning helpers
-├── print-a11y-warnings.js              # Prints tests carrying incomplete-result warnings
+├── print-a11y-warnings.cjs             # Prints tests carrying incomplete-result warnings
+├── run-a11y-incomplete.cjs             # Runs the accessibility project, then prints incomplete-result warnings
 └── a11y/
     └── example.accessibility.spec.ts   # ONE dummy scan of static, known-compliant HTML — passes
 playwright.config.ts                    # `accessibility` project (Desktop Chrome, testMatch /\.accessibility\.spec\.ts$/)
