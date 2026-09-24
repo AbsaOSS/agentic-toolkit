@@ -110,6 +110,32 @@
       ]
     },
     {
+      "id": "existing-playwright-no-projects-array",
+      "category": "regression",
+      "prompt": "We already use Playwright for e2e. Add axe-core accessibility scanning on top. The project is in evals/files/existing-playwright-no-projects.",
+      "expected_output": "Skill detects the existing playwright.config has no projects array (a single implicit default project), and does not merely add an accessibility project — it also adds a functional project that keeps the existing top-level use settings and excludes accessibility specs, so the pre-existing e2e tests keep running.",
+      "files": [
+        "evals/files/existing-playwright-no-projects/package.json",
+        "evals/files/existing-playwright-no-projects/playwright.config.ts",
+        "evals/files/existing-playwright-no-projects/e2e/example.spec.ts",
+        "evals/files/existing-playwright-no-projects/angular.json",
+        "evals/files/existing-playwright-no-projects/tsconfig.json",
+        "evals/files/existing-playwright-no-projects/src/index.html",
+        "evals/files/existing-playwright-no-projects/src/main.ts",
+        "evals/files/existing-playwright-no-projects/src/app/app.component.ts"
+      ],
+      "expectations": [
+        "Detects that the existing playwright.config.ts has no projects array",
+        "Adds a projects array containing both an accessibility project and a functional project (not just the accessibility project alone)",
+        "The added functional project carries over the existing top-level use settings (baseURL, trace, etc.) so existing e2e coverage does not silently stop running",
+        "The functional project gets a filename-anchored testIgnore (e.g. /\\.accessibility\\.spec\\.ts$/) so it does not also pick up the new accessibility spec",
+        "The accessibility project uses a filename-anchored testMatch (e.g. /\\.accessibility\\.spec\\.ts$/) on Desktop Chrome",
+        "Existing e2e/example.spec.ts still runs after the change (verified by running the full playwright test suite, not just test:a11y)",
+        "Creates the shared axe fixture and one dummy accessibility spec under the existing testDir ('./e2e')",
+        "Validates the dummy accessibility scan passes"
+      ]
+    },
+    {
       "id": "regression-do-not-clobber",
       "category": "regression",
       "prompt": "Add accessibility checks. Our package.json already has a bunch of test scripts and a playwright config. The project is in evals/files/existing-scripts-and-playwright.",

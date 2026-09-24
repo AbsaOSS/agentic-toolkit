@@ -99,6 +99,16 @@ Pick exactly one path based on what Playwright infra exists — Cypress never ch
   `reporter` array so the existing reporter(s) (e.g. `'html'` or `['html']`) are kept as-is and a
   `['json', { outputFile: 'playwright-report/summary.json' }]` entry is added alongside — never
   replace an existing reporter outright.
+  - **No `projects` array yet** (the config only has a top-level `use` block, so Playwright runs
+    everything as a single implicit default project): adding _only_ the `accessibility` project turns
+    that into an explicit `projects` list containing solely `accessibility` — Playwright then stops
+    running the existing functional specs entirely. Alongside `accessibility`, also add a second,
+    functional project (e.g. `{ name: 'chromium', use: { ...topLevelUse }, testIgnore: /\.accessibility\.spec\.ts$/ }`)
+    that copies the existing top-level `use` settings verbatim and excludes accessibility specs. Move
+    those settings into the project's own `use` rather than deleting them from the top level, since
+    `use` there still supplies shared defaults (e.g. `baseURL`, `trace`) to both projects. After the
+    merge, run the full `playwright test` suite (not just `test:a11y`) to confirm the pre-existing
+    functional specs still execute.
 - **No Playwright yet** → fresh setup. Copy `assets/playwright.config.ts` to the repo root and
   scaffold the full structure in Step 3.
 
@@ -244,6 +254,12 @@ so the docs don't point users at a command that can't resolve the binary. Add a 
   config or a duplicate fixture. Scaffold the fixture and dummy spec under the existing `testDir`,
   not a hardcoded `playwright/` — otherwise Playwright's own `testDir` setting never discovers them
   and validation fails with "no tests found".
+- **Missing `projects` array silently drops functional tests.** An existing config with no
+  `projects` array runs everything as one implicit default project. Adding only an `accessibility`
+  entry turns that into an explicit list containing just `accessibility`, so the pre-existing
+  functional specs stop running with no visible error. Always pair it with a functional project that
+  carries over the old top-level `use` settings and adds a matching `testIgnore`, then confirm the
+  full `playwright test` suite (not just `test:a11y`) still runs the original specs.
 - **Filename routing.** A spec only lands in the accessibility project if its filename ends in
   `.accessibility.spec.ts`. This is `testMatch: /\.accessibility\.spec\.ts$/`, anchored to the
   filename suffix rather than a bare `/accessibility/` substring — a directory named e.g.
