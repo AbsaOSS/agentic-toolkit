@@ -72,6 +72,7 @@ Task-specific guidance for using individual skills. Start by picking your use ca
 
 | Guide | Description |
 |---|---|
+| [Accessibility Infra Setup](./guides/accessibility-infra-setup.md) | Bootstrap Playwright + axe-core a11y infrastructure in an Angular app (WCAG 2.2 AA) — config, shared fixture, one example scan, npm scripts, docs |
 | [TDD Workflow](./guides/tdd-workflow.md) | Test-driven development with: specification, confirmation gates, and vertical-sliced implementation |
 | [Unit Test Standards](./guides/test-unit-standards.md) | Reference for unit test standards across isolation, scope, naming, assertions, coverage, fixtures |
 | [Unit Test Writer](./guides/test-unit-write.md) | Generate complete unit tests from scratch following language-specific standards |
