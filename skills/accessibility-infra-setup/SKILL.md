@@ -1,16 +1,10 @@
 ---
 name: accessibility-infra-setup
 description: >
-  Sets up automated accessibility (a11y) check infrastructure in an existing Angular application
-  using Playwright + axe-core (@axe-core/playwright) to catch automatically detectable WCAG 2.2 AA violations.
-  Detects the existing test setup (including package manager), installs and wires Playwright with a
-  dedicated `accessibility` project, scaffolds a shared axe fixture, adds one dummy example scan,
-  wires package.json scripts, documents how to run the checks, and validates that the sample passes.
-  Activates on requests like: "set up
-  accessibility checks", "add a11y testing infrastructure", "add axe-core to this Angular app",
-  "set up WCAG testing", "add accessibility scans with Playwright", "bootstrap a11y infra".
-  Scope is infrastructure only plus ONE dummy example test — authoring real accessibility tests is
-  a separate concern and out of scope.
+  Sets up Playwright + axe-core a11y test infrastructure in an existing
+  Angular app (WCAG 2.2 AA). Use when asked to set up accessibility, a11y,
+  WCAG or axe-core testing. Infra plus one example scan only; not for
+  writing real a11y tests.
 license: Apache-2.0
 compatibility: >
   Requires an existing Angular application with a runnable dev server (`start` script on port 4200,
