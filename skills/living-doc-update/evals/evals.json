@@ -43,12 +43,13 @@
       "id": 4,
       "category": "regression",
       "prompt": "The checkout feature is now owned by team-payments-v2 instead of team-checkout. How do I update this in the living doc?",
-      "expected_output": "Agent updates the owners array in the Feature entity JSON to team-payments-v2. Adds owner_changed_at and owner_change_reason fields. Notifies the new owner if open User Stories are linked to the Feature.",
+      "expected_output": "Agent updates the owners array in the Feature entity JSON to team-payments-v2 and adds no other field — there are no ownership-change metadata fields. Lists the Feature's non-deprecated User Stories in the change summary as the handoff list, and does not claim to have notified anyone.",
       "files": [],
       "expectations": [
         "Updates owners array in Feature entity JSON",
-        "Adds owner_changed_at and owner_change_reason fields",
-        "Notifies new owner if open User Stories exist"
+        "Adds no owner_changed_at or owner_change_reason field",
+        "Lists the Feature's non-deprecated User Stories as a handoff list",
+        "Does not claim the new owner was notified"
       ]
     },
     {

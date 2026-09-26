@@ -31,7 +31,7 @@ If the user says "update the story" but the substance is a newly discovered edge
 | Add a new AC | User Story / Functionality | Append a new AC entry with the next sequential AC ID |
 | Modify AC description | User Story / Functionality | Edit the description; keep the AC ID stable |
 | Change status | User Story / Functionality | Update `status` field; record the transition event — a Feature has no `status` field to change; its state is derived from its Functionalities |
-| Change owner | Feature | Update `owners` field; add `owner_changed_at` (ISO date) and `owner_change_reason` fields; notify the new owner if open User Stories are linked to the Feature |
+| Change owner | Feature | Update `owners` field — there are no ownership-change metadata fields; list the Feature's non-`deprecated` User Stories in the change summary so the outgoing owner can hand them over |
 | Add a linked User Story | Feature | Append to `user_stories` |
 | Deprecate a User Story or Functionality | User Story / Functionality | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
 | Deprecate a Feature | Feature | Add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` — never set a `status` field; the surface's retirement is recorded through its Functionalities being deprecated |
@@ -137,8 +137,14 @@ Changing a Feature's `id` or `name` requires these cascading updates:
 
 ## Update Feature ownership or dependencies
 
-When a team changes ownership of a Feature, update the `owners` field and set `owner_changed_at`
-(date) and `owner_change_reason`. If the Feature has open User Stories, notify the new owner.
+When a team changes ownership of a Feature, update the `owners` field and nothing else. There are no
+ownership-change metadata fields — no canonical layout places one, no contract model holds one, and
+an authored `owner_changed_at` or `owner_change_reason` is silently dropped by the pipeline. The
+tracked file's git history already records when the transfer happened and why.
+
+A transfer leaves work in flight, so list the Feature's User Stories whose `status` is not
+`deprecated` in the change summary. That is the handoff list for the two owners to work through —
+this skill edits documentation and sends no messages, so do not claim the new owner was notified.
 
 ## Descope an AC mid-sprint
 
