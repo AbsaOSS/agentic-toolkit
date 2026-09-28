@@ -1,15 +1,16 @@
-<!-- synced from AbsaOSS/living-doc@6bbfd94961f7541241a2e3cee9b58bf2c237f858 — run scripts/sync-living-doc-glossary.sh 6bbfd94961f7541241a2e3cee9b58bf2c237f858 to refresh -->
+<!-- synced from AbsaOSS/living-doc@2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab — run scripts/sync-living-doc-reference.sh glossary 2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab to refresh -->
+<!-- Generated file — do not edit by hand. CI re-runs the sync and fails on any diff. -->
 
 # Living Doc Glossary
 
 Core entity contracts: IDs, status vocabulary, relationships, and AC format. Every `living-doc-*` repo and `agentic-toolkit`'s `living-doc-bdd-copilot` agent operate on this canonical entity model.
 
-For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md).
+For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md).
 
 > **Source of truth.** This page is the canonical definition of the entity model. `agentic-toolkit`'s `skills/shared/references/living-doc-glossary.md` is synced from it.
 
 > **Worked examples & sync obligation.** A minimal, copyable example of each entity lives in
-> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/examples/README.md). When a field or rule on this page changes, the matching
+> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/examples/README.md). When a field or rule on this page changes, the matching
 > example changes in the same PR.
 
 ---
@@ -39,9 +40,17 @@ For the file-header schemas that carry these entities (feature file headers, Pag
 > `## Deprecation Reason` and `## Superseded By` as headings in an issue body; `# status:`,
 > `# deprecated_at:`, `# deprecation_reason:` and `# superseded_by:` as keys in a feature-file
 > header. Of these only the status is required, and only on a User Story and a Functionality — a
-> Feature has no authored status at all. See the
-> [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/examples/README.md#github-issue-body-layout-canonical) and
-> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md).
+> Feature has no authored status at all, and `deprecated_at` is authored on a User Story and a
+> Functionality only — see [Feature](#feature) for what a Feature derives instead.
+> See the [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/examples/README.md#github-issue-body-layout-canonical) and
+> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md).
+
+> **`## Notes` — the one place for human context.** Every entity may carry an optional `## Notes`
+> section in an issue body (`# notes:` in a source-code header): a **bullet list, one note per
+> bullet**, at **entity level only** — never on an acceptance criterion. A note is **never parsed for
+> semantics: it drives no state, and nothing is derived from it.** Anything that must drive behaviour
+> has to be a typed field, not a note. `deprecation_reason` stays its own typed field and does not
+> migrate into a note.
 
 ### User Story (US)
 
@@ -64,8 +73,10 @@ so that <business outcome>.
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity
+- Notes (optional): human context as a bullet list — see *`## Notes` — the one place for human
+  context* above
 
-> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
+> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
 
 ### Feature
 
@@ -89,13 +100,17 @@ A named system surface — the structural layer between User Stories and atomic 
   or contradict them, so there is no place to write one: a Feature issue body carries no `## Status`
   heading, and a PageObject header carries no `status:` field. The pipeline computes the state and
   marks it `derived`.
-- Deprecation metadata (optional; authored when the surface is retired — the *state* still follows
-  the Functionalities):
-  - `deprecated_at` — date the entity was deprecated
-  - `deprecation_reason` — why it was deprecated
-  - `superseded_by` — ID of the replacement entity
+- Deprecation metadata: `deprecated_at` is **derived, never authored** — it is generated after parsing,
+  alongside the state, and follows the Functionalities like the state does. A Feature issue body
+  carries no `## Deprecated At` heading and a PageObject header no `deprecated_at:` field. What stays
+  authored on a Feature (optional, and neither one drives the state):
+  - `deprecation_reason` — why the surface is being retired; human intent, which nothing can derive
+  - `superseded_by` — ID of the replacement entity; a typed entity link the pipeline traverses as a
+    relation edge
+- Notes (optional): human context as a bullet list — see *`## Notes` — the one place for human
+  context* above
 
-> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
+> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
 
 ### Functionality (FUNC)
 
@@ -116,6 +131,8 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
   - `deprecated_at` — date the entity was deprecated
   - `deprecation_reason` — why it was deprecated
   - `superseded_by` — ID of the replacement entity
+- Notes (optional): human context as a bullet list — see *`## Notes` — the one place for human
+  context* above
 
 Functionalities differ from User Story ACs: they are atomic and fast-testable, not end-to-end.
 A single User Story may trigger multiple Functionalities.
@@ -136,7 +153,7 @@ If an AC belongs to the wrong entity type, redirect:
 - AC too atomic / technical inside a US → move to a **Functionality**
 - AC describes a full user journey inside a FUNC → move to a **User Story**
 
-> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
+> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
 
 ### Acceptance Criterion (AC)
 
@@ -294,14 +311,14 @@ wrong AC, producing a coverage matrix that is wrong in a way no downstream tool 
 prefix or namespace IDs per source to dodge a collision — a collision inside one project means that
 project has two entities claiming one ID, and that is the thing to fix.
 
-This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-document-types.md#coverage-matrix)
+This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-document-types.md#coverage-matrix)
 and the `Data Flows & Schemas` spec §8 ("Multiple sources and multiple generators"). The toolkit
 [`coverage_matrix` service README](https://github.com/AbsaOSS/living-doc-toolkit/blob/master/packages/services/coverage_matrix/README.md)
 describes the false-gap failure mode when the two sides of the join do not describe the same system.
 
 ---
 
-> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/6bbfd94961f7541241a2e3cee9b58bf2c237f858/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
+> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
 
 ---
 
