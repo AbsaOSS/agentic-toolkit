@@ -34,8 +34,8 @@ If the user says "update the story" but the substance is a newly discovered edge
 | Change owner | Feature | Update `owners` field — there are no ownership-change metadata fields; list the Feature's non-`deprecated` User Stories in the change summary so the outgoing owner can hand them over |
 | Add a linked User Story | Feature | Append to `user_stories` |
 | Deprecate a User Story or Functionality | User Story / Functionality | Set `status: deprecated`; add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
-| Deprecate a Feature | Feature | Add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` — never set a `status` field; the surface's retirement is recorded through its Functionalities being deprecated |
-| Delete a Functionality | Functionality | Do not delete — deprecate it and link to the commit that removed the code |
+| Deprecate a Feature | Feature | Add `deprecation_reason` and optionally `superseded_by` — never set a `status` field, and never author `deprecated_at`; the surface's retirement is recorded through its Functionalities being deprecated, and its state and date are derived from them |
+| Delete a Functionality | Functionality | Do not delete — deprecate it, and record the commit that removed the backing code as a `## Notes` bullet |
 
 ## Update a User Story — add or modify ACs
 
@@ -105,17 +105,21 @@ Set the relevant fields in the project's Storage Profile format:
 | Field | Value | Applies to |
 |---|---|---|
 | `status` | `deprecated` | Functionality and User Story only — a Feature has no `status` field |
-| `deprecated_at` | Date of deprecation | Feature, Functionality, and User Story |
+| `deprecated_at` | Date of deprecation | Functionality and User Story only — on a Feature it is **derived** alongside the state, never authored |
 | `deprecation_reason` | Why it was deprecated | Feature, Functionality, and User Story |
-| `deprecated_code_commit` | Commit SHA or URL that removed the backing code (if applicable) | Feature and Functionality |
 | `superseded_by` | ID of the replacement entity (if applicable) | Feature, Functionality, and User Story |
 
 Rules:
 - Always deprecate — never delete entities (preserves audit trail)
 - A Functionality or User Story being deprecated gets `status: deprecated` — never leave it on its prior status while adding deprecation metadata, or it reads as still active
-- Add `deprecated_code_commit` when the code was removed in a commit
+- When the backing code was removed in a commit, record that commit as a **`## Notes` bullet** on
+  the entity (feature-file header key `notes:`, issue-body section `## Notes`) — for example
+  `- Backing code removed in abc1234 (PR #412).` There is no typed field for it: *deprecated is not
+  removed*, and the commit is a pointer to where the removal actually happened, which is context,
+  not schema. Do not invent a typed field for it — neither the canon nor `living-doc-utilities`
+  defines one, and `validate_entity.py` treats any such key as unrecognised.
 - Add `superseded_by` when a replacement entity exists
-- A Feature never gets a `status` field, deprecated or otherwise — its state is derived from its Functionalities. Retiring a Feature means deprecating every Functionality it owns; the Feature entity itself only gains `deprecated_at` / `deprecation_reason` / `superseded_by` as a record of when the surface was retired.
+- A Feature never gets a `status` field, deprecated or otherwise — its state is derived from its Functionalities. Retiring a Feature means deprecating every Functionality it owns; the Feature entity itself only gains `deprecation_reason` / `superseded_by` as a record of why the surface was retired. Its `deprecated_at` is derived with the state, so do not author one — `validate_entity.py` flags a Feature that carries it.
 - If a deprecated Feature owns Functionalities, flag every owned Functionality for deprecation review before closing the change.
 - Flag any tests linked to the deprecated entity for update or removal
 - If the deprecated entity has `ACTIVE` ACs with linked Gherkin scenarios, trigger

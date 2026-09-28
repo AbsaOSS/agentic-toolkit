@@ -30,12 +30,13 @@
       "id": 3,
       "category": "regression",
       "prompt": "The `FUNC-018` Functionality (Legacy Payment Gateway Retry Logic) has had its backing code deleted from the codebase. How do I handle this in the living doc?",
-      "expected_output": "Agent sets status to deprecated on the Functionality entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
+      "expected_output": "Agent sets status to deprecated on the Functionality entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Records the commit that deleted the backing code as a `## Notes` bullet on the entity (header key `notes:`), not as a typed field — there is none, and deprecated is not removed. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
         "Sets status: deprecated on the Functionality — never deletes the entity file",
         "Adds deprecated_at and deprecation_reason fields",
-        "Links to the commit that deleted the code if possible",
+        "Records the removing commit as a `## Notes` bullet, not as a typed field",
+        "Does not invent a deprecation field for the commit reference",
         "Flags linked Gherkin scenarios for gherkin-living-doc-sync"
       ]
     },
@@ -151,13 +152,14 @@
       "type": "happy-path",
       "description": "Developer deprecates a Feature that has been superseded by a new Feature.",
       "prompt": "The 'Legacy Payment Widget' (FEAT-003) has been replaced by the new 'Payment Page' (FEAT-002). How do I deprecate the old Feature in the living doc?",
-      "expected_output": "FEAT-003 never gets a status field — a Feature's state is derived from its Functionalities, never authored. Add deprecated_at (today's date), deprecation_reason (e.g. 'Replaced by FEAT-002'), and superseded_by: 'FEAT-002' directly on FEAT-003. Never delete the entity — deprecation preserves the audit trail. Flag every Functionality owned by FEAT-003 for deprecation review (setting status: deprecated on each of those, since Functionalities do carry a status). Flag any tests linked to those Functionalities for update or removal.",
+      "expected_output": "FEAT-003 never gets a status field — a Feature's state is derived from its Functionalities, never authored. It gets no deprecated_at either: a Feature's deprecation date is derived alongside its state. Add deprecation_reason (e.g. 'Replaced by FEAT-002') and superseded_by: 'FEAT-002' directly on FEAT-003, and nothing else. Never delete the entity — deprecation preserves the audit trail. Deprecate every Functionality owned by FEAT-003 (setting status: deprecated on each, since Functionalities do carry a status) — that, not a field on the Feature, is what makes the surface deprecated. Flag any tests linked to those Functionalities for update or removal.",
       "files": [],
       "expectations": [
         "Does not set a status field on the Feature — never deletes the entity",
-        "Adds deprecated_at, deprecation_reason, and superseded_by fields on the Feature",
+        "Adds deprecation_reason and superseded_by on the Feature",
+        "Does not author deprecated_at on the Feature — it is derived with the state",
         "superseded_by points to FEAT-002",
-        "Flags owned Functionalities for deprecation review",
+        "Deprecates every owned Functionality as the actual mechanism of retiring the surface",
         "Flags linked tests for update or removal"
       ],
       "category": "regression"

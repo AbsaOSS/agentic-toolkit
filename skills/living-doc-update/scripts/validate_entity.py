@@ -71,7 +71,24 @@ REQUIRED_FIELDS: dict[str, list[str]] = {
         "id", "name", "surface_type", "purpose",
         "user_stories", "functionalities", "owners",
     ],
-    "Functionality": ["id", "name", "parent_feature", "status", "acceptance_criteria"],
+    "Functionality": [
+        "id", "name", "parent_feature", "func_type", "status", "acceptance_criteria",
+    ],
+}
+
+# The seven categories of behaviour a Functionality can document. Canon: living-doc's
+# "Functionality in a Gherkin Feature File" marks `# func_type:` required, and the values table
+# there is the single definition of what each one means and which PageObject locator it anchors
+# to — see skills/shared/references/living-doc-bdd-schemas.md. Never widened locally: a value
+# outside this set cannot be authored into a feature-file header.
+VALID_FUNC_TYPES = {
+    "component_state",
+    "component_action",
+    "button_action",
+    "field_validation",
+    "calculation",
+    "visibility",
+    "navigation_rule",
 }
 
 # Entity types that carry an authored `status` field. A Feature has none — its state
@@ -79,11 +96,19 @@ REQUIRED_FIELDS: dict[str, list[str]] = {
 STATUSED_ENTITY_TYPES = {"User Story", "Functionality"}
 
 DEPRECATION_FIELDS = ["deprecated_at", "deprecation_reason"]
-# Markers that only signal deprecation for a non-statused entity (Feature) — never
+# What a *deprecated Feature* should carry. Not the same list: canon derives a Feature's
+# `deprecated_at` alongside its state, after parsing, and says a Feature issue body carries
+# no `## Deprecated At` heading and a PageObject header no `deprecated_at:` field (see the
+# glossary's Feature entry and Header Types' "Common mistakes"). Warning a Feature for a
+# missing `deprecated_at` would therefore instruct the agent to author a derived field.
+FEATURE_AUTHORED_DEPRECATION_FIELDS = ["deprecation_reason"]
+# Markers a Feature can carry as a record that the surface is being retired — never
 # required, so they stay out of DEPRECATION_FIELDS' missing-field warning loop.
-# Per SKILL.md's deprecation table: superseded_by applies to Feature/Functionality/
-# User Story, deprecated_code_commit applies to Feature and Functionality.
-FEATURE_DEPRECATION_MARKERS = ("superseded_by", "deprecated_code_commit")
+# Per SKILL.md's deprecation table, superseded_by applies to Feature/Functionality/
+# User Story. These are *authored* markers: their presence records an intent, it does
+# not establish the Feature's state — that is derived from the Feature's Functionalities
+# and needs the catalog (see _feature_deprecation_state).
+FEATURE_DEPRECATION_MARKERS = ("superseded_by",)
 VERB_PREFIX_RE = re.compile(
     r"^(process|handle|manage|do|perform|run|execute|validate|create|update|delete)\b",
     re.IGNORECASE,
@@ -162,6 +187,67 @@ def load_ac_states_from_profile(profile_path: str) -> set[str] | None:
     return {str(s) for s in states}
 
 
+def _authored_feature_markers(entity: dict) -> list[str]:
+    """The deprecation keys a Feature actually carries, in a stable order.
+
+    Presence, not truthiness — `"deprecation_reason": ""` is still an authored key and a
+    malformed one, which the missing-metadata warnings downstream are there to catch."""
+    return [
+        field
+        for field in (*DEPRECATION_FIELDS, *FEATURE_DEPRECATION_MARKERS)
+        if field in entity
+    ]
+
+
+def _feature_deprecation_state(
+    entity: dict, catalog: dict | None
+) -> tuple[str, str | None]:
+    """Derive a Feature's deprecation state the way the canon defines it: from its
+    Functionalities.
+
+    A Feature has no authored `status`; living-doc derives its state from the
+    Functionalities it owns. A validator handed one entity at a time therefore *cannot*
+    know a Feature's state unless it is also given the catalog — so rather than inferring
+    one from whatever the Feature happens to carry, this returns "unknown" and lets the
+    caller report the honest basis.
+
+    Returns ``(state, basis)`` where:
+
+    - ``("deprecated", "derived")``  — every owned Functionality is deprecated.
+    - ``("active", "derived")``      — at least one owned Functionality is not deprecated.
+    - ``("unknown", "authored_marker")`` — not derivable, but the Feature authors
+      deprecation metadata; the caller reports that the basis is an authored marker.
+    - ``("unknown", None)``          — not derivable and nothing authored; say nothing.
+
+    Ownership is the union of the Feature's forward ``functionalities`` list and the
+    back-link from each Functionality's ``parent_feature``, matching how the
+    ORPHAN_FEATURE / EMPTY_FEATURE checks below resolve the same relationship."""
+    authored = _authored_feature_markers(entity)
+    fallback_basis = "authored_marker" if authored else None
+
+    if catalog is None:
+        return "unknown", fallback_basis
+
+    inner = catalog.get("catalog", catalog)
+    entity_id = entity.get("id", "")
+    forward = set(entity.get("functionalities") or [])
+    owned = [
+        fn
+        for fn in inner.get("functionalities", [])
+        if fn.get("id") in forward or (entity_id and fn.get("parent_feature") == entity_id)
+    ]
+
+    # A Feature that owns no Functionality has no children to derive from. The
+    # EMPTY_FEATURE warning below already reports that; claiming a state on top of it
+    # would be the exact inference this function exists to avoid.
+    if not owned:
+        return "unknown", fallback_basis
+
+    if all(fn.get("status") == "deprecated" for fn in owned):
+        return "deprecated", "derived"
+    return "active", "derived"
+
+
 def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
     """
     Validate a single entity dict.
@@ -221,21 +307,58 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
         error("status", f"Invalid status '{status}'. Must be one of: {VALID_STATUSES}")
 
     # ── Deprecation metadata ─────────────────────────────────────────────────
-    # A Feature carries no `status`, so it is deprecated when it carries any
-    # deprecation marker directly (deprecated_at / deprecation_reason / superseded_by /
-    # deprecated_code_commit — see SKILL.md's deprecation table for which entity types
-    # each marker applies to).
-    # Presence of the key is what signals deprecation, not truthiness — an empty-string
-    # value (e.g. `"deprecated_at": ""`) is still a deprecation attempt with malformed
-    # metadata, and must fall through to the missing-field warnings below rather than
-    # being silently treated as "not deprecated".
-    is_deprecated = (
-        status == "deprecated"
-        if entity_type in STATUSED_ENTITY_TYPES
-        else any(field in entity for field in (*DEPRECATION_FIELDS, *FEATURE_DEPRECATION_MARKERS))
-    )
+    # A User Story or Functionality authors its own `status`, so its deprecation is
+    # read straight off the entity. Presence of a deprecation key is what signals
+    # deprecation, not truthiness — an empty-string value (e.g. `"deprecated_at": ""`)
+    # is still a deprecation attempt with malformed metadata, and must fall through to
+    # the missing-field warnings below rather than being silently treated as "not
+    # deprecated".
+    #
+    # A Feature has no `status` at all, and its state is *derived from its
+    # Functionalities* — a single entity handed to this validator does not contain it.
+    # _feature_deprecation_state() therefore derives it from --catalog where it can, and
+    # returns "unknown" where it cannot. A Feature's authored markers record an intent to
+    # retire the surface; they are not the state, and the report below says so.
+    if entity_type in STATUSED_ENTITY_TYPES:
+        is_deprecated = status == "deprecated"
+    else:
+        feature_state, basis = _feature_deprecation_state(entity, catalog)
+        is_deprecated = feature_state == "deprecated"
+        authored = _authored_feature_markers(entity)
+        # `deprecated_at` is derived for a Feature, alongside its state — authoring it here
+        # duplicates a generated value and invites the two to disagree. Canon lists it under
+        # "Common mistakes" ("Remove it"), so this is a warning to remediate, not a rejection.
+        if "deprecated_at" in entity:
+            warning(
+                "deprecated_at",
+                "Feature must not author 'deprecated_at' — a Feature's deprecation date is "
+                "derived with its state from its Functionalities. Remove it; keep "
+                "'deprecation_reason' / 'superseded_by' if the surface is being retired",
+            )
+        if feature_state == "unknown" and basis == "authored_marker":
+            warning(
+                "deprecation",
+                f"Feature carries authored deprecation metadata ({', '.join(authored)}), "
+                "but a Feature has no status of its own — its state is derived from its "
+                "Functionalities and cannot be determined from a single entity. The basis "
+                "reported here is an authored marker, not a derived state; re-run with "
+                "--catalog to derive the actual state.",
+            )
+        elif feature_state == "active" and authored:
+            warning(
+                "deprecation",
+                f"Feature carries authored deprecation metadata ({', '.join(authored)}), "
+                "but its state derived from the catalog is not deprecated — at least one "
+                "owned Functionality is still non-deprecated. Deprecate every owned "
+                "Functionality, or drop the deprecation metadata.",
+            )
     if is_deprecated:
-        for dep_field in DEPRECATION_FIELDS:
+        required_dep_fields = (
+            DEPRECATION_FIELDS
+            if entity_type in STATUSED_ENTITY_TYPES
+            else FEATURE_AUTHORED_DEPRECATION_FIELDS
+        )
+        for dep_field in required_dep_fields:
             if not entity.get(dep_field):
                 warning(
                     dep_field,
@@ -343,6 +466,16 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
             error(
                 "parent_feature",
                 f"parent_feature '{parent}' does not look like a valid Feature ID (expected FEAT-nnn)",
+            )
+        # An out-of-vocabulary func_type is an error, not a warning, for the same reason an
+        # out-of-vocabulary AC state is: the value goes straight into a `# func_type:` header
+        # line, where only these seven are authorable. A missing one is already caught by the
+        # REQUIRED_FIELDS loop above.
+        func_type: str = entity.get("func_type", "")
+        if func_type and func_type not in VALID_FUNC_TYPES:
+            error(
+                "func_type",
+                f"Invalid func_type '{func_type}'. Must be one of: {sorted(VALID_FUNC_TYPES)}",
             )
         acs = entity.get("acceptance_criteria") or []
         if not acs:

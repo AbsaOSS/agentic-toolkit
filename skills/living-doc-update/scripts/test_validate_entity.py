@@ -723,9 +723,13 @@ def test_deprecated_user_story_missing_metadata_warns():
 
 
 def test_deprecated_feature_via_markers_warns():
-    """A Feature carries no 'status' field, so deprecation is detected from its markers
-    directly (is_deprecated's else-branch). One marker present (deprecated_at) but not
-    the other must still warn only for the missing one."""
+    """A Feature carries no 'status' field, so its deprecation is derived from its
+    Functionalities — which needs the catalog. Given one, a Feature whose Functionalities
+    are all deprecated is deprecated; one marker present (deprecated_at) but not the other
+    must still warn only for the missing one.
+
+    Updated from the pre-P35-AG2 behaviour, where the same assertions held with no catalog
+    at all because the authored markers alone were read as the Feature's state."""
     feat = {
         "entity_type": "Feature",
         "id": "FEAT-1",
@@ -737,18 +741,22 @@ def test_deprecated_feature_via_markers_warns():
         "owners": ["Team"],
         "deprecated_at": "2026-01-01",
     }
-    issues = validate(feat)
+    issues = validate(feat, _feature_catalog(["deprecated"]))
     assert any(i["field"] == "deprecation_reason" for i in issues), issues
-    assert not [i for i in issues if i["field"] == "deprecated_at"], issues
-    print("✓ A Feature deprecated via markers (no status field) is still checked for deprecation metadata")
+    # deprecated_at is now flagged for the opposite reason: a Feature must not author it.
+    authored_at = [i for i in issues if i["field"] == "deprecated_at"]
+    assert authored_at and "must not author" in authored_at[0]["message"], issues
+    print("✓ A Feature derived as deprecated is still checked for deprecation metadata")
 
 
 def test_deprecated_feature_with_empty_marker_still_warns():
-    """A Feature with `deprecated_at: ""` (key present, value falsy) must still be treated
-    as a deprecation attempt — presence of the key drives is_deprecated, not truthiness.
-    Before the fix, `entity.get("deprecated_at") or ...` treated an empty string the same
-    as an absent key, so the whole deprecation-metadata check was skipped and the missing
-    deprecation_reason went unreported."""
+    """A Feature with `deprecation_reason: ""` (key present, value falsy) must still have
+    the empty value reported — presence of the key is a deprecation attempt with malformed
+    metadata, not an absent key. Before the original fix, `entity.get(...) or ...` treated
+    the two the same and the malformed metadata went unreported.
+
+    The marker under test moved from `deprecated_at` to `deprecation_reason` because a
+    Feature no longer authors `deprecated_at` at all; the truthiness point is unchanged."""
     feat = {
         "entity_type": "Feature",
         "id": "FEAT-1",
@@ -758,21 +766,49 @@ def test_deprecated_feature_with_empty_marker_still_warns():
         "user_stories": ["US-1"],
         "functionalities": ["FUNC-1"],
         "owners": ["Team"],
-        "deprecated_at": "",
+        "deprecation_reason": "",
     }
-    issues = validate(feat)
-    assert any(i["field"] == "deprecated_at" for i in issues), issues
+    issues = validate(feat, _feature_catalog(["deprecated"]))
     assert any(i["field"] == "deprecation_reason" for i in issues), issues
     print("✓ A Feature with an empty-string deprecation marker is still flagged for missing metadata")
 
 
-def test_deprecated_feature_via_deprecated_code_commit_marker_warns():
-    """A Feature deprecated via `deprecated_code_commit` alone (no status field, and no
-    deprecated_at/deprecation_reason/superseded_by) must still be detected as a
-    deprecation attempt and warned for the missing deprecated_at/deprecation_reason.
-    SKILL.md's deprecation table lists deprecated_code_commit as applicable to Feature
-    and Functionality, so is_deprecated's marker check must include it alongside
-    deprecated_at/deprecation_reason/superseded_by."""
+def test_feature_authoring_deprecated_at_is_flagged():
+    """Canon derives a Feature's `deprecated_at` with its state; a Feature issue body
+    carries no `## Deprecated At` heading and a PageObject header no `deprecated_at:`
+    field. Authoring it must be reported — and never reported the other way round, as a
+    *missing* field, which would instruct the agent to author a derived value."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Legacy Reports",
+        "surface_type": "UI",
+        "purpose": "Generates legacy account reports, replaced by the new dashboard",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+        "deprecation_reason": "Replaced by the new reporting dashboard",
+    }
+    # Derived as deprecated, authoring nothing it shouldn't: no deprecated_at complaint.
+    clean = validate(feat, _feature_catalog(["deprecated"]))
+    assert not [i for i in clean if i["field"] == "deprecated_at"], clean
+
+    feat["deprecated_at"] = "2026-01-01"
+    issues = validate(feat, _feature_catalog(["deprecated"]))
+    flagged = [i for i in issues if i["field"] == "deprecated_at"]
+    assert flagged and "must not author" in flagged[0]["message"], issues
+    print("✓ A Feature authoring 'deprecated_at' is flagged; a Feature omitting it is not")
+
+
+def test_unknown_deprecation_key_is_not_a_deprecation_marker():
+    """`deprecated_code_commit` used to be a recognised Feature deprecation marker here.
+    It is in neither the canon nor living-doc-utilities' contract — the removing commit is
+    now recorded as a `## Notes` bullet instead — so an entity carrying it must NOT be
+    treated as deprecated on that basis. This test previously pinned the opposite
+    behaviour; it is updated, not deleted, so the removal stays covered.
+
+    The key is simply unrecognised: no deprecation detection, and therefore none of the
+    deprecated_at/deprecation_reason missing-metadata warnings."""
     feat = {
         "entity_type": "Feature",
         "id": "FEAT-1",
@@ -785,9 +821,190 @@ def test_deprecated_feature_via_deprecated_code_commit_marker_warns():
         "deprecated_code_commit": "abc1234",
     }
     issues = validate(feat)
-    assert any(i["field"] == "deprecated_at" for i in issues), issues
+    assert not [i for i in issues if i["field"] == "deprecated_at"], issues
+    assert not [i for i in issues if i["field"] == "deprecation_reason"], issues
+    assert not [i for i in issues if i["field"] == "deprecation"], issues
+    print("✓ deprecated_code_commit is no longer a deprecation marker")
+
+
+def test_feature_state_not_claimed_without_catalog():
+    """A Feature has no authored status — its state is derived from its Functionalities,
+    which a single entity does not contain. Without --catalog the validator must not claim
+    a state; when the Feature authors deprecation metadata it reports the basis explicitly
+    as an authored marker, and points at --catalog."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Legacy Reports",
+        "surface_type": "UI",
+        "purpose": "Generates legacy account reports, replaced by the new dashboard",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+        "superseded_by": "FEAT-2",
+    }
+    issues = validate(feat)
+    basis = [i for i in issues if i["field"] == "deprecation"]
+    assert basis, issues
+    assert "authored marker" in basis[0]["message"], basis
+    assert "--catalog" in basis[0]["message"], basis
+    # No derived state was claimed, so no missing-metadata warnings were emitted either.
+    assert not [i for i in issues if i["field"] in ("deprecated_at", "deprecation_reason")], issues
+    print("✓ Without a catalog, a Feature's state is not claimed and the basis is named")
+
+
+def test_feature_with_no_markers_and_no_catalog_is_silent():
+    """A Feature that authors nothing and is validated without a catalog gets no
+    deprecation commentary at all — not 'deprecated', and not 'not deprecated'."""
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Reports Page",
+        "surface_type": "UI",
+        "purpose": "Generates account reports for finance and support teams",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1"],
+        "owners": ["Team"],
+    }
+    issues = validate(feat)
+    assert not [
+        i for i in issues
+        if i["field"] in ("deprecation", "deprecated_at", "deprecation_reason")
+    ], issues
+    print("✓ A Feature with no deprecation metadata and no catalog draws no state claim")
+
+
+def _feature_catalog(func_statuses: list[str]) -> dict:
+    """Catalog whose FUNC-1..n all have FEAT-1 as parent, with the given statuses."""
+    return {
+        "features": [{"id": "FEAT-1"}],
+        "user_stories": [{"id": "US-1", "features": ["FEAT-1"]}],
+        "functionalities": [
+            {"id": f"FUNC-{i + 1}", "parent_feature": "FEAT-1", "status": status}
+            for i, status in enumerate(func_statuses)
+        ],
+    }
+
+
+def _legacy_feature(**extra) -> dict:
+    feat = {
+        "entity_type": "Feature",
+        "id": "FEAT-1",
+        "name": "Legacy Reports",
+        "surface_type": "UI",
+        "purpose": "Generates legacy account reports, replaced by the new dashboard",
+        "user_stories": ["US-1"],
+        "functionalities": ["FUNC-1", "FUNC-2"],
+        "owners": ["Team"],
+    }
+    feat.update(extra)
+    return feat
+
+
+def test_feature_deprecation_derived_from_catalog():
+    """With --catalog the Feature's state is derived the canonical way: every owned
+    Functionality deprecated means the Feature is deprecated, and the missing
+    deprecation_reason is then reported against a state that was actually determined."""
+    catalog = _feature_catalog(["deprecated", "deprecated"])
+    issues = validate(_legacy_feature(superseded_by="FEAT-2"), catalog)
     assert any(i["field"] == "deprecation_reason" for i in issues), issues
-    print("✓ A Feature deprecated via deprecated_code_commit alone is still flagged for missing metadata")
+    # deprecated_at is derived for a Feature, so it is never reported as missing.
+    assert not [i for i in issues if i["field"] == "deprecated_at"], issues
+    # The state was derived, so no authored-marker basis disclaimer is emitted.
+    assert not [i for i in issues if i["field"] == "deprecation"], issues
+    print("✓ With a catalog, a Feature's deprecation is derived from its Functionalities")
+
+
+def test_feature_not_deprecated_when_a_functionality_is_live():
+    """One non-deprecated Functionality means the Feature is not deprecated, however much
+    deprecation metadata it authors — and that contradiction is reported."""
+    catalog = _feature_catalog(["deprecated", "active"])
+    issues = validate(_legacy_feature(deprecation_reason="Replaced by the new dashboard"), catalog)
+    contradiction = [i for i in issues if i["field"] == "deprecation"]
+    assert contradiction, issues
+    assert "not deprecated" in contradiction[0]["message"], contradiction
+    # Not deprecated, so no missing-metadata warnings for a state it does not have.
+    assert not [i for i in issues if i["field"] == "deprecation_reason"], issues
+    print("✓ A Feature with a live Functionality is not reported as deprecated")
+
+
+def test_feature_with_no_owned_functionalities_claims_no_state():
+    """A catalog that gives the Feature no Functionalities leaves nothing to derive from.
+    The EMPTY_FEATURE warning already covers that; the validator must not additionally
+    invent a deprecation state."""
+    catalog = {"features": [{"id": "FEAT-1"}], "user_stories": [], "functionalities": []}
+    issues = validate(_legacy_feature(functionalities=[], superseded_by="FEAT-2"), catalog)
+    basis = [i for i in issues if i["field"] == "deprecation"]
+    assert basis, issues
+    assert "authored marker" in basis[0]["message"], basis
+    assert not [i for i in issues if i["field"] in ("deprecated_at", "deprecation_reason")], issues
+    print("✓ A Feature with no owned Functionalities is not assigned a derived state")
+
+
+def test_functionality_missing_func_type_flagged():
+    """`func_type` is required on a Functionality — canon marks `# func_type:` Yes, and
+    without it the entity cannot be authored into a feature-file header at all."""
+    func = {
+        "entity_type": "Functionality",
+        "id": "FUNC-1",
+        "name": "Login Page - Validate Password Strength",
+        "parent_feature": "FEAT-1",
+        "status": "planned",
+        "acceptance_criteria": [
+            {"id": "AC:FUNC-1-01", "description": "When the password is under 8 characters, "
+                                                  "validation returns INVALID with code PWD_TOO_SHORT"},
+        ],
+    }
+    issues = validate(func)
+    assert any(
+        i["field"] == "func_type" and i["severity"] == "error" for i in issues
+    ), issues
+    print("✓ A Functionality without func_type is an error")
+
+
+def test_functionality_invalid_func_type_flagged():
+    """A value outside the seven canonical categories must be an error, not a warning —
+    it goes straight into a `# func_type:` header line where only those seven are valid."""
+    func = {
+        "entity_type": "Functionality",
+        "id": "FUNC-1",
+        "name": "Login Page - Validate Password Strength",
+        "parent_feature": "FEAT-1",
+        "func_type": "form_validation",  # not one of the seven — the real value is field_validation
+        "status": "planned",
+        "acceptance_criteria": [
+            {"id": "AC:FUNC-1-01", "description": "When the password is under 8 characters, "
+                                                  "validation returns INVALID with code PWD_TOO_SHORT"},
+        ],
+    }
+    issues = validate(func)
+    bad = [i for i in issues if i["field"] == "func_type"]
+    assert bad and bad[0]["severity"] == "error", issues
+    assert "form_validation" in bad[0]["message"], bad
+    print("✓ A func_type outside the seven canonical values is an error")
+
+
+def test_functionality_all_canonical_func_types_accepted():
+    """Each of the seven canonical values must pass — a narrowed set here would silently
+    block a legitimate Functionality."""
+    for value in (
+        "component_state", "component_action", "button_action",
+        "field_validation", "calculation", "visibility", "navigation_rule",
+    ):
+        func = {
+            "entity_type": "Functionality",
+            "id": "FUNC-1",
+            "name": "Login Page - Validate Password Strength",
+            "parent_feature": "FEAT-1",
+            "func_type": value,
+            "status": "planned",
+            "acceptance_criteria": [
+                {"id": "AC:FUNC-1-01", "description": "When the password is under 8 characters, "
+                                                      "validation returns INVALID with code PWD_TOO_SHORT"},
+            ],
+        }
+        assert not [i for i in validate(func) if i["field"] == "func_type"], value
+    print("✓ All seven canonical func_type values are accepted")
 
 
 def test_ac_missing_id_and_description_flagged():
@@ -1113,7 +1330,16 @@ if __name__ == "__main__":
         test_deprecated_user_story_missing_metadata_warns()
         test_deprecated_feature_via_markers_warns()
         test_deprecated_feature_with_empty_marker_still_warns()
-        test_deprecated_feature_via_deprecated_code_commit_marker_warns()
+        test_feature_authoring_deprecated_at_is_flagged()
+        test_unknown_deprecation_key_is_not_a_deprecation_marker()
+        test_feature_state_not_claimed_without_catalog()
+        test_feature_with_no_markers_and_no_catalog_is_silent()
+        test_feature_deprecation_derived_from_catalog()
+        test_feature_not_deprecated_when_a_functionality_is_live()
+        test_feature_with_no_owned_functionalities_claims_no_state()
+        test_functionality_missing_func_type_flagged()
+        test_functionality_invalid_func_type_flagged()
+        test_functionality_all_canonical_func_types_accepted()
         test_ac_missing_id_and_description_flagged()
         test_ac_unrecognized_state_errors()
         test_functionality_name_missing_separator_warns()
