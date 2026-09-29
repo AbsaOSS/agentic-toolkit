@@ -13,7 +13,7 @@ The skill produces a complete User Story:
 | **Narrative** | As-a/I-can/so-that structure with business context |
 | **ACs** | Well-formed acceptance criteria |
 | **Feature links** | Which system surfaces this User Story exercises |
-| **Status** | draft → ready → in_review → deprecated progression |
+| **Status** | planned → in_review → active → deprecated progression |
 | **Validation** | Checks narrative and AC clarity |
 
 ---
@@ -73,4 +73,4 @@ This skill has been validated with **18 test cases** covering:
 - Narrative elicitation (As-a/I-can/so-that)
 - Acceptance Criteria definition and validation
 - Feature linkage workflows
-- Status progression (draft → ready)
+- Status progression (planned → active)

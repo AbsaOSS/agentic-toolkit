@@ -148,5 +148,23 @@
     "query": "I need to update a Feature's name because the domain split — walk me through all the cascade steps",
     "should_trigger": true,
     "reason": "Feature update cascade — living-doc-update owns the workflow for renaming/updating Features"
+  },
+  {
+    "id": "t26-drop-dependency",
+    "query": "Checkout Page no longer calls the legacy fraud-check service — remove that external dependency from the living doc.",
+    "should_trigger": true,
+    "reason": "'remove external dependency' is a listed trigger phrase; dropping a dependency is covered by 'Change a Feature's dependencies'."
+  },
+  {
+    "id": "t27-promote-dependency",
+    "query": "The payment-events topic got an AsyncAPI annotation, so that dependency became a feature. Update every Feature that lists it.",
+    "should_trigger": true,
+    "reason": "'dependency became a feature' / 'promote external dependency' are listed trigger phrases; the promotion cascade lives in living-doc-update."
+  },
+  {
+    "id": "t28-not-create-unannotated",
+    "query": "Create a Feature for our inventory-updates Kafka topic — the consumer handler has no AsyncAPI annotation yet.",
+    "should_trigger": false,
+    "reason": "Creating a Feature, and deciding that an un-annotated topic has no anchor and stays an external_dependencies entry, belongs to living-doc-create-feature."
   }
 ]

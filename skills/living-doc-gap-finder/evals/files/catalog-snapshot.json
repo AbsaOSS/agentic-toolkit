@@ -2,9 +2,9 @@
   "generated_at": "2026-05-15T08:00:00Z",
   "catalog": {
     "user_stories": [
-      {"id": "US-001", "title": "Place an online order", "status": "ready", "ac_count": 3},
-      {"id": "US-002", "title": "View order history", "status": "ready", "ac_count": 2},
-      {"id": "US-007", "title": "Apply a promotional discount", "status": "ready", "ac_count": 4}
+      {"id": "US-001", "title": "Place an online order", "status": "active", "ac_count": 3},
+      {"id": "US-002", "title": "View order history", "status": "active", "ac_count": 2},
+      {"id": "US-007", "title": "Apply a promotional discount", "status": "active", "ac_count": 4}
     ],
     "features": [
       {"id": "FEAT-001", "name": "Checkout Page", "user_stories": ["US-001"]},

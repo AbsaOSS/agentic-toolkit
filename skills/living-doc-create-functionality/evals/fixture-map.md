@@ -18,7 +18,7 @@
 | 6 | paraphrase | _(none)_ | Gold member discount business rule — Functionality elicitation |
 | 7 | edge-case | _(none)_ | 12 ACs → non-atomic scope signal; recommend split |
 | 8 | output-format | _(none)_ | Canonical Functionality JSON: all required fields, test_coverage array |
-| 9 | regression | _(none)_ | Anti-pattern: noun name ('Password Validation') → verb phrase required |
+| 9 | regression | _(none)_ | Anti-pattern: noun name ('Password Validation') → '<Feature name> - <verb phrase>' required |
 | 10 | happy-path | _(none)_ | Feature inference from context ('checkout domain') |
 | 11 | regression | _(none)_ | Missing parent Feature: ORPHAN_FUNCTIONALITY anti-pattern |
 | 12 | edge-case | _(none)_ | Vague AC ('validates') — non-testable; rewrite with explicit When/Then + error code |

@@ -5,15 +5,16 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to document the atomic behavior: validate that a cart contains at least one in-stock item before checkout.",
-      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with feature_id set to the numeric Feature ID.",
+      "expected_output": "Agent forms the name '<Feature name> - <verb phrase>': 'Checkout Page - Validate cart contains at least one in-stock item' (or the confirmed Feature's name as prefix). Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with parent_feature set to the numeric Feature ID. The emitted JSON carries func_type='field_validation' — the behaviour is a rule enforced on the cart's contents, not a derived value or a control press.",
       "files": [],
       "expectations": [
-        "Name is a verb phrase (not a noun)",
+        "Name is '<Feature name> - <verb phrase>' with a plain hyphen; the behavior part is a verb phrase (not a noun)",
         "Asks about empty cart, out-of-stock, and boundary conditions",
         "Runs the completeness checklist",
         "Produces at least 3 ACs covering error codes explicitly",
         "All ACs have test_type=unit",
-        "Outputs valid canonical Functionality JSON"
+        "Outputs valid canonical Functionality JSON",
+        "Emitted JSON includes func_type, set to field_validation"
       ]
     },
     {
@@ -71,14 +72,15 @@
       "id": 6,
       "category": "paraphrase",
       "prompt": "I need to capture the business rule: a gold member gets a 20% discount on all orders over £50. How do I document this in the living doc?",
-      "expected_output": "Agent identifies this as a Functionality entity. Forms verb-phrase name: 'Apply gold member discount on qualifying orders'. Runs completeness checklist: asks about non-gold members, orders exactly £50 (boundary), orders under £50, combination with promo codes. Produces ACs: order>£50 and gold member → 20% discount applied; order<=£50 → no discount; non-gold member → no discount; combined with promo → define stacking rule. All ACs test_type=unit. Outputs canonical Functionality JSON.",
+      "expected_output": "Agent identifies this as a Functionality entity. Forms the name '<Feature name> - Apply gold member discount on qualifying orders' (e.g. 'Checkout Page - Apply gold member discount on qualifying orders'). Runs completeness checklist: asks about non-gold members, orders exactly £50 (boundary), orders under £50, combination with promo codes. Produces ACs: order>£50 and gold member → 20% discount applied; order<=£50 → no discount; non-gold member → no discount; combined with promo → define stacking rule. All ACs test_type=unit. Outputs canonical Functionality JSON. The emitted JSON carries func_type='calculation' — a discount is a value derived from the order and displayed independently of a submission.",
       "files": [],
       "expectations": [
         "Identifies as Functionality (atomic business rule), not User Story",
-        "Verb-phrase name captures the business rule precisely",
+        "Name is '<Feature name> - <verb phrase>' and the verb phrase captures the business rule precisely",
         "Boundary value at £50 is included in the completeness checklist",
         "At least 3 ACs with explicit expected outcomes",
-        "Outputs valid canonical Functionality JSON"
+        "Outputs valid canonical Functionality JSON",
+        "Emitted JSON includes func_type, set to calculation"
       ]
     },
     {
@@ -98,26 +100,27 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Document the atomic behavior: 'The system deducts the applied voucher discount from the basket total before tax is calculated.'",
-      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, feature_id, acceptance_criteria (array), test_coverage (array), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values.",
+      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, parent_feature, acceptance_criteria (array of objects, each with id AC:<Functionality id>-<nn> and description), test_coverage (array, one entry per AC id), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values. Required fields also include func_type, one of the seven canonical values (component_state, component_action, button_action, field_validation, calculation, visibility, navigation_rule) — here calculation, since the voucher deduction is a derived basket total.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
         "type field is 'Functionality'",
         "id follows FUNC-<kebab> convention",
-        "acceptance_criteria is an array of business-language strings",
+        "acceptance_criteria is an array of objects with id (AC:<Functionality id>-<nn>) and a business-language description",
         "test_coverage array covers every AC with unit or integration classification",
-        "No implementation details in JSON values"
+        "No implementation details in JSON values",
+        "func_type is present and is one of the seven canonical values (calculation here)"
       ]
     },
     {
       "id": 9,
       "category": "regression",
       "prompt": "I want to document a Functionality called 'Password Validation'. Is that a good name?",
-      "expected_output": "'Password Validation' is a noun phrase — Functionality names must be verb phrases expressing what the behavior does. Rename it to 'Validate Password Strength' or 'Validate Password Against Policy'. The noun phrase 'Password Validation' names a module or component, which would be a Feature, not a Functionality. Correct format: verb + object, describing the single atomic action the Functionality performs.",
+      "expected_output": "'Password Validation' is a noun phrase — Functionality names must be verb phrases expressing what the behavior does. Rename it to '<Feature name> - Validate Password Strength' (e.g. 'Login Page - Validate Password Strength') or '<Feature name> - Validate Password Against Policy'. The noun phrase 'Password Validation' names a module or component, which would be a Feature, not a Functionality. Correct format: verb + object, describing the single atomic action the Functionality performs.",
       "files": [],
       "expectations": [
         "Flags 'Password Validation' as a noun phrase anti-pattern",
-        "Provides a correct verb-phrase rename (e.g. 'Validate Password Strength')",
+        "Provides a correct rename in the form '<Feature name> - <verb phrase>' (e.g. 'Login Page - Validate Password Strength')",
         "Explains: Functionality names must be verb phrases",
         "Notes noun phrases describe modules/components (Features), not behaviors"
       ]
@@ -126,24 +129,25 @@
       "id": 10,
       "category": "happy-path",
       "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
-      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID.",
+      "expected_output": "Agent forms the name '<Feature name> - <verb phrase>': 'Checkout Page - Reject order when all items are out of stock' (or the confirmed Feature's name as prefix). Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with parent_feature set to the correct numeric ID. The emitted JSON carries a func_type fitting the behaviour: button_action if the rejection is observable only once the order is submitted, field_validation if the cart blocks first. The agent states which it chose and why.",
       "files": [],
       "expectations": [
         "Asks for the parent Feature ID (numeric, from catalog) instead of inventing a slug",
-        "Forms a verb-phrase name",
+        "Forms a '<Feature name> - <verb phrase>' name",
         "Runs completeness checklist: all out of stock vs. partial",
         "Notes that the parent Feature must already exist in the catalog with a numeric ID",
-        "Outputs valid Functionality JSON with feature_id populated"
+        "Outputs valid Functionality JSON with parent_feature populated",
+        "Emitted JSON includes func_type with a stated justification for the value chosen"
       ]
     },
     {
       "id": 11,
       "category": "regression",
       "prompt": "A Functionality has no parent Feature — I forgot to link it. Is that a problem?",
-      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set feature_id in the Functionality entity. Do not leave feature_id empty or null in a finalized entity.",
+      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set parent_feature in the Functionality entity. Do not leave parent_feature empty or null in a finalized entity.",
       "files": [],
       "expectations": [
-        "Flags missing feature_id as a traceability problem",
+        "Flags missing parent_feature as a traceability problem",
         "Names the gap type: ORPHAN_FUNCTIONALITY",
         "Notes it will be missed in impact analyses",
         "Directs to living-doc-create-feature to create the parent Feature first"
@@ -166,27 +170,29 @@
       "id": 14,
       "category": "regression",
       "prompt": "Create a new Functionality entity 'Validate discount code expiry'. The catalog already contains FUNC-001 through FUNC-007.",
-      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FUNC --catalog catalog.json. The script returns FUNC-008. The agent assigns id='FUNC-008'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as FUNC-XXX or FUNC-<nnn>. The final JSON has a fully populated id field before being presented to the user.",
+      "expected_output": "Before assigning an ID, the agent runs: python scripts/next_id.py --type FUNC --catalog catalog.json. The script returns FUNC-008. The agent assigns id='FUNC-008'. It does NOT invent an ID, reuse an existing one, or leave a placeholder such as FUNC-XXX or FUNC-<nnn>. The final JSON has a fully populated id field before being presented to the user. The JSON also carries func_type='field_validation' — an expiry rule enforced on the discount-code field.",
       "files": [],
       "expectations": [
         "Runs next_id.py --type FUNC before assigning the ID",
         "Assigns the ID returned by the script (e.g. FUNC-008)",
         "Does not invent, guess, or reuse an ID",
         "Does not leave a placeholder (FUNC-XXX, FUNC-<nnn>, FUNC-unknown)",
-        "Final JSON has a fully populated id field"
+        "Final JSON has a fully populated id field",
+        "Emitted JSON includes func_type, set to field_validation"
       ]
     },
     {
       "id": 15,
       "category": "regression",
       "prompt": "Create a Functionality entity but the catalog file is missing — next_id.py cannot be run. What should the agent do?",
-      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='FUNC-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type FUNC once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as FUNC-001 without catalog evidence. The placeholder makes the gap visible rather than hiding it with a guessed value.",
+      "expected_output": "Agent cannot auto-assign an ID. It outputs the entity with id='FUNC-PENDING' and explicitly states: 'Catalog not available — ID could not be assigned. Run next_id.py --type FUNC once the catalog is present and update this field before saving.' It does NOT invent a numeric ID such as FUNC-001 without catalog evidence. The placeholder makes the gap visible rather than hiding it with a guessed value. The entity still carries a real func_type ('field_validation') — an unavailable catalog blocks ID assignment only, never the behaviour category.",
       "files": [],
       "expectations": [
         "Uses FUNC-PENDING placeholder when catalog is unavailable",
         "Explicitly warns the user that the ID must be assigned before saving",
         "Does not invent a numeric ID without catalog evidence",
-        "Placeholder is visibly distinct — not a real FUNC-nnn value"
+        "Placeholder is visibly distinct — not a real FUNC-nnn value",
+        "func_type is populated even though the ID is a placeholder"
       ]
     },
     {
@@ -212,6 +218,32 @@
         "Suggests 'must', 'returns', 'rejects', or 'accepts' as replacements",
         "Flags lack of explicit outcome as non-testable",
         "Provides a rewritten AC with an explicit error code"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "happy-path",
+      "prompt": "What func_type should I use for a Functionality that shows the 'Delete' button only to the record's owner?",
+      "expected_output": "Agent answers func_type='visibility' — an element's presence gated on a runtime condition (here the viewer's role relative to the record). It distinguishes visibility from component_state (always true on load) and from component_action (a response to an interaction), and notes that the owning condition is descriptive context in the AC, not a separate field. It points at the func_type values table in living-doc-bdd-schemas rather than restating the whole table.",
+      "files": [],
+      "expectations": [
+        "Recommends visibility",
+        "Distinguishes visibility from component_state and component_action",
+        "Notes the condition is AC context, not a separate field",
+        "References the func_type values table in living-doc-bdd-schemas instead of restating it"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "regression",
+      "prompt": "Here is my Functionality entity with \"func_type\": \"form_validation\". Is it valid?",
+      "expected_output": "No. 'form_validation' is not one of the seven canonical values. The agent names the correct one — field_validation for a rule enforced on a field's value, or button_action if the behaviour is the outcome of pressing submit — and states that validate_entity.py reports an out-of-vocabulary func_type as an error (exit 1), because the value is authored verbatim into a '# func_type:' header line where only the seven are valid. It does not silently accept or auto-correct the value without saying so.",
+      "files": [],
+      "expectations": [
+        "Rejects form_validation as outside the seven canonical values",
+        "Names field_validation (or button_action) as the correct value, with the distinction",
+        "States that validate_entity.py reports this as an error, not a warning",
+        "Does not invent an eighth value or silently accept the input"
       ]
     }
   ]

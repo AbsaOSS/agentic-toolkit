@@ -33,7 +33,7 @@
     "id": 6,
     "query": "Create a functionality entity for the payment retry logic",
     "should_trigger": true,
-    "reason": "'create a functionality entity' trigger phrase"
+    "reason": "'create a functionality' trigger phrase"
   },
   {
     "id": 7,
@@ -105,7 +105,7 @@
     "id": 18,
     "query": "Help me choose test type for the loyalty points calculation — it calls no external services",
     "should_trigger": true,
-    "reason": "'choose test type' trigger phrase"
+    "reason": "'test_type' / 'unit vs integration test' trigger phrases"
   },
   {
     "id": 19,

@@ -29,13 +29,14 @@
     {
       "id": 3,
       "category": "regression",
-      "prompt": "The `LegacyPaymentGatewayService` has been deleted from the codebase. How do I handle this in the living doc?",
-      "expected_output": "Agent sets status to deprecated on the entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Links to the commit that deleted the code if possible. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
+      "prompt": "The `FUNC-018` Functionality (Legacy Payment Gateway Retry Logic) has had its backing code deleted from the codebase. How do I handle this in the living doc?",
+      "expected_output": "Agent sets status to deprecated on the Functionality entity — never deletes the entity file. Adds deprecated_at and deprecation_reason fields. Records the commit that deleted the backing code as a `## Notes` bullet on the entity (header key `notes:`), not as a typed field — there is none, and deprecated is not removed. Flags any linked Gherkin scenarios for gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
-        "Sets status: deprecated — never deletes the entity file",
+        "Sets status: deprecated on the Functionality — never deletes the entity file",
         "Adds deprecated_at and deprecation_reason fields",
-        "Links to the commit that deleted the code if possible",
+        "Records the removing commit as a `## Notes` bullet, not as a typed field",
+        "Does not invent a deprecation field for the commit reference",
         "Flags linked Gherkin scenarios for gherkin-living-doc-sync"
       ]
     },
@@ -43,12 +44,13 @@
       "id": 4,
       "category": "regression",
       "prompt": "The checkout feature is now owned by team-payments-v2 instead of team-checkout. How do I update this in the living doc?",
-      "expected_output": "Agent updates the owners array in the Feature entity JSON to team-payments-v2. Adds owner_changed_at and owner_change_reason fields. Notifies the new owner if open User Stories are linked to the Feature.",
+      "expected_output": "Agent updates the owners array in the Feature entity JSON to team-payments-v2 and adds no other field — there are no ownership-change metadata fields. Lists the Feature's non-deprecated User Stories in the change summary as the handoff list, and does not claim to have notified anyone.",
       "files": [],
       "expectations": [
         "Updates owners array in Feature entity JSON",
-        "Adds owner_changed_at and owner_change_reason fields",
-        "Notifies new owner if open User Stories exist"
+        "Adds no owner_changed_at or owner_change_reason field",
+        "Lists the Feature's non-deprecated User Stories as a handoff list",
+        "Does not claim the new owner was notified"
       ]
     },
     {
@@ -105,13 +107,13 @@
       "id": 9,
       "category": "edge-case",
       "prompt": "We decided during the sprint to descope AC:US-042-03 — the promo stacking rule is moving to a future release. How do I handle this in the living doc without losing the work?",
-      "expected_output": "Agent sets the AC status to 'descoped' — does not delete the AC. Adds descoped_at and descoped_reason fields. Adds a future_release reference if the work is planned for a later sprint. Flags any linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync.",
+      "expected_output": "There is no 'descoped' state. Agent keeps the AC's 'planned' state and drops the target version, so it reads AC:US-042-03 (planned) — does not delete the AC. Records why on the AC's '- Rationale:' bullet (e.g. 'Promo stacking rule deferred - too complex for current sprint'). Flags any linked Gherkin scenarios for @wip and @review-needed tagging via gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
-        "Sets AC status to 'descoped' — does not delete the AC",
-        "Adds descoped_at and descoped_reason fields",
-        "Adds a future_release reference if planned for a later sprint",
-        "Flags linked Gherkin scenarios for @wip or @pending tagging via gherkin-living-doc-sync"
+        "Does not set a 'descoped' status — keeps the AC 'planned' with no target version",
+        "Does not delete the AC",
+        "Records the reason on the AC's '- Rationale:' bullet, not a descoped_reason field",
+        "Flags linked Gherkin scenarios for @wip and @review-needed tagging via gherkin-living-doc-sync"
       ]
     },
     {
@@ -150,13 +152,14 @@
       "type": "happy-path",
       "description": "Developer deprecates a Feature that has been superseded by a new Feature.",
       "prompt": "The 'Legacy Payment Widget' (FEAT-003) has been replaced by the new 'Payment Page' (FEAT-002). How do I deprecate the old Feature in the living doc?",
-      "expected_output": "Set status: deprecated on FEAT-003. Add deprecated_at (today's date), deprecation_reason (e.g. 'Replaced by FEAT-002'), and superseded_by: 'FEAT-002'. Never delete the entity — deprecation preserves the audit trail. Flag any Functionalities owned by FEAT-003 for deprecation review. Flag any tests linked to those Functionalities for update or removal.",
+      "expected_output": "FEAT-003 never gets a status field — a Feature's state is derived from its Functionalities, never authored. It gets no deprecated_at either: a Feature's deprecation date is derived alongside its state. Add deprecation_reason (e.g. 'Replaced by FEAT-002') and superseded_by: 'FEAT-002' directly on FEAT-003, and nothing else. Never delete the entity — deprecation preserves the audit trail. Deprecate every Functionality owned by FEAT-003 (setting status: deprecated on each, since Functionalities do carry a status) — that, not a field on the Feature, is what makes the surface deprecated. Flag any tests linked to those Functionalities for update or removal.",
       "files": [],
       "expectations": [
-        "Sets status: deprecated — never deletes the entity",
-        "Adds deprecated_at, deprecation_reason, and superseded_by fields",
+        "Does not set a status field on the Feature — never deletes the entity",
+        "Adds deprecation_reason and superseded_by on the Feature",
+        "Does not author deprecated_at on the Feature — it is derived with the state",
         "superseded_by points to FEAT-002",
-        "Flags owned Functionalities for deprecation review",
+        "Deprecates every owned Functionality as the actual mechanism of retiring the surface",
         "Flags linked tests for update or removal"
       ],
       "category": "regression"
@@ -195,7 +198,7 @@
       "id": 15,
       "category": "regression",
       "prompt": "AC:US-042-01 is currently ACTIVE at v1.0.0. The discount threshold rule changed — the minimum order value is now £75 instead of £50. I need to update the AC.",
-      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC: US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
+      "expected_output": "Agent shows OLD and NEW AC side by side for confirmation. Updates the AC description to reflect the new threshold. Bumps the version from v1.0.0 to v1.1.0 — required for all business-rule changes to ACTIVE ACs. The AC ID stays unchanged. Any linked Gherkin scenarios annotated with '# AC:US-042-01' are flagged as potentially stale and handed to gherkin-living-doc-sync.",
       "files": [],
       "expectations": [
         "Version bumped from v1.0.0 to v1.1.0",
@@ -212,11 +215,30 @@
       "files": [],
       "expectations": [
         "Lists all 7 cascade steps",
-        "Step 2: update feature_id in Functionality entities",
+        "Step 2: update parent_feature in Functionality entities",
         "Step 3: update feature_registry.json",
         "Step 5: update PageObject file headers",
         "Step 6: update Gherkin # Feature: headers",
         "Step 7: run gap-finder to confirm clean state"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "happy-path",
+      "prompt": "The payment-events Kafka topic finally has an AsyncAPI annotation on its producer handler. Checkout Page (FEAT-001) lists payment-events as an external dependency — promote it to a proper Feature and update the living doc. Catalog: evals/files/dependency-promotion-catalog.json",
+      "expected_output": "Agent confirms the trigger (the producer handler now carries an AsyncAPI annotation, so payment-events has a canonical anchor) and routes creation of the new API Feature to living-doc-create-feature rather than restating its anchor rules, returning with the new FEAT id (FEAT-004). It scans external_dependencies on every Feature in the catalog, not only FEAT-001, and finds both FEAT-001 Checkout Page ('payment-events') and FEAT-002 Orders API ('Payment-Events', matched case-insensitively), listing them before editing; FEAT-003 is left untouched. For each, it removes the external_dependencies entry and adds FEAT-004 to feature_dependencies on the Functionality that makes the call (FUNC-001 on Checkout Page, FUNC-003 on Orders API) — never on a Feature, whose feature_dependencies is derived. FUNC-001 and FUNC-003 keep their parent_feature; nothing is re-parented to FEAT-004. Both are flagged for test review because their tests stubbed payment-events and can now test against the documented contract. It reports that FEAT-004 owns no Functionalities yet, so living-doc-gap-finder flags it ORPHAN_FEATURE and its derived state is planned, without inventing placeholder Functionalities. It runs validate_entity.py with --catalog on the new Feature and every edited entity, and emits a change summary naming the new Feature id, every entity the entry moved on, and the Functionalities flagged for test review.",
+      "files": [
+        "evals/files/dependency-promotion-catalog.json"
+      ],
+      "expectations": [
+        "Routes creation of the new Feature to living-doc-create-feature instead of restating its anchor rules",
+        "Finds both FEAT-001 and FEAT-002 as Features naming payment-events, not only the FEAT-001 the prompt mentions",
+        "Removes payment-events from external_dependencies on both Features",
+        "Adds the new FEAT id to feature_dependencies on the calling Functionalities (FUNC-001, FUNC-003), never on a Feature",
+        "Does not re-parent FUNC-001 or FUNC-003 to the new Feature",
+        "Flags the Functionalities that stubbed payment-events for test review",
+        "Names ORPHAN_FEATURE and/or the derived planned state for the new Feature without inventing placeholder Functionalities",
+        "Emits a change summary with the new Feature id, every entity the entry moved on, and the Functionalities flagged for test review"
       ]
     }
   ]

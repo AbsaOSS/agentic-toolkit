@@ -13,7 +13,7 @@
         "Asks which Feature(s) this story touches",
         "Elicits at least one error-path AC (e.g. unregistered email, expired token)",
         "Warns if only happy-path AC is provided",
-        "Outputs valid canonical UserStory JSON"
+        "Outputs valid canonical User Story JSON"
       ]
     },
     {
@@ -82,7 +82,7 @@
         "Forms As-a/I-can/so-that narrative",
         "Elicits at least 3 ACs covering happy path and error paths",
         "Asks actor, capability, and business value as distinct questions",
-        "Outputs valid canonical UserStory JSON"
+        "Outputs valid canonical User Story JSON"
       ]
     },
     {
@@ -102,11 +102,11 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Create a user story: 'A customer service agent needs to view the full order history for any customer to resolve disputes.'",
-      "expected_output": "The output contains a fenced ```json code block with a UserStory entity. Required fields: type ('UserStory'), id (US-<nnn>), title, as_a, i_want, so_that, acceptance_criteria (array of objects with id and description). The as_a/i_want/so_that fields follow the standard user story template. Each AC has a unique id in the format AC:US-<nnn>-<nn>. No Gherkin syntax appears inside the JSON values.",
+      "expected_output": "The output contains a fenced ```json code block with a User Story entity. Required fields: type ('User Story'), id (US-<nnn>), name, as_a, i_want, so_that, acceptance_criteria (array of objects with id and description). The as_a/i_want/so_that fields follow the standard user story template. Each AC has a unique id in the format AC:US-<nnn>-<nn>. No Gherkin syntax appears inside the JSON values.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
-        "type field is 'UserStory'",
+        "type field is 'User Story'",
         "id follows US-<nnn> convention",
         "as_a/i_want/so_that follow standard template",
         "Each AC has id in AC:US-<nnn>-<nn> format",

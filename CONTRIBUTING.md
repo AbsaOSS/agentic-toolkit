@@ -46,6 +46,22 @@ skills/
 - **`skills/shared/references/`** — shared docs used by multiple skills (e.g., schemas, glossaries, common API specs)
 
 If a reference file is used by 2+ skills, place it in `skills/shared/references/` instead of duplicating it. See [living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) and [living-doc-glossary.md](skills/shared/references/living-doc-glossary.md) for examples.
+
+> **Generated canon copies — do not edit by hand.** Both
+> `skills/shared/references/living-doc-glossary.md` and
+> `skills/shared/references/living-doc-bdd-schemas.md` mirror canon documents in
+> [`AbsaOSS/living-doc`](https://github.com/AbsaOSS/living-doc). They are written by
+> `scripts/sync-living-doc-reference.sh`, each pins the canon commit SHA it was generated from in
+> a line-1 provenance comment, and `test-scripts.yml` re-runs the sync for every target and fails
+> on any diff. To pick up a canon change, re-run the sync against the new SHA:
+>
+> ```bash
+> scripts/sync-living-doc-reference.sh --list                 # targets and their canon paths
+> scripts/sync-living-doc-reference.sh all <living-doc-sha>   # refresh every copy
+> ```
+>
+> Toolkit-local content that has to appear inside a generated copy (for example the pointer to
+> `schemas/`) lives in the script's `local_addendum` function, not in the copy itself.
 ---
 
 ## 2. Frontmatter schema

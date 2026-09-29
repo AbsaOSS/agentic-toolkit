@@ -100,11 +100,12 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Show me the expected structure of a generated CheckoutPage PageObject in Python for a screen at /checkout linked to FEAT-003.",
-      "expected_output": "Output is a Python code block. Line 1: '# living-doc: FEAT-003 | /checkout'. The class is named CheckoutPage. Selector constants are ALL_CAPS class attributes with data-testid values. The __init__ takes a page parameter and assigns self.page. Methods are named in snake_case, each wrapping a single page action or assertion. No inline selectors in method bodies — selectors are referenced only via the class constants. Methods include at least one action method and one assertion method (assert_*).",
+      "expected_output": "Output is a Python code block. It opens with the full living-doc header as a `#`-commented block naming FEAT-003 · Checkout, followed by every required field: surface_type: UI, route: /checkout, owners, purpose, user_stories, functionalities, external_dependencies, and page-object naming the file. The header carries no `status:` field. The class is named CheckoutPage. Selector constants are ALL_CAPS class attributes with data-testid values. The __init__ takes a page parameter and assigns self.page. Methods are named in snake_case, each wrapping a single page action or assertion. No inline selectors in method bodies — selectors are referenced only via the class constants. Methods include at least one action method and one assertion method (assert_*).",
       "files": [],
       "expectations": [
         "Output is a Python code block",
-        "File-level comment: # living-doc: FEAT-003 | /checkout",
+        "Full header comment block with surface_type, route, owners, purpose, user_stories, functionalities, external_dependencies, page-object",
+        "Header carries no status field",
         "Class named CheckoutPage",
         "Selector constants are ALL_CAPS class attributes",
         "Methods reference class-level selector constants — no inline selectors",
@@ -115,11 +116,11 @@
       "id": 9,
       "category": "happy-path",
       "prompt": "During a Create mode scan of the checkout page, the agent discovers a 'Confirm Order' button and an 'Apply Promo Code' form input. What Functionality stubs should be generated?",
-      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page – Confirm Order' (for the button) and (2) 'Checkout Page – Apply Promo Code' (for the form input). Both are output to the profile Functionality feature directory (feature_dirs.functionality, default features/liv_doc_func/) as func-<nnn>-<kebab>.feature with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
+      "expected_output": "Agent generates two Functionality stubs: (1) 'Checkout Page - Confirm Order' (for the button) and (2) 'Checkout Page - Apply Promo Code' (for the form input). Both are output to the profile Functionality feature directory (feature_dirs.functionality, default features/liv_doc_func/) as func-<nnn>-<kebab>.feature with @FUNC_ID:FUNC-UNKNOWN placeholder tags for team review. The agent notes these are candidates requiring formal definition via living-doc-create-functionality before FUNC-<nnn> IDs are assigned.",
       "files": [],
       "expectations": [
         "Generates one Functionality stub per distinct behavior (button → action, form input → action)",
-        "Stub names follow: '<Feature name> – <behavior phrase>'",
+        "Stub names follow: '<Feature name> - <behavior phrase>'",
         "Stubs output to the profile feature_dirs.functionality directory (default features/liv_doc_func/)",
         "Stubs use @FUNC_ID:FUNC-UNKNOWN placeholder tags",
         "Notes formal definition via living-doc-create-functionality is the next step"
@@ -129,11 +130,12 @@
       "id": 10,
       "category": "output-format",
       "prompt": "Show me the expected structure of a generated CheckoutPage PageObject in TypeScript for a screen at /checkout linked to FEAT-003.",
-      "expected_output": "Output is a TypeScript code block. First line: '// living-doc: FEAT-003 | /checkout'. Import line: 'import { type Page, type Locator, expect } from \"@playwright/test\"'. Class is declared 'export class CheckoutPage'. Locator fields are declared as 'readonly'. The constructor takes 'readonly page: Page' and initialises each Locator via page.getByTestId(). Methods are async, named in camelCase, each wrapping a single interaction or assertion. No inline selectors in method bodies — only the class Locator fields are used.",
+      "expected_output": "Output is a TypeScript code block. It opens with the full living-doc header as a block comment naming FEAT-003 · Checkout, followed by every required field: surface_type: UI, route: /checkout, owners, purpose, user_stories, functionalities, external_dependencies, and page-object naming the file. The header carries no `status:` field. Import line: 'import { type Page, type Locator, expect } from \"@playwright/test\"'. Class is declared 'export class CheckoutPage'. Locator fields are declared as 'readonly'. The constructor takes 'readonly page: Page' and initialises each Locator via page.getByTestId(). Methods are async, named in camelCase, each wrapping a single interaction or assertion. No inline selectors in method bodies — only the class Locator fields are used.",
       "files": [],
       "expectations": [
         "Output is a TypeScript code block",
-        "File-level comment: // living-doc: FEAT-003 | /checkout",
+        "Full header block comment with surface_type, route, owners, purpose, user_stories, functionalities, external_dependencies, page-object",
+        "Header carries no status field",
         "Import from @playwright/test (Page, Locator, expect)",
         "Class exported: export class CheckoutPage",
         "Locator fields declared as readonly",
@@ -188,12 +190,12 @@
       "id": 14,
       "category": "output-format",
       "prompt": "Show the structure of the manifest.json a Create-mode scan should write for the /login route.",
-      "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the literal key 'data-cy' (not snake_case 'data_cy'), and each coverage_gap uses camelCase 'suggestedDataCy' (not 'suggested_data_cy'). 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
+      "expected_output": "Output is a JSON object whose top level has 'generated', 'scan_version', and 'routes'. 'routes' is a JSON ARRAY of route objects, not an object keyed by path. Each element in 'elements[]' uses the normalized key 'test_id' (not attribute-specific 'data-cy' or 'data_cy'), and each coverage_gap uses 'suggested_test_id' (not 'suggestedDataCy' or 'suggested_data_cy'). The root-level 'test_id_attribute' tells downstream generators what HTML attribute (e.g. data-cy) these normalized keys map to. 'navigation_context' is a prose STRING, not an object. The closeout step validates the file with validate_artifacts.py manifest --canonicalize, which sorts routes by url and rewrites with sorted keys for stable diffs.",
       "files": [],
       "expectations": [
-        "routes is a JSON array of route objects (manifest_shape: array)",
-        "Element keys use literal 'data-cy', not 'data_cy'",
-        "Gap keys use camelCase 'suggestedDataCy', not 'suggested_data_cy'",
+        "routes is a JSON array of route objects, inside an object-shaped manifest root (manifest_shape: object)",
+        "Element keys use normalized 'test_id', not 'data-cy' or 'data_cy'",
+        "Gap keys use normalized 'suggested_test_id', not 'suggestedDataCy' or 'suggested_data_cy'",
         "navigation_context is a string, not an object",
         "References validating/canonicalizing via validate_artifacts.py before closeout"
       ]
@@ -202,12 +204,12 @@
       "id": 15,
       "category": "output-format",
       "prompt": "Before you report the scan complete, what validation do you run on the artifacts?",
-      "expected_output": "Runs the mandatory closeout validation gate: 'python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize' and 'validate_artifacts.py seed <bdd_artifacts>/seed.yaml' (and 'validate_artifacts.py profile' if a profile is present). The manifest check rejects snake_case keys and an object navigation_context; --canonicalize sorts routes/elements and rewrites with sorted keys. The seed check rejects inline credential literals. The session is not reported complete until every validator exits 0.",
+      "expected_output": "Runs the mandatory closeout validation gate: 'python skills/living-doc-pageobject-scan/scripts/validate_artifacts.py manifest <bdd_artifacts>/manifest.json --canonicalize' and 'validate_artifacts.py seed <bdd_artifacts>/seed.yaml' (and 'validate_artifacts.py profile' if a profile is present). The manifest check rejects non-canonical element/gap keys (e.g. 'data-cy', 'data_cy', 'suggestedDataCy' instead of the normalized 'test_id' / 'suggested_test_id') and an object navigation_context; --canonicalize sorts routes/elements and rewrites with sorted keys. The seed check rejects inline credential literals. The session is not reported complete until every validator exits 0.",
       "files": [],
       "expectations": [
         "Runs validate_artifacts.py on the manifest with --canonicalize",
         "Runs validate_artifacts.py on the seed",
-        "Notes the manifest check rejects snake_case keys and object navigation_context",
+        "Notes the manifest check rejects non-canonical keys (e.g. data-cy/data_cy/suggestedDataCy) and an object navigation_context",
         "Notes the seed check rejects inline credential literals",
         "Does not report done until validators exit 0"
       ]

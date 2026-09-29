@@ -59,7 +59,7 @@ One Python utility available in `skills/living-doc-scenario-creator/scripts/`:
 
 ## Testing Evals
 
-This skill has been validated with **21 test cases** covering:
+This skill has been validated with **22 test cases** covering:
 - Entity mode: US and Functionality inputs
 - Standalone mode: free-form scenarios
 - Scenario Outline generation for variations

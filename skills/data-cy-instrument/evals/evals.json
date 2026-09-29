@@ -54,11 +54,12 @@
       "id": 5,
       "category": "happy-path",
       "prompt": "FUNC-001 has status 'planned' because the data-cy attributes are missing. After Instrument and Sync are complete, what do I do to promote it?",
-      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update and change FUNC-001 status from 'planned' to 'active'. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
+      "expected_output": "After data-cy attributes are added and PageObjects updated: load living-doc-update, which changes FUNC-001 status from 'planned' to 'active' only if every AC on the Functionality already has a passing test_coverage entry — clearing the data-cy gap is necessary but not sufficient on its own. This promotion is the downstream step — data-cy-instrument invokes living-doc-update for the status change.",
       "files": [],
       "expectations": [
         "Routes to living-doc-update for status promotion",
-        "Status changes from planned to active",
+        "Status changes from planned to active only once every AC has a passing test_coverage entry",
+        "Does not treat Instrument+Sync completion alone as sufficient for promotion",
         "Only after Instrument and Sync are complete"
       ]
     },
@@ -137,6 +138,18 @@
         "Uses the profile value (data-testid) in template attributes, not the default data-cy",
         "getByTestId() resolves to the profile test_id_attribute",
         "Does not hardcode data-cy when a profile is present"
+      ]
+    },
+    {
+      "id": 12,
+      "category": "regression",
+      "prompt": "A PageObject header has no remaining un-instrumented elements — every locator now uses getByTestId(). The header still carries a `stub-reason:` line. What do I update, and do I write a status field?",
+      "expected_output": "Remove the `stub-reason:` line from the PageObject header now that no un-instrumented elements remain — its absence is what marks the surface as instrumented. Do not add, write, or promote any `status:` field on the PageObject header: a PageObject header carries no `status:` field at all, since Feature/PageObject state is derived from Functionalities, never authored.",
+      "files": [],
+      "expectations": [
+        "Removes the stub-reason: line once no un-instrumented elements remain",
+        "Does not write or promote a status field on the PageObject header",
+        "States a PageObject header carries no status field"
       ]
     }
   ]

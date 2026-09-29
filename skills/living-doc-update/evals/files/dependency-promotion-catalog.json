@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-09-29T08:00:00Z",
+  "catalog": {
+    "user_stories": [
+      {
+        "id": "US-001",
+        "name": "Place an online order",
+        "status": "active",
+        "features": ["FEAT-001", "FEAT-002"]
+      },
+      {
+        "id": "US-002",
+        "name": "View account overview",
+        "status": "active",
+        "features": ["FEAT-003"]
+      }
+    ],
+    "features": [
+      {
+        "id": "FEAT-001",
+        "name": "Checkout Page",
+        "surface_type": "UI",
+        "purpose": "Lets a customer review the basket, pay, and place the order.",
+        "user_stories": ["US-001"],
+        "functionalities": ["FUNC-001", "FUNC-002"],
+        "owners": ["team-checkout"],
+        "external_dependencies": ["payment-events", "order-service"]
+      },
+      {
+        "id": "FEAT-002",
+        "name": "Orders API",
+        "surface_type": "API",
+        "purpose": "Creates orders and keeps their payment status in step with the payment provider.",
+        "user_stories": ["US-001"],
+        "functionalities": ["FUNC-003"],
+        "owners": ["team-orders"],
+        "external_dependencies": ["order-db", "Payment-Events"]
+      },
+      {
+        "id": "FEAT-003",
+        "name": "Account Dashboard",
+        "surface_type": "UI",
+        "purpose": "Shows a customer their balances, recent orders, and saved payment methods.",
+        "user_stories": ["US-002"],
+        "functionalities": ["FUNC-004"],
+        "owners": ["team-accounts"],
+        "external_dependencies": ["accounts-api"]
+      }
+    ],
+    "functionalities": [
+      {
+        "id": "FUNC-001",
+        "name": "Checkout Page - Publish payment requested event",
+        "parent_feature": "FEAT-001",
+        "func_type": "button_action",
+        "status": "active",
+        "acceptance_criteria": [
+          {"id": "AC:FUNC-001-01", "description": "When the customer confirms payment, a payment-requested event is published with the order id and amount", "state": "active"},
+          {"id": "AC:FUNC-001-02", "description": "When publishing fails, the order is not placed and the error PAYMENT_UNAVAILABLE is shown", "state": "active"}
+        ],
+        "notes": ["Integration tests stub payment-events with an in-memory fake publisher."]
+      },
+      {
+        "id": "FUNC-002",
+        "name": "Checkout Page - Show order total",
+        "parent_feature": "FEAT-001",
+        "func_type": "calculation",
+        "status": "active",
+        "acceptance_criteria": [
+          {"id": "AC:FUNC-002-01", "description": "The order total equals the sum of line totals plus delivery", "state": "active"}
+        ]
+      },
+      {
+        "id": "FUNC-003",
+        "name": "Orders API - Reconcile payment status",
+        "parent_feature": "FEAT-002",
+        "func_type": "button_action",
+        "status": "active",
+        "acceptance_criteria": [
+          {"id": "AC:FUNC-003-01", "description": "When a payment-settled event arrives, the order moves to PAID", "state": "active"},
+          {"id": "AC:FUNC-003-02", "description": "When a payment-failed event arrives, the order moves to PAYMENT_FAILED", "state": "active"}
+        ],
+        "notes": ["Tests feed hand-built payment-events messages; no contract backs their shape."]
+      },
+      {
+        "id": "FUNC-004",
+        "name": "Account Dashboard - Show recent orders",
+        "parent_feature": "FEAT-003",
+        "func_type": "component_state",
+        "status": "active",
+        "acceptance_criteria": [
+          {"id": "AC:FUNC-004-01", "description": "The dashboard lists the five most recent orders, newest first", "state": "active"}
+        ]
+      }
+    ]
+  },
+  "feature_registry": [
+    {"feature_id": "FEAT-001", "paths": ["web/src/pages/checkout/**"]},
+    {"feature_id": "FEAT-002", "paths": ["services/orders/src/api/**"]},
+    {"feature_id": "FEAT-003", "paths": ["web/src/pages/account/**"]}
+  ]
+}
