@@ -1045,6 +1045,40 @@ def test_ac_unrecognized_state_errors():
     print("✓ An AC with an unrecognised state is flagged as an error")
 
 
+def test_ac_bare_string_errors_instead_of_crashing():
+    """A bare-string AC has no ID, so nothing can link a test or scenario to it. It must be
+    reported as an error on that AC — for a Functionality and a User Story alike — not raise
+    AttributeError on the first `.get`."""
+    func = {
+        "entity_type": "Functionality",
+        "id": "FUNC-1",
+        "name": "Checkout Page - Validate discount code expiry",
+        "parent_feature": "FEAT-1",
+        "func_type": "field_validation",
+        "status": "planned",
+        "acceptance_criteria": [
+            "When the discount code is expired, validation returns INVALID with code DISCOUNT_EXPIRED.",
+            {"id": "AC:FUNC-1-02", "description": "When the code is valid, it is accepted"},
+        ],
+    }
+    us = {
+        "entity_type": "User Story",
+        "id": "US-1",
+        "name": "Place an order",
+        "status": "planned",
+        "features": ["FEAT-1"],
+        "acceptance_criteria": ["Order fails when payment is invalid"],
+    }
+    for entity, parent in ((func, "FUNC-1"), (us, "US-1")):
+        issues = validate(entity)
+        bare = [i for i in issues if i["field"] == "acceptance_criteria[0]"]
+        assert len(bare) == 1 and bare[0]["severity"] == "error", issues
+        assert f"AC:{parent}-01" in bare[0]["message"], bare
+    # The well-formed AC beside it is still validated normally, with no issue of its own.
+    assert not [i for i in validate(func) if i["field"].startswith("acceptance_criteria[1]")]
+    print("✓ A bare-string AC is an error with an example of the object form, not a crash")
+
+
 def test_functionality_name_missing_separator_warns():
     """A Functionality name without the canonical ' - ' separator must warn — that
     pattern is how a Functionality stays traceable to its parent Feature by name."""
@@ -1468,6 +1502,7 @@ if __name__ == "__main__":
         test_functionality_all_canonical_func_types_accepted()
         test_ac_missing_id_and_description_flagged()
         test_ac_unrecognized_state_errors()
+        test_ac_bare_string_errors_instead_of_crashing()
         test_functionality_name_missing_separator_warns()
         test_functionality_parent_feature_bad_format_flagged()
         test_user_story_no_features_warns()

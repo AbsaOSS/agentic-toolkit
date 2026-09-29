@@ -107,7 +107,7 @@ AC tag prefix matches the parent entity: `@AC:US-<n>-<nn>` for User Story, `@AC:
 | Type | Location (default) | Feature block |
 |---|---|---|
 | User Story (E2E) | `<feature_dirs.user_story>/us-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_us/`) | `Feature: <US title>` with As-a/I-can/so-that + `@US_ID:US-<n>` |
-| Functionality | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) | `Feature: <Feature name> - <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` |
+| Functionality | `<feature_dirs.functionality>/func-<nnn>-<kebab>.feature` (e.g. `features/liv_doc_func/`) | `Feature: <Feature name> - <Functionality name>` + `@FUNC_ID:FUNC-<nnn>` — the Functionality entity's `name` already has this canonical form (e.g. `Login Page - Validate Password Strength`), so use it as-is; never prefix the Feature name a second time |
 
 **Feature-level and scenario tags** (when `scenario_conventions` enables them in the profile):
 - Feature-level: the entity tag (`@US_ID:US-<n>` / `@FUNC_ID:FUNC-<nnn>`) plus an optional domain tag, e.g. `@domain_create`.

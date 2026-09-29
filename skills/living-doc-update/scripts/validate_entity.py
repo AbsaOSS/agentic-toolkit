@@ -451,6 +451,7 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
         else:
             has_error_path = any(
                 ERROR_KEYWORDS_RE.search(ac.get("description", "")) for ac in acs
+                if isinstance(ac, dict)
             )
             if not has_error_path:
                 warning(
@@ -515,6 +516,16 @@ def _validate_ac(
 ) -> None:
     """Validate a single Acceptance Criterion entry."""
     field_prefix = f"acceptance_criteria[{index}]"
+    # An AC is an object carrying its own `id` — the same ID it has in the feature-file header
+    # or issue body. A bare string has no ID, so no test or scenario can link to it: report
+    # that as an error rather than failing on the first attribute access.
+    if not isinstance(ac, dict):
+        error_fn(
+            field_prefix,
+            f"AC must be an object with 'id' and 'description', got {type(ac).__name__}: "
+            f"{ac!r} — e.g. {{\"id\": \"AC:{parent_id}-{index + 1:02d}\", \"description\": \"…\"}}",
+        )
+        return
     ac_id: str = ac.get("id", "")
     if not ac_id:
         error_fn(f"{field_prefix}.id", "AC is missing an 'id' field")

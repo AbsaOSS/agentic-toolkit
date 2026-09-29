@@ -28,16 +28,20 @@ Before asking, **scan the conversation context** for a behavior phrase and paren
 
 Ask only for what is missing: *What is the atomic behavior to document?*
 
-Express the Functionality `name` as a **verb phrase only** — one atomic responsibility, with no Feature prefix. Keep the owning Feature separate in `parent_feature`.
+Express the behavior as a **verb phrase** — one atomic responsibility. The Functionality `name` is that phrase prefixed with the parent Feature's name: `<Feature name> - <verb phrase>`, joined by a plain hyphen (never an en or em dash). This is the canon form — see [living-doc-glossary — Functionality](../shared/references/living-doc-glossary.md#functionality-func) — and it is what appears in the feature-file title line and the issue title. The Feature ID itself still goes only in `parent_feature`.
 
 ```
-✅  "Validate cart contains at least one in-stock item"
-✅  "Apply gold member discount on qualifying orders"
-✅  "Deduct voucher discount before tax is calculated"
+✅  "Checkout Page - Validate cart contains at least one in-stock item"
+✅  "Checkout Page - Apply gold member discount on qualifying orders"
+✅  "Checkout Page - Deduct voucher discount before tax is calculated"
 
-❌  "Handle checkout"              (too broad — split into multiple Functionalities)
-❌  "The payment page"             (that is a Feature, not a Functionality)
+❌  "Validate cart contains at least one in-stock item"   (no Feature name prefix)
+❌  "Checkout Page — Validate cart contents"              (em dash — use a plain hyphen)
+❌  "Checkout Page - Handle checkout"                     (too broad — split into multiple Functionalities)
+❌  "The payment page"                                    (that is a Feature, not a Functionality)
 ```
+
+Until the parent Feature is known (Step 2), work with the verb phrase alone; add the prefix once the Feature's name is confirmed from the catalog.
 
 ## Step 2 — Identify the parent Feature
 
@@ -154,21 +158,22 @@ Use this canonical shape:
 ```json
 {
   "type": "Functionality",
-  "id": "FUNC-<kebab-name>",
-  "name": "<verb phrase>",
+  "id": "FUNC-<nnn>",
+  "name": "<Feature name> - <verb phrase>",
   "description": "<one sentence in business language>",
   "parent_feature": "FEAT-<nnn>",
   "func_type": "<component_state | component_action | button_action | field_validation | calculation | visibility | navigation_rule>",
   "feature_dependencies": ["FEAT-<nnn>"],
   "user_stories": ["US-<id>"],
   "acceptance_criteria": [
-    "When <condition>, <observable outcome>",
-    "When <condition>, validation returns INVALID with code <ERROR_CODE>",
-    "When <condition>, <observable outcome>"
+    {"id": "AC:FUNC-<nnn>-01", "description": "When <condition>, <observable outcome>"},
+    {"id": "AC:FUNC-<nnn>-02", "description": "When <condition>, validation returns INVALID with code <ERROR_CODE>"},
+    {"id": "AC:FUNC-<nnn>-03", "description": "When <condition>, <observable outcome>"}
   ],
   "test_coverage": [
-    {"ac": "AC:FUNC-001-01", "test_type": "unit", "justification": "Pure validation rule"},
-    {"ac": "AC:FUNC-001-02", "test_type": "unit", "justification": "Pure validation rule"}
+    {"ac": "AC:FUNC-<nnn>-01", "test_type": "unit", "justification": "Pure validation rule"},
+    {"ac": "AC:FUNC-<nnn>-02", "test_type": "unit", "justification": "Pure validation rule"},
+    {"ac": "AC:FUNC-<nnn>-03", "test_type": "unit", "justification": "Pure validation rule"}
   ],
   "status": "planned"
 }
@@ -179,7 +184,13 @@ Rules:
 - If the prompt states an existing catalog range (for example `FUNC-001` through `FUNC-007`), reflect the allocator call in the answer as `Ran: python scripts/next_id.py --type FUNC --catalog catalog.json -> FUNC-008` and use that returned numeric ID in the JSON.
 - If the prompt explicitly says the catalog is missing / `next_id.py` cannot run for a real save operation, use the stable placeholder `FUNC-PENDING` until an allocator can assign the final ID.
 - Otherwise, for starter drafts and normal create/document requests where no catalog state is given, use the readable draft form `FUNC-<kebab-name>`.
-- `name` stays a verb phrase only.
+- `name` is `<Feature name> - <verb phrase>`: the parent Feature's name, a plain hyphen, then the atomic verb phrase.
+- Each acceptance criterion is an object with `id` and `description`. The `id` is
+  `AC:<Functionality id>-<nn>`, numbered from `01` in order — the same ID the AC carries in the
+  feature-file header or issue body (see [living-doc-glossary — Acceptance Criterion](../shared/references/living-doc-glossary.md#acceptance-criterion-ac)).
+  Never emit an AC as a bare string: it has no ID, so nothing can link a test or a scenario to it.
+  When a placeholder ID (`FUNC-<kebab-name>`, `FUNC-PENDING`) is replaced, renumber the AC IDs and
+  the `test_coverage` references with it.
 - `description` and `acceptance_criteria` must stay in plain business language with **no implementation details**.
 - Every acceptance criterion must state an exact outcome; error cases must include the explicit error code.
 - `func_type` is **required** and must be one of the seven allowed values — pick it from what causes
@@ -189,7 +200,7 @@ Rules:
 - `feature_dependencies` lists the documented Features this behaviour calls, per
   [Features this behaviour calls](#features-this-behaviour-calls) — `[]` when it calls none. Never
   put a free-form system name in it.
-- `test_coverage` must cover every AC and record `unit` or `integration` consistently with Step 3.
+- `test_coverage` must cover every AC — one entry per AC `id`, referenced by that exact ID — and record `unit` or `integration` consistently with Step 3.
 
 > **`test_coverage` is toolkit-local.** It is a test-planning structure used by this toolkit's
 > skills to reason about how each AC will be verified; it is **never authored into documentation** —
@@ -202,15 +213,15 @@ Starter example for a normal draft:
 {
   "type": "Functionality",
   "id": "FUNC-001",
-  "name": "Apply gold member discount on qualifying orders",
+  "name": "Checkout Page - Apply gold member discount on qualifying orders",
   "description": "Applies the gold-member discount when the order satisfies the minimum qualifying threshold.",
-  "parent_feature": "FEAT-002",
+  "parent_feature": "FEAT-001",
   "func_type": "calculation",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
-    "When the customer is a gold member and the order total is greater than £50, the discount applied is 20% of the subtotal.",
-    "When the order total is exactly £50, no gold-member discount is applied.",
-    "When the customer is not a gold member, no gold-member discount is applied."
+    {"id": "AC:FUNC-001-01", "description": "When the customer is a gold member and the order total is greater than £50, the discount applied is 20% of the subtotal."},
+    {"id": "AC:FUNC-001-02", "description": "When the order total is exactly £50, no gold-member discount is applied."},
+    {"id": "AC:FUNC-001-03", "description": "When the customer is not a gold member, no gold-member discount is applied."}
   ],
   "test_coverage": [
     {"ac": "AC:FUNC-001-01", "test_type": "unit", "justification": "Pure pricing rule"},
@@ -226,16 +237,16 @@ Fallback example when the prompt explicitly says the catalog is missing:
 {
   "type": "Functionality",
   "id": "FUNC-PENDING",
-  "name": "Validate discount code expiry",
+  "name": "Checkout Page - Validate discount code expiry",
   "description": "Rejects expired discount codes before they are applied to the order.",
   "parent_feature": "FEAT-001",
   "func_type": "field_validation",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
-    "When the discount code is expired, validation returns INVALID with code DISCOUNT_EXPIRED."
+    {"id": "AC:FUNC-PENDING-01", "description": "When the discount code is expired, validation returns INVALID with code DISCOUNT_EXPIRED."}
   ],
   "test_coverage": [
-    {"ac": "AC:FUNC-002-01", "test_type": "unit", "justification": "Pure date comparison rule"}
+    {"ac": "AC:FUNC-PENDING-01", "test_type": "unit", "justification": "Pure date comparison rule"}
   ],
   "status": "planned"
 }
@@ -259,17 +270,17 @@ Gold-member discount starter draft example:
 {
   "type": "Functionality",
   "id": "FUNC-003",
-  "name": "Apply gold member discount on qualifying orders",
+  "name": "Checkout Page - Apply gold member discount on qualifying orders",
   "description": "Applies the gold-member discount when an order meets the qualifying threshold.",
   "parent_feature": "FEAT-001",
   "func_type": "calculation",
   "user_stories": ["US-001"],
   "acceptance_criteria": [
-    "When the customer is a gold member and the order total is greater than £50, a 20% discount is applied to the order subtotal.",
-    "When the customer is a gold member and the order total is exactly £50, the threshold outcome is applied exactly as specified by the business rule.",
-    "When the customer is a gold member and the order total is below £50, no gold-member discount is applied.",
-    "When the customer is not a gold member, no gold-member discount is applied regardless of order total.",
-    "When a promo code is combined with the gold-member discount, the stacking or precedence rule is applied exactly as specified."
+    {"id": "AC:FUNC-003-01", "description": "When the customer is a gold member and the order total is greater than £50, a 20% discount is applied to the order subtotal."},
+    {"id": "AC:FUNC-003-02", "description": "When the customer is a gold member and the order total is exactly £50, the threshold outcome is applied exactly as specified by the business rule."},
+    {"id": "AC:FUNC-003-03", "description": "When the customer is a gold member and the order total is below £50, no gold-member discount is applied."},
+    {"id": "AC:FUNC-003-04", "description": "When the customer is not a gold member, no gold-member discount is applied regardless of order total."},
+    {"id": "AC:FUNC-003-05", "description": "When a promo code is combined with the gold-member discount, the stacking or precedence rule is applied exactly as specified."}
   ],
   "test_coverage": [
     {"ac": "AC:FUNC-003-01", "test_type": "unit", "justification": "Pure pricing rule"},
@@ -314,7 +325,8 @@ redirect to `living-doc-create-user-story`.
 
 | Anti-pattern | Warning |
 |---|---|
-| Functionality name is a noun (e.g. "Password Validation") | Names must be verb phrases expressing the atomic behavior — e.g. "Validate Password Strength". |
+| Functionality name is a noun (e.g. "Password Validation") | The behavior part of the name must be a verb phrase expressing the atomic behavior — e.g. "Login Page - Validate Password Strength". |
+| Functionality name has no Feature prefix (e.g. "Validate Password Strength") | Canon names a Functionality `<Feature name> - <verb phrase>` — prefix the parent Feature's name with a plain hyphen: "Login Page - Validate Password Strength". `validate_entity.py` warns on a name without the separator. |
 | Functionality name is broad (e.g. "Handle checkout") | That is not atomic. Split it into smaller behaviors such as validation, pricing, payment authorization, or order submission. |
 | Functionality AC describes a full user journey (e.g. "User logs in and sees their dashboard") | That is a User Story AC — redirect to **living-doc-create-user-story**. Functionality ACs describe a single behavior's input to output or side effect. |
 | Functionality has only happy-path ACs | Edge cases (null input, boundary values, partial validity, error codes) are missing. Run through the completeness checklist in Step 3 before confirming. |
