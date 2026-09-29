@@ -122,6 +122,7 @@ Load **one** skill per session. Do not pre-load skills for modes not yet trigger
 | Create Functionality (atomic behavior) | `living-doc-create-functionality` |
 | Update / deprecate entity or AC | `living-doc-update` |
 | Promote entity to ACTIVE | `living-doc-update` |
+| Change a Feature's dependencies — add, drop, or promote an external dependency to a Feature | `living-doc-update` (it hands the new Feature's creation to `living-doc-create-feature`) |
 | PR impact analysis / trace affected entities | `living-doc-impact-analysis` |
 | Catalog gaps / AUDIT mode / PLAN mode | `living-doc-gap-finder` |
 
@@ -178,7 +179,7 @@ When a User Story or Feature is deprecated, three skills fire in sequence. Compl
 
 | Step | Skill | Action |
 |---|---|---|
-| 1 | `living-doc-update` | For a User Story, set `status: deprecated`. A Feature has no `status` field — its state is derived from its Functionalities; deprecate the Feature by deprecating every Functionality it owns instead. Either way, add `deprecated_at`, `deprecation_reason`, and optionally `superseded_by` |
+| 1 | `living-doc-update` | For a User Story, set `status: deprecated`. A Feature has no `status` field — its state is derived from its Functionalities; deprecate the Feature by deprecating every Functionality it owns instead. A User Story or Functionality gets `deprecated_at`, `deprecation_reason`, and optionally `superseded_by`; the Feature itself gets only `deprecation_reason` and optionally `superseded_by` — its `deprecated_at` is derived with its state, never authored |
 | 2 | `gherkin-living-doc-sync` | Find all scenarios tagged `@AC:<id>` for the deprecated entity's ACs; add `@deprecated` and `@review-needed` |
 | 3 | `bdd-maintain` (REMOVE) | Confirm file deletion list with user; remove confirmed `.feature` files, PageObjects, and step definitions; update `manifest.json` |
 
@@ -288,7 +289,7 @@ Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the singl
 
 **Surface types:** `UI` → PageObject (locators via `getByTestId()`, resolving to the profile `test_id_attribute`, default `data-cy`). `API` → contract test layer only.
 
-**ACTIVE ACs** drive scenario generation. DEPRECATED ACs require `deprecated_at`, `deprecation_reason`, optionally `superseded_by`.
+**ACTIVE ACs** drive scenario generation. A DEPRECATED AC carries the removal note above and no other deprecation fields — `deprecated_at`, `deprecation_reason`, and `superseded_by` belong to the owning User Story or Functionality when the entity itself is deprecated.
 
 **Catalog layer healing boundary:** catalog changes (AC states, traceability links, entity deprecation) and automation changes (PageObjects, step definitions, Gherkin files) are separate steps — complete catalog changes before moving to automation updates in the same session.
 
@@ -303,7 +304,7 @@ Aspect variant: `@AC:US-1-01/aspect:username-input`. The `@AC:` tag is the singl
 | `living-doc-create-user-story` | Create US with business-level ACs | `skills/living-doc-create-user-story/SKILL.md` | New US or narrative request |
 | `living-doc-create-feature` | Document a system surface | `skills/living-doc-create-feature/SKILL.md` | New Feature or inbound surface from EXPLORE mode |
 | `living-doc-create-functionality` | Define an atomic, testable behaviour | `skills/living-doc-create-functionality/SKILL.md` | New Functionality or atomic-behaviour AC request |
-| `living-doc-update` | Amend or deprecate entities | `skills/living-doc-update/SKILL.md` | Updating, promoting, or deprecating an entity or AC |
+| `living-doc-update` | Amend or deprecate entities | `skills/living-doc-update/SKILL.md` | Updating, promoting, or deprecating an entity or AC; changing a Feature's dependencies |
 | `living-doc-impact-analysis` | Trace which entities a code change affects | `skills/living-doc-impact-analysis/SKILL.md` | PR review or change-trace request |
 | `living-doc-gap-finder` | Find catalog gaps (top-down) and uncovered ACs (bottom-up) | `skills/living-doc-gap-finder/SKILL.md` | HEALING mode, gap audit, or scenario gap detection |
 

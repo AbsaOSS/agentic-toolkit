@@ -226,7 +226,7 @@
       "expectations": [
         "Notes that numeric IDs are stable and should not change",
         "Directs to update 'name' field only, not the 'id' field",
-        "Notes feature_registry and Functionality.feature_id must be updated",
+        "Notes feature_registry and Functionality.parent_feature must be updated",
         "Recommends gap-finder run at the end to confirm clean state"
       ]
     }

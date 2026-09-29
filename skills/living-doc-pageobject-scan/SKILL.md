@@ -164,7 +164,7 @@ Flag fragile selectors with `# FRAGILE`, recommend adding the profile `test_id_a
 
 ### Step 5 — Map PageObjects to Feature entities
 
-One PageObject ≈ one `UI` Feature. Write the full living-doc header block (see schema ref) with `feature_id`/`route`, and record `feature_id` in the manifest.
+One PageObject ≈ one `UI` Feature. Write the full living-doc header block (see schema ref) — the Feature ID goes in its title line (`LIVING DOC — FEAT-<nnn> · <Feature name>`), not in a `feature_id:` field — with `route`, and record `feature_id` in the manifest.
 
 - Feature exists → add header and manifest entry.
 - No Feature → write `FEAT-UNKNOWN`, flag **"needs Feature entity"** in the scan report, and propose drafting `FEAT-<nnn>` via `living-doc-create-feature`; replace `FEAT-UNKNOWN` in the header and manifest after the Feature exists. Do not auto-create it from this skill.

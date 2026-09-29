@@ -27,7 +27,7 @@
     "id": 5,
     "query": "Update the feature registry with the new notification service",
     "should_trigger": true,
-    "reason": "'feature registry' trigger keyword"
+    "reason": "'add feature registry entry' trigger phrase — the entry is for a new surface; changing an existing Feature's registry entry routes to living-doc-update"
   },
   {
     "id": 6,
@@ -158,7 +158,19 @@
   {
     "id": 27,
     "query": "I need to rename a Feature because the domain structure changed — what are all the cascade steps?",
-    "should_trigger": true,
-    "reason": "Feature renaming guidance — create-feature owns the Feature schema and triggers rename/update guidance via living-doc-update"
+    "should_trigger": false,
+    "reason": "Renaming an existing Feature — the cascade is owned by living-doc-update ('Rename a Feature'), not by creation"
+  },
+  {
+    "id": 28,
+    "query": "Checkout Page no longer calls the fraud-check service — remove that dependency from the living doc.",
+    "should_trigger": false,
+    "reason": "Dropping a dependency from an existing Feature — routes to living-doc-update"
+  },
+  {
+    "id": 29,
+    "query": "The payment-events topic got an AsyncAPI annotation, so it became a feature. Update every Feature that lists it as an external dependency.",
+    "should_trigger": false,
+    "reason": "Promoting an external dependency is a cascade across existing Features — living-doc-update runs it and calls living-doc-create-feature for the new Feature itself"
   }
 ]

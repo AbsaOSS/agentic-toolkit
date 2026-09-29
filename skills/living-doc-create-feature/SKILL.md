@@ -1,19 +1,18 @@
 ---
 name: living-doc-create-feature
 description: >
-  Define a system surface (UI screen or API endpoint, including a backend service's public
-  contract) as a Feature entity, enabling impact analysis and traceability in the living
-  documentation. Use when documenting a new screen, API, or backend service; mapping surfaces
-  to User Stories; or resolving Feature naming conflicts.
+  Define a system surface (UI screen, or API endpoint including a backend service's public
+  contract) as a Feature entity for impact analysis and traceability. Use when documenting a
+  new screen, API, or backend service, or mapping surfaces to User Stories.
   Triggers on: "document a new feature", "create a feature entity", "new screen documentation",
-  "document an API endpoint", "feature registry", "what feature owns this", "map user story to
-  feature", "system surface documentation", "feature owners", "feature dependencies",
-  "duplicate feature name", "resolve feature naming", "rename feature".
-  Does NOT trigger for: creating User Stories (use living-doc-create-user-story); defining
-  behaviors (use living-doc-create-functionality); scanning PageObjects (use
-  living-doc-pageobject-scan); deprecating (use living-doc-update).
-  Pairs with living-doc-create-functionality and living-doc-create-user-story.
-  After creating, add a feature_registry entry for living-doc-impact-analysis.
+  "document an API endpoint", "system surface documentation", "what feature owns this",
+  "map user story to feature", "add feature registry entry", "feature owners",
+  "new feature's dependencies", "duplicate feature name", "resolve feature naming".
+  NOT for: User Stories (living-doc-create-user-story), behaviors
+  (living-doc-create-functionality), PageObject scans (living-doc-pageobject-scan), changing
+  an existing Feature: owners, dependencies, rename, registry, deprecation (living-doc-update).
+  Pairs with living-doc-create-functionality and living-doc-create-user-story; after creating,
+  add a feature_registry entry for living-doc-impact-analysis.
 license: Apache-2.0
 ---
 
@@ -94,11 +93,15 @@ FUNC entries), leave the array as `[]` and add a warning:
 | Field | What to capture |
 |---|---|
 | `owners` | Team name(s) or individual(s) responsible for this surface |
-| `external_dependencies` | Services or systems this Feature calls (e.g. payment-gateway, order-service) |
+| `external_dependencies` | Services or systems this Feature calls that are **not** documented Features (e.g. payment-gateway, order-service) |
+
+`external_dependencies` is no longer the only place a dependency is recorded. Before writing a name into it, check whether the catalog already documents that system as a Feature:
+- **Not a documented Feature** — no canonical anchor, so nothing in the catalog can carry its contract. Record it here, by name.
+- **Already a documented `API` Feature** — leave it out of `external_dependencies`. The call is a `feature_dependencies` edge, authored on the Functionality that makes the call, not on this Feature (whose value is derived from its Functionalities). Note the target's `FEAT-<nnn>` for `living-doc-create-functionality`, or for `living-doc-update` if the calling Functionality already exists. See [living-doc-glossary — Functionality](../shared/references/living-doc-glossary.md#functionality-func).
 
 For starter drafts, prefer **provisional inferred values** over empty strings when the domain is obvious:
 - `owners`: always emit an array, even for one owner: `["team-identity"]`
-- `external_dependencies`: infer the systems this kind of surface typically calls (e.g. `payment-gateway`, `order-service`)
+- `external_dependencies`: infer the systems this kind of surface typically calls (e.g. `payment-gateway`, `order-service`), minus any the catalog already documents as a Feature
 
 `user_stories` and `functionalities` are never fabricated: use `[]` unless the catalog already contains the linked entity (see Step 3 and Step 4), and pair `[]` with the orphan/candidate warnings from those steps.
 
@@ -170,7 +173,7 @@ Canonical JSON fields:
 | `user_stories` | Yes | List of `US-<...>` IDs (use `[]` if unknown) |
 | `functionalities` | Yes | List of `FUNC-<...>` IDs (use `[]` if unknown or still only candidates) |
 | `owners` | Yes | Team name(s) |
-| `external_dependencies` | Yes | Names of services or systems this Feature calls |
+| `external_dependencies` | Yes | Names of services or systems this Feature calls that are not documented Features — a documented `API` target is a `feature_dependencies` edge on the calling Functionality instead |
 
 If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSON. If `functionalities` is `[]` because they are still just candidate notes, repeat the formal-definition warning from Step 4 outside the JSON.
 
@@ -202,8 +205,9 @@ If `user_stories` is `[]`, repeat the orphan warning from Step 3 outside the JSO
 | Link to an existing User Story | **living-doc-update** (add Feature to the User Story's `features` list) |
 | Generate BDD PageObjects for a UI Feature | **living-doc-pageobject-scan** |
 | Update feature_registry for impact traceability | **living-doc-impact-analysis** (see Feature registry format in that skill) |
+| The new Feature was an `external_dependencies` entry on other Features | **living-doc-update** — "Change a Feature's dependencies" moves the entry off every Feature that named it |
 
-> **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there. The minimum cascade is: (1) update the Feature entity itself, (2) update every linked Functionality `feature_id`, (3) update the `feature_registry` entry, (4) update `manifest.json`, (5) update `seed.yaml`, (6) update PageObject file headers, (7) update Gherkin feature file `# Feature:` headers, then run **living-doc-gap-finder** to confirm no orphan references remain.
+> **Renaming a Feature:** Changing a Feature's `id` or `name` requires cascading updates. Load `living-doc-update` and follow the "Rename a Feature" workflow there. The minimum cascade is: (1) update the Feature entity itself, (2) update every linked Functionality `parent_feature`, (3) update the `feature_registry` entry, (4) update `manifest.json`, (5) update `seed.yaml`, (6) update PageObject file headers, (7) update Gherkin feature file `# Feature:` headers, then run **living-doc-gap-finder** to confirm no orphan references remain.
 
 ## Script — `validate_entity.py`
 

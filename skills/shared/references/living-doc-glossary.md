@@ -1,16 +1,16 @@
-<!-- synced from AbsaOSS/living-doc@2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab — run scripts/sync-living-doc-reference.sh glossary 2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab to refresh -->
+<!-- synced from AbsaOSS/living-doc@86c756d88e04184b724d3326b27ae001bbb261f6 — run scripts/sync-living-doc-reference.sh glossary 86c756d88e04184b724d3326b27ae001bbb261f6 to refresh -->
 <!-- Generated file — do not edit by hand. CI re-runs the sync and fails on any diff. -->
 
 # Living Doc Glossary
 
 Core entity contracts: IDs, status vocabulary, relationships, and AC format. Every `living-doc-*` repo and `agentic-toolkit`'s `living-doc-bdd-copilot` agent operate on this canonical entity model.
 
-For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md).
+For the file-header schemas that carry these entities (feature file headers, PageObject headers, Project Profile, seed.yaml, manifest.json), see [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md).
 
 > **Source of truth.** This page is the canonical definition of the entity model. `agentic-toolkit`'s `skills/shared/references/living-doc-glossary.md` is synced from it.
 
 > **Worked examples & sync obligation.** A minimal, copyable example of each entity lives in
-> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/examples/README.md). When a field or rule on this page changes, the matching
+> [`docs/examples/`](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/examples/README.md). When a field or rule on this page changes, the matching
 > example changes in the same PR.
 
 ---
@@ -42,8 +42,8 @@ For the file-header schemas that carry these entities (feature file headers, Pag
 > header. Of these only the status is required, and only on a User Story and a Functionality — a
 > Feature has no authored status at all, and `deprecated_at` is authored on a User Story and a
 > Functionality only — see [Feature](#feature) for what a Feature derives instead.
-> See the [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/examples/README.md#github-issue-body-layout-canonical) and
-> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md).
+> See the [GitHub issue-body layout](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/examples/README.md#github-issue-body-layout-canonical) and
+> [Living Doc Header Types](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md).
 
 > **`## Notes` — the one place for human context.** Every entity may carry an optional `## Notes`
 > section in an issue body (`# notes:` in a source-code header): a **bullet list, one note per
@@ -76,7 +76,7 @@ so that <business outcome>.
 - Notes (optional): human context as a bullet list — see *`## Notes` — the one place for human
   context* above
 
-> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
+> Feature file template: see [Living Doc Header Types — User Story in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md#1-user-story-in-a-gherkin-feature-file).
 
 ### Feature
 
@@ -89,11 +89,21 @@ A named system surface — the structural layer between User Stories and atomic 
 | Type | Description | Test abstraction |
 |---|---|---|
 | `UI` | A web page, modal, or named screen | **PageObject** design pattern — class encapsulating selectors and user interactions for one screen. Selector preference: `getByTestId()` (resolves to the Project Profile `test_id_attribute`, default `data-cy`) > `aria-label`/role > CSS class. |
-| `API` | A request/response or event-driven service contract: a REST/GraphQL endpoint (or endpoint group), or a message-broker topic (e.g. Kafka) documented via an AsyncAPI (or equivalent) specification. A backend service or event producer/consumer is documented as an API Feature representing its public contract. | **Annotated endpoint method or annotated event handler** — for request/response, the endpoint method with its API documentation header (OpenAPI annotation, JSDoc, etc.); for event-driven, the producer/consumer handler with its AsyncAPI (or equivalent schema-registry) annotation. Either serves as the living contract anchor. |
+| `API` | A request/response or event-driven service contract: a REST/GraphQL endpoint (or endpoint group), or a message-broker topic (e.g. Kafka) documented via an AsyncAPI (or equivalent) specification. A backend service or event producer/consumer is documented as an API Feature representing its public contract. | **Annotated endpoint method or annotated event handler** — for request/response, the endpoint method with its API documentation header (OpenAPI annotation, JSDoc, etc.); for event-driven, the producer/consumer handler with its AsyncAPI (or equivalent schema-registry) annotation. Either serves as the living contract anchor. **That anchor carries no living-doc header yet**, so a project documented in source code cannot document an `API` Feature; a project documented in GitHub Issues or in Azure DevOps work items can. |
 
 - Owns: one or more **Functionalities**
 - Links to: one or more **User Stories**
 - `owners`: team or person responsible for this Feature
+- `external_dependencies`: systems this surface calls that are **not Features themselves** — they have no
+  canonical test-abstraction anchor, so nothing in the catalog can carry their contract. The Features that
+  call such a system record it here, **by name**; the name resolves to nothing and nothing validates it.
+  When the system gains an anchor it becomes an `API` Feature in its own right, and the entry leaves every
+  `external_dependencies` list that named it.
+- `feature_dependencies`: **derived from its Functionalities — never authored.** The value is the union of
+  its Functionalities' targets, for the same reason the status is derived: the Feature is a structural node,
+  and what calls another surface is a behaviour. A Feature issue body carries no `## Feature Dependencies`
+  heading and a PageObject header no `feature_dependencies:` field. See
+  [Functionality](#functionality-func) for where it *is* written.
 - Status: **derived from its Functionalities — never authored.** A Feature is the structural node
   that names a visible surface; the behaviour that can be planned, reviewed, shipped or retired lives
   in its Functionalities and their ACs. A hand-written Feature status can therefore only restate them
@@ -110,7 +120,7 @@ A named system surface — the structural layer between User Stories and atomic 
 - Notes (optional): human context as a bullet list — see *`## Notes` — the one place for human
   context* above
 
-> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
+> PageObject file header schemas (full header, cross-reference, operational notes, common mistakes): see [Living Doc Header Types — Feature in a PageObject File](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md#2-feature-in-a-pageobject-file).
 
 ### Functionality (FUNC)
 
@@ -120,6 +130,23 @@ An atomic, fast-testable behavior — a single verb phrase describing one respon
 - Name: `<parent Feature name> - <behavior phrase>` (e.g. "Login Page - Validate Password Strength")
 - Belongs to: one parent **Feature**
 - Owns: **Functionality-level Acceptance Criteria** (atomic input to output statements)
+- `feature_dependencies` (optional): the Features this behaviour calls — a list of `FEAT-` ids,
+  **authored here** and derived upward to the parent Feature (see [Feature](#feature)). Three rules:
+  - **The target must be an `API` Feature.** You can only call what has a contract anchor. A `UI` target is
+    an error today; the rule can be loosened later if UI composition needs it, which is cheaper than the
+    reverse.
+  - **Only the caller authors it.** The reverse direction — who depends on this Feature — is derived by the
+    pipeline and never written by hand.
+  - **It is authored on the Functionality, not on the Feature.** Coverage of a dependency edge is described
+    by a Functionality and its ACs — roughly one endpoint of the called surface — and scenarios already link
+    to ACs by `@AC:` tag. Written where the ACs are, a declared dependency with no linked scenario is a
+    computable untested integration point, with no second "test → edge" concept. Written at Feature level it
+    would be a second source of truth for a derived value.
+
+  A target the pipeline cannot resolve is reported as `UNRESOLVED_RELATION`. In a project documented in
+  source code that is the **expected** outcome, not a defect: no `API` Feature can exist there, because the
+  contract anchor carries no living-doc header yet (see [Feature](#feature)). The field resolves fully in a
+  project documented in GitHub Issues or in Azure DevOps work items.
 - Test anchor: a **Functionality feature file** under `features/liv_doc_func/` — one file per
   Functionality, containing all AC-linked system-test scenarios once implemented.
   File name pattern: `func-<nnn>-<feature-name-kebab>-<behavior-kebab>.feature`
@@ -153,7 +180,7 @@ If an AC belongs to the wrong entity type, redirect:
 - AC too atomic / technical inside a US → move to a **Functionality**
 - AC describes a full user journey inside a FUNC → move to a **User Story**
 
-> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
+> Feature file template and `func_type` values: see [Living Doc Header Types — Functionality in a Gherkin Feature File](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md#3-functionality-in-a-gherkin-feature-file).
 
 ### Acceptance Criterion (AC)
 
@@ -311,14 +338,14 @@ wrong AC, producing a coverage matrix that is wrong in a way no downstream tool 
 prefix or namespace IDs per source to dodge a collision — a collision inside one project means that
 project has two entities claiming one ID, and that is the thing to fix.
 
-This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-document-types.md#coverage-matrix)
+This mirrors the *coverage-matrix* prerequisites in [Living Doc Document Types](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-document-types.md#coverage-matrix)
 and the `Data Flows & Schemas` spec §8 ("Multiple sources and multiple generators"). The toolkit
 [`coverage_matrix` service README](https://github.com/AbsaOSS/living-doc-toolkit/blob/master/packages/services/coverage_matrix/README.md)
 describes the false-gap failure mode when the two sides of the join do not describe the same system.
 
 ---
 
-> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/2ac58fc4cc882c4af56a90e6e61a29d3b5ef0fab/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
+> `seed.yaml` and `manifest.json` schemas: see [Living Doc Header Types — manifest.json (Exploration Manifest)](https://github.com/AbsaOSS/living-doc/blob/86c756d88e04184b724d3326b27ae001bbb261f6/docs/guides/living-doc-header-types.md#manifestjson-exploration-manifest).
 
 ---
 
@@ -334,6 +361,9 @@ User Story (US)
                                     |              @FUNC_ID tag + @AC:FUNC-nnn-nn tagged scenarios
                                     |              └── implemented by: Step Definitions
                                     └── can map to: unit/integration tests
+                                    └── can depend on: Feature (FEAT, surface_type: API)
+                                                   feature_dependencies - authored here,
+                                                   derived upward to the parent Feature
   └── owns: User Story ACs (in # Acceptance Criteria: header block)
                   └── linked via: @AC:US-n-nn tags on Scenarios
                   └── can map to: E2E BDD Scenarios (<feature_dirs.user_story>/*.feature)

@@ -1204,6 +1204,132 @@ def test_reference_missing_parent_feature_for_functionality_warns():
     print("✓ A Functionality whose parent_feature is missing from the catalog is flagged")
 
 
+# ── feature_dependencies ──────────────────────────────────────────────────────
+
+
+def _calling_functionality(targets) -> dict:
+    """FUNC-1 on FEAT-1 (Checkout Page), declaring the given feature_dependencies."""
+    return {
+        "entity_type": "Functionality",
+        "id": "FUNC-1",
+        "name": "Checkout Page - Submit Payment",
+        "parent_feature": "FEAT-1",
+        "func_type": "button_action",
+        "status": "active",
+        "feature_dependencies": targets,
+        "acceptance_criteria": [
+            {"id": "AC:FUNC-1-01", "description": "Rejects the order when payment fails", "state": "active"},
+        ],
+    }
+
+
+def _dependency_catalog(**target_overrides) -> dict:
+    """FEAT-1 is the caller's UI surface; FEAT-2 is an API Feature owning one live
+    Functionality. target_overrides patch FEAT-2; `func_status` sets its Functionality."""
+    func_status = target_overrides.pop("func_status", "active")
+    target = {"id": "FEAT-2", "name": "Payment Events API", "surface_type": "API"}
+    target.update(target_overrides)
+    return {
+        "features": [
+            {"id": "FEAT-1", "name": "Checkout Page", "surface_type": "UI"},
+            target,
+        ],
+        "user_stories": [],
+        "functionalities": [
+            {"id": "FUNC-1", "parent_feature": "FEAT-1", "status": "active"},
+            {"id": "FUNC-2", "parent_feature": "FEAT-2", "status": func_status},
+        ],
+    }
+
+
+def _dependency_issues(issues: list[dict]) -> list[dict]:
+    return [i for i in issues if i["field"].startswith("feature_dependencies")]
+
+
+def test_feature_dependency_valid_api_target_is_clean():
+    """A live API Feature that is not the caller's own is a valid edge — no issue at all."""
+    issues = validate(_calling_functionality(["FEAT-2"]), _dependency_catalog())
+    assert not _dependency_issues(issues), issues
+    print("✓ A feature_dependencies edge to a live API Feature validates clean")
+
+
+def test_feature_dependency_target_missing_from_catalog_warns():
+    """Rule 1 — the target exists. A warning, not an error: canon expects an unresolved
+    target in a project documented in source code, where no API Feature can exist yet."""
+    issues = validate(_calling_functionality(["FEAT-99"]), _dependency_catalog())
+    deps = _dependency_issues(issues)
+    assert len(deps) == 1, issues
+    assert deps[0]["severity"] == "warning" and "not found in catalog" in deps[0]["message"], deps
+    print("✓ A feature_dependencies target missing from the catalog is flagged")
+
+
+def test_feature_dependency_non_api_target_errors():
+    """Rule 2 — the target is an API Feature. A UI target is an error: only a Feature with
+    a contract anchor can be called."""
+    issues = validate(_calling_functionality(["FEAT-2"]), _dependency_catalog(surface_type="UI"))
+    deps = _dependency_issues(issues)
+    assert any(i["severity"] == "error" and "'UI' Feature" in i["message"] for i in deps), issues
+    print("✓ A feature_dependencies target that is not an API Feature is an error")
+
+
+def test_feature_dependency_deprecated_target_warns():
+    """Rule 3 — the target is not deprecated. Its state is derived from its Functionalities,
+    and the warning points at the replacement when the target names one."""
+    catalog = _dependency_catalog(func_status="deprecated", superseded_by="FEAT-3",
+                                  deprecation_reason="Replaced by the v2 events API")
+    deps = _dependency_issues(validate(_calling_functionality(["FEAT-2"]), catalog))
+    assert len(deps) == 1, deps
+    assert deps[0]["severity"] == "warning", deps
+    assert "is deprecated" in deps[0]["message"] and "FEAT-3" in deps[0]["message"], deps
+    # A live target with the same markers is not reported as deprecated — markers are not state.
+    live = _dependency_catalog(superseded_by="FEAT-3")
+    assert not _dependency_issues(validate(_calling_functionality(["FEAT-2"]), live))
+    print("✓ A deprecated feature_dependencies target is flagged, derived from its Functionalities")
+
+
+def test_feature_dependency_on_own_parent_feature_errors():
+    """Rule 4 — the target is not the declaring Functionality's own Feature. Reported once,
+    as the self-edge, without a second surface-type error stacked on top (FEAT-1 is UI)."""
+    deps = _dependency_issues(validate(_calling_functionality(["FEAT-1"]), _dependency_catalog()))
+    assert len(deps) == 1, deps
+    assert deps[0]["severity"] == "error" and "own parent Feature" in deps[0]["message"], deps
+    print("✓ A feature_dependencies target that is the Functionality's own Feature is an error")
+
+
+def test_feature_dependency_rules_not_reported_without_catalog():
+    """Without --catalog none of the four states can be determined, so none is reported —
+    only that the basis is unavailable. A UI or self target passes unflagged here."""
+    deps = _dependency_issues(validate(_calling_functionality(["FEAT-1", "FEAT-99"])))
+    assert len(deps) == 1, deps
+    assert deps[0]["severity"] == "warning" and "--catalog" in deps[0]["message"], deps
+    for claim in ("not found", "own parent", "'UI'", "deprecated —"):
+        assert claim not in deps[0]["message"], deps
+    print("✓ Without a catalog, no dependency rule is reported — only the missing basis")
+
+
+def test_feature_dependency_malformed_entries_error():
+    """The field's shape is checkable without a catalog: a list of FEAT- ids. A free-form
+    name is an external_dependencies entry on the Feature, not a target."""
+    deps = _dependency_issues(validate(_calling_functionality(["payment-events", "FEAT-2"])))
+    assert any(
+        i["severity"] == "error" and i["field"] == "feature_dependencies[0]"
+        and "external_dependencies" in i["message"] for i in deps
+    ), deps
+    deps = _dependency_issues(validate(_calling_functionality("FEAT-2")))
+    assert any(i["severity"] == "error" and "must be a list" in i["message"] for i in deps), deps
+    print("✓ A malformed feature_dependencies value or entry is an error")
+
+
+def test_feature_authoring_feature_dependencies_warns():
+    """A Feature's feature_dependencies is derived from its Functionalities and never
+    authored — carrying it is flagged with a pointer to the calling Functionality."""
+    issues = validate(_legacy_feature(feature_dependencies=["FEAT-2"]))
+    deps = _dependency_issues(issues)
+    assert len(deps) == 1 and deps[0]["severity"] == "warning", issues
+    assert "derived" in deps[0]["message"] and "Functionality" in deps[0]["message"], deps
+    print("✓ A Feature authoring feature_dependencies is flagged")
+
+
 # ── format_report() ─────────────────────────────────────────────────────────────
 
 
@@ -1350,6 +1476,14 @@ if __name__ == "__main__":
         test_reference_missing_feature_for_user_story_warns()
         test_reference_missing_links_for_feature_warns()
         test_reference_missing_parent_feature_for_functionality_warns()
+        test_feature_dependency_valid_api_target_is_clean()
+        test_feature_dependency_target_missing_from_catalog_warns()
+        test_feature_dependency_non_api_target_errors()
+        test_feature_dependency_deprecated_target_warns()
+        test_feature_dependency_on_own_parent_feature_errors()
+        test_feature_dependency_rules_not_reported_without_catalog()
+        test_feature_dependency_malformed_entries_error()
+        test_feature_authoring_feature_dependencies_warns()
         test_format_report_no_issues_and_with_issues()
         test_cli_entity_file_not_found()
         test_cli_entity_invalid_json()

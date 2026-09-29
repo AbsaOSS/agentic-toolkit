@@ -27,12 +27,21 @@
 
 ## Trigger eval summary
 
-18 entries: 13 `should_trigger=true`, 5 `should_trigger=false`
+29 entries: 13 `should_trigger=true`, 16 `should_trigger=false`
 
 | Routes to | Query count |
 |---|---|
 | living-doc-create-user-story | 1 |
-| living-doc-create-functionality | 1 |
+| living-doc-create-functionality | 2 |
 | living-doc-pageobject-scan | 1 |
-| living-doc-scenario-creator | 1 |
-| living-doc-update | 1 |
+| living-doc-scenario-creator | 2 |
+| living-doc-update | 4 (deprecate, rename, drop a dependency, promote a dependency) |
+| gherkin-step | 1 |
+| bdd-maintain | 1 |
+| living-doc-gap-finder | 1 |
+| gherkin-living-doc-sync | 1 |
+| living-doc-impact-analysis | 1 |
+| data-cy-instrument | 1 |
+
+Creation vs change: this skill owns a Feature that does not exist yet. Any change to an existing
+Feature — owners, dependencies, rename, registry entry, deprecation — routes to `living-doc-update`.

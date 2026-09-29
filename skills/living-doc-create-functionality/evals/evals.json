@@ -5,7 +5,7 @@
       "id": 1,
       "category": "happy-path",
       "prompt": "I want to document the atomic behavior: validate that a cart contains at least one in-stock item before checkout.",
-      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with feature_id set to the numeric Feature ID. The emitted JSON carries func_type='field_validation' — the behaviour is a rule enforced on the cart's contents, not a derived value or a control press.",
+      "expected_output": "Agent forms verb-phrase name: 'Validate cart contains at least one in-stock item'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: asks about null/empty cart, out-of-stock items, partially in-stock carts, zero-quantity items. Produces at least 4 ACs: empty cart → CART_EMPTY error, all items out of stock → OUT_OF_STOCK error, valid cart → VALID, zero-quantity item → INVALID_QUANTITY. All test_type=unit. Outputs canonical Functionality JSON with parent_feature set to the numeric Feature ID. The emitted JSON carries func_type='field_validation' — the behaviour is a rule enforced on the cart's contents, not a derived value or a control press.",
       "files": [],
       "expectations": [
         "Name is a verb phrase (not a noun)",
@@ -100,7 +100,7 @@
       "id": 8,
       "category": "output-format",
       "prompt": "Document the atomic behavior: 'The system deducts the applied voucher discount from the basket total before tax is calculated.'",
-      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, feature_id, acceptance_criteria (array), test_coverage (array), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values. Required fields also include func_type, one of the seven canonical values (component_state, component_action, button_action, field_validation, calculation, visibility, navigation_rule) — here calculation, since the voucher deduction is a derived basket total.",
+      "expected_output": "The output contains a fenced ```json code block with a Functionality entity. Required fields: type ('Functionality'), id (FUNC-<kebab>), name, description, parent_feature, acceptance_criteria (array), test_coverage (array), status. Acceptance criteria items are phrased in plain business English. No implementation details appear in the JSON values. Required fields also include func_type, one of the seven canonical values (component_state, component_action, button_action, field_validation, calculation, visibility, navigation_rule) — here calculation, since the voucher deduction is a derived basket total.",
       "files": [],
       "expectations": [
         "Single fenced ```json code block",
@@ -129,14 +129,14 @@
       "id": 10,
       "category": "happy-path",
       "prompt": "I need to document this atomic behavior for the checkout domain: 'Reject order when all items in the cart are out of stock'. The Feature hasn't been created yet.",
-      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with feature_id set to the correct numeric ID. The emitted JSON carries a func_type fitting the behaviour: button_action if the rejection is observable only once the order is submitted, field_validation if the cart blocks first. The agent states which it chose and why.",
+      "expected_output": "Agent forms verb-phrase name: 'Reject order when all items are out of stock'. Asks which Feature (Checkout Page / FEAT-001 or equivalent) owns this behavior. Runs completeness checklist: boundary conditions (all items out of stock vs. some items out of stock), partial cart availability, zero-quantity items. Notes that the parent Feature must already exist in the catalog with a numeric ID. Outputs canonical Functionality JSON with parent_feature set to the correct numeric ID. The emitted JSON carries a func_type fitting the behaviour: button_action if the rejection is observable only once the order is submitted, field_validation if the cart blocks first. The agent states which it chose and why.",
       "files": [],
       "expectations": [
         "Asks for the parent Feature ID (numeric, from catalog) instead of inventing a slug",
         "Forms a verb-phrase name",
         "Runs completeness checklist: all out of stock vs. partial",
         "Notes that the parent Feature must already exist in the catalog with a numeric ID",
-        "Outputs valid Functionality JSON with feature_id populated",
+        "Outputs valid Functionality JSON with parent_feature populated",
         "Emitted JSON includes func_type with a stated justification for the value chosen"
       ]
     },
@@ -144,10 +144,10 @@
       "id": 11,
       "category": "regression",
       "prompt": "A Functionality has no parent Feature — I forgot to link it. Is that a problem?",
-      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set feature_id in the Functionality entity. Do not leave feature_id empty or null in a finalized entity.",
+      "expected_output": "Yes. A Functionality without a parent Feature is untraceable — it cannot be reached via the entity hierarchy, will be surfaced as an ORPHAN_FUNCTIONALITY gap by living-doc-gap-finder, and will be missed in impact analyses. Identify or create the owning Feature first (living-doc-create-feature), then set parent_feature in the Functionality entity. Do not leave parent_feature empty or null in a finalized entity.",
       "files": [],
       "expectations": [
-        "Flags missing feature_id as a traceability problem",
+        "Flags missing parent_feature as a traceability problem",
         "Names the gap type: ORPHAN_FUNCTIONALITY",
         "Notes it will be missed in impact analyses",
         "Directs to living-doc-create-feature to create the parent Feature first"

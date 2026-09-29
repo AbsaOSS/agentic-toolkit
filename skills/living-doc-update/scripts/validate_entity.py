@@ -4,7 +4,8 @@ validate_entity.py — Living Doc Entity Validator
 
 Validates a living doc entity JSON against the canonical schema from the glossary.
 Checks required fields, ID formats, status values, AC structure, and (optionally)
-referential integrity against the full catalog.
+referential integrity against the full catalog — including the four rules every
+`feature_dependencies` edge on a Functionality must satisfy, which only the catalog can decide.
 
 Usage:
     python validate_entity.py entity.json
@@ -411,6 +412,16 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
                 "Feature has no Functionalities — "
                 "a Feature should own at least one Functionality",
             )
+        # A Feature's `feature_dependencies` is derived — the union of its Functionalities'
+        # targets — and canon gives it no authored place (no issue-body heading, no PageObject
+        # header field). Same remediation shape as an authored `deprecated_at` above.
+        if "feature_dependencies" in entity:
+            warning(
+                "feature_dependencies",
+                "Feature must not author 'feature_dependencies' — a Feature's value is derived "
+                "from its Functionalities. Remove it and declare each target on the "
+                "Functionality that makes the call",
+            )
         purpose: str = entity.get("purpose", "")
         if purpose and len(purpose.split()) < 5:
             warning(
@@ -486,10 +497,11 @@ def validate(entity: dict, catalog: dict | None = None) -> list[dict]:
             )
         for i, ac in enumerate(acs):
             _validate_ac(ac, entity_id, i, error, warning)
+        _validate_feature_dependency_shape(entity, catalog, error, warning)
 
     # ── Referential integrity ────────────────────────────────────────────────
     if catalog is not None:
-        _validate_references(entity, entity_type, catalog, warning)
+        _validate_references(entity, entity_type, catalog, error, warning)
 
     return issues
 
@@ -529,8 +541,114 @@ def _validate_ac(
         )
 
 
+def _feature_dependency_targets(entity: dict) -> list[str]:
+    """The well-formed `feature_dependencies` targets a Functionality declares, in order.
+    Malformed entries are reported by _validate_feature_dependency_shape and skipped here."""
+    targets = entity.get("feature_dependencies")
+    if not isinstance(targets, list):
+        return []
+    return [t for t in targets if isinstance(t, str) and ID_PATTERNS["Feature"].match(t)]
+
+
+def _validate_feature_dependency_shape(
+    entity: dict, catalog: dict | None, error_fn, warning_fn
+) -> None:
+    """What can be checked about a Functionality's `feature_dependencies` without a catalog:
+    it is a list of `FEAT-<n>` ids. Whether each target exists, is an `API` Feature, is live,
+    and is not the Functionality's own Feature needs the catalog — without one, say the basis
+    is unavailable instead of reporting any of those states."""
+    if "feature_dependencies" not in entity:
+        return
+    targets = entity["feature_dependencies"]
+    if not isinstance(targets, list):
+        error_fn(
+            "feature_dependencies",
+            f"'feature_dependencies' must be a list of Feature IDs, got: {targets!r}",
+        )
+        return
+    for i, target in enumerate(targets):
+        if not isinstance(target, str) or not ID_PATTERNS["Feature"].match(target):
+            error_fn(
+                f"feature_dependencies[{i}]",
+                f"'{target}' is not a Feature ID (expected FEAT-nnn) — a system with no "
+                "canonical anchor is not a target; record it in the Feature's "
+                "'external_dependencies' instead",
+            )
+    if catalog is None and _feature_dependency_targets(entity):
+        warning_fn(
+            "feature_dependencies",
+            "Dependency targets not checked — whether each target exists, is an 'API' "
+            "Feature, is not deprecated, and is not this Functionality's own Feature cannot "
+            "be determined from a single entity. Re-run with --catalog to check them.",
+        )
+
+
+def _validate_feature_dependency_targets(
+    entity: dict, inner: dict, catalog: dict, error_fn, warning_fn
+) -> None:
+    """The four rules a declared `feature_dependencies` edge must satisfy, checked against
+    the catalog — the same four living-doc's examples_check enforces on the canon corpus.
+
+    - Unresolved target: a warning, as for every other missing reference here. Canon expects
+      it in a project documented in source code, where no `API` Feature can exist yet.
+    - Own parent Feature, or a non-`API` target: errors — canon rules the edge invalid.
+    - Deprecated target: a warning — the target's retirement is a lifecycle event outside
+      the caller, and the remediation (repoint at the replacement) is a follow-up, not a
+      reason to refuse the rest of the entity."""
+    features = {f.get("id"): f for f in inner.get("features", [])}
+    parent = entity.get("parent_feature")
+    for target in _feature_dependency_targets(entity):
+        if target not in features:
+            warning_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' not found in catalog — reported as "
+                "UNRESOLVED_RELATION by the pipeline",
+            )
+            continue
+        if parent and target == parent:
+            error_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' is this Functionality's own parent Feature — "
+                "a Functionality cannot depend on the surface it belongs to",
+            )
+            continue
+        target_feature = features[target]
+        surface_type = target_feature.get("surface_type")
+        if surface_type is None:
+            warning_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' has no surface_type in the catalog — cannot "
+                "confirm it is an 'API' Feature",
+            )
+        elif surface_type != "API":
+            error_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' is a '{surface_type}' Feature — only an 'API' "
+                "Feature has a contract anchor and can be a dependency target",
+            )
+        state, basis = _feature_deprecation_state(target_feature, catalog)
+        replacement = target_feature.get("superseded_by")
+        repoint = (
+            f"point the dependency at '{replacement}'" if replacement
+            else "point the dependency at the replacement surface"
+        )
+        if state == "deprecated":
+            warning_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' is deprecated — every Functionality it owns "
+                f"is deprecated; {repoint}",
+            )
+        elif state == "unknown" and basis == "authored_marker":
+            warning_fn(
+                "feature_dependencies",
+                f"Dependency target '{target}' carries authored deprecation metadata, but "
+                "owns no Functionality in the catalog, so its state cannot be derived; if "
+                f"it is being retired, {repoint}",
+            )
+
+
 def _validate_references(
-    entity: dict, entity_type: str, catalog: dict, warning_fn
+    entity: dict, entity_type: str, catalog: dict, error_fn, warning_fn
 ) -> None:
     """Check that referenced IDs exist in the catalog (referential integrity)."""
     inner = catalog.get("catalog", catalog)
@@ -558,6 +676,7 @@ def _validate_references(
                 "parent_feature",
                 f"Parent Feature '{parent}' not found in catalog",
             )
+        _validate_feature_dependency_targets(entity, inner, catalog, error_fn, warning_fn)
 
 
 # ── Output formatting ──────────────────────────────────────────────────────────
