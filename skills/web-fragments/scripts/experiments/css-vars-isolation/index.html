@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>WF Playground: css-vars-isolation</title>
+		<style>
+			/* Host custom properties on :root */
+			:root {
+				--brand: rgb(255, 0, 0); /* red */
+				--pad: 24px;
+			}
+			/* Host cascade layers: theme declared after base => theme wins */
+			@layer base, theme;
+			@layer base {
+				.layered {
+					color: rgb(0, 0, 255);
+				} /* blue */
+			}
+			@layer theme {
+				.layered {
+					color: rgb(0, 128, 0);
+				} /* green wins */
+			}
+			/* Inherited property set on body */
+			body {
+				font-family: Georgia, serif;
+			}
+			/* Non-inherited, host-only class selector. Should NOT cross into the fragment shadow tree. */
+			.leak-class {
+				color: rgb(255, 0, 255); /* magenta */
+			}
+			.brand {
+				color: var(--brand);
+			}
+			web-fragment-host {
+				display: block;
+				border: 1px dashed #999;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>WF Playground: css-vars-isolation</h1>
+
+		<p id="host-brand" class="brand">HOST brand (expect red)</p>
+		<p id="host-layered" class="layered">HOST layered (expect green)</p>
+		<!-- host probe for a var only defined inside the fragment: should be unset (black) -->
+		<p id="host-accent-probe" style="color: var(--host-accent, rgb(0, 0, 0))">HOST accent probe (expect black)</p>
+
+		<web-fragment fragment-id="css-vars-isolation"></web-fragment>
+
+		<script type="module">
+			import { initializeWebFragments } from 'web-fragments';
+			initializeWebFragments();
+		</script>
+	</body>
+</html>
