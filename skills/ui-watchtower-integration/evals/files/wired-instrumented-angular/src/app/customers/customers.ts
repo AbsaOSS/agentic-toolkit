@@ -7,15 +7,23 @@ import {
 } from '@absaoss-cps/ngx-ui-watchtower';
 import '../telemetry/telemetry.schema';
 
-/** HttpErrorResponse.message quotes the request URL, path ids included — keep class and status only. */
+/** A class-like name (`TimeoutError`); any other `name` could be free text. */
+const SAFE_ERROR_NAME = /^[A-Z][A-Za-z0-9]{0,63}$/;
+
+/** Error messages can quote URLs, ids or user data — keep only a class-like name and an HTTP status. */
 function safeHttpFailure(error: unknown): UwtScenarioOutcome {
-  const status = (error as { status?: unknown } | null)?.status;
-  return typeof status === 'number'
-    ? {
-        error: Object.assign(new Error('HTTP request failed'), { name: 'HttpErrorResponse' }),
-        statusCode: status
-      }
-    : { error };
+  const { name, status } = (error ?? {}) as { name?: unknown; status?: unknown };
+  if (typeof status === 'number') {
+    return {
+      error: Object.assign(new Error('HTTP request failed'), { name: 'HttpErrorResponse' }),
+      statusCode: status
+    };
+  }
+  const safe = new Error('Journey failed');
+  if (typeof name === 'string' && SAFE_ERROR_NAME.test(name)) {
+    safe.name = name;
+  }
+  return { error: safe };
 }
 
 interface Customer {

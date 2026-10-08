@@ -33,7 +33,8 @@ export class AppLogApiProvider implements UwtLogApiProvider {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record),
-      // Lets the request outlive a page that is being closed.
+      // Lets the request outlive a page that is being closed. Browsers cap all in-flight
+      // keepalive bodies at 64 KiB together, so batch records before production use.
       keepalive: true
     }).catch(() => undefined);
   }

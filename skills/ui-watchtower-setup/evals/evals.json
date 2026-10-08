@@ -109,7 +109,7 @@
         "Does not bind a page-view recorder (no RUM sink to record to)",
         "Creates telemetry.schema.ts and adds route-navigation tracking with a recording-sink test",
         "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
-        "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, and install aws-rum-web",
+        "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, bind ROUTE_PAGE_VIEW_RECORDER, and install aws-rum-web",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
     },

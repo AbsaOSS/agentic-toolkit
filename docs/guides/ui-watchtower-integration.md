@@ -66,6 +66,8 @@ then says it is based on the code only.
 
 ```bash
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill ui-watchtower-integration
+# Companion: holds the ngx-ui-watchtower API reference both watchtower skills load
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
 ```
 
 See [Getting Started](../getting-started.md) for the full install guide.

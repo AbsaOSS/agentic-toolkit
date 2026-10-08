@@ -66,7 +66,8 @@ Read before writing anything — extend the app, don't restructure it.
    library's range from the registry, never from memory:
    `npm view @absaoss-cps/ngx-ui-watchtower@latest peerDependencies`.
    - Inside → install the latest version.
-   - Older → the newest release whose peers fit (`npm view … versions`), pinned; none → stop.
+   - Older → the newest release whose peers fit (`npm view … versions`, skipping prereleases such
+     as `-stage` or `-rc`), pinned; none → stop.
    - Newer → stop and tell the user. Never `--force` or `--legacy-peer-deps`.
    - Note the chosen release's `aws-rum-web` range too — Step 2 installs within it.
 2. **Package manager** — from the lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), a
@@ -128,7 +129,7 @@ different destinations also fail bootstrap.
 | Standalone app, sends to RUM | `provideUwtTelemetryRumSink()` (from `/rum`) | `UWT_RUM_CREDENTIALS_PROVIDER` → `assets/rum-credentials.provider.ts` |
 | Shell hosting fragments | `provideUwtTelemetryRumSink()` | + `provideUwtTelemetryBroadcastHost(channelId)` + a log provider — `references/micro-frontends.md` |
 | Fragment inside a shell | `provideUwtTelemetrySink('broadcast')` + lazy `UWT_BROADCAST_CHANNEL` factory | nothing else — `references/micro-frontends.md` |
-| RUM not available yet | `provideUwtTelemetrySink('noop')` | explicit opt-out; everything runs, nothing ships; swap the one line later |
+| RUM not available yet | `provideUwtTelemetrySink('noop')` | explicit opt-out; everything runs, nothing ships; switching to RUM later takes more than this line — Step 9 |
 | Own backend | `provideUwtTelemetryDestination(MySink)` (a class extending `UwtTelemetrySink`) | see the API reference, "Custom destination" |
 
 **Log provider:**
@@ -291,6 +292,10 @@ app's version — never silence the error.
 
 Report what was wired (role, destination, credentials endpoint, log provider, user identity) and
 any follow-ups.
+With `'noop'`, hand over the switch to RUM as a checklist — it is more than one line: install
+`aws-rum-web` and the `shimmer` allowance (Step 2), replace the `'noop'` line with
+`provideUwtTelemetryRumSink()` plus the credentials provider (Step 3), and bind
+`ROUTE_PAGE_VIEW_RECORDER` (Step 6) — without it, RUM records no page views at all.
 Then tell the user the next step: **to measure the app's own journeys and interactions, use the
 `ui-watchtower-integration` skill** — it asks what they want to learn, proposes, and implements. For
 a shell, also hand over the fragment contract from `references/micro-frontends.md`.

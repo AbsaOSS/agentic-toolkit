@@ -71,6 +71,8 @@ If the library is already partly wired, only the missing pieces are added.
 
 ```bash
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill ui-watchtower-setup
+# Companion: holds the ngx-ui-watchtower API reference both watchtower skills load
+npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
 ```
 
 See [Getting Started](../getting-started.md) for the full install guide.
