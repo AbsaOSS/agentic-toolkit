@@ -94,7 +94,8 @@ Read before writing anything — extend the app, don't restructure it.
 7. **Realm role** — standalone app, **shell** that embeds fragments (Web Fragments, Module
    Federation, iframes on the same origin), or **fragment** inside a shell. Look for
    `<web-fragment>`, fragment gateways, remote-entry config.
-8. **Router** — `provideRouter` / `RouterModule.forRoot`; note any `matcher` routes (Step 6).
+8. **Router** — `provideRouter` / `RouterModule.forRoot`; note any `matcher` routes, or that there is
+   no router at all (Step 6).
 9. **Sign-in** — an auth service, OIDC/MSAL library or session store, and where sign-in and
    sign-out complete. Note which **opaque** user id it exposes (a subject or object id — never an
    email or username).
@@ -262,6 +263,11 @@ sink. If an existing RUM integration records page views (Step 5), keep exactly o
 
 In a fragment, skip this step by default — the shell's router measures navigations that change the
 page URL. Add it only if the fragment has internal routes the shell never routes.
+
+**No router** (a single-screen app): skip this step and the page-view binding, and remove
+`disableAutoPageView: true` from the credentials provider — with no route changes, RUM's automatic
+page view (one per page load) is the right one. Keep personal data out of that URL. The proof is
+then the first scenario `ui-watchtower-integration` adds.
 
 What it records: one scenario per navigation under the final route template (redirects included),
 backdated to the click (`markNavigationIntent()` from nav-link handlers); a guard returning `false`

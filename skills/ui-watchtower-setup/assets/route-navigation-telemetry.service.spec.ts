@@ -39,6 +39,7 @@ class RecordingSink extends UwtTelemetrySink {
 class Page {}
 
 let releaseSlowGuard: (value: boolean) => void = () => undefined;
+let slowGuardEntered: () => void = () => undefined;
 let releaseHangGuard: (value: boolean) => void = () => undefined;
 
 function filesMatcher(segments: UrlSegment[]) {
@@ -107,7 +108,12 @@ describe('RouteNavigationTelemetryService', () => {
           {
             path: 'slow',
             component: Page,
-            canActivate: [() => new Promise<boolean>((resolve) => (releaseSlowGuard = resolve))]
+            canActivate: [
+              () => {
+                slowGuardEntered();
+                return new Promise<boolean>((resolve) => (releaseSlowGuard = resolve));
+              }
+            ]
           },
           { matcher: filesMatcher, component: Page, data: { telemetryPath: 'files/:path' } },
           {
@@ -258,8 +264,10 @@ describe('RouteNavigationTelemetryService', () => {
   });
 
   it('records a superseded navigation as abandoned, and the new one as success', async () => {
+    // Supersede only once the first navigation is recognized and waiting in its guard.
+    const entered = new Promise<void>((resolve) => (slowGuardEntered = resolve));
     const first = router.navigateByUrl('/slow');
-    await new Promise((r) => setTimeout(r));
+    await entered;
     await router.navigateByUrl('/customers');
     releaseSlowGuard(true);
     await first;
