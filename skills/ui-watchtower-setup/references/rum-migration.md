@@ -37,7 +37,7 @@ the affected dashboards. Dashboard parity never outranks personal data.
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `eventNamespace` in the identity                       | Existing types differ from the library's only by prefix          | `eventNamespace: 'myapp'` → `myapp.scenario`, `myapp.scenario.step`, `myapp.bi`. Cheapest                  |
 | `track(name, metadata, { eventType: 'legacy.type' })`  | A dashboard needs one specific event type                        | Exact event type; payload becomes the `UwtBIEvent` envelope (`eventName`, `eventTime`, `metadata`, `application`, …). A migration escape hatch, not a pattern |
-| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required                            | Raw passthrough — you own the shape. Use sparingly and comment why                                         |
+| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required | Raw passthrough — you own the shape *and* its privacy: the library's redaction doesn't run here. Normalize free text first (an error becomes its name or a code — never its message), per the privacy rule in §1. Use sparingly and comment why |
 
 If a consumer can be updated instead (a query, a metric filter), prefer moving it to the library's
 event types — record that decision in the table.
