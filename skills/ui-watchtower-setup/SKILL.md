@@ -186,7 +186,9 @@ export const appConfig: ApplicationConfig = {
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint from Step 1
   and adapt the response check. `load()` validates every required field and returns `null` on
   **any** failure or incomplete answer (that disables RUM for the session; the app keeps working).
-  It also sets `disableAutoPageView: true` — page views come from Step 6, under the route template. `provideUwtTelemetryRumSink()` calls it from its own
+  It passes the broker's other app-monitor settings through when correctly typed (`telemetries`,
+  `sessionAttributes`, `allowCookies`, …) and always sets `disableAutoPageView: true` — page views
+  come from Step 6, under the route template. `provideUwtTelemetryRumSink()` calls it from its own
   non-blocking initializer — don't write one. The asset uses `fetch`, which bypasses `HttpClient`
   interceptors: if the broker needs auth that an interceptor adds, call it through `HttpClient`
   (`firstValueFrom`) instead.

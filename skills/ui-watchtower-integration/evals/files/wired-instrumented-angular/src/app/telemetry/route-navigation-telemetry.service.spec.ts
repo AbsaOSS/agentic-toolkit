@@ -263,18 +263,31 @@ describe('RouteNavigationTelemetryService', () => {
     expect(scenarios()[0]['message']).toBeUndefined();
   });
 
-  it('keeps the start time across a guard redirect', async () => {
-    TestBed.inject(RouteNavigationTelemetryService).markNavigationIntent();
-    await new Promise((r) => setTimeout(r, 60));
-    await router.navigateByUrl('/old');
-    expect((scenarios()[0] as { delta: number }).delta).toBeGreaterThanOrEqual(50);
-  });
+  describe('with a fake clock', () => {
+    // The scenario clock reads both Date and performance; freeze both.
+    beforeEach(() => vi.useFakeTimers({ toFake: ['Date', 'performance'] }));
+    afterEach(() => vi.useRealTimers());
 
-  it('backdates to a recent navigation intent', async () => {
-    TestBed.inject(RouteNavigationTelemetryService).markNavigationIntent();
-    await new Promise((r) => setTimeout(r, 60));
-    await router.navigateByUrl('/customers');
-    expect((scenarios()[0] as { delta: number }).delta).toBeGreaterThanOrEqual(50);
+    it('keeps the start time across a guard redirect', async () => {
+      TestBed.inject(RouteNavigationTelemetryService).markNavigationIntent();
+      vi.advanceTimersByTime(60);
+      await router.navigateByUrl('/old');
+      expect((scenarios()[0] as { delta: number }).delta).toBe(60);
+    });
+
+    it('backdates to a recent navigation intent', async () => {
+      TestBed.inject(RouteNavigationTelemetryService).markNavigationIntent();
+      vi.advanceTimersByTime(60);
+      await router.navigateByUrl('/customers');
+      expect((scenarios()[0] as { delta: number }).delta).toBe(60);
+    });
+
+    it('ignores a navigation intent older than 2 s', async () => {
+      TestBed.inject(RouteNavigationTelemetryService).markNavigationIntent();
+      vi.advanceTimersByTime(2_001);
+      await router.navigateByUrl('/customers');
+      expect((scenarios()[0] as { delta: number }).delta).toBe(0);
+    });
   });
 
   describe('a navigation that never ends', () => {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import type {
+  UwtRumAppMonitorConfig,
   UwtRumBootstrap,
   UwtRumCredentialsProvider
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
@@ -18,7 +19,7 @@ const RUM_BROKER_URL = '/rum/init';
  * {
  *   "enabled": true,
  *   "config": { "applicationId": "…", "region": "eu-west-1", "applicationVersion": "1.4.0",
- *               "sessionSampleRate": 1 },
+ *               "sessionSampleRate": 1, "telemetries": ["errors", "performance", "http"] },
  *   "credentials": { "accessKeyId": "…", "secretAccessKey": "…", "sessionToken": "…",
  *                    "expiration": "2026-10-08T12:00:00Z" }
  * }
@@ -34,6 +35,86 @@ const REQUIRED_CREDENTIALS = [
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Optional app-monitor settings a broker can send as JSON, each kept only with
+ * the right type. Functions, `RegExp`s and plugins (`fetchFunction`,
+ * `clientBuilder`, `pagesToInclude`/`pagesToExclude`, `eventPluginsToLoad`)
+ * can't travel as JSON — set them in code if the app needs them.
+ */
+const NUMBER_SETTINGS = [
+  'sessionLengthSeconds',
+  'sessionEventLimit',
+  'userIdRetentionDays',
+  'batchLimit',
+  'dispatchInterval',
+  'eventCacheSize',
+  'candidatesCacheSize',
+  'retries',
+  'routeChangeComplete',
+  'routeChangeTimeout'
+] as const;
+const BOOLEAN_SETTINGS = [
+  'suppressSessionStartEvent',
+  'enableXRay',
+  'enableW3CTraceId',
+  'recordResourceUrl',
+  'useBeacon',
+  'signing',
+  'allowCookies',
+  'debug',
+  'enableRumClient'
+] as const;
+const STRING_SETTINGS = ['endpoint', 'alias', 'client', 'releaseId'] as const;
+const PAGE_ID_FORMATS = ['PATH', 'HASH', 'PATH_AND_HASH'];
+
+function isFlatRecord<T>(
+  value: unknown,
+  isEntry: (entry: unknown) => entry is T
+): value is Record<string, T> {
+  return isRecord(value) && Object.values(value).every(isEntry);
+}
+const isPrimitive = (v: unknown): v is string | number | boolean =>
+  ['string', 'number', 'boolean'].includes(typeof v);
+const isString = (v: unknown): v is string => typeof v === 'string';
+const isStringOrBoolean = (v: unknown): v is string | boolean =>
+  typeof v === 'string' || typeof v === 'boolean';
+
+/** The optional settings in `config` that have the expected type; the rest are dropped. */
+function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMonitorConfig> {
+  const settings: Record<string, unknown> = {};
+  const keep = (key: string, ok: boolean): void => {
+    if (ok) {
+      settings[key] = config[key];
+    }
+  };
+  for (const key of NUMBER_SETTINGS) {
+    keep(key, typeof config[key] === 'number' && Number.isFinite(config[key]));
+  }
+  for (const key of BOOLEAN_SETTINGS) {
+    keep(key, typeof config[key] === 'boolean');
+  }
+  for (const key of STRING_SETTINGS) {
+    keep(key, isString(config[key]) && config[key] !== '');
+  }
+  const rate = config['sessionSampleRate'];
+  keep('sessionSampleRate', typeof rate === 'number' && rate >= 0 && rate <= 1);
+  keep('pageIdFormat', PAGE_ID_FORMATS.includes(config['pageIdFormat'] as string));
+  keep('sessionAttributes', isFlatRecord(config['sessionAttributes'], isPrimitive));
+  keep('applicationAttributes', isFlatRecord(config['applicationAttributes'], isPrimitive));
+  keep('headers', isFlatRecord(config['headers'], isString));
+  keep('cookieAttributes', isFlatRecord(config['cookieAttributes'], isStringOrBoolean));
+  const telemetries = config['telemetries'];
+  keep(
+    'telemetries',
+    Array.isArray(telemetries) && telemetries.every((t) => isString(t) || Array.isArray(t))
+  );
+  const compression = config['compressionStrategy'];
+  if (isRecord(compression) && typeof compression['enabled'] === 'boolean') {
+    settings['compressionStrategy'] = { enabled: compression['enabled'] };
+  }
+  return settings as Partial<UwtRumAppMonitorConfig>;
 }
 
 /** Whether `value` is an object whose `keys` are all non-empty strings. */
@@ -101,14 +182,13 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
       return null;
     }
 
-    const rate = config['sessionSampleRate'];
     return {
       config: {
+        ...optionalSettings(config),
         applicationId: config.applicationId,
         region: config.region,
         applicationVersion: config.applicationVersion,
-        sessionSampleRate: typeof rate === 'number' && rate >= 0 && rate <= 1 ? rate : undefined,
-        // Page views are recorded under the route template by
+        // Always, whatever the broker says. Page views are recorded under the route template by
         // RouteNavigationTelemetryService; automatic ones would send the
         // resolved path (/customers/42).
         disableAutoPageView: true
