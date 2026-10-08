@@ -37,7 +37,7 @@ the affected dashboards. Dashboard parity never outranks personal data.
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `eventNamespace` in the identity                       | Existing types differ from the library's only by prefix          | `eventNamespace: 'myapp'` → `myapp.scenario`, `myapp.scenario.step`, `myapp.bi`. Cheapest                  |
 | `track(name, metadata, { eventType: 'legacy.type' })`  | A dashboard needs one specific event type                        | Exact event type; payload becomes the `UwtBIEvent` envelope (`eventName`, `eventTime`, `metadata`, `application`, …). A migration escape hatch, not a pattern |
-| `inject(UwtTelemetrySink).record(eventType, payload)`  | Byte-exact payload parity is required                            | Raw passthrough — you own the shape. Use sparingly and comment why                                         |
+| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required                            | Raw passthrough — you own the shape. Use sparingly and comment why                                         |
 
 If a consumer can be updated instead (a query, a metric filter), prefer moving it to the library's
 event types — record that decision in the table.
@@ -49,12 +49,22 @@ event types — record that decision in the table.
   on purpose. Credentials must come from a broker that returns short-lived AWS credentials. If none
   exists, stop and tell the user: a broker is a backend change, outside this skill.
 
-## 4. Migrate with both paths alive
+## 4. Cut over without ever running two RUM clients
 
-Move call sites one at a time. Keep `RumService` until the last row is migrated. Do not run two RUM
-clients at once: once `provideUwtTelemetryRumSink()` is wired, the old service's remaining calls
-should go through the library's sink (`inject(UwtTelemetrySink).record(...)`) or be migrated — two
-`AwsRum` instances would mean two sessions per visitor.
+Two `AwsRum` instances mean two sessions per visitor, so the old client and
+`provideUwtTelemetryRumSink()` must never start in the same build. Until the cutover, the old
+`RumService` stays the **only** RUM client (the library can already be wired with `'noop'`, so the
+vocabulary, route tracking and tests are in place). The cutover is one change, in this order:
+
+1. **Stop the old client** — remove whatever runs `RumService.init()` / `new AwsRum` (usually an
+   `APP_INITIALIZER`), and its page-view subscription.
+2. **Wire the new destination** — replace `'noop'` with `provideUwtTelemetryRumSink()`, the
+   credentials provider and the page-view recorder.
+3. **Turn the old service into an adapter** — inject `UwtTelemetrySink` (and the BI / scenario
+   services) as fields, and point each remaining method at the library: the migrated call, or
+   `this.sink.record(…)` for rows that need byte parity. Then move call sites to the library one at
+   a time. The class stays, without any `AwsRum` of its own, as the reference for §5 until every row
+   is ticked.
 
 ## 5. Diff the wire
 
@@ -90,8 +100,9 @@ diff needs.
 - **Session attributes.** `application`, `environment` and `version` from the identity are attached
   as session attributes. Port any other attributes via `sessionAttributes` in the app monitor config
   returned by the credentials provider.
-- **User identity.** Replace `pinUserId` with `inject(UwtTelemetrySink).setUserId(id)` /
-  `setUserId(undefined)`. Sign-out starts a fresh session with a new anonymous id; if the old code
+- **User identity.** Replace `pinUserId` with `setUserId(id)` / `setUserId(undefined)` on the
+  `UwtTelemetrySink`, injected once as a field of the service that handles sign-in — never with
+  `inject()` inside the sign-in callback, which throws `NG0203`. Sign-out starts a fresh session with a new anonymous id; if the old code
   behaved differently, call out the change.
 - **Errors.** The RUM client still captures unhandled JS errors itself. Handled errors the old code
   sent with `recordError` become `scenario.fail({ error })`, or a log line with

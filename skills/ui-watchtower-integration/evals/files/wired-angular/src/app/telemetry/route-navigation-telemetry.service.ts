@@ -135,15 +135,23 @@ function routeTemplateOf(root: ActivatedRouteSnapshot): string {
 }
 
 /**
- * The router's error for a URL that matched nothing quotes the URL; replace it
- * so no path segment reaches telemetry. Its name is kept for grouping.
+ * A navigation error, reduced to what is safe to send. Router errors can quote
+ * the URL (no matching route), a lazy chunk's URL, route parameters or user
+ * data from a resolver — and path segments are not redacted. Only the error's
+ * name (its class, e.g. `ChunkLoadError`) and an HTTP status are kept.
  */
-function unrecognizedError(error: unknown): Error {
-  const generic = new Error('Navigation failed before the URL matched a route');
-  if (error instanceof Error) {
-    generic.name = error.name;
+function safeNavigationFailure(
+  error: unknown,
+  recognized: boolean
+): { error: Error; statusCode?: number } {
+  const safe = new Error(
+    recognized ? 'Navigation failed' : 'Navigation failed before the URL matched a route'
+  );
+  const { name, status } = (error ?? {}) as { name?: unknown; status?: unknown };
+  if (typeof name === 'string' && name) {
+    safe.name = name;
   }
-  return generic;
+  return { error: safe, statusCode: typeof status === 'number' ? status : undefined };
 }
 
 /** One router navigation being tracked. */
@@ -309,12 +317,9 @@ export class RouteNavigationTelemetryService {
     if (event instanceof NavigationError) {
       const navigation = this.take(event.id);
       if (navigation) {
-        const recognized = navigation.route !== undefined;
+        const failure = safeNavigationFailure(event.error, navigation.route !== undefined);
         this.record(navigation, navigation.route ?? UNRECOGNIZED_ROUTE, (scenario, metadata) =>
-          scenario.fail({
-            error: recognized ? event.error : unrecognizedError(event.error),
-            metadata
-          })
+          scenario.fail({ ...failure, metadata })
         );
       }
     }

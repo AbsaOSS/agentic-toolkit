@@ -190,9 +190,12 @@ export const appConfig: ApplicationConfig = {
   non-blocking initializer — don't write one. The asset uses `fetch`, which bypasses `HttpClient`
   interceptors: if the broker needs auth that an interceptor adds, call it through `HttpClient`
   (`firstValueFrom`) instead.
-- **User identity** (only when Step 1 found sign-in): where sign-in completes, call
-  `inject(UwtTelemetrySink).setUserId(opaqueId)`; on sign-out, `setUserId(undefined)` — that starts
-  a fresh RUM session. Never an email or username. In a fragment, leave it to the shell: a
+- **User identity** (only when Step 1 found sign-in): in the service that completes sign-in, inject
+  the sink once as a field — `private readonly telemetrySink = inject(UwtTelemetrySink);` — and call
+  `this.telemetrySink.setUserId(opaqueId)` when sign-in completes and `setUserId(undefined)` on
+  sign-out, which starts a fresh RUM session. Never call `inject()` inside the callback itself: it
+  only works while Angular constructs the class, and throws `NG0203` there. Never an email or
+  username. In a fragment, leave it to the shell: a
   fragment's `setUserId` is forwarded and changes the shell's user.
 
 ### Step 4 · Declare the vocabulary
@@ -268,9 +271,11 @@ What the asset gets right, and why — keep these if you change it:
    aborted or skipped is `abandoned`; an error is `failure`; no end event within 30 s (a guard,
    resolver or lazy chunk that never settles) is `timeout`, recorded once from a browser-only timer
    outside Angular. A navigation superseded before its URL was recognized records nothing.
-5. **No URL ever reaches telemetry.** An unmatched URL fails as `(unrecognized)` with a generic
-   error — the router's own error quotes the URL. Reasons come from the router's `code`; its
-   `reason` text is never sent (empty in production, can contain URLs in development).
+5. **No URL ever reaches telemetry.** Every navigation error is replaced by a generic one that
+   keeps only the error's name and an HTTP status — router, resolver and lazy-chunk errors can quote
+   URLs, parameters or user data. An unmatched URL fails as `(unrecognized)`. Reasons come from the
+   router's `code`; its `reason` text is never sent (empty in production, can contain URLs in
+   development).
 6. **Click-intent backdating:** `markNavigationIntent()` from nav-link click handlers; a mark older
    than 2 s is discarded.
 
