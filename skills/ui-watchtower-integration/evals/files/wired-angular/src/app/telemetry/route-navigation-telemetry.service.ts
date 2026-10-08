@@ -30,51 +30,31 @@ import {
 import './telemetry.schema';
 
 /**
- * Records one page view per completed navigation, under the route template.
- *
- * Bind it only where AWS CloudWatch RUM is the destination, together with
- * `disableAutoPageView: true` in the app-monitor config — automatic page
- * views would report the resolved path (`/customers/42`):
- *
- * ```ts
- * {
- *   provide: ROUTE_PAGE_VIEW_RECORDER,
- *   useFactory: () => {
- *     const rum = inject(UwtRumTelemetrySink);
- *     return (route: string) => rum.recordPageView(route);
- *   }
- * }
- * ```
+ * Records one page view per completed navigation, under the route template. Bind it to
+ * `UwtRumTelemetrySink.recordPageView` only where RUM is the destination, with
+ * `disableAutoPageView: true` — automatic page views report the resolved path (`/customers/42`).
  */
 export const ROUTE_PAGE_VIEW_RECORDER = new InjectionToken<(route: string) => void>(
   'ROUTE_PAGE_VIEW_RECORDER'
 );
 
-/** Name shared by every route-navigation scenario. */
 const NAVIGATION_SCENARIO = 'route-navigation';
 
 /** Beyond this, a recorded click is assumed not to have caused the navigation. */
 const INTENT_MAX_AGE_MS = 2_000;
 
-/**
- * A navigation with no end event within this window — a guard, resolver or
- * lazy chunk that never settles — is recorded as `timeout`.
- */
+/** No end event in this window (a guard, resolver or chunk that never settles) → `timeout`. */
 const NAVIGATION_TIMEOUT_MS = 30_000;
 
 /** `route` of a navigation that failed before its URL matched a route. */
 const UNRECOGNIZED_ROUTE = '(unrecognized)';
 
-/**
- * Route `data` key naming a `matcher` route's segment in the template — a
- * matcher has no `path` to report.
- */
+/** Route `data` key naming a `matcher` route's segment — a matcher has no `path`. */
 const TELEMETRY_PATH_DATA_KEY = 'telemetryPath';
 
 /**
- * Stable, low-cardinality causes, derived from the router's `code`. The
- * router's `reason` text is never sent: it is empty in production builds and
- * can contain URLs in development builds.
+ * Low-cardinality causes from the router's `code`. Its `reason` text is never sent: empty in
+ * production, and it can contain URLs in development.
  */
 const CANCEL_REASON: Partial<Record<NavigationCancellationCode, string>> = {
   [NavigationCancellationCode.Redirect]: 'redirect',
@@ -84,10 +64,7 @@ const CANCEL_REASON: Partial<Record<NavigationCancellationCode, string>> = {
   [NavigationCancellationCode.Aborted]: 'aborted'
 };
 
-/**
- * Cancellations that are an expected dead end of the journey (`incomplete`),
- * not the user leaving it (`abandoned`).
- */
+/** Expected dead ends (`incomplete`), not the user leaving (`abandoned`). */
 const INCOMPLETE_CODES = new Set<NavigationCancellationCode>([
   NavigationCancellationCode.GuardRejected,
   NavigationCancellationCode.NoDataFromResolver
@@ -108,11 +85,7 @@ function causeOf<TCode extends number>(
   return (code === undefined ? undefined : causes[code]) ?? fallback;
 }
 
-/**
- * The matched route's template, from the `routeConfig` chain of the primary
- * outlet: `/customers/42` → `/customers/:id`. Exact after `redirectTo` and lazy
- * `loadChildren`, because the router has done the matching.
- */
+/** Matched template from the primary outlet's `routeConfig` chain: `/customers/:id`. */
 function routeTemplateOf(root: ActivatedRouteSnapshot): string {
   const parts: string[] = [];
   for (
@@ -134,17 +107,12 @@ function routeTemplateOf(root: ActivatedRouteSnapshot): string {
   return `/${parts.join('/')}`;
 }
 
-/**
- * A class-like error name (`ChunkLoadError`, `HttpErrorResponse`). Anything else
- * — a thrown object can carry any `name` — could be free text and is dropped.
- */
+/** A class-like name (`ChunkLoadError`); any other `name` could be free text. */
 const SAFE_ERROR_NAME = /^[A-Z][A-Za-z0-9]{0,63}$/;
 
 /**
- * A navigation error, reduced to what is safe to send. Router errors can quote
- * the URL (no matching route), a lazy chunk's URL, route parameters or user
- * data from a resolver — and path segments are not redacted. Only a class-like
- * name (e.g. `ChunkLoadError`) and an HTTP status are kept.
+ * Router, resolver and lazy-chunk errors can quote URLs, parameters or user data, and path
+ * segments are not redacted — so keep only a class-like name and an HTTP status.
  */
 function safeNavigationFailure(
   error: unknown,
@@ -160,17 +128,15 @@ function safeNavigationFailure(
   return { error: safe, statusCode: typeof status === 'number' ? status : undefined };
 }
 
-/** One router navigation being tracked. */
 interface TrackedNavigation {
-  /** Epoch ms the journey started: the click, `NavigationStart`, or the first navigation of a redirect chain. */
+  /** Epoch ms: the click, `NavigationStart`, or the start of a redirect chain. */
   startedAt: number;
-  /** Template of the route a guard or resolver redirected away from. */
+  /** Template a guard or resolver redirected away from. */
   redirectedFrom?: string;
-  /** The matched route template, known from `RoutesRecognized` on. */
+  /** Matched template, known from `RoutesRecognized`. */
   route?: string;
-  /** Epoch ms of `RoutesRecognized`: guards, resolvers and lazy components run after it. */
+  /** `RoutesRecognized` time — guards, resolvers and lazy components run after it. */
   recognizedAt?: number;
-  /** Records the navigation as `timeout` if no end event arrives in time. */
   timeoutHandle?: ReturnType<typeof setTimeout>;
 }
 
@@ -178,15 +144,10 @@ interface TrackedNavigation {
 type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom'>;
 
 /**
- * Measures every router navigation as one `route-navigation` scenario.
- *
- * The scenario is recorded when the navigation ends, so `route` is always the
- * final matched template — after `redirectTo`, lazy routes, and guard or
- * resolver redirects — and backdated to the click or the first
- * `NavigationStart`, so its duration covers the whole wait.
- *
- * Call {@link start} once, from the root component's constructor. Call
- * {@link markNavigationIntent} from navigation-link click handlers.
+ * One `route-navigation` scenario per navigation, recorded when it ends — `route` can't change
+ * after a scenario starts, and only the end knows the final template — and backdated to the click
+ * or the first `NavigationStart`. Call {@link start} once from the root component; call
+ * {@link markNavigationIntent} from nav-link click handlers.
  */
 @Injectable({ providedIn: 'root' })
 export class RouteNavigationTelemetryService {
@@ -197,22 +158,15 @@ export class RouteNavigationTelemetryService {
   private readonly zone = inject(NgZone);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  /**
-   * Keyed by navigation id, never a single "current" field: one navigation
-   * can supersede another, and a single field would attribute the wrong
-   * duration.
-   */
+  /** By navigation id, never one "current" field: navigations supersede each other. */
   private readonly navigations = new Map<number, TrackedNavigation>();
 
-  /** A redirected navigation, continued by the next `NavigationStart`. */
   private pendingRedirect?: RedirectCarry;
-
-  /** When the user last did something expected to start a navigation. */
   private navigationIntentAt?: number;
 
   private started = false;
 
-  /** Begins tracking router navigations. Safe to call more than once. */
+  /** Safe to call more than once. */
   start(): void {
     if (this.started) {
       return;
@@ -229,12 +183,7 @@ export class RouteNavigationTelemetryService {
     });
   }
 
-  /**
-   * Records that the user just did something expected to start a
-   * navigation. The router raises `NavigationStart` after event handling,
-   * guards and change detection; measuring from the click keeps that wait
-   * inside the recorded duration.
-   */
+  /** `NavigationStart` comes after event handling and change detection; count that wait too. */
   markNavigationIntent(): void {
     this.navigationIntentAt = Date.now();
   }
@@ -278,8 +227,7 @@ export class RouteNavigationTelemetryService {
         return;
       }
       if (event.code === NavigationCancellationCode.Redirect) {
-        // A guard or resolver redirect restarts under a new id: carry the
-        // start time, so one journey stays one scenario under its final route.
+        // Restarts under a new id: carry the start so the journey stays one scenario.
         this.pendingRedirect = {
           startedAt: navigation.startedAt,
           redirectedFrom: navigation.redirectedFrom ?? navigation.route
@@ -300,9 +248,8 @@ export class RouteNavigationTelemetryService {
     }
 
     if (event instanceof NavigationSkipped) {
-      // A redirect back to the current URL ends in NavigationSkipped instead
-      // of the NavigationStart the carried redirect waits for. Release it, and
-      // drop the click intent so it can't backdate an unrelated navigation.
+      // A redirect back to the current URL ends here, not in a NavigationStart: release the carried
+      // redirect, and drop the click intent so it can't backdate an unrelated navigation.
       this.navigationIntentAt = undefined;
       const reason = causeOf(SKIP_REASON, event.code, 'navigation-skipped');
       const redirect = this.consumePendingRedirect();
@@ -331,10 +278,7 @@ export class RouteNavigationTelemetryService {
     }
   }
 
-  /**
-   * Starts and settles the scenario in one go, backdated to the journey's
-   * start, once the final route template is known.
-   */
+  /** Starts and settles the scenario at once, backdated to the journey's start. */
   private record(
     navigation: TrackedNavigation,
     route: string,
@@ -357,11 +301,7 @@ export class RouteNavigationTelemetryService {
     );
   }
 
-  /**
-   * Consumes the click timestamp, if fresh enough.
-   *
-   * @returns epoch ms to backdate to: the click, or now
-   */
+  /** The click time if fresh enough, else now; consumes the click. */
   private navigationStartedAt(): number {
     const at = this.navigationIntentAt;
     this.navigationIntentAt = undefined;
@@ -377,10 +317,8 @@ export class RouteNavigationTelemetryService {
   }
 
   /**
-   * Records the navigation once as `timeout` if it hasn't ended within
-   * {@link NAVIGATION_TIMEOUT_MS} of the journey's start; a late end event then
-   * finds nothing to record. Browser only, outside Angular, so it never delays
-   * app stability or server rendering.
+   * Records a hung navigation once as `timeout`; a late end event then finds nothing. Browser only
+   * and outside Angular, so it never delays app stability or server rendering.
    */
   private armTimeout(navigationId: number, navigation: TrackedNavigation): void {
     if (!this.isBrowser) {

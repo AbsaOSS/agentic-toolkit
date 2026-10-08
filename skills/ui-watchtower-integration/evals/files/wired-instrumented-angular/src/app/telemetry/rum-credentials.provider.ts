@@ -5,15 +5,11 @@ import type {
   UwtRumCredentialsProvider
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 
-/**
- * Endpoint of the backend that returns the RUM app-monitor settings and
- * short-lived AWS credentials. Adapt to the app's own broker.
- */
+/** The app's broker: RUM app-monitor settings plus short-lived AWS credentials. */
 const RUM_BROKER_URL = '/rum/init';
 
 /**
- * Shape expected from the backend broker. Adapt to the real response; `load()`
- * checks every required field before using it.
+ * Expected answer — adapt to the real one:
  *
  * ```json
  * {
@@ -38,10 +34,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Optional app-monitor settings a broker can send as JSON, each kept only with
- * the right type. Functions, `RegExp`s and plugins (`fetchFunction`,
- * `clientBuilder`, `pagesToInclude`/`pagesToExclude`, `eventPluginsToLoad`)
- * can't travel as JSON — set them in code if the app needs them.
+ * Optional settings a broker can send as JSON, kept only when correctly typed. Functions,
+ * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -81,7 +75,6 @@ const isString = (v: unknown): v is string => typeof v === 'string';
 const isStringOrBoolean = (v: unknown): v is string | boolean =>
   typeof v === 'string' || typeof v === 'boolean';
 
-/** The optional settings in `config` that have the expected type; the rest are dropped. */
 function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMonitorConfig> {
   const settings: Record<string, unknown> = {};
   const keep = (key: string, ok: boolean): void => {
@@ -117,7 +110,6 @@ function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMon
   return settings as Partial<UwtRumAppMonitorConfig>;
 }
 
-/** Whether `value` is an object whose `keys` are all non-empty strings. */
 function hasStrings<K extends string>(
   value: unknown,
   keys: readonly K[]
@@ -129,30 +121,20 @@ function hasStrings<K extends string>(
 }
 
 /**
- * Supplies CloudWatch RUM settings and credentials from this application's
- * backend broker, so the browser never holds a long-lived AWS identity.
- *
- * Called at startup and again shortly before each credential expiry.
+ * Called at startup and ~5 min before each credential expiry, so the browser never holds a
+ * long-lived AWS identity.
  */
 @Injectable({ providedIn: 'root' })
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
-  /**
-   * Fetches the current app-monitor settings and credentials.
-   *
-   * @returns the bootstrap payload, or `null` — RUM off for this session —
-   *   when the broker disables RUM, is unreachable, or answers with anything
-   *   missing or malformed
-   */
+  /** `null` (RUM off for the session) unless the answer is complete, valid and unexpired. */
   async load(): Promise<UwtRumBootstrap | null> {
     let response: Response;
     try {
       response = await fetch(RUM_BROKER_URL, {
         headers: { Accept: 'application/json' },
-        // The response carries live, temporary AWS credentials.
-        cache: 'no-store'
+        cache: 'no-store' // live AWS credentials
       });
     } catch {
-      // A network-level failure rejects before any response exists.
       return null;
     }
 
@@ -167,8 +149,7 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
       return null;
     }
 
-    // Validate, don't cast: a half-filled answer must turn RUM off, not start
-    // a client that fails every dispatch silently.
+    // Validate, don't cast: a half-filled answer would start a client that silently fails.
     if (!isRecord(body) || body['enabled'] !== true) {
       return null;
     }
@@ -188,9 +169,8 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
         applicationId: config.applicationId,
         region: config.region,
         applicationVersion: config.applicationVersion,
-        // Always, whatever the broker says. Page views are recorded under the route template by
-        // RouteNavigationTelemetryService; automatic ones would send the
-        // resolved path (/customers/42).
+        // Always: page views come from the route service, under the template — automatic ones
+        // would send the resolved path (/customers/42).
         disableAutoPageView: true
       },
       credentials: {

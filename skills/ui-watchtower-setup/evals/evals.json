@@ -189,19 +189,8 @@
       "expected_output": "Skill reads the app's Angular version (24) and the library's supported range from the registry (npm view …@latest peerDependencies), finds that Angular 24 is outside it, stops without installing or wiring anything, never suggests --force or --legacy-peer-deps, and tells the user the library doesn't support this Angular version yet.",
       "files": [
         "evals/files/future-angular/package.json",
-        "evals/files/future-angular/angular.json",
-        "evals/files/future-angular/tsconfig.json",
-        "evals/files/future-angular/tsconfig.app.json",
-        "evals/files/future-angular/tsconfig.spec.json",
-        "evals/files/future-angular/src/index.html",
-        "evals/files/future-angular/src/styles.css",
         "evals/files/future-angular/src/main.ts",
-        "evals/files/future-angular/src/app/app.config.ts",
-        "evals/files/future-angular/src/app/app.routes.ts",
-        "evals/files/future-angular/src/app/app.ts",
-        "evals/files/future-angular/src/app/app.spec.ts",
-        "evals/files/future-angular/src/app/customers/customers.ts",
-        "evals/files/future-angular/src/app/customers/customer-detail.ts"
+        "evals/files/future-angular/src/app/app.config.ts"
       ],
       "expectations": [
         "Reads the app's @angular/core version (^24) from package.json",

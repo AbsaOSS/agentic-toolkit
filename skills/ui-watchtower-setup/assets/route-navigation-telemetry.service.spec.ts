@@ -110,7 +110,7 @@ describe('RouteNavigationTelemetryService', () => {
           { path: 'never-loads', loadChildren: () => new Promise<never>(() => undefined) }
         ]),
         provideUwtTelemetry(
-          { application: 'customer-portal-test', environment: 'test', version: '0.0.0' },
+          { application: 'my-app-test', environment: 'test', version: '0.0.0' },
           withScenarios({ defaultTimeoutMs: 0 })
         ),
         provideUwtTelemetryDestination(RecordingSink),

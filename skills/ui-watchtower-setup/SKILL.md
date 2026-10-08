@@ -39,7 +39,8 @@ to the app's own log backend, never to the destination.
 | `references/micro-frontends.md` | The app hosts embedded fragments, or is a fragment inside a shell |
 
 Templates in `assets/` are copied into the app and adapted: `telemetry.schema.ts`,
-`rum-credentials.provider.ts`, `log-api.provider.ts`, `route-navigation-telemetry.service.ts`.
+`rum-credentials.provider.ts`, `log-api.provider.ts`, `route-navigation-telemetry.service.ts`, and the
+specs for the last two (`*.spec.ts`).
 
 ## Workflow
 
@@ -260,26 +261,11 @@ sink. If an existing RUM integration records page views (Step 5), keep exactly o
 In a fragment, skip this step by default — the shell's router measures navigations that change the
 page URL. Add it only if the fragment has internal routes the shell never routes.
 
-What the asset gets right, and why — keep these if you change it:
-
-1. **Recorded when the navigation ends, backdated** to the click or the first `NavigationStart` —
-   a scenario's `route` can't change after it starts, and only the end knows the final template.
-   The template comes from the matched route config, never the URL.
-2. **Keyed by navigation id**, never one "current" field — one navigation can supersede another.
-3. **Guard and resolver redirects are one journey** under the final template, with
-   `redirectedFrom` (the source template) in metadata; `NavigationSkipped` releases a carried
-   redirect, or it leaks into an unrelated navigation.
-4. **Statuses:** a guard returning `false` or a resolver with no data is `incomplete`; superseded,
-   aborted or skipped is `abandoned`; an error is `failure`; no end event within 30 s (a guard,
-   resolver or lazy chunk that never settles) is `timeout`, recorded once from a browser-only timer
-   outside Angular. A navigation superseded before its URL was recognized records nothing.
-5. **No URL ever reaches telemetry.** Every navigation error is replaced by a generic one that
-   keeps only the error's name and an HTTP status — router, resolver and lazy-chunk errors can quote
-   URLs, parameters or user data. An unmatched URL fails as `(unrecognized)`. Reasons come from the
-   router's `code`; its `reason` text is never sent (empty in production, can contain URLs in
-   development).
-6. **Click-intent backdating:** `markNavigationIntent()` from nav-link click handlers; a mark older
-   than 2 s is discarded.
+What it records: one scenario per navigation under the final route template (redirects included),
+backdated to the click (`markNavigationIntent()` from nav-link handlers); a guard returning `false`
+is `incomplete`, supersession `abandoned`, an error `failure` (reduced to a class-like name and an
+HTTP status — no URL), and no end within 30 s `timeout`. Keep that behaviour if you change the
+asset; its comments say why each part is there.
 
 ### Step 7 · Tests
 
@@ -299,13 +285,12 @@ The library ships no test doubles on purpose — the harness is a few lines.
     { provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }
   ]
   ```
-- Add a spec for the route-navigation service with a **recording sink** (pattern in the API
-  reference, "Testing"), using the app's real route shapes: a successful navigation records
-  `success` with the route **template** (`/customers/:id`, never a resolved id — assert the id
-  appears nowhere in the payload), a guard rejection records `incomplete` with reason
-  `guard-rejected`, not `failure`, and, where the page-view recorder is bound, one page view per
-  completed navigation under the template. Check the test bites:
-  remove the `complete()` call and confirm it fails, then restore it.
+- Copy the two spec templates next to their assets: `route-navigation-telemetry.service.spec.ts`
+  (a recording sink and its own route table — add the app's own route shapes, e.g. its `:param`
+  routes) and, for RUM, `rum-credentials.provider.spec.ts` (adapt the broker answer to the real
+  one). They are written for Vitest; under Jest replace `vi.` with `jest.` (fake timers:
+  `doNotFake` instead of `toFake`), under Karma use Jasmine's clock and spies. Check the tests
+  bite: remove the `complete()` call in the service, confirm a test fails, restore it.
 - jsdom has no `BroadcastChannel`: the broadcast sink and host degrade to no-ops in tests. Expected —
   don't polyfill it.
 
