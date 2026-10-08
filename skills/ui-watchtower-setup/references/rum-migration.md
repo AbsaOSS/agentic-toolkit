@@ -22,14 +22,10 @@ alone is not parity:
 Also note how the existing code obtains credentials (Cognito identity pool vs a backend broker), how
 it handles sign-in/sign-out, and whether it records page views manually.
 
-**Fix live privacy leaks now — even if the migration is blocked** (for example on the credentials
-broker, §3). If the inventory shows the old code sending personal data or raw free text today — the
-text of a search box (worse, on every keystroke), an email as user id or session attribute, page ids
-that are resolved URLs with query strings — fix it in the old code right away, before or without
-the migration: debounce, send low-cardinality attributes instead (`queryLength`, `resultCount`), send
-an opaque id or no user at all, strip query strings and fragments from page ids. This changes those
-payloads before any wire diff; accept that, mark the rows in the inventory, and tell the owners of
-the affected dashboards. Dashboard parity never outranks personal data.
+**Fix live privacy leaks now, even if the migration is blocked.** Raw search text, an email as user
+id, page ids with query strings: fix them in the old code right away (debounce and send
+`queryLength`, an opaque id, strip query strings), mark the rows, and tell the dashboard owners.
+Parity never outranks personal data.
 
 ## 2. Pick a parity tool per row
 
@@ -37,7 +33,7 @@ the affected dashboards. Dashboard parity never outranks personal data.
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `eventNamespace` in the identity                       | Existing types differ from the library's only by prefix          | `eventNamespace: 'myapp'` → `myapp.scenario`, `myapp.scenario.step`, `myapp.bi`. Cheapest                  |
 | `track(name, metadata, { eventType: 'legacy.type' })`  | A dashboard needs one specific event type                        | Exact event type; payload becomes the `UwtBIEvent` envelope (`eventName`, `eventTime`, `metadata`, `application`, …). A migration escape hatch, not a pattern |
-| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required | Raw passthrough — you own the shape *and* its privacy: the library's redaction doesn't run here. Normalize free text first (an error becomes its name or a code — never its message), per the privacy rule in §1. Use sparingly and comment why |
+| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required | Raw passthrough, no redaction — never forward free text (an error becomes its name or code). Use sparingly |
 
 If a consumer can be updated instead (a query, a metric filter), prefer moving it to the library's
 event types — record that decision in the table.

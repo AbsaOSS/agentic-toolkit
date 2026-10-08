@@ -62,35 +62,25 @@ Copy this checklist and track progress:
 
 Read before writing anything — extend the app, don't restructure it.
 
-1. **Angular version vs the supported range.** Not Angular at all → stop. Otherwise read the
-   app's `@angular/core` and `rxjs` versions (installed, or else the ranges in `package.json`), and
-   the library's supported range from the registry — never from memory; it changes with releases:
+1. **Angular version.** Not Angular → stop. Compare the app's `@angular/core` and `rxjs` with the
+   library's range from the registry, never from memory:
    `npm view @absaoss-cps/ngx-ui-watchtower@latest peerDependencies`.
-   - **Inside the range** → install the latest version (Step 2).
-   - **Older than the range** → find the newest version whose peers fit
-     (`npm view @absaoss-cps/ngx-ui-watchtower versions --json`, then `npm view …@<version>
-     peerDependencies` per candidate). If one exists, offer it, pinned; the API reference describes
-     the latest version, so the installed typings win where they differ. If none fits, stop: an
-     Angular upgrade is out of scope.
-   - **Newer than the range** → the library doesn't support this Angular yet. Stop and tell the
-     user. Never install with `--force` or `--legacy-peer-deps`: a peer range is the library's
-     compatibility contract with Angular's compiler and runtime.
+   - Inside → install the latest version.
+   - Older → the newest release whose peers fit (`npm view … versions`), pinned; none → stop.
+   - Newer → stop and tell the user. Never `--force` or `--legacy-peer-deps`.
 2. **Package manager** — from the lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), a
    `packageManager` field, or `cli.packageManager` in `angular.json`. Use it for every install and
    script run; never default to npm.
 3. **Bootstrap style** — standalone (`app.config.ts`, `bootstrapApplication`) or NgModule
-   (`providers` in `app.module.ts`). Providers go in the same place either way
-   (`makeEnvironmentProviders` works in both).
+   (`providers` in `app.module.ts`). Providers go in the same place either way.
 4. **SSR** — `app.config.server.ts`, `server.ts`, `@angular/ssr`. Affects only code *you* write
    (Step 3, Gotchas); the library is SSR-safe.
 5. **Test runner** — Jest, Karma or Vitest, and which specs build the root providers or render
    components that will inject telemetry services (they need providers in Step 7).
 6. **Existing telemetry** — search for `aws-rum-web`, `recordEvent`, `recordPageView`, `pinUserId`,
    `addSessionAttributes`, a `RumService`, or another analytics SDK. If RUM is already wired, Step 5
-   applies. If ngx-ui-watchtower is already partly wired, keep what exists and run only the steps
-   for what is missing (destination and credentials, `telemetry.schema.ts`, user identity, the
-   route-navigation proof, spec providers). If nothing is missing, say so and offer
-   `ui-watchtower-integration`.
+   applies. If ngx-ui-watchtower is partly wired, run only the steps for what is missing; if
+   nothing is, offer `ui-watchtower-integration`.
 7. **Realm role** — standalone app, **shell** that embeds fragments (Web Fragments, Module
    Federation, iframes on the same origin), or **fragment** inside a shell. Look for
    `<web-fragment>`, fragment gateways, remote-entry config.
@@ -116,11 +106,6 @@ npm install @absaoss-cps/ngx-ui-watchtower@latest   # or the pinned version chos
 npm install aws-rum-web          # only if THIS realm sends to RUM (standalone app or shell)
 ```
 
-If the install reports a peer conflict, stop and report it — don't override it.
-
-`aws-rum-web` is an optional peer: a fragment or a `'noop'` app never needs it, because everything
-RUM-related lives in the separate entry point `@absaoss-cps/ngx-ui-watchtower/rum`.
-
 When `aws-rum-web` is installed, add `"allowedCommonJsDependencies": ["shimmer"]` to the app's build
 options in `angular.json` (a CommonJS transitive dependency; otherwise every build warns). If a strict
 `tsc` run fails inside `aws-rum-web`'s bundled `rrweb` typings, set `"skipLibCheck": true` in the
@@ -130,8 +115,8 @@ app tsconfig(s).
 
 `provideUwtTelemetry(identity)` registers **configuration only**. Every realm must also bind
 **exactly one destination**; injecting a telemetry service without one fails at bootstrap with
-`NG0201` — by design, so a forgotten destination is caught on the first run, not on an empty
-dashboard. Two different destinations also fail bootstrap.
+`NG0201` — by design; fix the wiring, never add a fallback provider "to make it start". Two
+different destinations also fail bootstrap.
 
 **Destination by realm role:**
 
@@ -185,23 +170,13 @@ export const appConfig: ApplicationConfig = {
   library is already a no-op on the server.
 - Start with **no** `withScenarios` / `withBIEvents` / `withLogging` / `withRedaction` features. Add
   one only for a stated reason, and record the reason in a comment.
-- Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint from Step 1
-  and adapt the response check. `load()` validates every required field and returns `null` on
-  **any** failure or incomplete answer (that disables RUM for the session; the app keeps working).
-  It passes the broker's other app-monitor settings through when correctly typed (`telemetries`,
-  `sessionAttributes`, `allowCookies`, …) and always sets `disableAutoPageView: true` — page views
-  come from Step 6, under the route template. `provideUwtTelemetryRumSink()` calls it from its own
-  non-blocking initializer — don't write one. The asset uses `fetch`, which bypasses `HttpClient`
-  interceptors: if the broker needs auth that an interceptor adds, call it through `HttpClient`
-  (`firstValueFrom`) instead. It requires credentials; for an app monitor that allows
-  unauthenticated access (a `{ config }`-only answer), relax that check.
-- **User identity** (only when Step 1 found sign-in): in the service that completes sign-in, inject
-  the sink once as a field — `private readonly telemetrySink = inject(UwtTelemetrySink);` — and call
-  `this.telemetrySink.setUserId(opaqueId)` when sign-in completes and `setUserId(undefined)` on
-  sign-out, which starts a fresh RUM session. Never call `inject()` inside the callback itself: it
-  only works while Angular constructs the class, and throws `NG0203` there. Never an email or
-  username. In a fragment, leave it to the shell: a fragment's `setUserId` is forwarded and changes
-  the shell's user.
+- Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint and adapt
+  the response check. It returns `null` (RUM off, app unaffected) for anything incomplete, and sets
+  `disableAutoPageView: true` (page views come from Step 6). Don't write an initializer — the sink
+  calls it. It uses `fetch`; switch to `HttpClient` if an interceptor adds the broker's auth.
+- **User identity** (only when the app has sign-in): inject `UwtTelemetrySink` as a field of the
+  sign-in service (not inside a callback — `NG0203`), then `setUserId(opaqueId)` on sign-in and
+  `setUserId(undefined)` on sign-out. Never an email or username. Fragments leave this to the shell.
 
 ### Step 4 · Declare the vocabulary
 
@@ -230,20 +205,14 @@ migration is blocked — tell the owners of the affected dashboards.
 
 ### Step 6 · Proof — route-navigation tracking
 
-One real scenario proves the whole pipeline (providers, destination, vocabulary, tests) and is
-useful in every app. Copy `assets/route-navigation-telemetry.service.ts` next to the schema and add
-`provideRouteNavigationTelemetry()` next to `provideRouter(...)` — not a `start()` call in the root
-component, which misses a blocking initial navigation (`withEnabledBlockingInitialNavigation()`,
-common with SSR). Nav-link click handlers may call `markNavigationIntent()`. It works
-unchanged for static, `:param`, lazy (`loadChildren`) and redirected routes. Only a `matcher` route
-needs one thing: a `data: { telemetryPath: 'files/:path' }` entry naming its segment (otherwise it
-reports `(matcher)`).
+One real scenario proves the whole pipeline. Copy `assets/route-navigation-telemetry.service.ts`
+next to the schema and add `provideRouteNavigationTelemetry()` next to `provideRouter(...)` (a
+`start()` in the root component would miss a blocking initial navigation). It works unchanged for
+static, `:param`, lazy and redirected routes; a `matcher` route needs
+`data: { telemetryPath: 'files/:path' }`. Keep the asset's behaviour — its comments explain it.
 
-**Page views** — in a realm that sends to RUM (standalone app or shell), bind the asset's
-`ROUTE_PAGE_VIEW_RECORDER` so each completed navigation records one page view under its route
-template; the credentials provider has turned automatic page views off, which would send the
-resolved path (`/customers/42`) — a PII and cardinality problem, since path segments are not
-redacted:
+**Page views** — where RUM is the destination, bind `ROUTE_PAGE_VIEW_RECORDER` so page views use
+the route template (automatic ones would send `/customers/42`; with `'noop'`, bind nothing):
 
 ```ts
 import { inject } from '@angular/core';
@@ -259,23 +228,11 @@ import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry
 }
 ```
 
-With a `'noop'` destination, bind nothing; when you later switch to RUM, add this binding with the
-sink. If an existing RUM integration records page views (Step 5), keep exactly one recorder.
-
 In a fragment, skip this step by default — the shell's router measures navigations that change the
 page URL. Add it only if the fragment has internal routes the shell never routes.
 
-**No router** (a single-screen app): skip this step and the page-view binding, and remove
-`disableAutoPageView: true` from the credentials provider — with no route changes, RUM's automatic
-page view (one per page load) is the right one. Keep personal data out of that URL. The proof is
-then the first scenario `ui-watchtower-integration` adds.
-
-What it records: one scenario per navigation under the final route template (redirects included),
-backdated to the click (`markNavigationIntent()` from nav-link handlers); a guard returning `false`
-is `incomplete`, supersession `abandoned` (one superseded before its URL was recognized records
-nothing — it has no template and would only spend the event budget), an error `failure` (reduced to
-a class-like name and an HTTP status — no URL), and no end within 30 s `timeout`. Keep that
-behaviour if you change the asset; its comments say why each part is there.
+**No router:** skip this step and the binding, and remove `disableAutoPageView: true` from the
+credentials provider — RUM's one automatic page view per load is then right.
 
 ### Step 7 · Tests
 
@@ -310,10 +267,8 @@ Run, through the detected package manager, until all are green:
 
 1. **Build** the app (including the server build when SSR is on).
 2. **Unit tests.**
-3. **Type-check** for real: `tsc --noEmit` against a solution-style root tsconfig (`"files": []` +
-   `"references"`) checks nothing — run `tsc -p tsconfig.app.json --noEmit` and the spec tsconfig, or
-   `tsc --build`. Passing tests prove nothing about types: Vitest (esbuild) never type-checks, and
-   Jest only does when ts-jest diagnostics are on.
+3. **Type-check:** `tsc -p tsconfig.app.json --noEmit` and the spec tsconfig — passing tests prove
+   nothing about types (Vitest never type-checks), and a solution-style root tsconfig checks nothing.
 4. **Live check** in the browser with the debug flags (no reload needed):
 
    ```js
@@ -339,25 +294,14 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
 
 ## Gotchas
 
-- **No default destination** — `NG0201` at bootstrap means a destination (or, for the logger and the
-  broadcast host, a log provider) is missing. Fix the wiring; never add a fallback provider "to make
-  it start".
-- **One destination per realm, never two.** Another destination *replaces* RUM; it never runs beside
-  it. A fragment never gets the RUM sink.
 - **`/rum` is a separate entry point for a reason.** Import RUM symbols only from
   `@absaoss-cps/ngx-ui-watchtower/rum`, and never re-export them from a shared barrel — that pulls
   `aws-rum-web` into every consumer's build. No deep imports (`…/src/lib/…`) either.
-- **`route` is a metric dimension** — a template (`/customers/:id`), never a resolved URL; one series
-  per customer is both a cardinality and a PII problem.
-- **One page-view recorder, under the template.** Automatic RUM page views use the resolved path —
-  keep `disableAutoPageView: true` with the Step 6 recorder; never both, and never the automatic one
-  alone — except in an app with no router (Step 6).
 - **Telemetry never throws into the app** — every entry point fails open. Don't wrap calls in
   try/catch.
-- **Redaction cannot be fully disabled, and never scrubs URL path segments** — only query strings and
-  fragments. `withRedaction({ scanValuePatterns: ['email'] })` scrubs matching *values* in metadata
-  and messages; it does nothing for a path. Keep personal data out of URLs (redesign such routes),
-  and report route templates, never resolved paths.
+- **Redaction never scrubs URL path segments** (only query strings and fragments; `scanValuePatterns`
+  only scrubs metadata and message values). Keep personal data out of URLs and report route
+  templates, never resolved paths.
 
 ## Out of scope
 

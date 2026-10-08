@@ -87,11 +87,8 @@ providers: [
   origin-wide. On the shared default channel, a second tab's fragments get recorded through the
   first tab's RUM client — wrong page, wrong context. Generate the id once per page load, never per
   fragment or per navigation.
-- **Why a `window` global** and not `sessionStorage`: browsers copy `sessionStorage` into a
-  duplicated tab, which would put both tabs back on one channel. A query parameter doesn't work
-  either: a bound fragment shares the shell's `window.location`.
-- Per-tab channels give correct attribution, not a separate RUM session per tab — the session is a
-  cookie shared across tabs, by design.
+- Publish it on `window`, not `sessionStorage` (copied into duplicated tabs) or a query parameter
+  (fragments share the shell's `location`).
 
 ## Fragment — the contract to hand to fragment teams
 
@@ -137,12 +134,8 @@ Use the `useFactory` provider, not `provideUwtTelemetrySink('broadcast', { chann
 shellChannelName() })`: the option is bound with `useValue` and read when the fragment's providers
 array is built, while the factory runs only when the sink is first constructed.
 
-**Precondition: the shell publishes the id before any fragment boots.** The sink reads the channel
-once and never re-reads it, so a fragment that boots first stays on its private `unhosted` channel
-for the whole page — nothing ships, silently. The shell code above publishes at module scope of its
-config, before the shell itself bootstraps, and Web Fragments loads fragments after the shell is
-running, so this holds. If your setup can boot a fragment first (preloading, a fragment page opened
-on its own and later embedded), it doesn't hold — verify it below rather than assume.
+**The shell must publish the id before any fragment boots** — the sink reads it once, so an early
+fragment ships nothing for the whole page. The shell code above guarantees this with Web Fragments.
 
 | Must match the shell | `eventNamespace`; the channel name (read from `window.top`)                                             |
 |----------------------|---------------------------------------------------------------------------------------------------------|
@@ -158,19 +151,15 @@ Inside a fragment:
 - Don't call `setUserId()`: it is forwarded and changes the shell's user (and `undefined` starts a
   new session). The shell owns user identity.
 - Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
-- A fragment with no shell, **or on a wrong channel**, behaves identically: everything runs, nothing
-  ships, no error. Never let the channel resolve to `undefined` — that selects the library's shared
-  default channel, where a shell that never adopted per-tab ids would receive the fragment's events.
-  Verify the channel deliberately (below).
+- A fragment with no shell, or on a wrong channel, runs normally and ships nothing, silently —
+  verify the channel (below).
 - Correlation across realms is a string: forward `scenario.id` and start a child scenario with
   `parentScenarioId`.
 
 ## Verifying
 
-- In a fragment's realm, `window.top.__uwtTelemetryChannel` equals the id the shell generated, and
-  the fragment's events reach the shell (`received` below grows) on a **first** page load, not only
-  after navigating.
-- Once fragments forward, the shell's `inject(UwtTelemetryBroadcastHost).received` counter increases.
+- In a fragment's realm, `window.top.__uwtTelemetryChannel` equals the shell's id, and on a first
+  page load the shell's `inject(UwtTelemetryBroadcastHost).received` counter grows.
 - Two tabs have two different channel ids.
 - With the debug flags on, lines are prefixed per realm: `[shell][scenario] …`, `[cart][bi] …`.
 - `BroadcastChannel` is same-origin only: a fragment served from another origin forwards nothing,

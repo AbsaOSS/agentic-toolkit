@@ -23,10 +23,8 @@ already in place:
 | **Scenarios** | Did this user journey succeed, and how long did it take? | `UwtScenarioTelemetryService.start()` → `UwtScenario` |
 | **BI events** | Did this meaningful thing happen? | `UwtBITelemetryService.track()` |
 
-The people who own the app know which questions the data must answer; the code shows where those
-journeys live. This skill starts from the first and uses the second — it asks before it proposes,
-and marks which items came from the user and which it suggested. It can be re-run as the app grows:
-each pass adds to what is already instrumented.
+It asks the team what they want to learn before proposing, marks each item as theirs or suggested,
+and can be re-run as the app grows — each pass only adds.
 
 ## Reference files — load on demand
 
@@ -60,12 +58,9 @@ If only `telemetry.schema.ts` (the file augmenting the name registries) is missi
 create it in Step 6 — a `declare module '@absaoss-cps/ngx-ui-watchtower'` block with the confirmed
 names, side-effect-imported where the providers are configured.
 
-Also read what already exists, so this pass only adds or changes, never duplicates. The schema is
-the inventory of names — every scenario, step and BI name in use must be declared there, or it
-doesn't compile. Then find where each is used: search for every declared name, and for every
-injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService` (whatever the field is called,
-including wrappers and the route-navigation service) and every `traceScenario(`. Note the test
-runner and the package manager.
+Read what already exists so this pass only adds: the names in `telemetry.schema.ts`, and their uses
+(search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
+`traceScenario(`). Note the test runner and package manager.
 
 ### Step 2 · Ask the user what they want to learn
 
@@ -146,10 +141,9 @@ Follow `references/instrumentation-patterns.md`:
 2. Each journey: start → steps → settle with the **right** status — `complete`, `incomplete` (an
    expected dead end, e.g. no results), `fail` (a defect, with a `statusCode`), `cancel` (the user
    left or a newer request superseded it). Timeout is automatic.
-3. **Never hand a raw `HttpErrorResponse` to `fail()` or `logger.error()`**: its message quotes the
-   request URL, and redaction never scrubs path segments, so ids reach RUM. Use the patterns'
-   `safeHttpFailure(error)` (class and status only); with `traceScenario`, settle the failure first
-   in a `catchError` upstream of it — the operator itself passes the raw error and no status.
+3. **Never pass a raw `HttpErrorResponse` to `fail()` or `logger.error()`** — its message quotes the
+   URL, ids included. Use the patterns' `safeHttpFailure(error)`; with `traceScenario`, settle it in a
+   `catchError` placed before the operator.
 4. Settle open scenarios when their component is destroyed; under `switchMap`, give
    `traceScenario` a `cancelOutcome`. Nothing downstream of `traceScenario` may stop after the
    first value — no `take(1)`/`first()` after it, no `firstValueFrom()` on it (it records
@@ -175,21 +169,18 @@ confirm it fails, restore.
 Run, through the app's package manager: the **build**, the **unit tests**, and a **real type-check**
 (`tsc -p tsconfig.app.json --noEmit` and the spec tsconfig — Vitest never type-checks). Then a live
 check with `localStorage.setItem('debugScenario', 'true')` and `debugBI`: one line per settled
-scenario with the right status, leaving mid-journey gives `abandoned`, and a double-click on an
-action whose events are identical (same name, `scenarioId`, feature and metadata) gives one BI
-event — clicks that start separate journeys carry different scenario ids and correctly give two.
+scenario with the right status, leaving mid-journey gives `abandoned`, and a repeated identical
+click gives one BI event.
 
 Report what was instrumented (by source), what was proposed but not confirmed, and anything changed
 from the user's original request and why.
 
 ## Gotchas
 
-- **The right settle status is the whole point.** Leaving is `abandoned`, not `failure`; an empty
-  result is `incomplete`, not `success`. Collapsing them makes the failure rate useless for alerts.
-- **Names and `route` are metric dimensions** — no ids, no resolved URLs.
-- **Metadata is flat primitives**, at most 50 keys per scenario; objects and `undefined` are dropped.
-- **The RUM session budget is 200 events**, page views and errors included — one event per settled
-  scenario, keep `emitLifecycleEvents` off, debounce chatty BI events.
+- **The right settle status is the whole point** — collapsing `abandoned`/`incomplete` into
+  `failure` makes the failure rate useless for alerts.
+- **The RUM session budget is 200 events**, page views and errors included — keep
+  `emitLifecycleEvents` off.
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
 - **Percentiles and dashboards are AWS-side.** The frontend emits raw `delta` and low-cardinality
   dimensions; it never computes metrics.
