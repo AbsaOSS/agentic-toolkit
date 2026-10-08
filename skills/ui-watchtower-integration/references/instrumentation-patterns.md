@@ -70,12 +70,17 @@ async load(): Promise<void> {
 }
 ```
 
-**Observable** — `traceScenario` settles on completion, error or early unsubscribe:
+**Observable** — `traceScenario` settles on completion, error or early unsubscribe. Like any cold
+observable, nothing happens until something subscribes: return it to a caller that subscribes (a
+template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`:
 
 ```ts
-this.api.customers().pipe(
-  traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
-);
+loadCustomers(): Observable<Customer[]> {
+  const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
+  return this.api.customers().pipe(
+    traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
+  );
+}
 ```
 
 **Backdating** — the journey starts at the click, not when the async handler runs:

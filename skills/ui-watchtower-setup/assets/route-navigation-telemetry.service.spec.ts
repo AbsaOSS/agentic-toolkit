@@ -40,6 +40,8 @@ class Page {}
 
 let releaseSlowGuard: (value: boolean) => void = () => undefined;
 let slowGuardEntered: () => void = () => undefined;
+let lazyLoadEntered: () => void = () => undefined;
+let releaseLazyLoad: (routes: unknown[]) => void = () => undefined;
 let releaseHangGuard: (value: boolean) => void = () => undefined;
 
 function filesMatcher(segments: UrlSegment[]) {
@@ -121,7 +123,14 @@ describe('RouteNavigationTelemetryService', () => {
             component: Page,
             canActivate: [() => new Promise<boolean>((resolve) => (releaseHangGuard = resolve))]
           },
-          { path: 'never-loads', loadChildren: () => new Promise<never>(() => undefined) }
+          { path: 'never-loads', loadChildren: () => new Promise<never>(() => undefined) },
+          {
+            path: 'slow-lazy',
+            loadChildren: () => {
+              lazyLoadEntered();
+              return new Promise<never[]>((resolve) => (releaseLazyLoad = () => resolve([])));
+            }
+          }
         ]),
         provideUwtTelemetry(
           { application: 'my-app-test', environment: 'test', version: '0.0.0' },
@@ -261,6 +270,16 @@ describe('RouteNavigationTelemetryService', () => {
     expect(scenarios()).toEqual([
       expect.objectContaining({ status: 'success', route: '/files/:path' })
     ]);
+  });
+
+  it('records nothing for a navigation superseded before its URL was recognized', async () => {
+    const entered = new Promise<void>((resolve) => (lazyLoadEntered = resolve));
+    const first = router.navigateByUrl('/slow-lazy/x').catch(() => false);
+    await entered;
+    await router.navigateByUrl('/customers');
+    releaseLazyLoad([]);
+    await first;
+    expect(scenarios()).toEqual([expect.objectContaining({ status: 'success', route: '/customers' })]);
   });
 
   it('records a superseded navigation as abandoned, and the new one as success', async () => {

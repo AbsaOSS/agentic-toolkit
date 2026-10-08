@@ -271,8 +271,9 @@ then the first scenario `ui-watchtower-integration` adds.
 
 What it records: one scenario per navigation under the final route template (redirects included),
 backdated to the click (`markNavigationIntent()` from nav-link handlers); a guard returning `false`
-is `incomplete`, supersession `abandoned`, an error `failure` (reduced to a class-like name and an
-HTTP status — no URL), and no end within 30 s `timeout`. Keep that behaviour if you change the
+is `incomplete`, supersession `abandoned` (one superseded before its URL was recognized records
+nothing — it has no template and would only spend the event budget), an error `failure` (reduced to
+a class-like name and an HTTP status — no URL), and no end within 30 s `timeout`. Keep that behaviour if you change the
 asset; its comments say why each part is there.
 
 ### Step 7 · Tests
@@ -352,9 +353,10 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
   alone.
 - **Telemetry never throws into the app** — every entry point fails open. Don't wrap calls in
   try/catch.
-- **Redaction cannot be fully disabled**, and URL **path** segments are not scrubbed — only query
-  strings and fragments. Keep personal data out of URLs, or enable `withRedaction({ scanValuePatterns:
-  ['email'] })`.
+- **Redaction cannot be fully disabled, and never scrubs URL path segments** — only query strings and
+  fragments. `withRedaction({ scanValuePatterns: ['email'] })` scrubs matching *values* in metadata
+  and messages; it does nothing for a path. Keep personal data out of URLs (redesign such routes),
+  and report route templates, never resolved paths.
 
 ## Out of scope
 

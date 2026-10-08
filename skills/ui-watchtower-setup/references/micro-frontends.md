@@ -130,8 +130,15 @@ providers: [
 ```
 
 Use the `useFactory` provider, not `provideUwtTelemetrySink('broadcast', { channelName:
-shellChannelName() })`: the option is bound with `useValue`, read when the providers array is built —
-possibly before the shell has published the id. The factory runs when the sink is first constructed.
+shellChannelName() })`: the option is bound with `useValue` and read when the fragment's providers
+array is built, while the factory runs only when the sink is first constructed.
+
+**Precondition: the shell publishes the id before any fragment boots.** The sink reads the channel
+once and never re-reads it, so a fragment that boots first stays on its private `unhosted` channel
+for the whole page — nothing ships, silently. The shell code above publishes at module scope of its
+config, before the shell itself bootstraps, and Web Fragments loads fragments after the shell is
+running, so this holds. If your setup can boot a fragment first (preloading, a fragment page opened
+on its own and later embedded), it doesn't hold — verify it below rather than assume.
 
 | Must match the shell | `eventNamespace`; the channel name (read from `window.top`)                                             |
 |----------------------|---------------------------------------------------------------------------------------------------------|
@@ -156,7 +163,9 @@ Inside a fragment:
 
 ## Verifying
 
-- In a fragment's realm, `window.top.__uwtTelemetryChannel` equals the id the shell generated.
+- In a fragment's realm, `window.top.__uwtTelemetryChannel` equals the id the shell generated, and
+  the fragment's events reach the shell (`received` below grows) on a **first** page load, not only
+  after navigating.
 - Once fragments forward, the shell's `inject(UwtTelemetryBroadcastHost).received` counter increases.
 - Two tabs have two different channel ids.
 - With the debug flags on, lines are prefixed per realm: `[shell][scenario] …`, `[cart][bi] …`.
