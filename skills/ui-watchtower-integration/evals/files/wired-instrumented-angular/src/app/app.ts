@@ -13,10 +13,6 @@ import { RouteNavigationTelemetryService } from './telemetry/route-navigation-te
 export class App {
   private readonly routeTelemetry = inject(RouteNavigationTelemetryService);
 
-  constructor() {
-    this.routeTelemetry.start();
-  }
-
   /** Starts the navigation measurement at the click, not at NavigationStart. */
   protected markNavigationIntent(): void {
     this.routeTelemetry.markNavigationIntent();

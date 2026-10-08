@@ -21,12 +21,6 @@
             "allowedCommonJsDependencies": [
               "shimmer"
             ],
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
             "styles": [
               "src/styles.css"
             ],

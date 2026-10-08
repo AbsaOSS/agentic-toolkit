@@ -8,7 +8,10 @@ import {
   provideUwtTelemetryRumSink
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 import { routes } from './app.routes';
-import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry.service';
+import {
+  provideRouteNavigationTelemetry,
+  ROUTE_PAGE_VIEW_RECORDER
+} from './telemetry/route-navigation-telemetry.service';
 import { AppRumCredentialsProvider } from './telemetry/rum-credentials.provider';
 import './telemetry/telemetry.schema'; // side-effect import: the telemetry vocabulary
 
@@ -19,6 +22,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    // Route-navigation telemetry, started before any navigation (incl. the initial one).
+    provideRouteNavigationTelemetry(),
     provideHttpClient(),
     // No features (withScenarios / withBIEvents / withLogging / withRedaction):
     // the library defaults fit, and there is no log backend.

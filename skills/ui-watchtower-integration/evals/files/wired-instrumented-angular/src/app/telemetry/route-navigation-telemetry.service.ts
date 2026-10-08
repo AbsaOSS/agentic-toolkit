@@ -1,11 +1,13 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
+  EnvironmentProviders,
   inject,
   Injectable,
   InjectionToken,
   NgZone,
-  PLATFORM_ID
+  PLATFORM_ID,
+  provideEnvironmentInitializer
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -146,7 +148,7 @@ type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom'>;
 /**
  * One `route-navigation` scenario per navigation, recorded when it ends — `route` can't change
  * after a scenario starts, and only the end knows the final template — and backdated to the click
- * or the first `NavigationStart`. Call {@link start} once from the root component; call
+ * or the first `NavigationStart`. Start it with {@link provideRouteNavigationTelemetry}; call
  * {@link markNavigationIntent} from nav-link click handlers.
  */
 @Injectable({ providedIn: 'root' })
@@ -343,4 +345,13 @@ export class RouteNavigationTelemetryService {
     clearTimeout(navigation?.timeoutHandle);
     return navigation;
   }
+}
+
+/**
+ * Starts route-navigation telemetry before any navigation runs — including a blocking initial
+ * navigation (`withEnabledBlockingInitialNavigation()`), which starts before the root component
+ * exists. Add it next to `provideRouter(...)`.
+ */
+export function provideRouteNavigationTelemetry(): EnvironmentProviders {
+  return provideEnvironmentInitializer(() => inject(RouteNavigationTelemetryService).start());
 }

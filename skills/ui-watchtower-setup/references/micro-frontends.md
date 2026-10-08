@@ -45,7 +45,8 @@ function newChannelId(): string {
   }
   if (typeof c?.getRandomValues === 'function') {
     const bytes = c.getRandomValues(new Uint8Array(16));
-    return `ngx-ui-watchtower-${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `ngx-ui-watchtower-${hex}`;
   }
   return `ngx-ui-watchtower-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
@@ -104,19 +105,21 @@ declare global {
 }
 
 /**
- * The shell's channel. `undefined` (no shell, server rendering, cross-origin `top`) makes the sink
- * fall back to the library's default channel `'ngx-ui-watchtower'` — with no host listening there,
- * nothing ships and nothing fails.
+ * The shell's channel — or, with no shell, a cross-origin `top`, or during server rendering, a
+ * private channel nobody hosts, so nothing ships. Never `undefined`: the library would then use its
+ * shared default channel, where another same-origin shell may be listening.
  */
-function shellChannelName(): string | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
+function shellChannelName(): string {
   try {
-    return window.top?.__uwtTelemetryChannel;
+    const shell = typeof window === 'undefined' ? undefined : window.top?.__uwtTelemetryChannel;
+    if (shell) {
+      return shell;
+    }
   } catch {
-    return undefined;
+    // cross-origin `top`
   }
+  const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `ngx-ui-watchtower-unhosted-${suffix}`;
 }
 
 providers: [
@@ -145,9 +148,9 @@ Inside a fragment:
   new session). The shell owns user identity.
 - Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
 - A fragment with no shell, **or on a wrong channel**, behaves identically: everything runs, nothing
-  ships, no error. An unresolved channel is not a no-op by itself — it falls back to the default
-  channel, so if some shell *is* hosting on the default channel (one that never adopted per-tab ids),
-  the fragment's events go there. Verify the channel deliberately (below).
+  ships, no error. Never let the channel resolve to `undefined` — that selects the library's shared
+  default channel, where a shell that never adopted per-tab ids would receive the fragment's events.
+  Verify the channel deliberately (below).
 - Correlation across realms is a string: forward `scenario.id` and start a child scenario with
   `parentScenarioId`.
 

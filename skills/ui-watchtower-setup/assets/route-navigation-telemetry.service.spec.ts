@@ -1,6 +1,13 @@
-import { Component, inject, Injectable } from '@angular/core';
+import { Component, inject, Injectable, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router, UrlSegment } from '@angular/router';
+import { bootstrapApplication } from '@angular/platform-browser';
+import {
+  provideRouter,
+  Router,
+  RouterOutlet,
+  UrlSegment,
+  withEnabledBlockingInitialNavigation
+} from '@angular/router';
 import {
   provideUwtTelemetry,
   provideUwtTelemetryDestination,
@@ -8,6 +15,7 @@ import {
   withScenarios
 } from '@absaoss-cps/ngx-ui-watchtower';
 import {
+  provideRouteNavigationTelemetry,
   RouteNavigationTelemetryService,
   ROUTE_PAGE_VIEW_RECORDER
 } from './route-navigation-telemetry.service';
@@ -321,5 +329,28 @@ describe('RouteNavigationTelemetryService', () => {
       await vi.advanceTimersByTimeAsync(60_000);
       expect(scenarios()).toEqual([expect.objectContaining({ status: 'success' })]);
     });
+  });
+
+  it('records a blocking initial navigation, which runs before the root component exists', async () => {
+    @Component({ selector: 'telemetry-test-root', imports: [RouterOutlet], template: '<router-outlet />' })
+    class Root {}
+    document.body.innerHTML = '<telemetry-test-root></telemetry-test-root>';
+    history.replaceState(null, '', '/customers/cust-SECRET-7');
+    const app = await bootstrapApplication(Root, {
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([{ path: 'customers/:id', component: Page }], withEnabledBlockingInitialNavigation()),
+        provideUwtTelemetry({ application: 'my-app-test', environment: 'test', version: '0.0.0' }),
+        provideUwtTelemetryDestination(RecordingSink),
+        provideRouteNavigationTelemetry()
+      ]
+    });
+    try {
+      expect(scenarios()).toEqual([
+        expect.objectContaining({ status: 'success', route: '/customers/:id' })
+      ]);
+    } finally {
+      app.destroy();
+    }
   });
 });

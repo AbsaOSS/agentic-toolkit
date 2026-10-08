@@ -93,6 +93,17 @@ describe('AppRumCredentialsProvider', () => {
     expect((await load())?.config).toEqual({ ...valid.config, disableAutoPageView: true });
   });
 
+  it.each([
+    ['a number entry', [42]],
+    ['a tuple without a name', [[42]]],
+    ['a tuple with a non-object option', [['http', 'all']]],
+    ['an empty tuple', [[]]],
+    ['a tuple with extra entries', [['http', {}, 'extra']]]
+  ])('drops malformed telemetries: %s', async (_label, telemetries) => {
+    answer({ ...valid, config: { ...valid.config, telemetries } });
+    expect((await load())?.config).not.toHaveProperty('telemetries');
+  });
+
   it('drops an out-of-range sample rate instead of passing it on', async () => {
     answer({ ...valid, config: { ...valid.config, sessionSampleRate: 5 } });
     expect((await load())?.config.sessionSampleRate).toBeUndefined();

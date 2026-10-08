@@ -74,6 +74,13 @@ const isPrimitive = (v: unknown): v is string | number | boolean =>
 const isString = (v: unknown): v is string => typeof v === 'string';
 const isStringOrBoolean = (v: unknown): v is string | boolean =>
   typeof v === 'string' || typeof v === 'boolean';
+/** A telemetry name (`'errors'`) or a `[name]` / `[name, options]` tuple (`['http', { … }]`). */
+const isTelemetry = (t: unknown): boolean =>
+  isString(t) ||
+  (Array.isArray(t) &&
+    (t.length === 1 || t.length === 2) &&
+    isString(t[0]) &&
+    (t.length === 1 || isRecord(t[1])));
 
 function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMonitorConfig> {
   const settings: Record<string, unknown> = {};
@@ -99,10 +106,7 @@ function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMon
   keep('headers', isFlatRecord(config['headers'], isString));
   keep('cookieAttributes', isFlatRecord(config['cookieAttributes'], isStringOrBoolean));
   const telemetries = config['telemetries'];
-  keep(
-    'telemetries',
-    Array.isArray(telemetries) && telemetries.every((t) => isString(t) || Array.isArray(t))
-  );
+  keep('telemetries', Array.isArray(telemetries) && telemetries.every(isTelemetry));
   const compression = config['compressionStrategy'];
   if (isRecord(compression) && typeof compression['enabled'] === 'boolean') {
     settings['compressionStrategy'] = { enabled: compression['enabled'] };

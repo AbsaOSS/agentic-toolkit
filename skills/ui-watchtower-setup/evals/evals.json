@@ -30,7 +30,7 @@
         "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null on any failure",
         "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
         "Creates telemetry.schema.ts augmenting UwtScenarioNames and UwtScenarioSteps, and side-effect-imports it where the providers are configured",
-        "Adds route-navigation tracking (the asset service, started from the root component) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
+        "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
         "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
         "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
         "Adds telemetry providers to app.spec.ts so it does not fail with NG0201",
@@ -76,7 +76,7 @@
       "expectations": [
         "Uses provideUwtTelemetrySink('broadcast') as the only destination",
         "Provides UWT_BROADCAST_CHANNEL with useFactory (lazy), not provideUwtTelemetrySink('broadcast', { channelName }) with an eagerly computed value",
-        "Guards the window.top read for server rendering and cross-origin access, returning undefined",
+        "Guards the window.top read for server rendering and cross-origin access, and falls back to a private channel nobody hosts — never undefined, which would select the shared default channel",
         "Uses an application name distinct from the shell (e.g. 'cart')",
         "Does not add provideUwtTelemetryRumSink, UWT_RUM_CREDENTIALS_PROVIDER, provideUwtTelemetryBroadcastHost or UWT_LOG_API_PROVIDER",
         "Does not install aws-rum-web"

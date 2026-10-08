@@ -229,8 +229,10 @@ migration is blocked — tell the owners of the affected dashboards.
 ### Step 6 · Proof — route-navigation tracking
 
 One real scenario proves the whole pipeline (providers, destination, vocabulary, tests) and is
-useful in every app. Copy `assets/route-navigation-telemetry.service.ts` next to the schema and call
-its `start()` once from the root component's constructor (or from an app initializer). It works
+useful in every app. Copy `assets/route-navigation-telemetry.service.ts` next to the schema and add
+`provideRouteNavigationTelemetry()` next to `provideRouter(...)` — not a `start()` call in the root
+component, which misses a blocking initial navigation (`withEnabledBlockingInitialNavigation()`,
+common with SSR). Nav-link click handlers may call `markNavigationIntent()`. It works
 unchanged for static, `:param`, lazy (`loadChildren`) and redirected routes. Only a `matcher` route
 needs one thing: a `data: { telemetryPath: 'files/:path' }` entry naming its segment (otherwise it
 reports `(matcher)`).
