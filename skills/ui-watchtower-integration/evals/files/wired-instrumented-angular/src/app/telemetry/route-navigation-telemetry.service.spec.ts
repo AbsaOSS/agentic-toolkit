@@ -17,14 +17,14 @@ const pageViews: string[] = [];
 
 @Injectable()
 class RecordingSink extends UwtTelemetrySink {
-  record(eventType: string, payload: object): void {
+  override record(eventType: string, payload: object): void {
     events.push({ eventType, payload: payload as Record<string, unknown> });
   }
-  recordError(): void {}
-  getSessionId(): string | undefined { return 'session-1'; }
-  setUserId(): void {}
-  getUserId(): string | undefined { return undefined; }
-  flush(): void {}
+  override recordError(): void {}
+  override getSessionId(): string | undefined { return 'session-1'; }
+  override setUserId(): void {}
+  override getUserId(): string | undefined { return undefined; }
+  override flush(): void {}
 }
 
 @Component({ template: '' })
@@ -82,6 +82,13 @@ describe('RouteNavigationTelemetryService', () => {
             resolve: {
               data: () =>
                 Promise.reject({ name: 'HttpErrorResponse', status: 503, message: 'GET /api/cust-SECRET-7 failed' })
+            }
+          },
+          {
+            path: 'odd-name',
+            component: Page,
+            resolve: {
+              data: () => Promise.reject({ name: 'Lookup failed for cust-SECRET-7 at /x', message: 'm' })
             }
           },
           {
@@ -212,6 +219,12 @@ describe('RouteNavigationTelemetryService', () => {
     ]);
     expect(JSON.stringify(events)).not.toContain('SECRET');
     expect(JSON.stringify(events)).toContain('HttpErrorResponse');
+  });
+
+  it('drops an error name that is not class-like', async () => {
+    await router.navigateByUrl('/odd-name').catch(() => false);
+    expect(scenarios()).toEqual([expect.objectContaining({ status: 'failure', route: '/odd-name' })]);
+    expect(JSON.stringify(events)).not.toContain('SECRET');
   });
 
   it('records nothing more for a navigation to the current URL', async () => {

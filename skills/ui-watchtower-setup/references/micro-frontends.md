@@ -33,10 +33,26 @@ declare global {
   }
 }
 
+/**
+ * A random id for this page load. `crypto.randomUUID` exists only in secure contexts (HTTPS,
+ * localhost); `getRandomValues` works everywhere crypto does. Never throws — a failure here would
+ * stop the shell from booting.
+ */
+function newChannelId(): string {
+  const c = globalThis.crypto;
+  if (typeof c?.randomUUID === 'function') {
+    return `ngx-ui-watchtower-${c.randomUUID()}`;
+  }
+  if (typeof c?.getRandomValues === 'function') {
+    const bytes = c.getRandomValues(new Uint8Array(16));
+    return `ngx-ui-watchtower-${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+  }
+  return `ngx-ui-watchtower-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
 // One channel per page load, at module scope so it exists before any fragment boots. Browser-only:
 // this module is also evaluated during server rendering, where the host is a no-op anyway.
-const channelId =
-  typeof window === 'undefined' ? undefined : `ngx-ui-watchtower-${crypto.randomUUID()}`;
+const channelId = typeof window === 'undefined' ? undefined : newChannelId();
 if (channelId) {
   window.__uwtTelemetryChannel = channelId;
 }

@@ -135,10 +135,16 @@ function routeTemplateOf(root: ActivatedRouteSnapshot): string {
 }
 
 /**
+ * A class-like error name (`ChunkLoadError`, `HttpErrorResponse`). Anything else
+ * — a thrown object can carry any `name` — could be free text and is dropped.
+ */
+const SAFE_ERROR_NAME = /^[A-Z][A-Za-z0-9]{0,63}$/;
+
+/**
  * A navigation error, reduced to what is safe to send. Router errors can quote
  * the URL (no matching route), a lazy chunk's URL, route parameters or user
- * data from a resolver — and path segments are not redacted. Only the error's
- * name (its class, e.g. `ChunkLoadError`) and an HTTP status are kept.
+ * data from a resolver — and path segments are not redacted. Only a class-like
+ * name (e.g. `ChunkLoadError`) and an HTTP status are kept.
  */
 function safeNavigationFailure(
   error: unknown,
@@ -148,7 +154,7 @@ function safeNavigationFailure(
     recognized ? 'Navigation failed' : 'Navigation failed before the URL matched a route'
   );
   const { name, status } = (error ?? {}) as { name?: unknown; status?: unknown };
-  if (typeof name === 'string' && name) {
+  if (typeof name === 'string' && SAFE_ERROR_NAME.test(name)) {
     safe.name = name;
   }
   return { error: safe, statusCode: typeof status === 'number' ? status : undefined };

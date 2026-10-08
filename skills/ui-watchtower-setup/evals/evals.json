@@ -55,7 +55,7 @@
       "expectations": [
         "Identifies the app as a shell hosting fragments (from <web-fragment> usage and the README)",
         "Registers the telemetry providers in the shared app.config.ts, not split between browser and server configs, and without platform checks around them",
-        "Adds provideUwtTelemetryBroadcastHost(channelId) with a crypto.randomUUID()-based channel id generated once per page load and published as window.__uwtTelemetryChannel, guarded for server rendering",
+        "Adds provideUwtTelemetryBroadcastHost(channelId) with a random channel id (that does not depend on crypto.randomUUID alone, which needs a secure context) generated once per page load and published as window.__uwtTelemetryChannel, guarded for server rendering",
         "Binds UWT_LOG_API_PROVIDER to UwtNoopLogApiProvider because the README says there is no log backend",
         "Points the credentials provider at GET /api/rum/credentials from the README",
         "Provides the fragment contract (broadcast sink, lazy UWT_BROADCAST_CHANNEL factory reading window.top, distinct application name, never the RUM sink) as a hand-off rather than editing fragment code",
