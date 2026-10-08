@@ -11,23 +11,40 @@ import type {
 const RUM_BROKER_URL = '/rum/init';
 
 /**
- * Shape returned by the backend broker. Adapt to the real response; map it
- * to `UwtRumBootstrap` in `load()`.
+ * Shape expected from the backend broker. Adapt to the real response; `load()`
+ * checks every required field before using it.
+ *
+ * ```json
+ * {
+ *   "enabled": true,
+ *   "config": { "applicationId": "…", "region": "eu-west-1", "applicationVersion": "1.4.0",
+ *               "sessionSampleRate": 1 },
+ *   "credentials": { "accessKeyId": "…", "secretAccessKey": "…", "sessionToken": "…",
+ *                    "expiration": "2026-10-08T12:00:00Z" }
+ * }
+ * ```
  */
-interface RumBrokerResponse {
-  enabled: boolean;
-  config?: {
-    applicationId: string;
-    region: string;
-    applicationVersion: string;
-    sessionSampleRate?: number;
-  };
-  credentials?: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    sessionToken: string;
-    expiration: string;
-  };
+const REQUIRED_CONFIG = ['applicationId', 'region', 'applicationVersion'] as const;
+const REQUIRED_CREDENTIALS = [
+  'accessKeyId',
+  'secretAccessKey',
+  'sessionToken',
+  'expiration'
+] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Whether `value` is an object whose `keys` are all non-empty strings. */
+function hasStrings<K extends string>(
+  value: unknown,
+  keys: readonly K[]
+): value is Record<K, string> & Record<string, unknown> {
+  return (
+    isRecord(value) &&
+    keys.every((key) => typeof value[key] === 'string' && value[key] !== '')
+  );
 }
 
 /**
@@ -42,7 +59,8 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
    * Fetches the current app-monitor settings and credentials.
    *
    * @returns the bootstrap payload, or `null` — RUM off for this session —
-   *   when the broker disables RUM, is unreachable, or answers incompletely
+   *   when the broker disables RUM, is unreachable, or answers with anything
+   *   missing or malformed
    */
   async load(): Promise<UwtRumBootstrap | null> {
     let response: Response;
@@ -61,27 +79,45 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
       return null;
     }
 
-    let init: RumBrokerResponse;
+    let body: unknown;
     try {
-      init = (await response.json()) as RumBrokerResponse;
+      body = await response.json();
     } catch {
       return null;
     }
 
-    // Credentials are required: without them the client would start and then
-    // fail every dispatch silently.
-    if (!init?.enabled || !init.config || !init.credentials) {
+    // Validate, don't cast: a half-filled answer must turn RUM off, not start
+    // a client that fails every dispatch silently.
+    if (!isRecord(body) || body['enabled'] !== true) {
+      return null;
+    }
+    const { config, credentials } = body;
+    if (
+      !hasStrings(config, REQUIRED_CONFIG) ||
+      !hasStrings(credentials, REQUIRED_CREDENTIALS) ||
+      Number.isNaN(Date.parse(credentials.expiration))
+    ) {
       return null;
     }
 
+    const rate = config['sessionSampleRate'];
     return {
       config: {
-        applicationId: init.config.applicationId,
-        region: init.config.region,
-        applicationVersion: init.config.applicationVersion,
-        sessionSampleRate: init.config.sessionSampleRate
+        applicationId: config.applicationId,
+        region: config.region,
+        applicationVersion: config.applicationVersion,
+        sessionSampleRate: typeof rate === 'number' && rate >= 0 && rate <= 1 ? rate : undefined,
+        // Page views are recorded under the route template by
+        // RouteNavigationTelemetryService; automatic ones would send the
+        // resolved path (/customers/42).
+        disableAutoPageView: true
       },
-      credentials: init.credentials
+      credentials: {
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken,
+        expiration: credentials.expiration
+      }
     };
   }
 }

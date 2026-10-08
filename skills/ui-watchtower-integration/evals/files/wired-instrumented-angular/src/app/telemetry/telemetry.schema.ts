@@ -9,7 +9,7 @@
  */
 declare module '@absaoss-cps/ngx-ui-watchtower' {
   interface UwtScenarioNames {
-    /** A router navigation, from click to activated route. */
+    /** A router navigation, from click to activated route, under the final route template. */
     'route-navigation': true;
 
     /** Loading the customer list, from request to rows shown. */
@@ -17,12 +17,6 @@ declare module '@absaoss-cps/ngx-ui-watchtower' {
   }
 
   interface UwtScenarioSteps {
-    /** From the recognized URL to activation: guards, resolvers, lazy components. */
-    'resolve-route': true;
-
-    /** Activating the routed component. */
-    activate: true;
-
     /** Fetching data from the API. */
     fetch: true;
   }

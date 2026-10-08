@@ -10,9 +10,9 @@ description: >
   events (→ ui-watchtower-integration), dashboards, non-Angular apps.
 license: Apache-2.0
 compatibility: >
-  Requires an Angular application within the peer range of the latest
-  @absaoss-cps/ngx-ui-watchtower release (checked at run time with npm view), and npm registry
-  access.
+  Requires an Angular application within the peer range of a published
+  @absaoss-cps/ngx-ui-watchtower release — the latest, or an older compatible one (checked at run
+  time with npm view) — and npm registry access.
 ---
 
 # ui-watchtower-setup
@@ -184,8 +184,9 @@ export const appConfig: ApplicationConfig = {
 - Start with **no** `withScenarios` / `withBIEvents` / `withLogging` / `withRedaction` features. Add
   one only for a stated reason, and record the reason in a comment.
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint from Step 1
-  and map its response. `load()` returns `null` on **any** failure (that disables RUM for the
-  session; the app keeps working). `provideUwtTelemetryRumSink()` calls it from its own
+  and adapt the response check. `load()` validates every required field and returns `null` on
+  **any** failure or incomplete answer (that disables RUM for the session; the app keeps working).
+  It also sets `disableAutoPageView: true` — page views come from Step 6, under the route template. `provideUwtTelemetryRumSink()` calls it from its own
   non-blocking initializer — don't write one. The asset uses `fetch`, which bypasses `HttpClient`
   interceptors: if the broker needs auth that an interceptor adds, call it through `HttpClient`
   (`firstValueFrom`) instead.
@@ -203,7 +204,7 @@ app's own later.
 
 - A name is a **metric dimension**: a typo or an interpolated id silently starts a second metric
   series. Never build a name from data (`` step(`load-${id}`) `` is wrong).
-- Kebab-case for scenario and step names (`route-navigation`, `resolve-route`); snake_case for BI
+- Kebab-case for scenario and step names (`route-navigation`, `customers-load`, `fetch`); snake_case for BI
   events (`export_clicked`). One JSDoc line per name saying what it measures.
 - Augmentation applies program-wide, but keep `import './telemetry/telemetry.schema';` in the files
   that own the wiring (provider config, the router telemetry service) so it never becomes orphaned.
@@ -215,7 +216,9 @@ If Step 1 found the app sending RUM events itself, load `references/rum-migratio
 **before** Step 6. The library emits its own event types and payloads; replacing a hand-written
 `RumService` naively changes what reaches CloudWatch and breaks existing dashboards. Migrate first,
 diff the wire, delete last — and keep exactly one page-view recorder. If you can't run the app to
-diff the wire, don't delete the old service; leave that as a follow-up.
+diff the wire, don't delete the old service; leave that as a follow-up. One exception to "parity
+first": personal data or raw free text the old code sends today is fixed immediately, even when the
+migration is blocked — tell the owners of the affected dashboards.
 
 ### Step 6 · Proof — route-navigation tracking
 
@@ -226,22 +229,48 @@ unchanged for static, `:param`, lazy (`loadChildren`) and redirected routes. Onl
 needs one thing: a `data: { telemetryPath: 'files/:path' }` entry naming its segment (otherwise it
 reports `(matcher)`).
 
+**Page views** — in a realm that sends to RUM (standalone app or shell), bind the asset's
+`ROUTE_PAGE_VIEW_RECORDER` so each completed navigation records one page view under its route
+template; the credentials provider has turned automatic page views off, which would send the
+resolved path (`/customers/42`) — a PII and cardinality problem, since path segments are not
+redacted:
+
+```ts
+import { inject } from '@angular/core';
+import { UwtRumTelemetrySink } from '@absaoss-cps/ngx-ui-watchtower/rum';
+import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry.service';
+
+{
+  provide: ROUTE_PAGE_VIEW_RECORDER,
+  useFactory: () => {
+    const rum = inject(UwtRumTelemetrySink);
+    return (route: string) => rum.recordPageView(route);
+  }
+}
+```
+
+With a `'noop'` destination, bind nothing; when you later switch to RUM, add this binding with the
+sink. If an existing RUM integration records page views (Step 5), keep exactly one recorder.
+
 In a fragment, skip this step by default — the shell's router measures navigations that change the
 page URL. Add it only if the fragment has internal routes the shell never routes.
 
 What the asset gets right, and why — keep these if you change it:
 
-1. **Starts at `RoutesRecognized`, backdated** to `NavigationStart` or the click — before
-   recognition the router hasn't matched the URL, so the route template isn't known, and a
-   scenario's `route` can't change later. An unmatched URL fails as `(unrecognized)`.
+1. **Recorded when the navigation ends, backdated** to the click or the first `NavigationStart` —
+   a scenario's `route` can't change after it starts, and only the end knows the final template.
+   The template comes from the matched route config, never the URL.
 2. **Keyed by navigation id**, never one "current" field — one navigation can supersede another.
-3. **Redirects continue the same scenario** (`NavigationCancel` with
-   `NavigationCancellationCode.Redirect` is followed by a new `NavigationStart`);
-   `NavigationSkipped` releases a stashed one, or it leaks into an unrelated navigation.
+3. **Guard and resolver redirects are one journey** under the final template, with
+   `redirectedFrom` (the source template) in metadata; `NavigationSkipped` releases a carried
+   redirect, or it leaks into an unrelated navigation.
 4. **Statuses:** a guard returning `false` or a resolver with no data is `incomplete`; superseded,
-   aborted or skipped is `abandoned`; an error is `failure`. Reasons come from the router's `code`,
-   never `event.reason` (empty in production builds).
-5. **Click-intent backdating:** `markNavigationIntent()` from nav-link click handlers; a mark older
+   aborted or skipped is `abandoned`; an error is `failure`. A navigation superseded before its URL
+   was recognized records nothing.
+5. **No URL ever reaches telemetry.** An unmatched URL fails as `(unrecognized)` with a generic
+   error — the router's own error quotes the URL. Reasons come from the router's `code`; its
+   `reason` text is never sent (empty in production, can contain URLs in development).
+6. **Click-intent backdating:** `markNavigationIntent()` from nav-link click handlers; a mark older
    than 2 s is discarded.
 
 ### Step 7 · Tests
@@ -264,8 +293,10 @@ The library ships no test doubles on purpose — the harness is a few lines.
   ```
 - Add a spec for the route-navigation service with a **recording sink** (pattern in the API
   reference, "Testing"), using the app's real route shapes: a successful navigation records
-  `success` with the route **template** (`/customers/:id`, never a resolved id), and a guard
-  rejection records `incomplete` with reason `guard-rejected`, not `failure`. Check the test bites:
+  `success` with the route **template** (`/customers/:id`, never a resolved id — assert the id
+  appears nowhere in the payload), a guard rejection records `incomplete` with reason
+  `guard-rejected`, not `failure`, and, where the page-view recorder is bound, one page view per
+  completed navigation under the template. Check the test bites:
   remove the `complete()` call and confirm it fails, then restore it.
 - jsdom has no `BroadcastChannel`: the broadcast sink and host degrade to no-ops in tests. Expected —
   don't polyfill it.
@@ -315,8 +346,9 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
   `aws-rum-web` into every consumer's build. No deep imports (`…/src/lib/…`) either.
 - **`route` is a metric dimension** — a template (`/customers/:id`), never a resolved URL; one series
   per customer is both a cardinality and a PII problem.
-- **One page-view recorder.** The RUM client already records a page view per navigation; don't add a
-  second one.
+- **One page-view recorder, under the template.** Automatic RUM page views use the resolved path —
+  keep `disableAutoPageView: true` with the Step 6 recorder, never both and never the automatic one
+  alone.
 - **Telemetry never throws into the app** — every entry point fails open. Don't wrap calls in
   try/catch.
 - **Redaction cannot be fully disabled**, and URL **path** segments are not scrubbed — only query

@@ -1,12 +1,14 @@
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { provideUwtTelemetry } from '@absaoss-cps/ngx-ui-watchtower';
 import {
   UWT_RUM_CREDENTIALS_PROVIDER,
+  UwtRumTelemetrySink,
   provideUwtTelemetryRumSink
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 import { routes } from './app.routes';
+import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry.service';
 import { AppRumCredentialsProvider } from './telemetry/rum-credentials.provider';
 import './telemetry/telemetry.schema'; // side-effect import: the telemetry vocabulary
 
@@ -31,6 +33,15 @@ export const appConfig: ApplicationConfig = {
     // credentials come from GET /rum/init; a failed fetch only disables RUM
     // for the session.
     provideUwtTelemetryRumSink(),
-    { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider }
+    { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
+    // Page views under the route template (/customers/:customerId), never the
+    // resolved path; the credentials provider sets disableAutoPageView: true.
+    {
+      provide: ROUTE_PAGE_VIEW_RECORDER,
+      useFactory: () => {
+        const rum = inject(UwtRumTelemetrySink);
+        return (route: string) => rum.recordPageView(route);
+      }
+    }
   ]
 };

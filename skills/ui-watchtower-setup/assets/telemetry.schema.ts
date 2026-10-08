@@ -11,7 +11,7 @@
  */
 declare module '@absaoss-cps/ngx-ui-watchtower' {
   interface UwtScenarioNames {
-    /** A router navigation, from click to activated route. */
+    /** A router navigation, from click to activated route, under the final route template. */
     'route-navigation': true;
 
     // One entry per confirmed journey, kebab-case, with a line saying what it measures:
@@ -19,17 +19,12 @@ declare module '@absaoss-cps/ngx-ui-watchtower' {
     // 'customers-load': true;
   }
 
-  interface UwtScenarioSteps {
-    /** From the recognized URL to activation: guards, resolvers, lazy components. */
-    'resolve-route': true;
-
-    /** Activating the routed component. */
-    activate: true;
-
-    // Steps and aggregates share this registry:
-    // /** Fetching data from the API. */
-    // fetch: true;
-  }
+  // Add once the first journey with steps is confirmed (kebab-case; steps and
+  // aggregates share this registry):
+  // interface UwtScenarioSteps {
+  //   /** Fetching data from the API. */
+  //   fetch: true;
+  // }
 
   // Add once the first business event is confirmed (snake_case):
   // interface UwtBIEventNames {

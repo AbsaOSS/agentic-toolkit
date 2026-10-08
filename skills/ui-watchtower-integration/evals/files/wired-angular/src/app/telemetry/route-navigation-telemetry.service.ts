@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Injectable } from '@angular/core';
+import { DestroyRef, inject, Injectable, InjectionToken } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ActivatedRouteSnapshot,
@@ -21,19 +21,34 @@ import {
 // Side-effect import: the vocabulary declaring the names used below.
 import './telemetry.schema';
 
+/**
+ * Records one page view per completed navigation, under the route template.
+ *
+ * Bind it only where AWS CloudWatch RUM is the destination, together with
+ * `disableAutoPageView: true` in the app-monitor config — automatic page
+ * views would report the resolved path (`/customers/42`):
+ *
+ * ```ts
+ * {
+ *   provide: ROUTE_PAGE_VIEW_RECORDER,
+ *   useFactory: () => {
+ *     const rum = inject(UwtRumTelemetrySink);
+ *     return (route: string) => rum.recordPageView(route);
+ *   }
+ * }
+ * ```
+ */
+export const ROUTE_PAGE_VIEW_RECORDER = new InjectionToken<(route: string) => void>(
+  'ROUTE_PAGE_VIEW_RECORDER'
+);
+
 /** Name shared by every route-navigation scenario. */
 const NAVIGATION_SCENARIO = 'route-navigation';
 
 /** Beyond this, a recorded click is assumed not to have caused the navigation. */
 const INTENT_MAX_AGE_MS = 2_000;
 
-/**
- * Neither completed nor superseded within this window means a stuck chunk
- * load, not a slow one.
- */
-const NAVIGATION_TIMEOUT_MS = 30_000;
-
-/** `route` of a navigation whose URL matched no route. */
+/** `route` of a navigation that failed before its URL matched a route. */
 const UNRECOGNIZED_ROUTE = '(unrecognized)';
 
 /**
@@ -44,8 +59,8 @@ const TELEMETRY_PATH_DATA_KEY = 'telemetryPath';
 
 /**
  * Stable, low-cardinality causes, derived from the router's `code`. The
- * router's `reason` text is dev-mode only — empty in a production build — so
- * it can't be the grouping key.
+ * router's `reason` text is never sent: it is empty in production builds and
+ * can contain URLs in development builds.
  */
 const CANCEL_REASON: Partial<Record<NavigationCancellationCode, string>> = {
   [NavigationCancellationCode.Redirect]: 'redirect',
@@ -81,7 +96,7 @@ function causeOf<TCode extends number>(
 
 /**
  * The matched route's template, from the `routeConfig` chain of the primary
- * outlet: `/customers/42` → `/customers/:id`. Exact after redirects and lazy
+ * outlet: `/customers/42` → `/customers/:id`. Exact after `redirectTo` and lazy
  * `loadChildren`, because the router has done the matching.
  */
 function routeTemplateOf(root: ActivatedRouteSnapshot): string {
@@ -105,20 +120,40 @@ function routeTemplateOf(root: ActivatedRouteSnapshot): string {
   return `/${parts.join('/')}`;
 }
 
-/** One router navigation being tracked. */
-interface TrackedNavigation {
-  /** Epoch ms the journey started: the click, or `NavigationStart`. */
-  startedAt: number;
-  /** Started once the URL is recognized — the route template is known only then. */
-  scenario?: UwtScenario;
+/**
+ * The router's error for a URL that matched nothing quotes the URL; replace it
+ * so no path segment reaches telemetry. Its name is kept for grouping.
+ */
+function unrecognizedError(error: unknown): Error {
+  const generic = new Error('Navigation failed before the URL matched a route');
+  if (error instanceof Error) {
+    generic.name = error.name;
+  }
+  return generic;
 }
 
+/** One router navigation being tracked. */
+interface TrackedNavigation {
+  /** Epoch ms the journey started: the click, `NavigationStart`, or the first navigation of a redirect chain. */
+  startedAt: number;
+  /** Template of the route a guard or resolver redirected away from. */
+  redirectedFrom?: string;
+  /** The matched route template, known from `RoutesRecognized` on. */
+  route?: string;
+  /** Epoch ms of `RoutesRecognized`: guards, resolvers and lazy components run after it. */
+  recognizedAt?: number;
+}
+
+/** What a guard or resolver redirect carries into the next navigation. */
+type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom'>;
+
 /**
- * Measures every router navigation as a `route-navigation` scenario.
+ * Measures every router navigation as one `route-navigation` scenario.
  *
- * The scenario starts when the router has recognized the URL, so `route` is
- * the matched template (`/customers/:id`), and is backdated to the click or
- * `NavigationStart`, so the duration covers the whole wait.
+ * The scenario is recorded when the navigation ends, so `route` is always the
+ * final matched template — after `redirectTo`, lazy routes, and guard or
+ * resolver redirects — and backdated to the click or the first
+ * `NavigationStart`, so its duration covers the whole wait.
  *
  * Call {@link start} once, from the root component's constructor. Call
  * {@link markNavigationIntent} from navigation-link click handlers.
@@ -127,6 +162,7 @@ interface TrackedNavigation {
 export class RouteNavigationTelemetryService {
   private readonly router = inject(Router);
   private readonly scenarioTelemetry = inject(UwtScenarioTelemetryService);
+  private readonly recordPageView = inject(ROUTE_PAGE_VIEW_RECORDER, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
 
   /**
@@ -136,8 +172,8 @@ export class RouteNavigationTelemetryService {
    */
   private readonly navigations = new Map<number, TrackedNavigation>();
 
-  /** A redirected navigation's scenario, continued by the next navigation. */
-  private pendingRedirectScenario?: UwtScenario;
+  /** A redirected navigation, continued by the next `NavigationStart`. */
+  private pendingRedirect?: RedirectCarry;
 
   /** When the user last did something expected to start a navigation. */
   private navigationIntentAt?: number;
@@ -168,9 +204,11 @@ export class RouteNavigationTelemetryService {
 
   private onRouterEvent(event: RouterEvent): void {
     if (event instanceof NavigationStart) {
+      const startedAt = this.navigationStartedAt();
+      const redirect = this.consumePendingRedirect();
       this.navigations.set(event.id, {
-        startedAt: this.navigationStartedAt(),
-        scenario: this.consumePendingRedirectScenario()
+        startedAt: redirect?.startedAt ?? startedAt,
+        redirectedFrom: redirect?.redirectedFrom
       });
       return;
     }
@@ -178,85 +216,109 @@ export class RouteNavigationTelemetryService {
     if (event instanceof RoutesRecognized) {
       const navigation = this.navigations.get(event.id);
       if (navigation) {
-        navigation.scenario ??= this.startScenario(
-          navigation.startedAt,
-          routeTemplateOf(event.state.root)
-        );
-        navigation.scenario.step('resolve-route');
+        navigation.route = routeTemplateOf(event.state.root);
+        navigation.recognizedAt = Date.now();
       }
       return;
     }
 
     if (event instanceof NavigationEnd) {
-      this.settle(event.id, (scenario) => {
-        scenario.step('activate');
-        scenario.complete({
-          metadata: {
-            finalRoute: routeTemplateOf(this.router.routerState.snapshot.root)
-          }
-        });
-      });
+      const navigation = this.take(event.id);
+      if (navigation?.route) {
+        this.record(navigation, navigation.route, (scenario, metadata) =>
+          scenario.complete({ metadata })
+        );
+        this.recordPageView?.(navigation.route);
+      }
       return;
     }
 
     if (event instanceof NavigationCancel) {
-      const scenario = this.navigations.get(event.id)?.scenario;
-      if (scenario && event.code === NavigationCancellationCode.Redirect) {
-        // A redirect restarts under a new id: continue this scenario on the
-        // next NavigationStart, so one journey stays one scenario.
-        this.navigations.delete(event.id);
-        this.pendingRedirectScenario = scenario;
+      const navigation = this.take(event.id);
+      if (!navigation) {
         return;
       }
-
-      const outcome = {
-        reason: causeOf(CANCEL_REASON, event.code, 'navigation-cancelled'),
-        message: event.reason || undefined
-      };
-      this.settle(event.id, (scenario) =>
+      if (event.code === NavigationCancellationCode.Redirect) {
+        // A guard or resolver redirect restarts under a new id: carry the
+        // start time, so one journey stays one scenario under its final route.
+        this.pendingRedirect = {
+          startedAt: navigation.startedAt,
+          redirectedFrom: navigation.redirectedFrom ?? navigation.route
+        };
+        return;
+      }
+      // Superseded before its URL was recognized: nothing to attribute it to.
+      if (!navigation.route) {
+        return;
+      }
+      const reason = causeOf(CANCEL_REASON, event.code, 'navigation-cancelled');
+      this.record(navigation, navigation.route, (scenario, metadata) =>
         event.code !== undefined && INCOMPLETE_CODES.has(event.code)
-          ? scenario.incomplete(outcome)
-          : scenario.cancel(outcome)
+          ? scenario.incomplete({ reason, metadata })
+          : scenario.cancel({ reason, metadata })
       );
       return;
     }
 
     if (event instanceof NavigationSkipped) {
       // A redirect back to the current URL ends in NavigationSkipped instead
-      // of the NavigationStart the stashed scenario waits for. Release it, and
+      // of the NavigationStart the carried redirect waits for. Release it, and
       // drop the click intent so it can't backdate an unrelated navigation.
       this.navigationIntentAt = undefined;
-      const outcome = {
-        reason: causeOf(SKIP_REASON, event.code, 'navigation-skipped'),
-        message: event.reason || undefined
-      };
-      this.consumePendingRedirectScenario()?.cancel(outcome);
-      this.settle(event.id, (scenario) => scenario.cancel(outcome));
+      const reason = causeOf(SKIP_REASON, event.code, 'navigation-skipped');
+      const redirect = this.consumePendingRedirect();
+      if (redirect?.redirectedFrom) {
+        this.record(redirect, redirect.redirectedFrom, (scenario, metadata) =>
+          scenario.cancel({ reason, metadata })
+        );
+      }
+      const navigation = this.take(event.id);
+      if (navigation?.route) {
+        this.record(navigation, navigation.route, (scenario, metadata) =>
+          scenario.cancel({ reason, metadata })
+        );
+      }
       return;
     }
 
     if (event instanceof NavigationError) {
-      // An unmatched URL fails before recognition, so no scenario exists yet.
-      const navigation = this.navigations.get(event.id);
-      if (navigation && !navigation.scenario) {
-        navigation.scenario = this.startScenario(
-          navigation.startedAt,
-          UNRECOGNIZED_ROUTE
+      const navigation = this.take(event.id);
+      if (navigation) {
+        const recognized = navigation.route !== undefined;
+        this.record(navigation, navigation.route ?? UNRECOGNIZED_ROUTE, (scenario, metadata) =>
+          scenario.fail({
+            error: recognized ? event.error : unrecognizedError(event.error),
+            metadata
+          })
         );
       }
-      this.settle(event.id, (scenario) =>
-        scenario.fail({ error: event.error })
-      );
     }
   }
 
-  private startScenario(startedAt: number, route: string): UwtScenario {
-    return this.scenarioTelemetry.start({
-      name: NAVIGATION_SCENARIO,
-      route,
-      startedAt,
-      timeoutMs: NAVIGATION_TIMEOUT_MS
-    });
+  /**
+   * Starts and settles the scenario in one go, backdated to the journey's
+   * start, once the final route template is known.
+   */
+  private record(
+    navigation: TrackedNavigation,
+    route: string,
+    settle: (scenario: UwtScenario, metadata: Record<string, string | number>) => void
+  ): void {
+    const metadata: Record<string, string | number> = {};
+    if (navigation.redirectedFrom) {
+      metadata['redirectedFrom'] = navigation.redirectedFrom;
+    }
+    if (navigation.recognizedAt !== undefined) {
+      metadata['resolveMs'] = Date.now() - navigation.recognizedAt;
+    }
+    settle(
+      this.scenarioTelemetry.start({
+        name: NAVIGATION_SCENARIO,
+        route,
+        startedAt: navigation.startedAt
+      }),
+      metadata
+    );
   }
 
   /**
@@ -272,25 +334,15 @@ export class RouteNavigationTelemetryService {
     return at === undefined || now - at > INTENT_MAX_AGE_MS ? now : at;
   }
 
-  private consumePendingRedirectScenario(): UwtScenario | undefined {
-    const scenario = this.pendingRedirectScenario;
-    this.pendingRedirectScenario = undefined;
-    return scenario;
+  private consumePendingRedirect(): RedirectCarry | undefined {
+    const redirect = this.pendingRedirect;
+    this.pendingRedirect = undefined;
+    return redirect;
   }
 
-  /**
-   * Ends tracking of one navigation. One that never reached recognition
-   * (superseded or skipped first) has no scenario and records nothing — it
-   * would only spend the session's event budget.
-   */
-  private settle(
-    navigationId: number,
-    apply: (scenario: UwtScenario) => void
-  ): void {
-    const scenario = this.navigations.get(navigationId)?.scenario;
+  private take(navigationId: number): TrackedNavigation | undefined {
+    const navigation = this.navigations.get(navigationId);
     this.navigations.delete(navigationId);
-    if (scenario) {
-      apply(scenario);
-    }
+    return navigation;
   }
 }

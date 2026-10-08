@@ -13,6 +13,7 @@ realm — the shell — owns the RUM client; fragments forward** to it over a sa
 ## Shell
 
 ```ts
+import { inject } from '@angular/core';
 import {
   UWT_LOG_API_PROVIDER,
   UwtNoopLogApiProvider,
@@ -21,8 +22,10 @@ import {
 } from '@absaoss-cps/ngx-ui-watchtower';
 import {
   UWT_RUM_CREDENTIALS_PROVIDER,
+  UwtRumTelemetrySink,
   provideUwtTelemetryRumSink
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
+import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry.service';
 
 declare global {
   interface Window {
@@ -42,6 +45,14 @@ providers: [
   provideUwtTelemetry({ application: 'shell', environment, version }),
   provideUwtTelemetryRumSink(),
   { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
+  // Page views under the route template (SKILL.md Step 6)
+  {
+    provide: ROUTE_PAGE_VIEW_RECORDER,
+    useFactory: () => {
+      const rum = inject(UwtRumTelemetrySink);
+      return (route: string) => rum.recordPageView(route);
+    }
+  },
   provideUwtTelemetryBroadcastHost(channelId),
   // Required by the host. Fragments' log records are shipped by the shell's log provider;
   // with no log backend, say so explicitly:

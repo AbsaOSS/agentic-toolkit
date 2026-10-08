@@ -20,7 +20,7 @@ interactions.
 | Wire | Registers exactly one destination for the app's role; a credentials provider for RUM; a log provider only if the app has a log backend; an opaque user id on sign-in and sign-out |
 | Vocabulary | Creates `telemetry.schema.ts` so names are compile-checked metric dimensions |
 | Migrate | If the app already sends RUM events itself: inventory, keep wire parity, retire the old service only after comparing what reaches CloudWatch |
-| Prove | Adds route-navigation tracking (route templates, not ids) with a test |
+| Prove | Adds route-navigation tracking with a test, and RUM page views — both under the route template (`/customers/:id`), never the resolved URL |
 | Test & validate | Fixes specs that now need telemetry providers; build, unit tests, a real type-check, and a live check with the debug flags |
 | Hand over | Points to the integration skill; for a shell, hands over the fragment contract |
 

@@ -32,6 +32,7 @@
         "Creates telemetry.schema.ts augmenting UwtScenarioNames and UwtScenarioSteps, and side-effect-imports it where the providers are configured",
         "Adds route-navigation tracking (the asset service, started from the root component) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
         "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
+        "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
         "Adds telemetry providers to app.spec.ts so it does not fail with NG0201",
         "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
         "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
@@ -105,6 +106,7 @@
       "expectations": [
         "Uses provideUwtTelemetrySink('noop') as the only destination",
         "Does not install aws-rum-web, add the shimmer allowance, import from '@absaoss-cps/ngx-ui-watchtower/rum', or add a credentials provider",
+        "Does not bind a page-view recorder (no RUM sink to record to)",
         "Creates telemetry.schema.ts and adds route-navigation tracking with a recording-sink test",
         "Adds telemetry providers to app.spec.ts so it does not fail with NG0201",
         "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, and install aws-rum-web",
@@ -145,7 +147,7 @@
       "id": "regression-existing-rum-parity",
       "category": "regression",
       "prompt": "Replace our hand-written RumService with ngx-ui-watchtower. The project is in evals/files/ngmodule-existing-rum.",
-      "expected_output": "Skill loads references/rum-migration.md, inventories every recordEvent/recordPageView/addSessionAttributes call with its event type, payload and consumers, picks a parity tool per row (the dashboard and metric filter need desk.order.* types), keeps RumService until the wire is diffed, flags the Cognito identity pool as unsupported and requiring a credential broker, replaces the email session attribute with an opaque user id, removes per-keystroke search events in favour of a debounced event, and keeps exactly one page-view recorder.",
+      "expected_output": "Skill loads references/rum-migration.md, inventories every recordEvent/recordPageView/addSessionAttributes call with its event type, payload and consumers, picks a parity tool per row (the dashboard and metric filter need desk.order.* types), keeps RumService until the wire is diffed, flags the Cognito identity pool as unsupported and requiring a credential broker, replaces the email session attribute with an opaque user id, fixes the live per-keystroke raw search event right away (debounced, no raw text) even though the RUM switch waits for a broker, and records page views once, under the route template.",
       "files": [
         "evals/files/ngmodule-existing-rum/package.json",
         "evals/files/ngmodule-existing-rum/src/app/app.module.ts",
@@ -160,7 +162,7 @@
         "Does not delete RumService before the migrated paths are diffed against the inventory",
         "Flags that identityPoolId/guestRoleArn (Cognito) is not supported and a backend credential broker is needed, and asks rather than inventing one",
         "Does not run two RUM clients side by side",
-        "Keeps exactly one page-view recorder: either drops the manual recordPageView, or keeps it via UwtRumTelemetrySink.recordPageView with disableAutoPageView: true",
+        "Keeps exactly one page-view recorder, under the route template: disableAutoPageView: true with the route service's page-view recorder, and the old manual recordPageView calls dropped",
         "Replaces the email session attribute with sink.setUserId(opaqueId) and calls out that emails must not be sent",
         "Replaces per-keystroke search tracking with a debounced BI event without the raw query text"
       ]

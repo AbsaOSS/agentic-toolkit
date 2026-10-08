@@ -7,9 +7,13 @@ import {
   UwtTelemetrySink,
   withScenarios
 } from '@absaoss-cps/ngx-ui-watchtower';
-import { RouteNavigationTelemetryService } from './route-navigation-telemetry.service';
+import {
+  RouteNavigationTelemetryService,
+  ROUTE_PAGE_VIEW_RECORDER
+} from './route-navigation-telemetry.service';
 
 const events: { eventType: string; payload: Record<string, unknown> }[] = [];
+const pageViews: string[] = [];
 
 /** Records everything handed to the destination, so tests assert on the wire. */
 @Injectable()
@@ -52,15 +56,12 @@ function scenarios(): Record<string, unknown>[] {
   return events.filter((e) => e.eventType === 'com.uwt.scenario').map((e) => e.payload);
 }
 
-function stepNames(record: Record<string, unknown>): string[] {
-  return (record['steps'] as { name: string }[]).map((s) => s.name);
-}
-
 describe('RouteNavigationTelemetryService', () => {
   let router: Router;
 
   beforeEach(() => {
     events.length = 0;
+    pageViews.length = 0;
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
@@ -68,7 +69,8 @@ describe('RouteNavigationTelemetryService', () => {
           { application: 'customer-portal-test', environment: 'test', version: '0.0.0' },
           withScenarios({ defaultTimeoutMs: 0 })
         ),
-        provideUwtTelemetryDestination(RecordingSink)
+        provideUwtTelemetryDestination(RecordingSink),
+        { provide: ROUTE_PAGE_VIEW_RECORDER, useValue: (route: string) => pageViews.push(route) }
       ]
     });
     router = TestBed.inject(Router);
@@ -76,30 +78,24 @@ describe('RouteNavigationTelemetryService', () => {
   });
 
   it('reports a successful navigation under its route template, never the resolved id', async () => {
-    await router.navigateByUrl('/customers/42?tab=orders');
+    await router.navigateByUrl('/customers/cust-SECRET-7?tab=orders');
 
     expect(scenarios()).toEqual([
       expect.objectContaining({
         scenarioName: 'route-navigation',
         status: 'success',
-        route: '/customers/:customerId',
-        metadata: expect.objectContaining({ finalRoute: '/customers/:customerId' })
+        route: '/customers/:customerId'
       })
     ]);
-    expect(stepNames(scenarios()[0])).toEqual(
-      expect.arrayContaining(['resolve-route', 'activate'])
-    );
+    expect(pageViews).toEqual(['/customers/:customerId']);
+    expect(JSON.stringify(events)).not.toContain('SECRET');
   });
 
   it('reports the redirect from the empty path under the target template', async () => {
     await router.navigateByUrl('/');
 
     expect(scenarios()).toEqual([
-      expect.objectContaining({
-        status: 'success',
-        route: '/customers',
-        metadata: expect.objectContaining({ finalRoute: '/customers' })
-      })
+      expect.objectContaining({ status: 'success', route: '/customers' })
     ]);
   });
 
@@ -129,11 +125,12 @@ describe('RouteNavigationTelemetryService', () => {
     ]);
   });
 
-  it('reports an unknown URL under a placeholder template, not the raw URL', async () => {
-    await router.navigateByUrl('/nope/123').catch(() => undefined);
+  it('reports an unknown URL under a placeholder template, with no URL in the payload', async () => {
+    await router.navigateByUrl('/nope/cust-SECRET-7').catch(() => undefined);
 
     expect(scenarios()).toEqual([
       expect.objectContaining({ status: 'failure', route: '(unrecognized)' })
     ]);
+    expect(JSON.stringify(events)).not.toContain('SECRET');
   });
 });

@@ -22,6 +22,15 @@ alone is not parity:
 Also note how the existing code obtains credentials (Cognito identity pool vs a backend broker), how
 it handles sign-in/sign-out, and whether it records page views manually.
 
+**Fix live privacy leaks now — even if the migration is blocked** (for example on the credentials
+broker, §3). If the inventory shows the old code sending personal data or raw free text today — the
+text of a search box (worse, on every keystroke), an email as user id or session attribute, page ids
+that are resolved URLs with query strings — fix it in the old code right away, before or without
+the migration: debounce, send low-cardinality attributes instead (`queryLength`, `resultCount`), send
+an opaque id or no user at all, strip query strings and fragments from page ids. This changes those
+payloads before any wire diff; accept that, mark the rows in the inventory, and tell the owners of
+the affected dashboards. Dashboard parity never outranks personal data.
+
 ## 2. Pick a parity tool per row
 
 | Tool                                                   | Use when                                                         | Result                                                                                                     |
@@ -66,13 +75,14 @@ diff needs.
 
 ## Specific checks
 
-- **Page views.** The RUM client records a page view on every `history.pushState`, which covers the
-  Angular router. If the old code recorded page views manually, drop that code — or keep it via
-  `UwtRumTelemetrySink.recordPageView(template)` **and** set `disableAutoPageView: true` in the app
-  monitor config. Never both. If routes carry ids, the automatic page id (with `pageIdFormat:
-  'PATH'`) is the resolved path — a cardinality and PII problem; record templates manually instead.
+- **Page views.** Setup records one page view per navigation under the route template
+  (`disableAutoPageView: true` plus the route service's page-view recorder — Step 6). Drop any
+  manual `recordPageView` calls in the old code; never keep both. If the old setup relied on
+  automatic page views, its page ids were resolved paths (`/customers/42`) and become templates
+  (`/customers/:id`) — tell the owners of page-based dashboards.
 - **Free-text and per-keystroke events** (a search box sending every keystroke): debounce them, and
-  don't port the raw text — it is unbounded cardinality and can contain personal data. Send a
+  don't port the raw text — it is unbounded cardinality and can contain personal data. Fix them in
+  the old code even when the migration itself has to wait (§1). Send a
   low-cardinality attribute instead (query length, result count, which filter was used). If a
   documented consumer genuinely needs the text, ask before porting it.
 - **`aws:` metadata keys** are reserved and dropped by the RUM client; the sink filters them out. Any
