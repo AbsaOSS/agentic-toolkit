@@ -181,17 +181,47 @@
       ]
     },
     {
+      "id": "unsupported-angular-version",
+      "category": "negative",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. The project is in evals/files/future-angular.",
+      "expected_output": "Skill reads the app's Angular version (24) and the library's supported range from the registry (npm view …@latest peerDependencies), finds that Angular 24 is outside it, stops without installing or wiring anything, never suggests --force or --legacy-peer-deps, and tells the user the library doesn't support this Angular version yet.",
+      "files": [
+        "evals/files/future-angular/package.json",
+        "evals/files/future-angular/angular.json",
+        "evals/files/future-angular/tsconfig.json",
+        "evals/files/future-angular/tsconfig.app.json",
+        "evals/files/future-angular/tsconfig.spec.json",
+        "evals/files/future-angular/src/index.html",
+        "evals/files/future-angular/src/styles.css",
+        "evals/files/future-angular/src/main.ts",
+        "evals/files/future-angular/src/app/app.config.ts",
+        "evals/files/future-angular/src/app/app.routes.ts",
+        "evals/files/future-angular/src/app/app.ts",
+        "evals/files/future-angular/src/app/app.spec.ts",
+        "evals/files/future-angular/src/app/customers/customers.ts",
+        "evals/files/future-angular/src/app/customers/customer-detail.ts"
+      ],
+      "expectations": [
+        "Reads the app's @angular/core version (^24) from package.json",
+        "Reads the library's supported Angular range from the registry (npm view @absaoss-cps/ngx-ui-watchtower peerDependencies or equivalent) instead of assuming one",
+        "Concludes that Angular 24 is outside the supported range",
+        "Does not install the package, add providers or change any project file",
+        "Does not suggest or use --force or --legacy-peer-deps",
+        "Tells the user the library doesn't support this Angular version yet, and what would unblock it (a library release that supports it)"
+      ]
+    },
+    {
       "id": "negative-non-angular",
       "category": "negative",
       "prompt": "Add ngx-ui-watchtower telemetry to our marketing site. The project is in evals/files/react-app.",
-      "expected_output": "Skill detects a React app, explains that the library is Angular-only (Angular 22.1+), and does not install or wire anything.",
+      "expected_output": "Skill detects a React app, explains that the library is Angular-only, and does not install or wire anything.",
       "files": [
         "evals/files/react-app/package.json",
         "evals/files/react-app/src/main.tsx"
       ],
       "expectations": [
         "Detects that the app is React, not Angular",
-        "States that @absaoss-cps/ngx-ui-watchtower requires Angular 22.1+",
+        "States that @absaoss-cps/ngx-ui-watchtower is for Angular applications only",
         "Does not install the package or modify any file"
       ]
     }

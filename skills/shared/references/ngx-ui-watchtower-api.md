@@ -1,7 +1,8 @@
 # ngx-ui-watchtower API reference
 
-The public surface of `@absaoss-cps/ngx-ui-watchtower` an app or a custom sink uses (checked against
-version 0.1.0; config tokens and redaction constants omitted). Import only
+The public surface of `@absaoss-cps/ngx-ui-watchtower` an app or a custom sink uses (config tokens and
+redaction constants omitted). Always install the latest version; if its typings differ from this
+page, the typings win. Import only
 from the two entry points below — never from `…/src/lib/…` paths, and never re-export the `/rum`
 entry from a shared barrel.
 

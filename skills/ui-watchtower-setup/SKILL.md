@@ -10,8 +10,9 @@ description: >
   events (→ ui-watchtower-integration), dashboards, non-Angular apps.
 license: Apache-2.0
 compatibility: >
-  Requires an Angular 22.1.3+ application (the library's peer range), Node.js 22+, and npm registry
-  access to install @absaoss-cps/ngx-ui-watchtower.
+  Requires an Angular application within the peer range of the latest
+  @absaoss-cps/ngx-ui-watchtower release (checked at run time with npm view), and npm registry
+  access.
 ---
 
 # ui-watchtower-setup
@@ -60,9 +61,19 @@ Copy this checklist and track progress:
 
 Read before writing anything — extend the app, don't restructure it.
 
-1. **Angular version** in `package.json`. The library's peer range is `@angular/core` /
-   `@angular/common` `^22.1.3` and `rxjs` `^7.8.2`. Below that, or not Angular at all, stop and tell
-   the user; an Angular upgrade is out of scope.
+1. **Angular version vs the supported range.** Not Angular at all → stop. Otherwise read the
+   app's `@angular/core` and `rxjs` versions (installed, or else the ranges in `package.json`), and
+   the library's supported range from the registry — never from memory; it changes with releases:
+   `npm view @absaoss-cps/ngx-ui-watchtower@latest peerDependencies`.
+   - **Inside the range** → install the latest version (Step 2).
+   - **Older than the range** → find the newest version whose peers fit
+     (`npm view @absaoss-cps/ngx-ui-watchtower versions --json`, then `npm view …@<version>
+     peerDependencies` per candidate). If one exists, offer it, pinned; the API reference describes
+     the latest version, so the installed typings win where they differ. If none fits, stop: an
+     Angular upgrade is out of scope.
+   - **Newer than the range** → the library doesn't support this Angular yet. Stop and tell the
+     user. Never install with `--force` or `--legacy-peer-deps`: a peer range is the library's
+     compatibility contract with Angular's compiler and runtime.
 2. **Package manager** — from the lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), a
    `packageManager` field, or `cli.packageManager` in `angular.json`. Use it for every install and
    script run; never default to npm.
@@ -99,9 +110,11 @@ Ask the user only what the code cannot answer, in one message:
 
 ```bash
 # npm / Yarn / pnpm — use the one detected in Step 1
-npm install @absaoss-cps/ngx-ui-watchtower
+npm install @absaoss-cps/ngx-ui-watchtower@latest   # or the pinned version chosen in Step 1
 npm install aws-rum-web          # only if THIS realm sends to RUM (standalone app or shell)
 ```
+
+If the install reports a peer conflict, stop and report it — don't override it.
 
 `aws-rum-web` is an optional peer: a fragment or a `'noop'` app never needs it, because everything
 RUM-related lives in the separate entry point `@absaoss-cps/ngx-ui-watchtower/rum`.
@@ -278,7 +291,9 @@ Run, through the detected package manager, until all are green:
    handed to the sink. Confirm one `route-navigation` line per navigation with the right status and a
    template `route`, and that nothing is logged during server rendering.
 
-Don't finish until build, tests and type-check are green.
+Don't finish until build, tests and type-check are green. The `assets/` templates use current
+Angular router and DI APIs; if the app's Angular version has changed one, adapt the template to the
+app's version — never silence the error.
 
 ### Step 9 · Hand over
 

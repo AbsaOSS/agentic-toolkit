@@ -8,8 +8,8 @@ description: >
   the library (→ ui-watchtower-setup), dashboards, non-Angular apps.
 license: Apache-2.0
 compatibility: >
-  Requires an Angular 22.1.3+ application where @absaoss-cps/ngx-ui-watchtower is already installed and
-  wired (see ui-watchtower-setup), and Node.js 22+.
+  Requires an Angular application where @absaoss-cps/ngx-ui-watchtower is already installed and
+  wired (see ui-watchtower-setup).
 ---
 
 # ui-watchtower-integration
