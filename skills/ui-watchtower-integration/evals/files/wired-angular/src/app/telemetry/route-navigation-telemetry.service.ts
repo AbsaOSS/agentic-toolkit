@@ -1,4 +1,12 @@
-import { DestroyRef, inject, Injectable, InjectionToken } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  DestroyRef,
+  inject,
+  Injectable,
+  InjectionToken,
+  NgZone,
+  PLATFORM_ID
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ActivatedRouteSnapshot,
@@ -47,6 +55,12 @@ const NAVIGATION_SCENARIO = 'route-navigation';
 
 /** Beyond this, a recorded click is assumed not to have caused the navigation. */
 const INTENT_MAX_AGE_MS = 2_000;
+
+/**
+ * A navigation with no end event within this window — a guard, resolver or
+ * lazy chunk that never settles — is recorded as `timeout`.
+ */
+const NAVIGATION_TIMEOUT_MS = 30_000;
 
 /** `route` of a navigation that failed before its URL matched a route. */
 const UNRECOGNIZED_ROUTE = '(unrecognized)';
@@ -142,6 +156,8 @@ interface TrackedNavigation {
   route?: string;
   /** Epoch ms of `RoutesRecognized`: guards, resolvers and lazy components run after it. */
   recognizedAt?: number;
+  /** Records the navigation as `timeout` if no end event arrives in time. */
+  timeoutHandle?: ReturnType<typeof setTimeout>;
 }
 
 /** What a guard or resolver redirect carries into the next navigation. */
@@ -164,6 +180,8 @@ export class RouteNavigationTelemetryService {
   private readonly scenarioTelemetry = inject(UwtScenarioTelemetryService);
   private readonly recordPageView = inject(ROUTE_PAGE_VIEW_RECORDER, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
+  private readonly zone = inject(NgZone);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   /**
    * Keyed by navigation id, never a single "current" field: one navigation
@@ -190,6 +208,11 @@ export class RouteNavigationTelemetryService {
     this.router.events
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => this.onRouterEvent(event));
+    this.destroyRef.onDestroy(() => {
+      for (const navigation of this.navigations.values()) {
+        clearTimeout(navigation.timeoutHandle);
+      }
+    });
   }
 
   /**
@@ -206,10 +229,12 @@ export class RouteNavigationTelemetryService {
     if (event instanceof NavigationStart) {
       const startedAt = this.navigationStartedAt();
       const redirect = this.consumePendingRedirect();
-      this.navigations.set(event.id, {
+      const navigation: TrackedNavigation = {
         startedAt: redirect?.startedAt ?? startedAt,
         redirectedFrom: redirect?.redirectedFrom
-      });
+      };
+      this.navigations.set(event.id, navigation);
+      this.armTimeout(event.id, navigation);
       return;
     }
 
@@ -340,9 +365,33 @@ export class RouteNavigationTelemetryService {
     return redirect;
   }
 
+  /**
+   * Records the navigation once as `timeout` if it hasn't ended within
+   * {@link NAVIGATION_TIMEOUT_MS} of the journey's start; a late end event then
+   * finds nothing to record. Browser only, outside Angular, so it never delays
+   * app stability or server rendering.
+   */
+  private armTimeout(navigationId: number, navigation: TrackedNavigation): void {
+    if (!this.isBrowser) {
+      return;
+    }
+    const remainingMs = Math.max(0, navigation.startedAt + NAVIGATION_TIMEOUT_MS - Date.now());
+    navigation.timeoutHandle = this.zone.runOutsideAngular(() =>
+      setTimeout(() => {
+        const hung = this.take(navigationId);
+        if (hung) {
+          this.record(hung, hung.route ?? UNRECOGNIZED_ROUTE, (scenario, metadata) =>
+            scenario.settle('timeout', { reason: 'navigation-timeout', metadata })
+          );
+        }
+      }, remainingMs)
+    );
+  }
+
   private take(navigationId: number): TrackedNavigation | undefined {
     const navigation = this.navigations.get(navigationId);
     this.navigations.delete(navigationId);
+    clearTimeout(navigation?.timeoutHandle);
     return navigation;
   }
 }

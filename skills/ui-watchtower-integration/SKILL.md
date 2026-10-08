@@ -60,9 +60,12 @@ If only `telemetry.schema.ts` (the file augmenting the name registries) is missi
 create it in Step 6 — a `declare module '@absaoss-cps/ngx-ui-watchtower'` block with the confirmed
 names, side-effect-imported where the providers are configured.
 
-Also read what already exists — the schema's declared names and every `scenarios.start(` /
-`track(` call — so this pass only adds or changes, never duplicates. Note the test runner and the
-package manager.
+Also read what already exists, so this pass only adds or changes, never duplicates. The schema is
+the inventory of names — every scenario, step and BI name in use must be declared there, or it
+doesn't compile. Then find where each is used: search for every declared name, and for every
+injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService` (whatever the field is called,
+including wrappers and the route-navigation service) and every `traceScenario(`. Note the test
+runner and the package manager.
 
 ### Step 2 · Ask the user what they want to learn
 
@@ -144,7 +147,9 @@ Follow `references/instrumentation-patterns.md`:
    expected dead end, e.g. no results), `fail` (a defect; pass `error` and `statusCode`), `cancel`
    (the user left or a newer request superseded it). Timeout is automatic.
 3. Settle open scenarios when their component is destroyed; under `switchMap`, give
-   `traceScenario` a `cancelOutcome`; never put `take(1)`/`first()` upstream of `traceScenario`.
+   `traceScenario` a `cancelOutcome`. Nothing downstream of `traceScenario` may stop after the
+   first value — no `take(1)`/`first()` after it, no `firstValueFrom()` on it (it records
+   `abandoned`): limit upstream and await with `lastValueFrom()`.
 4. BI events inside a journey pass `{ scenarioId: scenario.id }`. Debounce high-frequency sources
    (search boxes, sliders) before starting a scenario or sending a BI event — one per settled
    input, never one per keystroke.
@@ -165,8 +170,9 @@ confirm it fails, restore.
 Run, through the app's package manager: the **build**, the **unit tests**, and a **real type-check**
 (`tsc -p tsconfig.app.json --noEmit` and the spec tsconfig — Vitest never type-checks). Then a live
 check with `localStorage.setItem('debugScenario', 'true')` and `debugBI`: one line per settled
-scenario with the right status, leaving mid-journey gives `abandoned`, a double-click gives one BI
-event.
+scenario with the right status, leaving mid-journey gives `abandoned`, and a double-click on an
+action whose events are identical (same name, `scenarioId`, feature and metadata) gives one BI
+event — clicks that start separate journeys carry different scenario ids and correctly give two.
 
 Report what was instrumented (by source), what was proposed but not confirmed, and anything changed
 from the user's original request and why.

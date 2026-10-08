@@ -141,7 +141,9 @@ low-cardinality grouping key (`'superseded'`, `'no-results'`). Settling is absor
 settle wins, later calls are ignored. Timeout settles as `timeout` automatically.
 
 `traceScenario(scenario, options?)` — RxJS operator: `complete()` on source completion,
-`fail({ error })` on error, `cancel(cancelOutcome)` on unsubscribe before either.
+`fail({ error })` on error, `cancel(cancelOutcome)` on unsubscribe before either. So anything
+downstream that stops after the first value — `take(1)`/`first()` after it, `firstValueFrom()` on
+it — records `abandoned`; limit upstream and await with `lastValueFrom()`.
 
 ```ts
 interface UwtTraceScenarioOptions<T> {

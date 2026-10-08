@@ -111,15 +111,20 @@ fragment (its frames belong to a hidden iframe) — settle with `complete()` the
 
 ## 4. RxJS traps
 
-**`take(1)` / `first()` upstream of `traceScenario`** unsubscribes before the source's `complete`
-reaches the operator, so the scenario never settles and records `timeout`. Settle explicitly instead:
+**Nothing downstream of `traceScenario` may stop after the first value.** `traceScenario` settles
+`success` when the source *completes*; anything after it that unsubscribes on the first value —
+`take(1)` or `first()` placed after it, or `firstValueFrom()` on the traced observable — tears it
+down before completion arrives, and the scenario records `abandoned`. This holds even for
+`HttpClient`, which completes right after its one value: `firstValueFrom` unsubscribes first.
 
 ```ts
-return this.upload(file).pipe(
-  take(1),
-  map((result) => { scenario.complete({ metadata: { fileSize: file.size } }); return result; }),
-  catchError((error) => { scenario.fail({ error }); return of(null); })
-);
+// Records abandoned:
+await firstValueFrom(this.api.customers().pipe(traceScenario(scenario)));
+this.events$.pipe(traceScenario(scenario), take(1));
+
+// Records success: limit upstream, await completion.
+await lastValueFrom(this.api.customers().pipe(traceScenario(scenario)));
+this.events$.pipe(take(1), traceScenario(scenario));
 ```
 
 **`switchMap` supersession**: `switchMap` unsubscribes the previous inner observable *before* the

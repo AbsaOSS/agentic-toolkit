@@ -95,7 +95,8 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
     if (
       !hasStrings(config, REQUIRED_CONFIG) ||
       !hasStrings(credentials, REQUIRED_CREDENTIALS) ||
-      Number.isNaN(Date.parse(credentials.expiration))
+      // Unparseable or already expired: RUM would reject every dispatch.
+      !(Date.parse(credentials.expiration) > Date.now())
     ) {
       return null;
     }

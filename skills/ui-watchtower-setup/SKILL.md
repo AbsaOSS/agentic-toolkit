@@ -265,8 +265,9 @@ What the asset gets right, and why — keep these if you change it:
    `redirectedFrom` (the source template) in metadata; `NavigationSkipped` releases a carried
    redirect, or it leaks into an unrelated navigation.
 4. **Statuses:** a guard returning `false` or a resolver with no data is `incomplete`; superseded,
-   aborted or skipped is `abandoned`; an error is `failure`. A navigation superseded before its URL
-   was recognized records nothing.
+   aborted or skipped is `abandoned`; an error is `failure`; no end event within 30 s (a guard,
+   resolver or lazy chunk that never settles) is `timeout`, recorded once from a browser-only timer
+   outside Angular. A navigation superseded before its URL was recognized records nothing.
 5. **No URL ever reaches telemetry.** An unmatched URL fails as `(unrecognized)` with a generic
    error — the router's own error quotes the URL. Reasons come from the router's `code`; its
    `reason` text is never sent (empty in production, can contain URLs in development).
