@@ -20,7 +20,7 @@ in an earlier integration.
 |------------------------------------------------------------------|-------------------------------------------------------------|
 | An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) |
 | A meaningful or irreversible click; a setting change              | BI event                                                    |
-| A `catch` / `error` handler that ends a journey                  | That scenario's `fail({ error })`                           |
+| A `catch` / `error` handler that ends a journey                  | That scenario's `fail(safeHttpFailure(error))` (§2)         |
 | A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    |
 | Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        |
 
@@ -32,7 +32,7 @@ and work the user never waits for. Every event spends the 200-event RUM session 
 | Status       | Call                   | Means                                                                       | Response                          |
 |--------------|------------------------|-----------------------------------------------------------------------------|-----------------------------------|
 | `success`    | `complete()`           | The journey reached its goal                                                 | —                                 |
-| `failure`    | `fail({ error })`      | A defect: the journey broke                                                  | Investigate; alert on rate        |
+| `failure`    | `fail(outcome)`        | A defect: the journey broke (HTTP: `safeHttpFailure`, below)                 | Investigate; alert on rate        |
 | `abandoned`  | `cancel({ reason })`   | No longer relevant: navigated away, superseded, component destroyed         | Engagement signal, **not** a bug  |
 | `incomplete` | `incomplete(outcome?)` | An expected path that didn't reach the goal: no results, guard declined     | Product signal                    |
 | `timeout`    | automatic              | Never settled within `timeoutMs`                                             | Usually a missed settle path      |
@@ -46,6 +46,23 @@ Use a small, consistent set of `reason` strings — they are grouping keys: `'co
 `'superseded'`, `'user-cancelled'`, `'no-results'`, `'guard-rejected'`.
 
 Pass `statusCode` (HTTP status or business code) with `fail()` so failures group by category.
+
+**Never pass a raw `HttpErrorResponse`** to `fail()` or `logger.error()`: its message quotes the
+request URL (`Http failure response for /api/customers/42: 500`), and redaction strips only query
+strings, never path segments — the id would reach RUM. Keep its class and status:
+
+```ts
+/** HttpErrorResponse.message quotes the request URL, path ids included — keep class and status only. */
+function safeHttpFailure(error: unknown): UwtScenarioOutcome {
+  const status = (error as { status?: unknown } | null)?.status;
+  return typeof status === 'number'
+    ? {
+        error: Object.assign(new Error('HTTP request failed'), { name: 'HttpErrorResponse' }),
+        statusCode: status
+      }
+    : { error }; // not an HTTP error: the library normalizes and redacts it
+}
+```
 
 ## 3. Scenario shapes
 
@@ -65,19 +82,25 @@ async load(): Promise<void> {
     }
     scenario.complete({ metadata: { count: rows.length } });
   } catch (error) {
-    scenario.fail({ error, statusCode: (error as { status?: number }).status });
+    scenario.fail(safeHttpFailure(error));
   }
 }
 ```
 
 **Observable** — `traceScenario` settles on completion, error or early unsubscribe. Like any cold
 observable, nothing happens until something subscribes: return it to a caller that subscribes (a
-template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`:
+template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`. On error
+it calls `fail({ error })` with the raw error and no status, so for HTTP sources settle the failure
+first with `catchError` upstream — the first settle wins:
 
 ```ts
 loadCustomers(): Observable<Customer[]> {
   const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
   return this.api.customers().pipe(
+    catchError((error) => {
+      scenario.fail(safeHttpFailure(error));
+      return throwError(() => error);
+    }),
     traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
   );
 }
@@ -144,6 +167,10 @@ query$.pipe(
     const scenario = this.scenarios.start({ name: 'search', feature: 'catalogue' });
     scenario.step('query');
     return this.api.search(q).pipe(
+      catchError((error) => {
+        scenario.fail(safeHttpFailure(error));
+        return EMPTY; // keep the search stream alive after a failed request
+      }),
       traceScenario(scenario, { cancelOutcome: { reason: 'superseded' } })
     );
   })
@@ -200,10 +227,10 @@ tracked by `ui-watchtower-setup`.
 
 | Scenario          | Steps                          | Settles                                                                                     |
 |-------------------|--------------------------------|---------------------------------------------------------------------------------------------|
-| `<screen>-load`   | `fetch`, `render`              | `complete`; `incomplete({reason:'no-results'})`; `fail({error})`; cancel on destroy/supersede |
-| `<form>-submit`   | `validate`, `submit`           | `complete`; `incomplete({reason:'validation-failed'})`; `fail({error, statusCode})`          |
-| `file-upload`     | `read`, `upload`, `process`    | `complete({metadata:{fileSize}})`; `cancel({reason:'user-cancelled'})`; `fail({error})`       |
-| `export-download` | `request`, `transfer`          | `complete`; `cancel({reason:'user-cancelled'})`; `fail({error})`                              |
+| `<screen>-load`   | `fetch`, `render`              | `complete`; `incomplete({reason:'no-results'})`; `fail(safeHttpFailure(e))`; cancel on destroy/supersede |
+| `<form>-submit`   | `validate`, `submit`           | `complete`; `incomplete({reason:'validation-failed'})`; `fail(safeHttpFailure(e))`         |
+| `file-upload`     | `read`, `upload`, `process`    | `complete({metadata:{fileSize}})`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))` |
+| `export-download` | `request`, `transfer`          | `complete`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))`                 |
 
 BI: `export_clicked`, `filter_applied`, `search_submitted` (debounced), `theme_changed`,
 `sidebar_toggled`, `sign_out_clicked`.

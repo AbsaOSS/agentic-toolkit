@@ -63,7 +63,7 @@
         "Does not re-ask what the prompt already answered (which journeys and interactions); asks only remaining open points, if any",
         "The proposal contains a customer-list load scenario and an export BI event, both marked as coming from the user",
         "Any additional items are clearly marked as suggestions and are not required for the user's two questions",
-        "The load scenario settles as success with a row count, incomplete for an empty list, failure with error and statusCode on HTTP error, and abandoned when the user leaves mid-load",
+        "The load scenario settles as success with a row count, incomplete for an empty list, failure with the HTTP statusCode on HTTP error (never the raw HttpErrorResponse, whose message quotes the request URL), and abandoned when the user leaves mid-load",
         "The export event uses a snake_case name declared in UwtBIEventNames and only low-cardinality metadata (e.g. format), no ids",
         "Adds tests for each outcome through a recording sink"
       ]
@@ -104,7 +104,7 @@
       "id": "regression-settle-status-and-rxjs",
       "category": "regression",
       "prompt": "Instrument the customer list loading as a scenario, including when it fails or the user leaves the page. The project is in evals/files/wired-angular.",
-      "expected_output": "Skill starts a customers-load scenario, settles complete on success, incomplete({ reason: 'no-results' }) on an empty list, fail({ error, statusCode }) on HTTP error, and cancel on leaving; nothing downstream of traceScenario that stops after the first value (no take(1)/first() after it, no firstValueFrom on it); names declared in telemetry.schema.ts; tests for each outcome.",
+      "expected_output": "Skill starts a customers-load scenario, settles complete on success, incomplete({ reason: 'no-results' }) on an empty list, fail with the HTTP statusCode and no raw HttpErrorResponse (its message quotes the request URL) on HTTP error, and cancel on leaving; nothing downstream of traceScenario that stops after the first value (no take(1)/first() after it, no firstValueFrom on it); names declared in telemetry.schema.ts; tests for each outcome.",
       "files": [
         "evals/files/wired-angular/angular.json",
         "evals/files/wired-angular/package.json",
@@ -127,7 +127,7 @@
       "expectations": [
         "Navigating away mid-load settles as cancel/abandoned, not fail",
         "An empty result settles as incomplete with a low-cardinality reason, not success or fail",
-        "An HTTP error settles as fail with the error and statusCode",
+        "An HTTP error settles as fail with its statusCode, and the raw HttpErrorResponse (whose message quotes the request URL, ids included) is not passed as the error",
         "Leaving the page mid-load settles the open scenario as abandoned with a stable reason (ngOnDestroy cancel, or traceScenario's cancelOutcome on teardown)",
         "Nothing downstream of traceScenario stops after the first value: no take(1)/first() after it and no firstValueFrom() on the traced observable (take(1) upstream of it is fine)",
         "Declares the scenario and step names in telemetry.schema.ts; no id or URL interpolated into any name",

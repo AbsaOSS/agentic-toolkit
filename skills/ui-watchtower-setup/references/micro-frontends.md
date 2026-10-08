@@ -25,7 +25,10 @@ import {
   UwtRumTelemetrySink,
   provideUwtTelemetryRumSink
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
-import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation-telemetry.service';
+import {
+  provideRouteNavigationTelemetry,
+  ROUTE_PAGE_VIEW_RECORDER
+} from './telemetry/route-navigation-telemetry.service';
 
 declare global {
   interface Window {
@@ -62,7 +65,8 @@ providers: [
   provideUwtTelemetry({ application: 'shell', environment, version }),
   provideUwtTelemetryRumSink(),
   { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
-  // Page views under the route template (SKILL.md Step 6)
+  // Route tracking and page views under the route template (SKILL.md Step 6)
+  provideRouteNavigationTelemetry(),
   {
     provide: ROUTE_PAGE_VIEW_RECORDER,
     useFactory: () => {

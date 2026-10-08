@@ -93,7 +93,7 @@ Load `references/instrumentation-patterns.md` (section 1). Within the scope from
 - **Every wait the user actually sits through** → a scenario (a fetch that gates a screen, a submit,
   an upload, an export).
 - **Every meaningful or irreversible click** → a BI event.
-- **Every `catch` that ends a journey** → that scenario's `fail({ error })`.
+- **Every `catch` that ends a journey** → that scenario's `fail(...)` (Step 6, rule 3).
 
 Map each user answer to concrete code: which component or service, which call starts the journey,
 which outcomes it can have.
@@ -144,18 +144,23 @@ Follow `references/instrumentation-patterns.md`:
 1. Add every confirmed name to `telemetry.schema.ts` (scenarios and steps kebab-case, BI events
    snake_case, one JSDoc line each). Never interpolate ids into names.
 2. Each journey: start → steps → settle with the **right** status — `complete`, `incomplete` (an
-   expected dead end, e.g. no results), `fail` (a defect; pass `error` and `statusCode`), `cancel`
-   (the user left or a newer request superseded it). Timeout is automatic.
-3. Settle open scenarios when their component is destroyed; under `switchMap`, give
+   expected dead end, e.g. no results), `fail` (a defect, with a `statusCode`), `cancel` (the user
+   left or a newer request superseded it). Timeout is automatic.
+3. **Never hand a raw `HttpErrorResponse` to `fail()` or `logger.error()`**: its message quotes the
+   request URL, and redaction never scrubs path segments, so ids reach RUM. Use the patterns'
+   `safeHttpFailure(error)` (class and status only); with `traceScenario`, settle the failure first
+   in a `catchError` upstream of it — the operator itself passes the raw error and no status.
+4. Settle open scenarios when their component is destroyed; under `switchMap`, give
    `traceScenario` a `cancelOutcome`. Nothing downstream of `traceScenario` may stop after the
    first value — no `take(1)`/`first()` after it, no `firstValueFrom()` on it (it records
    `abandoned`): limit upstream and await with `lastValueFrom()`.
-4. BI events inside a journey pass `{ scenarioId: scenario.id }`. Debounce high-frequency sources
+5. BI events inside a journey pass `{ scenarioId: scenario.id }`. Debounce high-frequency sources
    (search boxes, sliders) before starting a scenario or sending a BI event — one per settled
    input, never one per keystroke.
-5. Metadata: flat primitives, low cardinality, no personal data.
-6. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
-   `logger.error(message, { error, correlationId: scenario.id })` so log lines join the scenario.
+6. Metadata: flat primitives, low cardinality, no personal data.
+7. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
+   `logger.error(message, { error: safeHttpFailure(e).error, correlationId: scenario.id })` so log
+   lines join the scenario.
 
 ### Step 7 · Tests for every outcome
 

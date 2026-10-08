@@ -105,7 +105,9 @@ interface UwtTelemetryIdentity {
 Always on, even with `redact: false`: the credential key denylist (`password`, `secret`, `token`,
 `auth`, `credential`, `cookie`, `api-key`, `bearer`, `jwt`, `signature`, `session-key`, `ssn` —
 substring, case-insensitive), the size caps, error normalization to `{ name, message, stack? }`, and
-`extraValueTransforms`. URL query strings and fragments are stripped; **path segments are not**.
+`extraValueTransforms`. URL query strings and fragments are stripped; **path segments are not** —
+so an `HttpErrorResponse` passed as `error` sends its message, which quotes the request URL path
+(ids included). Send its class and status instead (`safeHttpFailure` in the integration patterns).
 
 ## 4. Scenarios
 
@@ -181,6 +183,7 @@ private readonly logger = inject(UwtLoggerService).getLogger('checkout'); // dec
 this.logger.log('Submitting order');
 this.logger.warn('Retrying payment', { metadata: { attempt: 2 } });
 this.logger.error('Payment failed', { error, correlationId: scenario.id, context: 'CheckoutService' });
+// never a raw HttpErrorResponse as `error` — its message quotes the request URL (§3)
 
 inject(UwtLoggerService).query({ correlationId: scenario.id }); // → your provider's query()
 ```

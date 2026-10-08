@@ -72,6 +72,8 @@ describe('Customers customers-load scenario', () => {
   it('records an HTTP error as failure with its status', () => {
     load().request.flush('boom', { status: 503, statusText: 'Unavailable' });
     expect(loads()).toEqual([expect.objectContaining({ status: 'failure', statusCode: 503 })]);
+    // HttpErrorResponse.message quotes the request URL; only its class and status may be sent.
+    expect(JSON.stringify(events)).not.toContain('/api/customers');
   });
 
   it('records leaving mid-load as abandoned', () => {

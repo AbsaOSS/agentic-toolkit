@@ -1,7 +1,22 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { UwtScenario, UwtScenarioTelemetryService } from '@absaoss-cps/ngx-ui-watchtower';
+import {
+  UwtScenario,
+  UwtScenarioOutcome,
+  UwtScenarioTelemetryService
+} from '@absaoss-cps/ngx-ui-watchtower';
 import '../telemetry/telemetry.schema';
+
+/** HttpErrorResponse.message quotes the request URL, path ids included — keep class and status only. */
+function safeHttpFailure(error: unknown): UwtScenarioOutcome {
+  const status = (error as { status?: unknown } | null)?.status;
+  return typeof status === 'number'
+    ? {
+        error: Object.assign(new Error('HTTP request failed'), { name: 'HttpErrorResponse' }),
+        statusCode: status
+      }
+    : { error };
+}
 
 interface Customer {
   id: string;
@@ -41,9 +56,9 @@ export class Customers implements OnInit, OnDestroy {
         }
         scenario.complete({ metadata: { count: rows.length } });
       },
-      error: (error: HttpErrorResponse) => {
+      error: (error: unknown) => {
         this.error.set(true);
-        scenario.fail({ error, statusCode: error.status });
+        scenario.fail(safeHttpFailure(error));
       }
     });
   }

@@ -147,7 +147,7 @@ dashboard. Two different destinations also fail bootstrap.
 
 | App has a log backend? | Do |
 |---|---|
-| Yes | Implement `UwtLogApiProvider` from `assets/log-api.provider.ts`, bind `{ provide: UWT_LOG_API_PROVIDER, useExisting: … }`, declare logger names in `UwtLoggerNames` |
+| Yes | Implement `UwtLogApiProvider` from `assets/log-api.provider.ts` (it uses `fetch`; switch to `HttpClient` if the backend needs auth an interceptor adds), bind `{ provide: UWT_LOG_API_PROVIDER, useExisting: … }`, declare logger names in `UwtLoggerNames` |
 | No | Don't inject `UwtLoggerService`, don't pass `withLogging()`, don't declare `UwtLoggerNames`. A **shell** still binds `{ provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }` — the host requires one |
 
 **Identity** — `application`, `environment`, `version` (plus optional `eventNamespace`, default
@@ -193,14 +193,15 @@ export const appConfig: ApplicationConfig = {
   come from Step 6, under the route template. `provideUwtTelemetryRumSink()` calls it from its own
   non-blocking initializer — don't write one. The asset uses `fetch`, which bypasses `HttpClient`
   interceptors: if the broker needs auth that an interceptor adds, call it through `HttpClient`
-  (`firstValueFrom`) instead.
+  (`firstValueFrom`) instead. It requires credentials; for an app monitor that allows
+  unauthenticated access (a `{ config }`-only answer), relax that check.
 - **User identity** (only when Step 1 found sign-in): in the service that completes sign-in, inject
   the sink once as a field — `private readonly telemetrySink = inject(UwtTelemetrySink);` — and call
   `this.telemetrySink.setUserId(opaqueId)` when sign-in completes and `setUserId(undefined)` on
   sign-out, which starts a fresh RUM session. Never call `inject()` inside the callback itself: it
   only works while Angular constructs the class, and throws `NG0203` there. Never an email or
-  username. In a fragment, leave it to the shell: a
-  fragment's `setUserId` is forwarded and changes the shell's user.
+  username. In a fragment, leave it to the shell: a fragment's `setUserId` is forwarded and changes
+  the shell's user.
 
 ### Step 4 · Declare the vocabulary
 
@@ -273,8 +274,8 @@ What it records: one scenario per navigation under the final route template (red
 backdated to the click (`markNavigationIntent()` from nav-link handlers); a guard returning `false`
 is `incomplete`, supersession `abandoned` (one superseded before its URL was recognized records
 nothing — it has no template and would only spend the event budget), an error `failure` (reduced to
-a class-like name and an HTTP status — no URL), and no end within 30 s `timeout`. Keep that behaviour if you change the
-asset; its comments say why each part is there.
+a class-like name and an HTTP status — no URL), and no end within 30 s `timeout`. Keep that
+behaviour if you change the asset; its comments say why each part is there.
 
 ### Step 7 · Tests
 
@@ -349,8 +350,8 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
 - **`route` is a metric dimension** — a template (`/customers/:id`), never a resolved URL; one series
   per customer is both a cardinality and a PII problem.
 - **One page-view recorder, under the template.** Automatic RUM page views use the resolved path —
-  keep `disableAutoPageView: true` with the Step 6 recorder, never both and never the automatic one
-  alone.
+  keep `disableAutoPageView: true` with the Step 6 recorder; never both, and never the automatic one
+  alone — except in an app with no router (Step 6).
 - **Telemetry never throws into the app** — every entry point fails open. Don't wrap calls in
   try/catch.
 - **Redaction cannot be fully disabled, and never scrubs URL path segments** — only query strings and
