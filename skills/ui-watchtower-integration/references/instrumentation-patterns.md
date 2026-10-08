@@ -1,0 +1,199 @@
+# Instrumentation patterns
+
+How to choose, implement and settle scenarios and BI events. Each rule here cost real debugging time
+in an earlier integration.
+
+## Contents
+
+1. [Finding candidates](#1-finding-candidates)
+2. [Choosing the settle status](#2-choosing-the-settle-status)
+3. [Scenario shapes](#3-scenario-shapes)
+4. [RxJS traps](#4-rxjs-traps)
+5. [Cleanup on destroy](#5-cleanup-on-destroy)
+6. [BI events](#6-bi-events)
+7. [Names, metadata and privacy](#7-names-metadata-and-privacy)
+8. [Starter catalogue](#8-starter-catalogue)
+
+## 1. Finding candidates
+
+| Look for                                                         | Becomes                                                     |
+|------------------------------------------------------------------|-------------------------------------------------------------|
+| An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) |
+| A meaningful or irreversible click; a setting change              | BI event                                                    |
+| A `catch` / `error` handler that ends a journey                  | That scenario's `fail({ error })`                           |
+| A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    |
+| Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        |
+
+Skip: anything that fires continuously (scroll, mousemove, per-keystroke), purely decorative UI,
+and work the user never waits for. Every event spends the 200-event RUM session budget.
+
+## 2. Choosing the settle status
+
+| Status       | Call                   | Means                                                                       | Response                          |
+|--------------|------------------------|-----------------------------------------------------------------------------|-----------------------------------|
+| `success`    | `complete()`           | The journey reached its goal                                                 | —                                 |
+| `failure`    | `fail({ error })`      | A defect: the journey broke                                                  | Investigate; alert on rate        |
+| `abandoned`  | `cancel({ reason })`   | No longer relevant: navigated away, superseded, component destroyed         | Engagement signal, **not** a bug  |
+| `incomplete` | `incomplete(outcome?)` | An expected path that didn't reach the goal: no results, guard declined     | Product signal                    |
+| `timeout`    | automatic              | Never settled within `timeoutMs`                                             | Usually a missed settle path      |
+
+Keeping these apart is what makes the failure rate usable for alerting. Prefer the named methods
+over `settle(status, …)` so every failure path is findable by searching for `.fail(`. The first
+settle wins: a `catch` calling `fail()` followed by a `finally` calling `complete()` records the
+failure.
+
+Use a small, consistent set of `reason` strings — they are grouping keys: `'component-destroyed'`,
+`'superseded'`, `'user-cancelled'`, `'no-results'`, `'guard-rejected'`.
+
+Pass `statusCode` (HTTP status or business code) with `fail()` so failures group by category.
+
+## 3. Scenario shapes
+
+**Promise / async**:
+
+```ts
+async load(): Promise<void> {
+  const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
+  try {
+    scenario.step('fetch');
+    const rows = await firstValueFrom(this.api.customers());
+    scenario.step('render');
+    this.rows.set(rows);
+    if (rows.length === 0) {
+      scenario.incomplete({ reason: 'no-results' });
+      return;
+    }
+    scenario.complete({ metadata: { count: rows.length } });
+  } catch (error) {
+    scenario.fail({ error, statusCode: (error as { status?: number }).status });
+  }
+}
+```
+
+**Observable** — `traceScenario` settles on completion, error or early unsubscribe:
+
+```ts
+this.api.customers().pipe(
+  traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
+);
+```
+
+**Backdating** — the journey starts at the click, not when the async handler runs:
+
+```ts
+onExportClick(): void { this.clickedAt = Date.now(); /* … */ }
+// later
+this.scenarios.start({ name: 'export-download', startedAt: this.clickedAt });
+```
+
+`startedAt` is epoch ms, clamped to the page lifetime; an unusable value falls back to now.
+
+**Repeated work inside one journey** — aggregate instead of N steps:
+
+```ts
+for (const row of rows) {
+  scenario.aggregateStart('format-row');
+  format(row);
+  scenario.aggregateEnd('format-row');
+}
+```
+
+An unmatched `aggregateEnd`, or a second `aggregateStart` before its end, is ignored — an early
+`return` can't corrupt the total.
+
+**Child journeys** — pass `parentScenarioId: parent.id`. Across realms (fragments), pass the id
+string, never the `UwtScenario` object.
+
+**Measuring what the user saw** — `complete()` stops the clock when the JavaScript finishes; for a
+render-heavy journey, complete after the next frame:
+`requestAnimationFrame(() => requestAnimationFrame(() => scenario.complete()))`. Not inside a
+fragment (its frames belong to a hidden iframe) — settle with `complete()` there.
+
+## 4. RxJS traps
+
+**`take(1)` / `first()` upstream of `traceScenario`** unsubscribes before the source's `complete`
+reaches the operator, so the scenario never settles and records `timeout`. Settle explicitly instead:
+
+```ts
+return this.upload(file).pipe(
+  take(1),
+  map((result) => { scenario.complete({ metadata: { fileSize: file.size } }); return result; }),
+  catchError((error) => { scenario.fail({ error }); return of(null); })
+);
+```
+
+**`switchMap` supersession**: `switchMap` unsubscribes the previous inner observable *before* the
+projector for the new value runs, so `previous.cancel({ reason: 'superseded' })` inside the new
+projector is too late — the teardown already cancelled it without a reason. Give the reason up
+front:
+
+```ts
+query$.pipe(
+  debounceTime(300),
+  switchMap((q) => {
+    const scenario = this.scenarios.start({ name: 'search', feature: 'catalogue' });
+    scenario.step('query');
+    return this.api.search(q).pipe(
+      traceScenario(scenario, { cancelOutcome: { reason: 'superseded' } })
+    );
+  })
+);
+```
+
+Managing scenarios by hand? Cancel the previous one at the top of the projector, before starting the
+next.
+
+## 5. Cleanup on destroy
+
+Every component that starts a scenario settles it on destroy; otherwise it sits in the active
+registry until its timeout (and forever with `timeoutMs: 0`).
+
+```ts
+ngOnDestroy(): void {
+  this.loadScenario?.cancel({ reason: 'component-destroyed' });
+}
+
+// several, keyed by entity
+ngOnDestroy(): void {
+  for (const s of this.uploads.values()) s.cancel({ reason: 'component-destroyed' });
+  this.uploads.clear();
+}
+```
+
+Cancelling an already-settled scenario is a harmless no-op, so this needs no "is it still open"
+check.
+
+## 6. BI events
+
+- One event per meaningful action, named `snake_case` in `UwtBIEventNames`.
+- Inside a journey, link it: `track('export_clicked', { format }, { scenarioId: scenario.id })`.
+- Debounce high-frequency sources (search boxes, sliders) before `track()` — e.g.
+  `debounceTime(400)`. Repeated identical clicks within 400 ms are already collapsed by the library.
+- A thin app wrapper is fine; type its name parameter `UwtBIEventName`.
+
+## 7. Names, metadata and privacy
+
+- Never interpolate data into a scenario, step or BI name. Put the variable part in metadata, and
+  only if it is low-cardinality (a format, a tab name, a count) — never a record id or free text.
+- `route` is a template (`/customers/:id`).
+- Metadata: flat `string | number | boolean | null`; max 50 keys across the whole scenario.
+- No personal data: no emails, names, usernames, account numbers, free-text input. Use opaque ids.
+- Code you write that touches `window`, `navigator`, `document` or `localStorage` runs during server
+  rendering too — guard it:
+  `this.isBrowser ? { language: navigator.language } : {}` with
+  `isBrowser = isPlatformBrowser(inject(PLATFORM_ID))`.
+
+## 8. Starter catalogue
+
+Adapt to the app's real vocabulary and to what the user asked for. Route navigation is already
+tracked by `ui-watchtower-setup`.
+
+| Scenario          | Steps                          | Settles                                                                                     |
+|-------------------|--------------------------------|---------------------------------------------------------------------------------------------|
+| `<screen>-load`   | `fetch`, `render`              | `complete`; `incomplete({reason:'no-results'})`; `fail({error})`; cancel on destroy/supersede |
+| `<form>-submit`   | `validate`, `submit`           | `complete`; `incomplete({reason:'validation-failed'})`; `fail({error, statusCode})`          |
+| `file-upload`     | `read`, `upload`, `process`    | `complete({metadata:{fileSize}})`; `cancel({reason:'user-cancelled'})`; `fail({error})`       |
+| `export-download` | `request`, `transfer`          | `complete`; `cancel({reason:'user-cancelled'})`; `fail({error})`                              |
+
+BI: `export_clicked`, `filter_applied`, `search_submitted` (debounced), `theme_changed`,
+`sidebar_toggled`, `sign_out_clicked`.

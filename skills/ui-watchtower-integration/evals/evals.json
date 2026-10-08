@@ -1,0 +1,194 @@
+{
+  "skill_name": "ui-watchtower-integration",
+  "evals": [
+    {
+      "id": "vague-request-asks-first",
+      "category": "happy-path",
+      "prompt": "Add telemetry for our main user journeys. The project is in evals/files/wired-angular.",
+      "expected_output": "Skill confirms setup is done, asks the user what the telemetry should answer (questions, key journeys and success criteria, interactions, pain points, exclusions, scope) before proposing, then presents a proposal whose items carry a Source column, implements only after confirmation, and does not re-add route navigation.",
+      "files": [
+        "evals/files/wired-angular/angular.json",
+        "evals/files/wired-angular/package.json",
+        "evals/files/wired-angular/src/app/app.config.ts",
+        "evals/files/wired-angular/src/app/app.routes.ts",
+        "evals/files/wired-angular/src/app/app.spec.ts",
+        "evals/files/wired-angular/src/app/app.ts",
+        "evals/files/wired-angular/src/app/customers/customer-detail.ts",
+        "evals/files/wired-angular/src/app/customers/customers.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.spec.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-angular/src/index.html",
+        "evals/files/wired-angular/src/main.ts",
+        "evals/files/wired-angular/src/styles.css",
+        "evals/files/wired-angular/tsconfig.app.json",
+        "evals/files/wired-angular/tsconfig.json",
+        "evals/files/wired-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Checks that the library is installed and wired (providers, destination, schema) before anything else",
+        "Asks the user, before proposing, what the telemetry should answer — covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
+        "Presents a proposal whose items have a Source column distinguishing items the user asked for from suggested ones (here all suggested, and says so)",
+        "Waits for confirmation before implementing (implements only after the assumed confirmation)",
+        "Does not add a second route-navigation scenario or change the existing wiring",
+        "New scenario and BI names are added to the existing telemetry.schema.ts",
+        "Adds tests that assert the emitted status per outcome through a recording sink"
+      ]
+    },
+    {
+      "id": "user-supplied-requirements",
+      "category": "happy-path",
+      "prompt": "We want to know whether the customer list is slow to load or failing, and how often people export it to CSV. Watchtower is already set up. The project is in evals/files/wired-angular.",
+      "expected_output": "Skill uses the stated requirements as the core of the proposal (marked as from the user), asks only what is still open (e.g. exclusions, scope), may add clearly marked suggestions, and implements a customers-load scenario with correct statuses and an export BI event with low-cardinality metadata, plus tests.",
+      "files": [
+        "evals/files/wired-angular/angular.json",
+        "evals/files/wired-angular/package.json",
+        "evals/files/wired-angular/src/app/app.config.ts",
+        "evals/files/wired-angular/src/app/app.routes.ts",
+        "evals/files/wired-angular/src/app/app.spec.ts",
+        "evals/files/wired-angular/src/app/app.ts",
+        "evals/files/wired-angular/src/app/customers/customer-detail.ts",
+        "evals/files/wired-angular/src/app/customers/customers.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.spec.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-angular/src/index.html",
+        "evals/files/wired-angular/src/main.ts",
+        "evals/files/wired-angular/src/styles.css",
+        "evals/files/wired-angular/tsconfig.app.json",
+        "evals/files/wired-angular/tsconfig.json",
+        "evals/files/wired-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Does not re-ask what the prompt already answered (which journeys and interactions); asks only remaining open points, if any",
+        "The proposal contains a customer-list load scenario and an export BI event, both marked as coming from the user",
+        "Any additional items are clearly marked as suggestions and are not required for the user's two questions",
+        "The load scenario settles as success with a row count, incomplete for an empty list, failure with error and statusCode on HTTP error, and abandoned when the user leaves mid-load",
+        "The export event uses a snake_case name declared in UwtBIEventNames and only low-cardinality metadata (e.g. format), no ids",
+        "Adds tests for each outcome through a recording sink"
+      ]
+    },
+    {
+      "id": "conflicting-request",
+      "category": "regression",
+      "prompt": "Track every keystroke in the customer search box together with what was typed, and put the customer id into the scenario name so we can see load time per customer. The project is in evals/files/wired-angular.",
+      "expected_output": "Skill keeps the user's intent but changes the shape: lists both requests under 'Requested but changed or not feasible' with reasons (raw text is PII and unbounded, per-keystroke events burn the session budget, ids in names split metrics), and proposes a debounced search event without raw text (e.g. queryLength, resultCount) and a single scenario name with the route template or a low-cardinality attribute instead of the id.",
+      "files": [
+        "evals/files/wired-angular/angular.json",
+        "evals/files/wired-angular/package.json",
+        "evals/files/wired-angular/src/app/app.config.ts",
+        "evals/files/wired-angular/src/app/app.routes.ts",
+        "evals/files/wired-angular/src/app/app.spec.ts",
+        "evals/files/wired-angular/src/app/app.ts",
+        "evals/files/wired-angular/src/app/customers/customer-detail.ts",
+        "evals/files/wired-angular/src/app/customers/customers.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.spec.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-angular/src/index.html",
+        "evals/files/wired-angular/src/main.ts",
+        "evals/files/wired-angular/src/styles.css",
+        "evals/files/wired-angular/tsconfig.app.json",
+        "evals/files/wired-angular/tsconfig.json",
+        "evals/files/wired-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Lists both requests under a 'requested but changed / not feasible' section with the reason for each",
+        "Does not send the typed text: the search event is debounced and carries only low-cardinality data such as query length or result count",
+        "Does not interpolate the customer id into any scenario, step or BI name, and does not put the raw id in metadata",
+        "Offers an alternative that still answers the user's question (e.g. one scenario name with the route template, percentiles by delta computed AWS-side)",
+        "Implements only the changed versions, after the assumed confirmation"
+      ]
+    },
+    {
+      "id": "regression-settle-status-and-rxjs",
+      "category": "regression",
+      "prompt": "Instrument the customer list loading as a scenario, including when it fails or the user leaves the page. The project is in evals/files/wired-angular.",
+      "expected_output": "Skill starts a customers-load scenario, settles complete on success, incomplete({ reason: 'no-results' }) on an empty list, fail({ error, statusCode }) on HTTP error, and cancel on leaving; no take(1) upstream of traceScenario; names declared in telemetry.schema.ts; tests for each outcome.",
+      "files": [
+        "evals/files/wired-angular/angular.json",
+        "evals/files/wired-angular/package.json",
+        "evals/files/wired-angular/src/app/app.config.ts",
+        "evals/files/wired-angular/src/app/app.routes.ts",
+        "evals/files/wired-angular/src/app/app.spec.ts",
+        "evals/files/wired-angular/src/app/app.ts",
+        "evals/files/wired-angular/src/app/customers/customer-detail.ts",
+        "evals/files/wired-angular/src/app/customers/customers.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.spec.ts",
+        "evals/files/wired-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-angular/src/index.html",
+        "evals/files/wired-angular/src/main.ts",
+        "evals/files/wired-angular/src/styles.css",
+        "evals/files/wired-angular/tsconfig.app.json",
+        "evals/files/wired-angular/tsconfig.json",
+        "evals/files/wired-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Navigating away mid-load settles as cancel/abandoned, not fail",
+        "An empty result settles as incomplete with a low-cardinality reason, not success or fail",
+        "An HTTP error settles as fail with the error and statusCode",
+        "Leaving the page mid-load settles the open scenario as abandoned with a stable reason (ngOnDestroy cancel, or traceScenario's cancelOutcome on teardown)",
+        "Does not put take(1) or first() upstream of traceScenario",
+        "Declares the scenario and step names in telemetry.schema.ts; no id or URL interpolated into any name",
+        "Adds tests asserting the emitted status for each outcome using a recording sink"
+      ]
+    },
+    {
+      "id": "re-run-adds-only",
+      "category": "regression",
+      "prompt": "Add telemetry for the customer list screen. The project is in evals/files/wired-instrumented-angular.",
+      "expected_output": "Skill reads the existing schema and instrumentation, recognises that customers-load is already measured, and proposes only additions for the screen (e.g. export, search) — each with a Source label — without a second load scenario or changes to the existing one; new names go into the existing schema, with tests.",
+      "files": [
+        "evals/files/wired-instrumented-angular/angular.json",
+        "evals/files/wired-instrumented-angular/package.json",
+        "evals/files/wired-instrumented-angular/src/app/app.config.ts",
+        "evals/files/wired-instrumented-angular/src/app/app.routes.ts",
+        "evals/files/wired-instrumented-angular/src/app/app.spec.ts",
+        "evals/files/wired-instrumented-angular/src/app/app.ts",
+        "evals/files/wired-instrumented-angular/src/app/customers/customer-detail.ts",
+        "evals/files/wired-instrumented-angular/src/app/customers/customers.spec.ts",
+        "evals/files/wired-instrumented-angular/src/app/customers/customers.ts",
+        "evals/files/wired-instrumented-angular/src/app/telemetry/route-navigation-telemetry.service.spec.ts",
+        "evals/files/wired-instrumented-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-instrumented-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-instrumented-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-instrumented-angular/src/index.html",
+        "evals/files/wired-instrumented-angular/src/main.ts",
+        "evals/files/wired-instrumented-angular/src/styles.css",
+        "evals/files/wired-instrumented-angular/tsconfig.app.json",
+        "evals/files/wired-instrumented-angular/tsconfig.json",
+        "evals/files/wired-instrumented-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Reads the existing telemetry.schema.ts and instrumentation and notes that customers-load is already measured",
+        "Does not add a second load scenario for the customer list or re-instrument the existing customers-load",
+        "The proposal lists only new items, each with a Source label (here suggested, since the user named no specific question), and says what already exists",
+        "Adds new names to the existing schema without removing or renaming existing entries",
+        "Leaves the existing customers-load instrumentation and its tests unchanged",
+        "New events carry only low-cardinality metadata (no raw search text, no ids), and recording-sink tests assert them",
+        "A search added on this screen is debounced (no scenario or event per keystroke)"
+      ]
+    },
+    {
+      "id": "precondition-missing",
+      "category": "negative",
+      "prompt": "Measure how long the customer list takes to load. The project is in evals/files/unwired-angular.",
+      "expected_output": "Skill finds that ngx-ui-watchtower is not installed or wired, stops, and points the user to ui-watchtower-setup without instrumenting anything.",
+      "files": [
+        "evals/files/unwired-angular/package.json",
+        "evals/files/unwired-angular/src/app/app.config.ts",
+        "evals/files/unwired-angular/src/app/customers/customers.ts"
+      ],
+      "expectations": [
+        "Detects that the library is not installed or wired (no package, no providers, no schema)",
+        "Stops and points the user to the ui-watchtower-setup skill",
+        "Does not install packages, add providers or instrument any code"
+      ]
+    }
+  ]
+}

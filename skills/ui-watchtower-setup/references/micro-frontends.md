@@ -1,0 +1,134 @@
+# Micro-frontends: shell hosts, fragments forward
+
+Use when the app embeds fragments that run in their own JavaScript realm (Web Fragments, same-origin
+iframes, separately bootstrapped Angular apps), or is such a fragment.
+
+## Why
+
+Each realm has its own Angular injector, so each would build its own AWS RUM client: one visitor
+becomes N sessions with N event budgets, N credential fetches and N SDK downloads. So **exactly one
+realm — the shell — owns the RUM client; fragments forward** to it over a same-origin
+`BroadcastChannel`. Application code is identical in both; only the providers differ.
+
+## Shell
+
+```ts
+import {
+  UWT_LOG_API_PROVIDER,
+  UwtNoopLogApiProvider,
+  provideUwtTelemetry,
+  provideUwtTelemetryBroadcastHost
+} from '@absaoss-cps/ngx-ui-watchtower';
+import {
+  UWT_RUM_CREDENTIALS_PROVIDER,
+  provideUwtTelemetryRumSink
+} from '@absaoss-cps/ngx-ui-watchtower/rum';
+
+declare global {
+  interface Window {
+    __uwtTelemetryChannel?: string;
+  }
+}
+
+// One channel per page load, at module scope so it exists before any fragment boots. Browser-only:
+// this module is also evaluated during server rendering, where the host is a no-op anyway.
+const channelId =
+  typeof window === 'undefined' ? undefined : `ngx-ui-watchtower-${crypto.randomUUID()}`;
+if (channelId) {
+  window.__uwtTelemetryChannel = channelId;
+}
+
+providers: [
+  provideUwtTelemetry({ application: 'shell', environment, version }),
+  provideUwtTelemetryRumSink(),
+  { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
+  provideUwtTelemetryBroadcastHost(channelId),
+  // Required by the host. Fragments' log records are shipped by the shell's log provider;
+  // with no log backend, say so explicitly:
+  { provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }
+];
+```
+
+- **Provide the host now**, even if no fragment forwards yet — a host with no fragments just sits
+  idle, and it must be listening before the first fragment sends.
+- **Per-tab channel id is required.** `BroadcastChannel` and the host's leader election are
+  origin-wide. On the shared default channel, a second tab's fragments get recorded through the
+  first tab's RUM client — wrong page, wrong context. Generate the id once per page load, never per
+  fragment or per navigation.
+- **Why a `window` global** and not `sessionStorage`: browsers copy `sessionStorage` into a
+  duplicated tab, which would put both tabs back on one channel. A query parameter doesn't work
+  either: a bound fragment shares the shell's `window.location`.
+- Per-tab channels give correct attribution, not a separate RUM session per tab — the session is a
+  cookie shared across tabs, by design.
+
+## Fragment — the contract to hand to fragment teams
+
+```ts
+import {
+  UWT_BROADCAST_CHANNEL,
+  provideUwtTelemetry,
+  provideUwtTelemetrySink
+} from '@absaoss-cps/ngx-ui-watchtower';
+
+declare global {
+  interface Window {
+    __uwtTelemetryChannel?: string;
+  }
+}
+
+/**
+ * The shell's channel. `undefined` (no shell, server rendering, cross-origin `top`) makes the sink
+ * fall back to the library's default channel `'ngx-ui-watchtower'` — with no host listening there,
+ * nothing ships and nothing fails.
+ */
+function shellChannelName(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+  try {
+    return window.top?.__uwtTelemetryChannel;
+  } catch {
+    return undefined;
+  }
+}
+
+providers: [
+  provideUwtTelemetry({ application: 'cart', environment, version }), // must differ from the shell
+  provideUwtTelemetrySink('broadcast'),
+  { provide: UWT_BROADCAST_CHANNEL, useFactory: shellChannelName } // lazy — see below
+];
+```
+
+Use the `useFactory` provider, not `provideUwtTelemetrySink('broadcast', { channelName:
+shellChannelName() })`: the option is bound with `useValue`, read when the providers array is built —
+possibly before the shell has published the id. The factory runs when the sink is first constructed.
+
+| Must match the shell | `eventNamespace`; the channel name (read from `window.top`)                                             |
+|----------------------|---------------------------------------------------------------------------------------------------------|
+| **Must differ**      | `application` — every forwarded event is stamped with it, which is how fragments are told apart         |
+| **Never provide**    | `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER`, `provideUwtTelemetryBroadcastHost()`, `UWT_LOG_API_PROVIDER` (`'broadcast'` already binds it to the forwarding provider) |
+| **Never install**    | `aws-rum-web`                                                                                           |
+
+Inside a fragment:
+
+- `getSessionId()` is `undefined` until the shell answers the identity handshake — don't assert on it
+  at bootstrap. Work is still correlated by `scenarioId`.
+- Log lines go to the shell's log provider; `logger.query()` is answered by the shell.
+- Don't call `setUserId()`: it is forwarded and changes the shell's user (and `undefined` starts a
+  new session). The shell owns user identity.
+- Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
+- A fragment with no shell, **or on a wrong channel**, behaves identically: everything runs, nothing
+  ships, no error. An unresolved channel is not a no-op by itself — it falls back to the default
+  channel, so if some shell *is* hosting on the default channel (one that never adopted per-tab ids),
+  the fragment's events go there. Verify the channel deliberately (below).
+- Correlation across realms is a string: forward `scenario.id` and start a child scenario with
+  `parentScenarioId`.
+
+## Verifying
+
+- In a fragment's realm, `window.top.__uwtTelemetryChannel` equals the id the shell generated.
+- Once fragments forward, the shell's `inject(UwtTelemetryBroadcastHost).received` counter increases.
+- Two tabs have two different channel ids.
+- With the debug flags on, lines are prefixed per realm: `[shell][scenario] …`, `[cart][bi] …`.
+- `BroadcastChannel` is same-origin only: a fragment served from another origin forwards nothing,
+  silently.
