@@ -51,9 +51,8 @@ If the library is already partly wired, only the missing pieces are added.
 
 ## Requirements
 
-- An Angular version the library supports — its `peerDependencies`. The skill reads them from npm
-  at run time; for an older Angular it offers an older compatible release if one exists, and for a
-  newer Angular than the library supports yet it stops instead of forcing the install
+- An Angular version the library supports (the skill checks its `peerDependencies` on npm and stops
+  rather than forcing an install)
 - A Node.js version your Angular version supports
 - Access to the npm registry
 

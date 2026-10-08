@@ -74,7 +74,7 @@ Read before writing anything — extend the app, don't restructure it.
 3. **Bootstrap style** — standalone (`app.config.ts`, `bootstrapApplication`) or NgModule
    (`providers` in `app.module.ts`). Providers go in the same place either way.
 4. **SSR** — `app.config.server.ts`, `server.ts`, `@angular/ssr`. Affects only code *you* write
-   (Step 3, Gotchas); the library is SSR-safe.
+   (Step 3); the library is SSR-safe.
 5. **Test runner** — Jest, Karma or Vitest, and which specs build the root providers or render
    components that will inject telemetry services (they need providers in Step 7).
 6. **Existing telemetry** — search for `aws-rum-web`, `recordEvent`, `recordPageView`, `pinUserId`,
@@ -136,8 +136,9 @@ different destinations also fail bootstrap.
 | No | Don't inject `UwtLoggerService`, don't pass `withLogging()`, don't declare `UwtLoggerNames`. A **shell** still binds `{ provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }` — the host requires one |
 
 **Identity** — `application`, `environment`, `version` (plus optional `eventNamespace`, default
-`com.uwt`; leave it unless Step 5 needs it). Reuse the app's environment files where they exist.
-Anything you compute here runs during server rendering too, so guard browser globals:
+`com.uwt`; leave it unless Step 5 needs it). Reuse the app's environment files where they exist;
+if you derive a value from browser globals (e.g. hostname), guard it — this also runs during server
+rendering:
 
 ```ts
 // standalone: app.config.ts — NgModule: the same entries in AppModule `providers`
@@ -189,19 +190,14 @@ app's own later.
   series. Never build a name from data (`` step(`load-${id}`) `` is wrong).
 - Kebab-case for scenario and step names (`route-navigation`, `customers-load`, `fetch`); snake_case for BI
   events (`export_clicked`). One JSDoc line per name saying what it measures.
-- Augmentation applies program-wide, but keep `import './telemetry/telemetry.schema';` in the files
-  that own the wiring (provider config, the router telemetry service) so it never becomes orphaned.
-- Declare `UwtLoggerNames` only if the app has a log backend (Step 3).
+- Keep the side-effect import `import './telemetry/telemetry.schema';` where the providers are
+  configured (`app.config.ts` or `AppModule`).
 
 ### Step 5 · Existing RUM integration (conditional)
 
-If Step 1 found the app sending RUM events itself, load `references/rum-migration.md` and follow it
-**before** Step 6. The library emits its own event types and payloads; replacing a hand-written
-`RumService` naively changes what reaches CloudWatch and breaks existing dashboards. Migrate first,
-diff the wire, delete last — and keep exactly one page-view recorder. If you can't run the app to
-diff the wire, don't delete the old service; leave that as a follow-up. One exception to "parity
-first": personal data or raw free text the old code sends today is fixed immediately, even when the
-migration is blocked — tell the owners of the affected dashboards.
+If Step 1 found the app sending RUM events itself, follow `references/rum-migration.md` before
+Step 6 — replacing a hand-written `RumService` naively breaks existing dashboards. Personal data the
+old code sends today is fixed immediately, even if the migration has to wait.
 
 ### Step 6 · Proof — route-navigation tracking
 
@@ -236,8 +232,6 @@ credentials provider — RUM's one automatic page view per load is then right.
 
 ### Step 7 · Tests
 
-The library ships no test doubles on purpose — the harness is a few lines.
-
 - Every existing spec that now (directly or through a component) injects a telemetry service needs
   providers, or it fails with `NG0201`:
 
@@ -255,9 +249,10 @@ The library ships no test doubles on purpose — the harness is a few lines.
 - Copy the two spec templates next to their assets: `route-navigation-telemetry.service.spec.ts`
   (a recording sink and its own route table — add the app's own route shapes, e.g. its `:param`
   routes) and, for RUM, `rum-credentials.provider.spec.ts` (adapt the broker answer to the real
-  one). They are written for Vitest; under Jest replace `vi.` with `jest.` (fake timers:
-  `doNotFake` instead of `toFake`), under Karma use Jasmine's clock and spies. Check the tests
-  bite: remove the `complete()` call in the service, confirm a test fails, restore it.
+  one). They are written for Vitest. Under Jest, replace `vi.` with `jest.` (fake timers take
+  `doNotFake` instead of `toFake`; `vi.stubGlobal('fetch', f)` becomes `globalThis.fetch = f`);
+  under Karma, use Jasmine's clock and spies. Check the tests bite: remove the `complete()` call in
+  the service, confirm a test fails, restore it.
 - jsdom has no `BroadcastChannel`: the broadcast sink and host degrade to no-ops in tests. Expected —
   don't polyfill it.
 

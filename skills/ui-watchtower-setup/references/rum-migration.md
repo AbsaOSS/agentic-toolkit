@@ -86,20 +86,12 @@ diff needs.
   manual `recordPageView` calls in the old code; never keep both. If the old setup relied on
   automatic page views, its page ids were resolved paths (`/customers/42`) and become templates
   (`/customers/:id`) — tell the owners of page-based dashboards.
-- **Free-text and per-keystroke events** (a search box sending every keystroke): debounce them, and
-  don't port the raw text — it is unbounded cardinality and can contain personal data. Fix them in
-  the old code even when the migration itself has to wait (§1). Send a
-  low-cardinality attribute instead (query length, result count, which filter was used). If a
-  documented consumer genuinely needs the text, ask before porting it.
-- **`aws:` metadata keys** are reserved and dropped by the RUM client; the sink filters them out. Any
-  the old code set were already being dropped — don't port them.
 - **Session attributes.** `application`, `environment` and `version` from the identity are attached
   as session attributes. Port any other attributes via `sessionAttributes` in the app monitor config
   returned by the credentials provider.
-- **User identity.** Replace `pinUserId` with `setUserId(id)` / `setUserId(undefined)` on the
-  `UwtTelemetrySink`, injected once as a field of the service that handles sign-in — never with
-  `inject()` inside the sign-in callback, which throws `NG0203`. Sign-out starts a fresh session with a new anonymous id; if the old code
-  behaved differently, call out the change.
+- **User identity.** Replace `pinUserId` with `setUserId` (SKILL.md Step 3). Sign-out starts a fresh
+  session; call it out if the old code behaved differently.
 - **Errors.** The RUM client still captures unhandled JS errors itself. Handled errors the old code
-  sent with `recordError` become `scenario.fail({ error })`, or a log line with
+  sent with `recordError` become `scenario.fail(...)` (never a raw `HttpErrorResponse` — see the
+  integration patterns' `safeHttpFailure`), or a log line with
   `withLogging({ mirrorErrorsToRum: true })` when the app has a log backend.

@@ -36,27 +36,12 @@ declare global {
   }
 }
 
-/**
- * A random id for this page load. `crypto.randomUUID` exists only in secure contexts (HTTPS,
- * localhost); `getRandomValues` works everywhere crypto does. Never throws — a failure here would
- * stop the shell from booting.
- */
-function newChannelId(): string {
-  const c = globalThis.crypto;
-  if (typeof c?.randomUUID === 'function') {
-    return `ngx-ui-watchtower-${c.randomUUID()}`;
-  }
-  if (typeof c?.getRandomValues === 'function') {
-    const bytes = c.getRandomValues(new Uint8Array(16));
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-    return `ngx-ui-watchtower-${hex}`;
-  }
-  return `ngx-ui-watchtower-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
-
-// One channel per page load, at module scope so it exists before any fragment boots. Browser-only:
-// this module is also evaluated during server rendering, where the host is a no-op anyway.
-const channelId = typeof window === 'undefined' ? undefined : newChannelId();
+// One random channel per page load, at module scope so it exists before any fragment boots.
+// randomUUID needs a secure context, hence the fallback; skipped during server rendering.
+const channelId =
+  typeof window === 'undefined'
+    ? undefined
+    : `ngx-ui-watchtower-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
 if (channelId) {
   window.__uwtTelemetryChannel = channelId;
 }
@@ -130,9 +115,8 @@ providers: [
 ];
 ```
 
-Use the `useFactory` provider, not `provideUwtTelemetrySink('broadcast', { channelName:
-shellChannelName() })`: the option is bound with `useValue` and read when the fragment's providers
-array is built, while the factory runs only when the sink is first constructed.
+Use the `useFactory` provider, not `provideUwtTelemetrySink('broadcast', { channelName })`, so the
+channel is read when the sink is created, not when the providers are built.
 
 **The shell must publish the id before any fragment boots** — the sink reads it once, so an early
 fragment ships nothing for the whole page. The shell code above guarantees this with Web Fragments.
@@ -151,10 +135,6 @@ Inside a fragment:
 - Don't call `setUserId()`: it is forwarded and changes the shell's user (and `undefined` starts a
   new session). The shell owns user identity.
 - Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
-- A fragment with no shell, or on a wrong channel, runs normally and ships nothing, silently —
-  verify the channel (below).
-- Correlation across realms is a string: forward `scenario.id` and start a child scenario with
-  `parentScenarioId`.
 
 ## Verifying
 

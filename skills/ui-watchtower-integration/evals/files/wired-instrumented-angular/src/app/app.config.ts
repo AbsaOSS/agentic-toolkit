@@ -1,6 +1,6 @@
 import { ApplicationConfig, inject, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideUwtTelemetry } from '@absaoss-cps/ngx-ui-watchtower';
 import {
   UWT_RUM_CREDENTIALS_PROVIDER,
@@ -21,7 +21,7 @@ const APP_VERSION = '1.4.0';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     // Route-navigation telemetry, started before any navigation (incl. the initial one).
     provideRouteNavigationTelemetry(),
     provideHttpClient(),

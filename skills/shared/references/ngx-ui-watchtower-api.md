@@ -1,11 +1,7 @@
 # ngx-ui-watchtower API reference
 
-The public surface of `@absaoss-cps/ngx-ui-watchtower` an app or a custom sink uses (config tokens and
-redaction constants omitted). Install the version `ui-watchtower-setup` selects from peer
-compatibility — normally the latest. This page describes the latest release; if the installed
-typings differ, the typings win. Import only
-from the two entry points below — never from `…/src/lib/…` paths, and never re-export the `/rum`
-entry from a shared barrel.
+The public surface of `@absaoss-cps/ngx-ui-watchtower` (latest release; if the installed typings
+differ, they win). Import only from the two entry points below — no deep imports.
 
 ## Contents
 
@@ -331,5 +327,3 @@ providers: [
 //     payload: expect.objectContaining({ scenarioName: 'load-customers', status: 'success' }) })
 // ]);
 ```
-
-jsdom implements no `BroadcastChannel`, so broadcast sinks and hosts are no-ops in unit tests.

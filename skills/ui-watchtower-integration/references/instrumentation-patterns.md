@@ -1,7 +1,6 @@
 # Instrumentation patterns
 
-How to choose, implement and settle scenarios and BI events. Each rule here cost real debugging time
-in an earlier integration.
+How to choose, implement and settle scenarios and BI events.
 
 ## Contents
 
@@ -25,7 +24,7 @@ in an earlier integration.
 | Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        |
 
 Skip: anything that fires continuously (scroll, mousemove, per-keystroke), purely decorative UI,
-and work the user never waits for. Every event spends the 200-event RUM session budget.
+and work the user never waits for.
 
 ## 2. Choosing the settle status
 
@@ -45,11 +44,9 @@ failure.
 Use a small, consistent set of `reason` strings — they are grouping keys: `'component-destroyed'`,
 `'superseded'`, `'user-cancelled'`, `'no-results'`, `'guard-rejected'`.
 
-Pass `statusCode` (HTTP status or business code) with `fail()` so failures group by category.
-
-**Never pass a raw `HttpErrorResponse`** to `fail()` or `logger.error()`: its message quotes the
-request URL (`Http failure response for /api/customers/42: 500`), and redaction strips only query
-strings, never path segments — the id would reach RUM. Keep its class and status:
+Pass a `statusCode` with `fail()` so failures group by category — but **never a raw
+`HttpErrorResponse`** (to `fail()` or `logger.error()`): its message quotes the request URL
+(`/api/customers/42`), and redaction never scrubs path segments. Keep its class and status:
 
 ```ts
 /** HttpErrorResponse.message quotes the request URL, path ids included — keep class and status only. */
@@ -126,16 +123,12 @@ for (const row of rows) {
 }
 ```
 
-An unmatched `aggregateEnd`, or a second `aggregateStart` before its end, is ignored — an early
-`return` can't corrupt the total.
-
 **Child journeys** — pass `parentScenarioId: parent.id`. Across realms (fragments), pass the id
 string, never the `UwtScenario` object.
 
 **Measuring what the user saw** — `complete()` stops the clock when the JavaScript finishes; for a
 render-heavy journey, complete after the next frame:
-`requestAnimationFrame(() => requestAnimationFrame(() => scenario.complete()))`. Not inside a
-fragment (its frames belong to a hidden iframe) — settle with `complete()` there.
+`requestAnimationFrame(() => requestAnimationFrame(() => scenario.complete()))`.
 
 ## 4. RxJS traps
 
@@ -155,10 +148,8 @@ await lastValueFrom(this.api.customers().pipe(traceScenario(scenario)));
 this.events$.pipe(take(1), traceScenario(scenario));
 ```
 
-**`switchMap` supersession**: `switchMap` unsubscribes the previous inner observable *before* the
-projector for the new value runs, so `previous.cancel({ reason: 'superseded' })` inside the new
-projector is too late — the teardown already cancelled it without a reason. Give the reason up
-front:
+**`switchMap` supersession** — give `traceScenario` a `cancelOutcome`; `switchMap` tears the
+previous request down before your projector runs, so cancelling it there is too late:
 
 ```ts
 query$.pipe(

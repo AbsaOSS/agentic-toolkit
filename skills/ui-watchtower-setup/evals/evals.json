@@ -5,7 +5,7 @@
       "id": "happy-path-standalone-angular",
       "category": "happy-path",
       "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. The project is in evals/files/standalone-angular.",
-      "expected_output": "Skill detects a standalone Angular 22 app with a router and Vitest, installs the package and aws-rum-web, wires provideUwtTelemetry + provideUwtTelemetryRumSink + UWT_RUM_CREDENTIALS_PROVIDER, creates telemetry.schema.ts, adds route-navigation tracking as the single proof scenario (reporting /customers/:customerId as a template) with a recording-sink test, fixes app.spec.ts providers, validates, and hands over to ui-watchtower-integration for the app's own journeys.",
+      "expected_output": "Skill detects a standalone Angular 22 app with a router and Vitest, installs the package and aws-rum-web, wires provideUwtTelemetry + provideUwtTelemetryRumSink + UWT_RUM_CREDENTIALS_PROVIDER, creates telemetry.schema.ts, adds route-navigation tracking as the single proof scenario (reporting /customers/:customerId as a template) with a recording-sink test, adds app.spec.ts providers only if App injects telemetry, validates, and hands over to ui-watchtower-integration for the app's own journeys.",
       "files": [
         "evals/files/standalone-angular/package.json",
         "evals/files/standalone-angular/angular.json",
@@ -29,11 +29,11 @@
         "Adds provideUwtTelemetry({ application, environment, version }) and provideUwtTelemetryRumSink() to app.config.ts, importing RUM symbols only from '@absaoss-cps/ngx-ui-watchtower/rum'",
         "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null on any failure",
         "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
-        "Creates telemetry.schema.ts augmenting UwtScenarioNames and UwtScenarioSteps, and side-effect-imports it where the providers are configured",
+        "Creates telemetry.schema.ts augmenting UwtScenarioNames, and side-effect-imports it where the providers are configured",
         "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
         "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
         "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
-        "Adds telemetry providers to app.spec.ts so it does not fail with NG0201",
+        "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
         "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
         "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
       ]
@@ -108,7 +108,7 @@
         "Does not install aws-rum-web, add the shimmer allowance, import from '@absaoss-cps/ngx-ui-watchtower/rum', or add a credentials provider",
         "Does not bind a page-view recorder (no RUM sink to record to)",
         "Creates telemetry.schema.ts and adds route-navigation tracking with a recording-sink test",
-        "Adds telemetry providers to app.spec.ts so it does not fail with NG0201",
+        "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
         "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, and install aws-rum-web",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
@@ -139,7 +139,7 @@
         "Keeps exactly one provideUwtTelemetry call (reuses or edits the existing one, does not add a second)",
         "Adds provideUwtTelemetryRumSink() and a UWT_RUM_CREDENTIALS_PROVIDER fetching /rum/init, importing RUM symbols only from '/rum'",
         "Creates telemetry.schema.ts and side-effect-imports it where the providers are configured",
-        "Adds route-navigation tracking with a recording-sink test, and telemetry providers in app.spec.ts",
+        "Adds route-navigation tracking with a recording-sink test, and telemetry providers in app.spec.ts only if App now injects a telemetry service",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
     },

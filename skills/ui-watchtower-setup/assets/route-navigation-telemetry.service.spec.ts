@@ -2,6 +2,7 @@ import { Component, inject, Injectable, provideZonelessChangeDetection } from '@
 import { TestBed } from '@angular/core/testing';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
+  ActivatedRouteSnapshot,
   provideRouter,
   Router,
   RouterOutlet,
@@ -41,7 +42,7 @@ class Page {}
 let releaseSlowGuard: (value: boolean) => void = () => undefined;
 let slowGuardEntered: () => void = () => undefined;
 let lazyLoadEntered: () => void = () => undefined;
-let releaseLazyLoad: (routes: unknown[]) => void = () => undefined;
+let releaseLazyLoad: () => void = () => undefined;
 let releaseHangGuard: (value: boolean) => void = () => undefined;
 
 function filesMatcher(segments: UrlSegment[]) {
@@ -78,7 +79,7 @@ describe('RouteNavigationTelemetryService', () => {
             path: 'legacy/:id',
             component: Page,
             canActivate: [
-              (route: { paramMap: { get(k: string): string | null } }) =>
+              (route: ActivatedRouteSnapshot) =>
                 inject(Router).parseUrl(`/customers/${route.paramMap.get('id')}`)
             ]
           },
@@ -101,11 +102,6 @@ describe('RouteNavigationTelemetryService', () => {
             resolve: {
               data: () => Promise.reject({ name: 'Lookup failed for cust-SECRET-7 at /x', message: 'm' })
             }
-          },
-          {
-            path: 'back-home',
-            component: Page,
-            canActivate: [() => inject(Router).parseUrl('/customers')]
           },
           {
             path: 'slow',
@@ -259,9 +255,9 @@ describe('RouteNavigationTelemetryService', () => {
   it('releases a guard redirect back to the current URL as abandoned under its source template', async () => {
     await router.navigateByUrl('/customers');
     events.length = 0;
-    await router.navigateByUrl('/back-home');
+    await router.navigateByUrl('/old');
     expect(scenarios()).toEqual([
-      expect.objectContaining({ status: 'abandoned', reason: 'same-url', route: '/back-home' })
+      expect.objectContaining({ status: 'abandoned', reason: 'same-url', route: '/old' })
     ]);
   });
 
@@ -277,7 +273,7 @@ describe('RouteNavigationTelemetryService', () => {
     const first = router.navigateByUrl('/slow-lazy/x').catch(() => false);
     await entered;
     await router.navigateByUrl('/customers');
-    releaseLazyLoad([]);
+    releaseLazyLoad();
     await first;
     expect(scenarios()).toEqual([expect.objectContaining({ status: 'success', route: '/customers' })]);
   });
@@ -353,8 +349,7 @@ describe('RouteNavigationTelemetryService', () => {
 
     it('clears the timer when a navigation ends', async () => {
       await router.navigateByUrl('/customers');
-      await vi.advanceTimersByTimeAsync(60_000);
-      expect(scenarios()).toEqual([expect.objectContaining({ status: 'success' })]);
+      expect(vi.getTimerCount()).toBe(0);
     });
   });
 

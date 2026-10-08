@@ -5,7 +5,7 @@ const valid = {
   config: { applicationId: 'app-1', region: 'eu-west-1', applicationVersion: '1.4.0', sessionSampleRate: 1 },
   credentials: {
     accessKeyId: 'AKIA', secretAccessKey: 'secret', sessionToken: 'token',
-    expiration: '2030-01-01T00:00:00Z'
+    expiration: new Date(Date.now() + 3_600_000).toISOString()
   }
 };
 
@@ -46,12 +46,12 @@ describe('AppRumCredentialsProvider', () => {
     await expect(load()).resolves.toBeNull();
   });
 
-  it('returns null for invalid JSON, an error status and a network failure', async () => {
-    answer('<html>', 200);
-    await expect(load()).resolves.toBeNull();
-    answer(valid, 503);
-    await expect(load()).resolves.toBeNull();
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
+  it.each([
+    ['invalid JSON', () => answer('<html>')],
+    ['an error status', () => answer(valid, 503)],
+    ['a network failure', () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')))]
+  ])('returns null for %s', async (_label, arrange) => {
+    arrange();
     await expect(load()).resolves.toBeNull();
   });
 

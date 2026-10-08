@@ -26,7 +26,7 @@
         "evals/files/wired-angular/tsconfig.spec.json"
       ],
       "expectations": [
-        "Checks that the library is installed and wired (providers, destination, schema) before anything else",
+        "Checks that the library is installed and wired (package, providers, destination) before anything else",
         "Asks the user, before proposing, what the telemetry should answer — covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
         "Presents a proposal whose items have a Source column distinguishing items the user asked for from suggested ones (here all suggested, and says so)",
         "Waits for confirmation before implementing (implements only after the assumed confirmation)",

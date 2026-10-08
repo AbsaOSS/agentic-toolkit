@@ -54,9 +54,7 @@ Look for the package in `package.json`, and `provideUwtTelemetry(...)` plus exac
 in the app's providers. If either is missing, stop and tell the user to run
 **`ui-watchtower-setup`** first — instrumenting an unwired app fails at bootstrap with `NG0201`.
 
-If only `telemetry.schema.ts` (the file augmenting the name registries) is missing, don't stop:
-create it in Step 6 — a `declare module '@absaoss-cps/ngx-ui-watchtower'` block with the confirmed
-names, side-effect-imported where the providers are configured.
+If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
 
 Read what already exists so this pass only adds: the names in `telemetry.schema.ts`, and their uses
 (search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
@@ -140,7 +138,8 @@ Follow `references/instrumentation-patterns.md`:
    snake_case, one JSDoc line each). Never interpolate ids into names.
 2. Each journey: start → steps → settle with the **right** status — `complete`, `incomplete` (an
    expected dead end, e.g. no results), `fail` (a defect, with a `statusCode`), `cancel` (the user
-   left or a newer request superseded it). Timeout is automatic.
+   left or a newer request superseded it). Timeout is automatic. Collapsing `abandoned` or
+   `incomplete` into `failure` makes the failure rate useless for alerts.
 3. **Never pass a raw `HttpErrorResponse` to `fail()` or `logger.error()`** — its message quotes the
    URL, ids included. Use the patterns' `safeHttpFailure(error)`; with `traceScenario`, settle it in a
    `catchError` placed before the operator.
@@ -177,13 +176,7 @@ from the user's original request and why.
 
 ## Gotchas
 
-- **The right settle status is the whole point** — collapsing `abandoned`/`incomplete` into
-  `failure` makes the failure rate useless for alerts.
-- **The RUM session budget is 200 events**, page views and errors included — keep
-  `emitLifecycleEvents` off.
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
-- **Percentiles and dashboards are AWS-side.** The frontend emits raw `delta` and low-cardinality
-  dimensions; it never computes metrics.
 
 ## Out of scope
 
