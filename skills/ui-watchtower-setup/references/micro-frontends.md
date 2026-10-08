@@ -1,7 +1,9 @@
 # Micro-frontends: shell hosts, fragments forward
 
 Use when the app embeds fragments that run in their own JavaScript realm (Web Fragments, same-origin
-iframes, separately bootstrapped Angular apps), or is such a fragment.
+iframes, separately bootstrapped Angular apps), or is such a fragment. Not for a Module Federation
+remote loaded through `loadChildren`/`loadComponent`: it runs in the host's injector — give it no
+providers of its own.
 
 ## Why
 

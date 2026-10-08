@@ -27,7 +27,7 @@
         "Installs @absaoss-cps/ngx-ui-watchtower and aws-rum-web with the detected package manager",
         "Adds allowedCommonJsDependencies: ['shimmer'] to the build options in angular.json",
         "Adds provideUwtTelemetry({ application, environment, version }) and provideUwtTelemetryRumSink() to app.config.ts, importing RUM symbols only from '@absaoss-cps/ngx-ui-watchtower/rum'",
-        "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null on any failure",
+        "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null for an unusable answer and throws when the request fails",
         "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
         "Creates telemetry.schema.ts augmenting UwtScenarioNames, and side-effect-imports it where the providers are configured",
         "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",

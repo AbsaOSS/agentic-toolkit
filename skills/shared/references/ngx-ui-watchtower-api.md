@@ -220,6 +220,7 @@ Return values of `load()`:
 | Return                      | Effect                                                                                       |
 |-----------------------------|----------------------------------------------------------------------------------------------|
 | `null`                      | RUM off for the session; mid-session it tears the running client down                         |
+| throws / rejects            | At startup: like `null`. On a refresh: keeps the current credentials and retries in 30 s       |
 | `{ config, credentials }`   | Normal path                                                                                  |
 | `{ config }` only           | Only for an app monitor allowing unauthenticated access                                       |
 

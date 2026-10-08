@@ -86,20 +86,23 @@ async load(): Promise<void> {
 
 **Observable** — `traceScenario` settles on completion, error or early unsubscribe. Like any cold
 observable, nothing happens until something subscribes: return it to a caller that subscribes (a
-template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`. On error
-it calls `fail({ error })` with the raw error and no status, so for HTTP sources settle the failure
-first with `catchError` upstream — the first settle wins:
+template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`. Start the
+scenario inside `defer()` so each subscription measures its own journey from when it subscribes. On
+error `traceScenario` calls `fail({ error })` with the raw error and no status, so for HTTP sources
+settle the failure first with `catchError` upstream — the first settle wins:
 
 ```ts
 loadCustomers(): Observable<Customer[]> {
-  const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
-  return this.api.customers().pipe(
-    catchError((error) => {
-      scenario.fail(safeHttpFailure(error));
-      return throwError(() => error);
-    }),
-    traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
-  );
+  return defer(() => {
+    const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
+    return this.api.customers().pipe(
+      catchError((error) => {
+        scenario.fail(safeHttpFailure(error));
+        return throwError(() => error);
+      }),
+      traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
+    );
+  });
 }
 ```
 

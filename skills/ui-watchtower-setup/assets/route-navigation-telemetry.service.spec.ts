@@ -325,7 +325,7 @@ describe('RouteNavigationTelemetryService', () => {
     beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] }));
     afterEach(() => vi.useRealTimers());
 
-    it('records a hung guard once as timeout under its template, and nothing when it ends late', async () => {
+    it('records a hung guard once as timeout under its template, and only its page view when it ends late', async () => {
       const pending = router.navigateByUrl('/hang');
       await vi.advanceTimersByTimeAsync(29_000);
       expect(scenarios()).toEqual([]);
@@ -333,10 +333,11 @@ describe('RouteNavigationTelemetryService', () => {
       expect(scenarios()).toEqual([
         expect.objectContaining({ status: 'timeout', reason: 'navigation-timeout', route: '/hang' })
       ]);
+      expect(pageViews).toEqual([]);
       releaseHangGuard(true);
       await pending;
       expect(scenarios()).toHaveLength(1);
-      expect(pageViews).toEqual([]);
+      expect(pageViews).toEqual(['/hang']);
     });
 
     it('records a lazy route that never loads as timeout under (unrecognized)', async () => {

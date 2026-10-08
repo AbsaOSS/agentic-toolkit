@@ -139,17 +139,20 @@ interface TrackedNavigation {
   route?: string;
   /** `RoutesRecognized` time — guards, resolvers and lazy components run after it. */
   recognizedAt?: number;
+  /** Already recorded (e.g. at its timeout): a late end adds only its page view. */
+  recorded?: boolean;
   timeoutHandle?: ReturnType<typeof setTimeout>;
 }
 
 /** What a guard or resolver redirect carries into the next navigation. */
-type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom'>;
+type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom' | 'recorded'>;
 
 /**
  * One `route-navigation` scenario per navigation, recorded when it ends — `route` can't change
- * after a scenario starts, and only the end knows the final template — and backdated to the click
- * or the first `NavigationStart`. Start it with {@link provideRouteNavigationTelemetry}; call
- * {@link markNavigationIntent} from nav-link click handlers.
+ * after a scenario starts, and only the end knows the final template — or at its timeout if it
+ * hasn't ended. Backdated to the click or the first `NavigationStart`. Start it with
+ * {@link provideRouteNavigationTelemetry}; call {@link markNavigationIntent} from click handlers
+ * that navigate.
  */
 @Injectable({ providedIn: 'root' })
 export class RouteNavigationTelemetryService {
@@ -196,10 +199,13 @@ export class RouteNavigationTelemetryService {
       const redirect = this.consumePendingRedirect();
       const navigation: TrackedNavigation = {
         startedAt: redirect?.startedAt ?? startedAt,
-        redirectedFrom: redirect?.redirectedFrom
+        redirectedFrom: redirect?.redirectedFrom,
+        recorded: redirect?.recorded
       };
       this.navigations.set(event.id, navigation);
-      this.armTimeout(event.id, navigation);
+      if (!navigation.recorded) {
+        this.armTimeout(event.id, navigation);
+      }
       return;
     }
 
@@ -232,7 +238,8 @@ export class RouteNavigationTelemetryService {
         // Restarts under a new id: carry the start so the journey stays one scenario.
         this.pendingRedirect = {
           startedAt: navigation.startedAt,
-          redirectedFrom: navigation.redirectedFrom ?? navigation.route
+          redirectedFrom: navigation.redirectedFrom ?? navigation.route,
+          recorded: navigation.recorded
         };
         return;
       }
@@ -280,12 +287,16 @@ export class RouteNavigationTelemetryService {
     }
   }
 
-  /** Starts and settles the scenario at once, backdated to the journey's start. */
+  /** Starts and settles the scenario at once, backdated to the journey's start; once per journey. */
   private record(
     navigation: TrackedNavigation,
     route: string,
     settle: (scenario: UwtScenario, metadata: Record<string, string | number>) => void
   ): void {
+    if (navigation.recorded) {
+      return;
+    }
+    navigation.recorded = true;
     const metadata: Record<string, string | number> = {};
     if (navigation.redirectedFrom) {
       metadata['redirectedFrom'] = navigation.redirectedFrom;
@@ -319,8 +330,8 @@ export class RouteNavigationTelemetryService {
   }
 
   /**
-   * Records a hung navigation once as `timeout`; a late end event then finds nothing. Browser only
-   * and outside Angular, so it never delays app stability or server rendering.
+   * Records a hung navigation once as `timeout`; a late end then adds only its page view. Browser
+   * only and outside Angular, so it never delays app stability or server rendering.
    */
   private armTimeout(navigationId: number, navigation: TrackedNavigation): void {
     if (!this.isBrowser) {
@@ -329,7 +340,7 @@ export class RouteNavigationTelemetryService {
     const remainingMs = Math.max(0, navigation.startedAt + NAVIGATION_TIMEOUT_MS - Date.now());
     navigation.timeoutHandle = this.zone.runOutsideAngular(() =>
       setTimeout(() => {
-        const hung = this.take(navigationId);
+        const hung = this.navigations.get(navigationId);
         if (hung) {
           this.record(hung, hung.route ?? UNRECOGNIZED_ROUTE, (scenario, metadata) =>
             scenario.settle('timeout', { reason: 'navigation-timeout', metadata })

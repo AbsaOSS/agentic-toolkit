@@ -68,6 +68,7 @@ Read before writing anything — extend the app, don't restructure it.
    - Inside → install the latest version.
    - Older → the newest release whose peers fit (`npm view … versions`), pinned; none → stop.
    - Newer → stop and tell the user. Never `--force` or `--legacy-peer-deps`.
+   - Note the chosen release's `aws-rum-web` range too — Step 2 installs within it.
 2. **Package manager** — from the lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), a
    `packageManager` field, or `cli.packageManager` in `angular.json`. Use it for every install and
    script run; never default to npm.
@@ -83,7 +84,9 @@ Read before writing anything — extend the app, don't restructure it.
    nothing is, offer `ui-watchtower-integration`.
 7. **Realm role** — standalone app, **shell** that embeds fragments (Web Fragments, Module
    Federation, iframes on the same origin), or **fragment** inside a shell. Look for
-   `<web-fragment>`, fragment gateways, remote-entry config.
+   `<web-fragment>`, fragment gateways, remote-entry config. A Module Federation remote loaded
+   through `loadChildren`/`loadComponent` runs in the host's injector — give it no providers of
+   its own.
 8. **Router** — `provideRouter` / `RouterModule.forRoot`; note any `matcher` routes, or that there is
    no router at all (Step 6).
 9. **Sign-in** — an auth service, OIDC/MSAL library or session store, and where sign-in and
@@ -103,7 +106,7 @@ Ask the user only what the code cannot answer, in one message:
 ```bash
 # npm / Yarn / pnpm — use the one detected in Step 1
 npm install @absaoss-cps/ngx-ui-watchtower@latest   # or the pinned version chosen in Step 1
-npm install aws-rum-web          # only if THIS realm sends to RUM (standalone app or shell)
+npm install "aws-rum-web@<range from Step 1>"   # only if THIS realm sends to RUM (standalone app or shell)
 ```
 
 When `aws-rum-web` is installed, add `"allowedCommonJsDependencies": ["shimmer"]` to the app's build
@@ -172,7 +175,8 @@ export const appConfig: ApplicationConfig = {
 - Start with **no** `withScenarios` / `withBIEvents` / `withLogging` / `withRedaction` features. Add
   one only for a stated reason, and record the reason in a comment.
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint and adapt
-  the response check. It returns `null` (RUM off, app unaffected) for anything incomplete, and sets
+  the response check. It returns `null` (RUM off) for a disabled, incomplete or expired answer
+  and throws when the request fails, so a refresh retries instead of ending RUM. It sets
   `disableAutoPageView: true` (page views come from Step 6). Don't write an initializer — the sink
   calls it. It uses `fetch`; switch to `HttpClient` if an interceptor adds the broker's auth.
 - **User identity** (only when the app has sign-in): inject `UwtTelemetrySink` as a field of the
@@ -206,6 +210,9 @@ next to the schema and add `provideRouteNavigationTelemetry()` next to `provideR
 `start()` in the root component would miss a blocking initial navigation). It works unchanged for
 static, `:param`, lazy and redirected routes; a `matcher` route needs
 `data: { telemetryPath: 'files/:path' }`. Keep the asset's behaviour — its comments explain it.
+To start the clock at the click rather than at `NavigationStart`, call
+`markNavigationIntent()` first in click handlers that navigate — most useful where the handler does
+work before `router.navigate…`.
 
 **Page views** — where RUM is the destination, bind `ROUTE_PAGE_VIEW_RECORDER` so page views use
 the route template (automatic ones would send `/customers/42`; with `'noop'`, bind nothing):
@@ -250,7 +257,8 @@ credentials provider — RUM's one automatic page view per load is then right.
   (a recording sink and its own route table — add the app's own route shapes, e.g. its `:param`
   routes) and, for RUM, `rum-credentials.provider.spec.ts` (adapt the broker answer to the real
   one). They are written for Vitest. Under Jest, replace `vi.` with `jest.` (fake timers take
-  `doNotFake` instead of `toFake`; `vi.stubGlobal('fetch', f)` becomes `globalThis.fetch = f`);
+  `doNotFake` instead of `toFake`; `vi.stubGlobal('fetch', f)` becomes `globalThis.fetch = f`, and
+  jsdom under Jest has no `Response`, so answer with `{ ok, status, json: async () => body }`);
   under Karma, use Jasmine's clock and spies. Check the tests bite: remove the `complete()` call in
   the service, confirm a test fails, restore it.
 - jsdom has no `BroadcastChannel`: the broadcast sink and host degrade to no-ops in tests. Expected —

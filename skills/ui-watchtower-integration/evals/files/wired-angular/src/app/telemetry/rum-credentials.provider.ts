@@ -130,28 +130,22 @@ function hasStrings<K extends string>(
  */
 @Injectable({ providedIn: 'root' })
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
-  /** `null` (RUM off for the session) unless the answer is complete, valid and unexpired. */
+  /**
+   * `null` (RUM off for the session) when the broker turns RUM off or answers with anything
+   * incomplete, malformed or expired. A failed request throws instead: on a refresh the library
+   * then keeps the current credentials and retries in 30 s, where `null` would end RUM for the
+   * session. At startup both just leave RUM off.
+   */
   async load(): Promise<UwtRumBootstrap | null> {
-    let response: Response;
-    try {
-      response = await fetch(RUM_BROKER_URL, {
-        headers: { Accept: 'application/json' },
-        cache: 'no-store' // live AWS credentials
-      });
-    } catch {
-      return null;
-    }
-
+    const response = await fetch(RUM_BROKER_URL, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store' // live AWS credentials
+    });
     if (!response.ok) {
-      return null;
+      throw new Error(`RUM broker answered HTTP ${response.status}`);
     }
-
-    let body: unknown;
-    try {
-      body = await response.json();
-    } catch {
-      return null;
-    }
+    // A body that isn't JSON (a gateway's error page) rejects here: also a failed request.
+    const body: unknown = await response.json();
 
     // Validate, don't cast: a half-filled answer would start a client that silently fails.
     if (!isRecord(body) || body['enabled'] !== true) {

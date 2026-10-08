@@ -50,9 +50,9 @@ describe('AppRumCredentialsProvider', () => {
     ['invalid JSON', () => answer('<html>')],
     ['an error status', () => answer(valid, 503)],
     ['a network failure', () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')))]
-  ])('returns null for %s', async (_label, arrange) => {
+  ])('rejects on %s', async (_label, arrange) => {
     arrange();
-    await expect(load()).resolves.toBeNull();
+    await expect(load()).rejects.toThrow();
   });
 
   it('carries the typed optional settings through', async () => {
