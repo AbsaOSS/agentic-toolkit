@@ -176,7 +176,7 @@ The name is in **`eventName`** (not `name`). A test with a recording sink assert
 `payload.eventName` and `payload.metadata`.
 
 Identical events (name + scenarioId + eventType + feature + metadata) within 400 ms collapse into
-one — no click throttling needed. A wrapper of your own should type its parameter `UwtBIEventName`,
+one — no click throttling needed. Type any parameter that carries an event name as `UwtBIEventName`,
 not `string`, or it stops compiling once the registry is augmented.
 
 ## 6. Logging

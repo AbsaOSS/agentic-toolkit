@@ -60,7 +60,7 @@
         "evals/files/wired-angular/tsconfig.spec.json"
       ],
       "expectations": [
-        "Does not re-ask what the prompt already answered (which journeys and interactions); asks only remaining open points, if any",
+        "Does not ask the user to state, confirm or re-describe the journeys or interactions the prompt already named (the customer-list load and the CSV export), and does not ask which journeys matter without referring to them; questions about additional journeys, scope, exclusions or success criteria are allowed",
         "The proposal contains a customer-list load scenario and an export BI event, both marked as coming from the user",
         "Any additional items are clearly marked as suggestions and are not required for the user's two questions",
         "The load scenario settles as success with a row count, incomplete for an empty list, failure with the HTTP statusCode on HTTP error (never the raw HttpErrorResponse, whose message quotes the request URL), and abandoned when the user leaves mid-load",
@@ -183,6 +183,41 @@
         "Detects that the library is not installed or wired (no package, no providers, no schema)",
         "Stops and points the user to the ui-watchtower-setup skill",
         "Does not install packages, add providers or instrument any code"
+      ]
+    },
+    {
+      "id": "no-merged-telemetry-wrapper",
+      "category": "regression",
+      "prompt": "We want to know whether placing an order is slow or failing, and how often people use the coupon field. Watchtower is already set up. The project is in evals/files/wired-checkout-angular.",
+      "expected_output": "Skill treats the order as a scenario (UwtScenarioTelemetryService) and the coupon use as a BI event (UwtBITelemetryService), says so for each item in its proposal, and injects the right service directly in the cart and order-summary components. It creates no AppTelemetryService, facade, base class or single track-style API over both services, even though two components need telemetry.",
+      "files": [
+        "evals/files/wired-checkout-angular/README.md",
+        "evals/files/wired-checkout-angular/angular.json",
+        "evals/files/wired-checkout-angular/package.json",
+        "evals/files/wired-checkout-angular/src/app/app.config.ts",
+        "evals/files/wired-checkout-angular/src/app/app.routes.ts",
+        "evals/files/wired-checkout-angular/src/app/app.spec.ts",
+        "evals/files/wired-checkout-angular/src/app/app.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/cart.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/order-confirmation.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/order-summary.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-checkout-angular/src/index.html",
+        "evals/files/wired-checkout-angular/src/main.ts",
+        "evals/files/wired-checkout-angular/src/styles.css",
+        "evals/files/wired-checkout-angular/tsconfig.app.json",
+        "evals/files/wired-checkout-angular/tsconfig.json",
+        "evals/files/wired-checkout-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "The proposal says, for every item, whether it is a scenario, a BI event, or both, and which service it uses (UwtScenarioTelemetryService or UwtBITelemetryService), for example through separate tables headed by the service",
+        "Every component or service that records telemetry injects UwtScenarioTelemetryService and/or UwtBITelemetryService directly (an inject of the service appears in each file that uses it)",
+        "Nothing merges the two: no class, base class, facade or function injects both services and exposes methods for both, and there is no AppTelemetryService, TelemetryFacade or similar under any name; single-purpose helpers such as an HTTP-error mapper are allowed",
+        "Placing the order is a scenario that settles with the right statuses (success, failure with the HTTP status code, abandoned when the user leaves), and the coupon use is a BI event; neither concern is expressed through the other service",
+        "New names are declared in telemetry.schema.ts (scenarios and steps kebab-case, BI events snake_case)",
+        "Tests use a recording sink and assert each scenario outcome the proposal claims and the BI event (through its eventName)"
       ]
     }
   ]

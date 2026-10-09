@@ -23,6 +23,13 @@ already in place:
 | **Scenarios** | Did this user journey succeed, and how long did it take? | `UwtScenarioTelemetryService.start()` → `UwtScenario` |
 | **BI events** | Did this meaningful thing happen? | `UwtBITelemetryService.track()` |
 
+These are **two separate concerns with two separate services**. A scenario measures a journey: it
+has a duration and settles with a status. A BI event only counts that something happened. Inject
+`UwtScenarioTelemetryService` and/or `UwtBITelemetryService` directly in the component or service
+where the telemetry is needed, and never merge them behind an `AppTelemetryService`, a facade or a
+single `track…` API unless the user explicitly asks for one — a merged API hides which concern a call
+is and which status it settles with.
+
 It asks the team what they want to learn before proposing, marks each item as theirs or suggested,
 and can be re-run as the app grows — each pass only adds.
 
@@ -58,7 +65,10 @@ If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
 
 Read what already exists so this pass only adds: the names in `telemetry.schema.ts`, and their uses
 (search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
-`traceScenario(`). Note the test runner and package manager.
+`traceScenario(`). Note the test runner and package manager. If the app already wraps these services in
+its own telemetry service, list that under "Already instrumented", don't extend it or copy the
+pattern, and say so in the proposal; write the new code against the two services directly unless the
+user tells you to follow the wrapper.
 
 ### Step 2 · Ask the user what they want to learn
 
@@ -88,6 +98,10 @@ Load `references/instrumentation-patterns.md` (section 1). Within the scope from
 - **Every meaningful or irreversible click** → a BI event.
 - **Every `catch` that ends a journey** → that scenario's `fail(...)` (Step 6, rule 3).
 
+Decide for every candidate whether it is a scenario, a BI event, or both. A wait with no interesting
+click is a scenario; a click with no wait is a BI event; a click inside a journey is both — a scenario
+for the journey and a BI event linked to it with `{ scenarioId }`.
+
 Map each user answer to concrete code: which component or service, which call starts the journey,
 which outcomes it can have.
 
@@ -103,12 +117,12 @@ one of their questions) or `suggested` (found in the code). Put the user's items
 Answers: <the user's questions, one line each, or "none given — suggestions only">
 Already instrumented (unchanged): <existing scenario and BI names, or "nothing yet">
 
-### Scenarios
+### Scenarios (UwtScenarioTelemetryService)
 | Source | Name | Where (file) | Steps | success when | other outcomes |
 |---|---|---|---|---|---|
 | you | customer-search | customers/customer-search.ts | query | results shown | incomplete: no-results; fail: HTTP error; cancel: superseded/left |
 
-### BI events
+### BI events (UwtBITelemetryService)
 | Source | Name | Where (file) | Metadata (flat, no PII) |
 |---|---|---|---|
 | suggested | export_clicked | customers/customers.ts | format |
@@ -133,7 +147,13 @@ changed materially. Implement nothing before this.
 
 ### Step 6 · Implement what was confirmed
 
-Follow `references/instrumentation-patterns.md`:
+Follow `references/instrumentation-patterns.md`.
+
+**Use the two services directly.** In each component or service that needs telemetry, `inject()` the
+service for the concern at hand — `UwtScenarioTelemetryService`, `UwtBITelemetryService`, or both —
+and call it there. Do not create an `AppTelemetryService`, facade, base class or one `track…` API over
+both, and do not move the calls into a shared service. Single-purpose helpers are fine (for example
+`safeHttpFailure`); a shared abstraction only if the user explicitly asks.
 
 1. Add every confirmed name to `telemetry.schema.ts` (scenarios and steps kebab-case, BI events
    snake_case, one JSDoc line each). Never interpolate ids into names.
@@ -180,6 +200,8 @@ from the user's original request and why.
 ## Gotchas
 
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
+- **Scenario and BI stay separate** — use `UwtScenarioTelemetryService` and `UwtBITelemetryService`
+  directly where needed; no merged service, facade or unified `track…` API unless the user asks.
 
 ## Out of scope
 

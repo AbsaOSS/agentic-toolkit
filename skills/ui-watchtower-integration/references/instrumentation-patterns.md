@@ -15,13 +15,19 @@ How to choose, implement and settle scenarios and BI events.
 
 ## 1. Finding candidates
 
-| Look for                                                         | Becomes                                                     |
-|------------------------------------------------------------------|-------------------------------------------------------------|
-| An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) |
-| A meaningful or irreversible click; a setting change              | BI event                                                    |
-| A `catch` / `error` handler that ends a journey                  | That scenario's `fail(safeHttpFailure(error))` (§2)         |
-| A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    |
-| Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        |
+| Look for                                                         | Becomes                                                     | Service                       |
+|------------------------------------------------------------------|-------------------------------------------------------------|-------------------------------|
+| An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) | `UwtScenarioTelemetryService` |
+| A meaningful or irreversible click; a setting change              | BI event                                                    | `UwtBITelemetryService`       |
+| A `catch` / `error` handler that ends a journey                  | That scenario's `fail(safeHttpFailure(error))` (§2)         | the scenario                  |
+| A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    | the scenario                  |
+| Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        | the scenario                  |
+
+**Scenario, BI, or both.** Ask what question the telemetry answers: "did it work and how long did it
+take" is a scenario; "did it happen, and how often" is a BI event. A click inside a journey is both —
+the scenario for the journey, a BI event for the click, linked with `{ scenarioId: scenario.id }`.
+Each call site injects only the service(s) it uses (`inject(UwtScenarioTelemetryService)`,
+`inject(UwtBITelemetryService)`); there is no shared telemetry service between them.
 
 Skip: anything that fires continuously (scroll, mousemove, per-keystroke), purely decorative UI,
 and work the user never waits for.
@@ -209,7 +215,9 @@ check.
 - Inside a journey, link it: `track('export_clicked', { format }, { scenarioId: scenario.id })`.
 - Debounce high-frequency sources (search boxes, sliders) before `track()` — e.g.
   `debounceTime(400)`. Repeated identical clicks within 400 ms are already collapsed by the library.
-- A thin app wrapper is fine; type its name parameter `UwtBIEventName`.
+- Call `UwtBITelemetryService.track()` directly where the action happens; don't route it through an
+  app telemetry service, and don't merge it with the scenario service. If a function of yours takes an
+  event name, type that parameter `UwtBIEventName`.
 
 ## 7. Names, metadata and privacy
 

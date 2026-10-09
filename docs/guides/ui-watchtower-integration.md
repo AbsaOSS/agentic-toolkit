@@ -22,7 +22,7 @@ first.
 | Ask | One short set of questions: what the telemetry should answer, which journeys matter and what success means, which interactions to count, known pain points, what must not be tracked, scope of this pass |
 | Scan | Finds candidate journeys, clicks and journey-ending errors in the code, within that scope |
 | Propose | A merged plan with a **Source** column (`you` / `suggested`) and a section for requests it had to change (e.g. no raw search text, no ids in names) with the alternative |
-| Implement | Only what you confirmed — names in the schema, the right settle status for each outcome, cleanup on destroy |
+| Implement | Only what you confirmed — names in the schema, the right settle status for each outcome, cleanup on destroy; the scenario and BI services used directly where needed, never merged behind a facade |
 | Test & validate | A test per outcome through a recording sink; build, unit tests, a real type-check, a live check with the debug flags |
 
 ---
