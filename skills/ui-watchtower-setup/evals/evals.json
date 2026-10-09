@@ -162,9 +162,9 @@
         "Does not delete RumService before the migrated paths are diffed against the inventory",
         "Flags that identityPoolId/guestRoleArn (Cognito) is not supported and a backend credential broker is needed, and asks rather than inventing one",
         "Does not run two RUM clients side by side",
-        "Keeps exactly one page-view recorder, under the route template: disableAutoPageView: true with the route service's page-view recorder, and the old manual recordPageView calls dropped",
-        "Replaces the email session attribute with sink.setUserId(opaqueId) and calls out that emails must not be sent",
-        "Replaces per-keystroke search tracking with a debounced BI event without the raw query text"
+        "Keeps exactly one page-view path and does not start a second one: the old manual recordPageView stays the only recorder until the cutover, and its page ids carry no query string or fragment (the route-template recorder with disableAutoPageView: true is planned for the cutover)",
+        "Replaces the email session attribute with an opaque user id in the old service (planning sink.setUserId(opaqueId) for the cutover) and calls out that emails must not be sent",
+        "Replaces per-keystroke search tracking with a debounced event that carries no raw query text (for example queryLength)"
       ]
     },
     {

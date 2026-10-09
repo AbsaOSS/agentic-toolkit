@@ -55,7 +55,7 @@ Copy this checklist and track progress:
 - [ ] Step 6: Proof — route-navigation tracking
 - [ ] Step 7: Update and add tests
 - [ ] Step 8: Validate (build, tests, type-check, live debug output)
-- [ ] Step 9: Hand over
+- [ ] Step 9: Hand over (the report ends with the pointer to ui-watchtower-integration)
 ```
 
 ### Step 1 · Detect (read-only)
@@ -296,7 +296,8 @@ With `'noop'`, hand over the switch to RUM as a checklist — it is more than on
 `aws-rum-web` and the `shimmer` allowance (Step 2), replace the `'noop'` line with
 `provideUwtTelemetryRumSink()` plus the credentials provider (Step 3), and bind
 `ROUTE_PAGE_VIEW_RECORDER` (Step 6) — without it, RUM records no page views at all.
-Then tell the user the next step: **to measure the app's own journeys and interactions, use the
+End the report with the next step, every time and however short the report is — it is the only way
+the user learns that their own journeys are still unmeasured: **to measure the app's own journeys and interactions, use the
 `ui-watchtower-integration` skill** — it asks what they want to learn, proposes, and implements. For
 a shell, also hand over the fragment contract from `references/micro-frontends.md`.
 

@@ -93,7 +93,8 @@ which outcomes it can have.
 
 ### Step 4 · Present a merged proposal
 
-Use this shape. `Source` says where each item came from — `you` (the user asked for it, or it answers
+Use this table shape even when nobody is there to answer — it is what the user reviews, and prose
+loses the `Source` column. `Source` says where each item came from — `you` (the user asked for it, or it answers
 one of their questions) or `suggested` (found in the code). Put the user's items first.
 
 ```markdown
@@ -139,7 +140,9 @@ Follow `references/instrumentation-patterns.md`:
 2. Each journey: start → steps → settle with the **right** status — `complete`, `incomplete` (an
    expected dead end, e.g. no results), `fail` (a defect, with a `statusCode`), `cancel` (the user
    left or a newer request superseded it). Timeout is automatic. Collapsing `abandoned` or
-   `incomplete` into `failure` makes the failure rate useless for alerts.
+   `incomplete` into `failure` makes the failure rate useless for alerts. On `complete`, add the one
+   number that says how much happened (rows returned, file size) when the screen has one: it tells a
+   fast empty list from a fast full one.
 3. **Never pass a raw `HttpErrorResponse` to `fail()` or `logger.error()`** — its message quotes the
    URL, ids included. Use the patterns' `safeHttpFailure(error)`; with `traceScenario`, settle it in a
    `catchError` placed before the operator.

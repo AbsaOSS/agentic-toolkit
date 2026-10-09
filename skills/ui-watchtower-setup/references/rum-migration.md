@@ -15,9 +15,9 @@ rg -n "recordEvent|recordError|recordPageView|dispatch|pinUserId|addSessionAttri
 Build this table and keep it in the PR description. The payload column matters — the event type
 alone is not parity:
 
-| Call site | AWS API | Event type | Payload keys | Consumers (dashboard, metric, query) |
-|-----------|---------|------------|--------------|--------------------------------------|
-|           |         |            |              |                                      |
+| Call site | AWS API | Event type | Payload keys | Consumers (dashboard, metric, query) | Parity tool (§2) |
+|-----------|---------|------------|--------------|--------------------------------------|------------------|
+|           |         |            |              |                                      |                  |
 
 Also note how the existing code obtains credentials (Cognito identity pool vs a backend broker), how
 it handles sign-in/sign-out, and whether it records page views manually.
@@ -26,8 +26,15 @@ it handles sign-in/sign-out, and whether it records page views manually.
 id, page ids with query strings: fix them in the old code right away (debounce and send
 `queryLength`, an opaque id, strip query strings), mark the rows, and tell the dashboard owners.
 Parity never outranks personal data.
+Put each comment on its own line above the code it explains, and re-read every line you edited in
+the old service when you are done: you cannot compile here, and a trailing `// …` before a closing
+`);` silently swallows the bracket and breaks the only page-view path.
 
 ## 2. Pick a parity tool per row
+
+Choose exactly one tool for every row and write it in the last column of the §1 table. A list of
+options is not a choice: without one, the cutover has no agreed target and the wire diff (§5) has
+nothing to compare against, even when the cutover itself has to wait for a broker.
 
 | Tool                                                   | Use when                                                         | Result                                                                                                     |
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
