@@ -165,6 +165,16 @@ inject(UwtBITelemetryService).track(
 );
 ```
 
+What the sink receives is `record('{ns}.bi', event)` — `com.uwt.bi` by default; the `eventType`
+option replaces the type — with
+
+```ts
+event = { eventName, eventTime /* ISO string */, metadata?, scenarioId?, feature?, application }
+```
+
+The name is in **`eventName`** (not `name`). A test with a recording sink asserts on
+`payload.eventName` and `payload.metadata`.
+
 Identical events (name + scenarioId + eventType + feature + metadata) within 400 ms collapse into
 one — no click throttling needed. A wrapper of your own should type its parameter `UwtBIEventName`,
 not `string`, or it stops compiling once the registry is augmented.
