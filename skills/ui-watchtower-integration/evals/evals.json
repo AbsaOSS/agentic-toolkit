@@ -27,7 +27,7 @@
       ],
       "expectations": [
         "Checks that the library is installed and wired (package, providers, destination) before anything else",
-        "Asks the user, before proposing, what the telemetry should answer — covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
+        "Asks the user, before proposing, what the telemetry should answer \u2014 covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
         "Presents a proposal whose items have a Source column distinguishing items the user asked for from suggested ones (here all suggested, and says so)",
         "Waits for confirmation before implementing (implements only after the assumed confirmation)",
         "Does not add a second route-navigation scenario or change the existing wiring",
@@ -138,7 +138,7 @@
       "id": "re-run-adds-only",
       "category": "regression",
       "prompt": "Add telemetry for the customer list screen. The project is in evals/files/wired-instrumented-angular.",
-      "expected_output": "Skill reads the existing schema and instrumentation, recognises that customers-load is already measured, and proposes only additions for the screen (e.g. export, search) — each with a Source label — without a second load scenario or changes to the existing one; new names go into the existing schema, with tests.",
+      "expected_output": "Skill reads the existing schema and instrumentation, recognises that customers-load is already measured, and proposes only additions for the screen (e.g. export, search) \u2014 each with a Source label \u2014 without a second load scenario or changes to the existing one; new names go into the existing schema, with tests.",
       "files": [
         "evals/files/wired-instrumented-angular/angular.json",
         "evals/files/wired-instrumented-angular/package.json",
@@ -218,6 +218,40 @@
         "Placing the order is a scenario that settles with the right statuses (success, failure with the HTTP status code, abandoned when the user leaves), and the coupon use is a BI event; neither concern is expressed through the other service",
         "New names are declared in telemetry.schema.ts (scenarios and steps kebab-case, BI events snake_case)",
         "Tests use a recording sink and assert each scenario outcome the proposal claims and the BI event (through its eventName)"
+      ]
+    },
+    {
+      "id": "user-list-still-gets-code-research",
+      "category": "regression",
+      "prompt": "Add a place_order_clicked BI event and an order-placement scenario, and a coupon_applied BI event. Watchtower is already set up. The project is in evals/files/wired-checkout-angular.",
+      "expected_output": "Although the user named every item, the skill still scans the app and the proposal shows what it read, maps each requested item to the real component, and adds suggested items the user did not mention (for example the cart load).",
+      "files": [
+        "evals/files/wired-checkout-angular/README.md",
+        "evals/files/wired-checkout-angular/angular.json",
+        "evals/files/wired-checkout-angular/package.json",
+        "evals/files/wired-checkout-angular/src/app/app.config.ts",
+        "evals/files/wired-checkout-angular/src/app/app.routes.ts",
+        "evals/files/wired-checkout-angular/src/app/app.spec.ts",
+        "evals/files/wired-checkout-angular/src/app/app.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/cart.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/order-confirmation.ts",
+        "evals/files/wired-checkout-angular/src/app/checkout/order-summary.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/route-navigation-telemetry.service.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/rum-credentials.provider.ts",
+        "evals/files/wired-checkout-angular/src/app/telemetry/telemetry.schema.ts",
+        "evals/files/wired-checkout-angular/src/index.html",
+        "evals/files/wired-checkout-angular/src/main.ts",
+        "evals/files/wired-checkout-angular/src/styles.css",
+        "evals/files/wired-checkout-angular/tsconfig.app.json",
+        "evals/files/wired-checkout-angular/tsconfig.json",
+        "evals/files/wired-checkout-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "The proposal has a 'Scanned' line (or equivalent) naming files, components or HTTP calls that were actually read, and they exist in the project",
+        "Each item the user named is mapped to the real file and call that triggers it (cart.ts for the coupon, order-summary.ts for placing the order)",
+        "The proposal contains at least one row with Source 'suggested' for something the user did not name (for example the cart load, GET /api/cart, as a scenario), and that row points to a real file and call",
+        "User-named items come first and are marked 'you'; suggested items are clearly separated and are not required for the user's request",
+        "Where a requested name or shape conflicts with the library rules or the code (for example place_order_clicked firing before the request settles, or a click duplicating the scenario), the proposal says so under 'Requested but changed or not feasible' or keeps the user's intent explicitly"
       ]
     }
   ]

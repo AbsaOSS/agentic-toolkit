@@ -91,7 +91,10 @@ so in the proposal.
 
 ### Step 3 · Scan the code for candidates
 
-Load `references/instrumentation-patterns.md` (section 1). Within the scope from Step 2, find:
+Always do this scan, even when the user gave a complete list of what to track: their list says what
+they care about, only the code says how it can be wired and what else is worth measuring. Load
+`references/instrumentation-patterns.md` (section 1), read the routes, the components and services
+in scope, and the HTTP calls behind them. Within the scope from Step 2, find:
 
 - **Every wait the user actually sits through** → a scenario (a fetch that gates a screen, a submit,
   an upload, an export).
@@ -102,8 +105,10 @@ Decide for every candidate whether it is a scenario, a BI event, or both. A wait
 click is a scenario; a click with no wait is a BI event; a click inside a journey is both — a scenario
 for the journey and a BI event linked to it with `{ scenarioId }`.
 
-Map each user answer to concrete code: which component or service, which call starts the journey,
-which outcomes it can have.
+Then map each user request to concrete code: which component or service, which call starts the
+journey, which outcomes it can have. A request you can't find in the code goes under "Requested but
+changed or not feasible". Candidates the user didn't mention are not optional extras: they become
+`suggested` rows, so the proposal never contains only what was asked for.
 
 ### Step 4 · Present a merged proposal
 
@@ -114,6 +119,7 @@ one of their questions) or `suggested` (found in the code). Put the user's items
 ```markdown
 ## Proposed telemetry for <application>
 
+Scanned: <routes, components and services read, e.g. "checkout/ (3 components, 2 HTTP calls)">
 Answers: <the user's questions, one line each, or "none given — suggestions only">
 Already instrumented (unchanged): <existing scenario and BI names, or "nothing yet">
 
