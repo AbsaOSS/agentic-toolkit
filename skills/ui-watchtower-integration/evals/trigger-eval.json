@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Instrument the checkout flow as a scenario and add BI events for the main buttons — watchtower is already set up.",
+    "should_trigger": true
+  },
+  {
+    "query": "We want to know if customer search is slow; add telemetry for it (ngx-ui-watchtower is already wired).",
+    "should_trigger": true
+  },
+  {
+    "query": "Which user journeys should we measure in this app? Telemetry is wired with ngx-ui-watchtower — help us add them.",
+    "should_trigger": true
+  },
+  {
+    "query": "Track how often people use the new reporting export, using the watchtower BI events.",
+    "should_trigger": true
+  },
+  {
+    "query": "Measure the file upload journey in our Angular app, including failures and cancellations, with ngx-ui-watchtower scenarios.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add journey telemetry for the onboarding wizard; the watchtower setup is already done.",
+    "should_trigger": true
+  },
+  {
+    "query": "Install and wire @absaoss-cps/ngx-ui-watchtower with the CloudWatch RUM sink in our Angular project.",
+    "should_trigger": false
+  },
+  {
+    "query": "Replace our hand-written RumService with @absaoss-cps/ngx-ui-watchtower.",
+    "should_trigger": false
+  },
+  {
+    "query": "Wire UI telemetry into our micro-frontend shell so the fragments can forward to it.",
+    "should_trigger": false
+  },
+  {
+    "query": "Build a CloudWatch dashboard for our RUM metrics.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add Google Analytics to the React marketing site.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing Jest test in the payments service.",
+    "should_trigger": false
+  }
+]

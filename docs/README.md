@@ -67,6 +67,8 @@ Task-specific guidance for using individual skills. Start by picking your use ca
 | [Token Saving](./guides/token-saving.md) | Keeping AI responses concise — how the token-saving skill works and when it applies |
 | [PR Review](./guides/pr-review.md) | How the PR review skill works, what sections it applies, and how to trigger it |
 | [Create Repository](./create-repository.md) | Creating a new AbsaOSS/absa-group repo from the template with standard guardrails |
+| [UI Watchtower Setup](./guides/ui-watchtower-setup.md) | Install and wire the ngx-ui-watchtower telemetry library in an Angular app — destination per app role, RUM credentials, typed vocabulary, route-navigation proof, tests |
+| [UI Watchtower Integration](./guides/ui-watchtower-integration.md) | Measure an app's own journeys and interactions with ngx-ui-watchtower — asks what you want to learn, proposes, implements after confirmation, tests |
 
 ### QA And Testing Skills
 

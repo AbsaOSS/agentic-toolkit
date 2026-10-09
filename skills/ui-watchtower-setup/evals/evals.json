@@ -1,0 +1,220 @@
+{
+  "skill_name": "ui-watchtower-setup",
+  "evals": [
+    {
+      "id": "happy-path-standalone-angular",
+      "category": "happy-path",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill detects a standalone Angular 22 app with a router and Vitest, installs the package and aws-rum-web, wires provideUwtTelemetry + provideUwtTelemetryRumSink + UWT_RUM_CREDENTIALS_PROVIDER, creates telemetry.schema.ts, adds route-navigation tracking as the single proof scenario (reporting /customers/:customerId as a template) with a recording-sink test, adds app.spec.ts providers only if App injects telemetry, validates, and hands over to ui-watchtower-integration for the app's own journeys.",
+      "files": [
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/angular.json",
+        "evals/files/standalone-angular/tsconfig.json",
+        "evals/files/standalone-angular/tsconfig.app.json",
+        "evals/files/standalone-angular/tsconfig.spec.json",
+        "evals/files/standalone-angular/src/index.html",
+        "evals/files/standalone-angular/src/styles.css",
+        "evals/files/standalone-angular/src/main.ts",
+        "evals/files/standalone-angular/src/app/app.config.ts",
+        "evals/files/standalone-angular/src/app/app.routes.ts",
+        "evals/files/standalone-angular/src/app/app.ts",
+        "evals/files/standalone-angular/src/app/app.spec.ts",
+        "evals/files/standalone-angular/src/app/customers/customers.ts",
+        "evals/files/standalone-angular/src/app/customers/customer-detail.ts"
+      ],
+      "expectations": [
+        "Reads package.json and the app config before writing anything, and identifies the standalone bootstrap, the router and the test runner",
+        "Installs @absaoss-cps/ngx-ui-watchtower and aws-rum-web with the detected package manager",
+        "Adds allowedCommonJsDependencies: ['shimmer'] to the build options in angular.json",
+        "Adds provideUwtTelemetry({ application, environment, version }) and provideUwtTelemetryRumSink() to app.config.ts, importing RUM symbols only from '@absaoss-cps/ngx-ui-watchtower/rum'",
+        "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null for an unusable answer and throws when the request fails",
+        "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
+        "Creates telemetry.schema.ts augmenting UwtScenarioNames, and side-effect-imports it where the providers are configured",
+        "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
+        "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
+        "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
+        "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
+        "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
+      ]
+    },
+    {
+      "id": "happy-path-ssr-shell-hosting-fragments",
+      "category": "happy-path",
+      "prompt": "Wire ngx-ui-watchtower into our SSR shell. It hosts the cart and catalogue fragments. The project is in evals/files/ssr-shell.",
+      "expected_output": "Skill recognises the SSR shell role, registers providers unconditionally in the shared app config, adds the RUM sink, the broadcast host with a per-page-load channel id published on window, binds UwtNoopLogApiProvider because there is no log backend, and produces the fragment contract for the fragment teams.",
+      "files": [
+        "evals/files/ssr-shell/package.json",
+        "evals/files/ssr-shell/README.md",
+        "evals/files/ssr-shell/src/app/app.config.ts",
+        "evals/files/ssr-shell/src/app/app.config.server.ts",
+        "evals/files/ssr-shell/src/app/app.routes.ts",
+        "evals/files/ssr-shell/src/app/app.routes.server.ts",
+        "evals/files/ssr-shell/src/app/app.ts"
+      ],
+      "expectations": [
+        "Identifies the app as a shell hosting fragments (from <web-fragment> usage and the README)",
+        "Registers the telemetry providers in the shared app.config.ts, not split between browser and server configs, and without platform checks around them",
+        "Adds provideUwtTelemetryBroadcastHost(channelId) with a random channel id (that does not depend on crypto.randomUUID alone, which needs a secure context) generated once per page load and published as window.__uwtTelemetryChannel, guarded for server rendering",
+        "Binds UWT_LOG_API_PROVIDER to UwtNoopLogApiProvider because the README says there is no log backend",
+        "Points the credentials provider at GET /api/rum/credentials from the README",
+        "Provides the fragment contract (broadcast sink, lazy UWT_BROADCAST_CHANNEL factory reading window.top, distinct application name, never the RUM sink) as a hand-off rather than editing fragment code",
+        "Does not install aws-rum-web into any fragment"
+      ]
+    },
+    {
+      "id": "happy-path-fragment",
+      "category": "happy-path",
+      "prompt": "Our cart fragment needs to send telemetry through the shell. Set up ngx-ui-watchtower here. The project is in evals/files/fragment.",
+      "expected_output": "Skill configures the fragment to forward: provideUwtTelemetry with its own application name, provideUwtTelemetrySink('broadcast'), and a lazy UWT_BROADCAST_CHANNEL useFactory reading window.top.__uwtTelemetryChannel. No RUM sink, no credentials, no broadcast host, no log provider, no aws-rum-web.",
+      "files": [
+        "evals/files/fragment/package.json",
+        "evals/files/fragment/README.md",
+        "evals/files/fragment/src/app/app.config.ts",
+        "evals/files/fragment/src/app/app.routes.ts"
+      ],
+      "expectations": [
+        "Uses provideUwtTelemetrySink('broadcast') as the only destination",
+        "Provides UWT_BROADCAST_CHANNEL with useFactory (lazy), not provideUwtTelemetrySink('broadcast', { channelName }) with an eagerly computed value",
+        "Guards the window.top read for server rendering and cross-origin access, and falls back to a private channel nobody hosts — never undefined, which would select the shared default channel",
+        "Uses an application name distinct from the shell (e.g. 'cart')",
+        "Does not add provideUwtTelemetryRumSink, UWT_RUM_CREDENTIALS_PROVIDER, provideUwtTelemetryBroadcastHost or UWT_LOG_API_PROVIDER",
+        "Does not install aws-rum-web"
+      ]
+    },
+    {
+      "id": "rum-not-ready-noop",
+      "category": "happy-path",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM isn't ready yet — we don't have a credentials endpoint. No log backend. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill wires provideUwtTelemetry with the explicit 'noop' destination, installs only the library (no aws-rum-web, no shimmer allowance, no credentials provider), still adds the schema, route-navigation proof and tests, and explains the one-line swap to the RUM sink later.",
+      "files": [
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/angular.json",
+        "evals/files/standalone-angular/tsconfig.json",
+        "evals/files/standalone-angular/tsconfig.app.json",
+        "evals/files/standalone-angular/tsconfig.spec.json",
+        "evals/files/standalone-angular/src/index.html",
+        "evals/files/standalone-angular/src/styles.css",
+        "evals/files/standalone-angular/src/main.ts",
+        "evals/files/standalone-angular/src/app/app.config.ts",
+        "evals/files/standalone-angular/src/app/app.routes.ts",
+        "evals/files/standalone-angular/src/app/app.ts",
+        "evals/files/standalone-angular/src/app/app.spec.ts",
+        "evals/files/standalone-angular/src/app/customers/customers.ts",
+        "evals/files/standalone-angular/src/app/customers/customer-detail.ts"
+      ],
+      "expectations": [
+        "Uses provideUwtTelemetrySink('noop') as the only destination",
+        "Does not install aws-rum-web, add the shimmer allowance, import from '@absaoss-cps/ngx-ui-watchtower/rum', or add a credentials provider",
+        "Does not bind a page-view recorder (no RUM sink to record to)",
+        "Creates telemetry.schema.ts and adds route-navigation tracking with a recording-sink test",
+        "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
+        "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, bind ROUTE_PAGE_VIEW_RECORDER, and install aws-rum-web",
+        "Ends by pointing the user to ui-watchtower-integration"
+      ]
+    },
+    {
+      "id": "partially-wired-fills-gaps",
+      "category": "regression",
+      "prompt": "Someone started wiring ngx-ui-watchtower in this app but never finished. RUM credentials come from GET /rum/init; no log backend. Finish the setup. The project is in evals/files/partially-wired-angular.",
+      "expected_output": "Skill detects the existing provideUwtTelemetry and the missing destination, keeps the single existing configuration, adds the RUM sink and credentials provider, the schema, route-navigation proof and spec providers, and hands over — without duplicating anything already present.",
+      "files": [
+        "evals/files/partially-wired-angular/angular.json",
+        "evals/files/partially-wired-angular/package.json",
+        "evals/files/partially-wired-angular/src/app/app.config.ts",
+        "evals/files/partially-wired-angular/src/app/app.routes.ts",
+        "evals/files/partially-wired-angular/src/app/app.spec.ts",
+        "evals/files/partially-wired-angular/src/app/app.ts",
+        "evals/files/partially-wired-angular/src/app/customers/customer-detail.ts",
+        "evals/files/partially-wired-angular/src/app/customers/customers.ts",
+        "evals/files/partially-wired-angular/src/index.html",
+        "evals/files/partially-wired-angular/src/main.ts",
+        "evals/files/partially-wired-angular/src/styles.css",
+        "evals/files/partially-wired-angular/tsconfig.app.json",
+        "evals/files/partially-wired-angular/tsconfig.json",
+        "evals/files/partially-wired-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Detects that the package and provideUwtTelemetry are already present and that no destination is bound",
+        "Keeps exactly one provideUwtTelemetry call (reuses or edits the existing one, does not add a second)",
+        "Adds provideUwtTelemetryRumSink() and a UWT_RUM_CREDENTIALS_PROVIDER fetching /rum/init, importing RUM symbols only from '/rum'",
+        "Creates telemetry.schema.ts and side-effect-imports it where the providers are configured",
+        "Adds route-navigation tracking with a recording-sink test, and telemetry providers in app.spec.ts only if App now injects a telemetry service",
+        "Ends by pointing the user to ui-watchtower-integration"
+      ]
+    },
+    {
+      "id": "regression-existing-rum-parity",
+      "category": "regression",
+      "prompt": "Replace our hand-written RumService with ngx-ui-watchtower. The project is in evals/files/ngmodule-existing-rum.",
+      "expected_output": "Skill loads references/rum-migration.md, inventories every recordEvent/recordPageView/addSessionAttributes call with its event type, payload and consumers, picks a parity tool per row (the dashboard and metric filter need desk.order.* types), keeps RumService until the wire is diffed, flags the Cognito identity pool as unsupported and requiring a credential broker, replaces the email session attribute with an opaque user id, fixes the live per-keystroke raw search event right away (debounced, no raw text) even though the RUM switch waits for a broker, and records page views once, under the route template.",
+      "files": [
+        "evals/files/ngmodule-existing-rum/package.json",
+        "evals/files/ngmodule-existing-rum/src/app/app.module.ts",
+        "evals/files/ngmodule-existing-rum/src/app/app-routing.module.ts",
+        "evals/files/ngmodule-existing-rum/src/app/app.component.ts",
+        "evals/files/ngmodule-existing-rum/src/app/services/rum.service.ts",
+        "evals/files/ngmodule-existing-rum/src/app/search/search.component.ts"
+      ],
+      "expectations": [
+        "Builds an inventory table of every existing RUM call: event type, payload keys and consumers (the 'Desk usage' dashboard and 'order-failures' metric filter)",
+        "Chooses an explicit parity tool for the desk.order.* events (eventType override or raw sink.record) instead of silently switching them to com.uwt.bi",
+        "Does not delete RumService before the migrated paths are diffed against the inventory",
+        "Flags that identityPoolId/guestRoleArn (Cognito) is not supported and a backend credential broker is needed, and asks rather than inventing one",
+        "Does not run two RUM clients side by side",
+        "Keeps exactly one page-view path and does not start a second one: the old manual recordPageView stays the only recorder until the cutover, and its page ids carry no query string or fragment (the route-template recorder with disableAutoPageView: true is planned for the cutover)",
+        "Replaces the email session attribute with an opaque user id in the old service (planning sink.setUserId(opaqueId) for the cutover) and calls out that emails must not be sent",
+        "Replaces per-keystroke search tracking with a debounced event that carries no raw query text (for example queryLength)"
+      ]
+    },
+    {
+      "id": "regression-no-barrel-reexport-of-rum",
+      "category": "regression",
+      "prompt": "Put all telemetry imports behind one barrel file src/app/telemetry/index.ts so components import from there. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill may add a barrel for app-owned telemetry code but refuses to re-export anything from '@absaoss-cps/ngx-ui-watchtower/rum', explaining that it would pull aws-rum-web into every consumer's build.",
+      "files": [
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/src/app/app.config.ts"
+      ],
+      "expectations": [
+        "Does not re-export provideUwtTelemetryRumSink, UwtRumTelemetrySink or any '/rum' symbol from a shared barrel",
+        "Explains the reason (the /rum entry point keeps aws-rum-web out of builds that don't need it)",
+        "Does not introduce deep imports from '@absaoss-cps/ngx-ui-watchtower/src/...'"
+      ]
+    },
+    {
+      "id": "unsupported-angular-version",
+      "category": "negative",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. The project is in evals/files/future-angular.",
+      "expected_output": "Skill reads the app's Angular version (24) and the library's supported range from the registry (npm view …@latest peerDependencies), finds that Angular 24 is outside it, stops without installing or wiring anything, never suggests --force or --legacy-peer-deps, and tells the user the library doesn't support this Angular version yet.",
+      "files": [
+        "evals/files/future-angular/package.json",
+        "evals/files/future-angular/src/main.ts",
+        "evals/files/future-angular/src/app/app.config.ts"
+      ],
+      "expectations": [
+        "Reads the app's @angular/core version (^24) from package.json",
+        "Reads the library's supported Angular range from the registry (npm view @absaoss-cps/ngx-ui-watchtower peerDependencies or equivalent) instead of assuming one",
+        "Concludes that Angular 24 is outside the supported range",
+        "Does not install the package, add providers or change any project file",
+        "Does not suggest or use --force or --legacy-peer-deps",
+        "Tells the user the library doesn't support this Angular version yet, and what would unblock it (a library release that supports it)"
+      ]
+    },
+    {
+      "id": "negative-non-angular",
+      "category": "negative",
+      "prompt": "Add ngx-ui-watchtower telemetry to our marketing site. The project is in evals/files/react-app.",
+      "expected_output": "Skill detects a React app, explains that the library is Angular-only, and does not install or wire anything.",
+      "files": [
+        "evals/files/react-app/package.json",
+        "evals/files/react-app/src/main.tsx"
+      ],
+      "expectations": [
+        "Detects that the app is React, not Angular",
+        "States that @absaoss-cps/ngx-ui-watchtower is for Angular applications only",
+        "Does not install the package or modify any file"
+      ]
+    }
+  ]
+}

@@ -100,6 +100,8 @@ deprecated entities; audit unused steps and PageObject methods. |
 | **[test-unit-write](./skills/test-unit-write/)**     | Generate unit tests from scratch following language-specific standards. Analyzes source, selects mock strategies, and produces tests covering happy paths, failure conditions, and edge cases. |
 | **[test-unit-review](./skills/test-unit-review/)**   | Systematically audit unit test suites. Runs test runner, checks isolation/scope/naming/assertions/coverage standards, and reports findings by severity (Blocker / Important / Nit). |
 | **[token-saving](./skills/token-saving/)**           | Always-active response discipline — enforces brevity, no filler openers or closers, structured output, and a What/Why/How footer on code responses. Suspends on explicit "full detail" requests. |
+| **[ui-watchtower-integration](./skills/ui-watchtower-integration/)** | Measure what matters in an Angular app that already uses `@absaoss-cps/ngx-ui-watchtower` — asks what the team wants to learn, scans the code, proposes scenarios and BI events marked by source (you / suggested), implements after confirmation, and tests each outcome. |
+| **[ui-watchtower-setup](./skills/ui-watchtower-setup/)** | Install and wire `@absaoss-cps/ngx-ui-watchtower` in an Angular app — destination per app role (CloudWatch RUM, micro-frontend shell or fragment, no-op), credentials, typed vocabulary, migration of a hand-written RumService, and route-navigation tracking as a tested proof. |
 
 ## Agent Roster
 
