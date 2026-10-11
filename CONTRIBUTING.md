@@ -183,6 +183,11 @@ should be run") — it is clearer and easier for the agent to follow.
 
 If every test run of your skill independently writes the same helper script (a formatter, a validator, a transformer), bundle it in `scripts/` and reference it from `SKILL.md`. This saves every future invocation from reinventing the wheel.
 
+**No CI runs script tests today.** The workflow that discovered and ran `skills/**/test_*.py` was removed once the
+last tested script left the repository, so a `test_*.py` you add now will never run in CI. If you bundle a script
+worth testing, restore that workflow in the same PR — otherwise the tests pass locally and nothing enforces them
+afterwards.
+
 ### Shared utilities and assets across multiple skills
 
 **Pattern:** If code, references, or assets are used by 2+ skills, place them in `skills/shared/`:
@@ -190,6 +195,10 @@ If every test run of your skill independently writes the same helper script (a f
 - **`skills/shared/lib/`** for shared Python modules → each skill has a wrapper
 - **`skills/shared/references/`** for shared documentation → skills link directly
 - **`skills/shared/assets/`** for shared templates/data → skills reference relative paths
+
+`skills/shared/` does not exist right now — no current skill has a second consumer. Create it, with its own
+`SKILL.md` marking it an internal library rather than a task skill, in the PR that introduces the first genuinely
+shared file.
 
 A shared Python module gets a thin wrapper in each dependent skill's `scripts/`, so the skill keeps working when
 it is installed on its own: the wrapper imports from `shared/lib` by a sibling relative path and fails with an

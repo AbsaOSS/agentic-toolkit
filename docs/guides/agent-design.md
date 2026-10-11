@@ -15,7 +15,7 @@ This guide distils Anthropic's engineering articles — [Building Effective Agen
 7. [Session state and note-taking](#7-session-state-and-note-taking)
 8. [Stopping conditions](#8-stopping-conditions)
 9. [Handoff contracts](#9-handoff-contracts)
-10. [Repo conventions every agent must follow](#10-repo-conventions-every-agent-must-follow)
+10. [Conventions across cooperating agents](#10-conventions-across-cooperating-agents)
 
 ---
 
@@ -121,8 +121,8 @@ Expected output:
 
 **Rules:**
 - Cover the most common trigger case and one error/edge case.
-- Examples must use real entity ID patterns (`US-007`, `FEAT-003`, `AC:US-007-01`).
-- Step text in Gherkin examples must use domain language — no selectors, HTTP references, or database terms.
+- Examples must use the real identifier and path patterns the agent will meet in the wild — never `foo` / `bar` placeholders.
+- Text the reader is meant to read as behaviour must stay in domain language — no selectors, HTTP paths, or database terms leaking into it.
 - Do not stuff every edge case in — 2 canonical examples beat 10 exhaustive ones.
 
 ---
@@ -131,7 +131,7 @@ Expected output:
 
 **Skills:** Load one skill per session, only when the mode is confirmed. Never pre-load skills for modes that haven't been triggered. The `Mode Dispatch` table must show which skill maps to each intent.
 
-**Manifests and large files:** Always load with targeted line ranges for the route(s) in scope. Load the full file only for full re-scan operations.
+**Manifests and large files:** Always load with targeted line ranges for the entries in scope. Load the whole file only when the operation genuinely covers all of it.
 
 **Reference docs:** Do not inline content that is available in a referenced file, unless it is small (< 30 lines) and needed across all modes. Use `[Load only if …]` annotations in the Skills table.
 
@@ -212,34 +212,20 @@ Key: value
 
 ---
 
-## 10. Repo conventions every agent must follow
+## 10. Conventions across cooperating agents
 
-### AC state vocabulary
+### Domain vocabulary lives with the domain, not in the agent body
 
-All agents in this repository use the same four AC states. Never introduce alternative spellings.
+Where several agents read and write the same artifacts, they must agree on that domain's vocabulary — its
+state words, its identifier grammar, its traceability tags. Pin that vocabulary in **one** place the agents
+load on demand: the skill that owns the domain, or the repository that holds its canon. Restating it in each
+agent body gives you copies to keep in step, and the agent's copy is the one that goes stale.
 
-| State | Meaning |
-|---|---|
-| `planned` | Drafted; no implementation yet |
-| `in_review` | Implementation underway or in PR |
-| `active` | Implemented and verified |
-| `deprecated` | Superseded or deleted; requires `deprecated_at` and `deprecation_reason` |
+Two rules hold whatever the domain:
 
-### Entity ID format
-
-`US-<nnn>` · `FEAT-<nnn>` · `FUNC-<nnn>` · `AC:<parent-id>-<nn>`
-
-IDs are stable — never change an ID after creation. Bump the `version` field for changes.
-
-### Gherkin traceability tag format
-
-```gherkin
-# AC:US-007-01 (v1.0.0 - active) — <description>
-@AC:US-007-01
-Scenario: ...
-```
-
-One `# AC:` + `@AC:` pair per AC. The `@AC:` tag is the machine-readable traceability anchor — never delete or rename it without syncing the catalog entity.
+- **Identifiers are stable.** Never change an ID after creation; carry a `version` field for changes instead.
+- **Machine-readable tags are load-bearing.** A traceability tag an agent emits for another tool to read must
+  never be renamed or deleted on one side only.
 
 ### Cooperating agent boundary
 
@@ -248,7 +234,7 @@ example:
 
 | Layer | Owner |
 |---|---|
-| Catalog (entities, ACs, traceability links) | `@catalog-agent` |
-| Automation (PageObjects, step definitions, feature files) | `@automation-agent` |
+| Specification (requirements, acceptance criteria, traceability links) | `@spec-agent` |
+| Implementation (source changes, test code, fixtures) | `@build-agent` |
 
 Never cross this boundary. When a task belongs to the other agent, hand off using the structured payload — do not attempt the task yourself.
