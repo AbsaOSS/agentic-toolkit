@@ -124,11 +124,10 @@ Since the `description:` field is documentation-only (not an activation trigger)
 
 ```yaml
 description: >
-  Lifecycle for living documentation and BDD automation.
-  Create/update User Stories, Features, Functionalities; generate Gherkin scenarios;
-  scan webapp for PageObjects; manage test artifacts.
-  Use @-mention: @living-doc-bdd-copilot COMMAND.
-  NOT for: unit tests, production code, security/perf review.
+  Release engineering for this repository: cut a release branch, assemble the changelog
+  from merged pull requests, check version numbers and tags, draft the release notes.
+  Use @-mention: @release-agent COMMAND.
+  NOT for: writing code, reviewing diffs, CI configuration, dependency bumps.
 ```
 
 **Bad patterns:**
@@ -140,14 +139,13 @@ description: >
 
 # BAD — talks about auto-triggering (agents use @-mention only)
 description: >
-  Automatically activated when you describe BDD tasks.
+  Automatically activated when you describe a release task.
 
-  Living documentation catalog (User Stories, Features, Functionalities, ACs, impact
-  analysis, gap finding) and BDD automation (Playwright crawl/explore/scan, PageObjects
-  create/heal, Gherkin scenarios/feature files/step definitions, living-doc sync,
-  scenario coverage). Setup: seed.yaml → manifest.json, credential checks, guided
-  traversal. NOT for: unit tests, production code, API specs, CI/CD, debugging,
-  performance, security.
+  Release engineering (release branches, changelog assembly from merged pull requests,
+  version numbers, tags, draft release notes, publishing checks, post-release
+  verification, hotfix branches, rollback procedure). Setup: release config, credential
+  checks, guided walkthrough. NOT for: writing code, reviewing diffs, CI configuration,
+  dependency bumps, debugging, performance, security.
 ```
 
 The `NOT for:` clause is as important as the positive terms — it prevents the agent from firing on adjacent-but-out-of-scope requests. An explicit `Triggers:` keyword list is not required; structured domain nouns and verbs are sufficient for the matching mechanism to work.

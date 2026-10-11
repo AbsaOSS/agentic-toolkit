@@ -45,7 +45,7 @@ skills/
 - **`skills/<skill>/references/`** — skill-specific docs loaded only by that skill's instructions
 - **`skills/shared/references/`** — shared docs used by multiple skills (e.g., schemas, glossaries, common API specs)
 
-If a reference file is used by 2+ skills, place it in `skills/shared/references/` instead of duplicating it. See [living-doc-bdd-schemas.md](skills/shared/references/living-doc-bdd-schemas.md) and [living-doc-glossary.md](skills/shared/references/living-doc-glossary.md) for examples.
+If a reference file is used by 2+ skills, place it in `skills/shared/references/` instead of duplicating it — a schema, a glossary or an API spec that two skills both read belongs there, not copied into each.
 ---
 
 ## 2. Frontmatter schema
@@ -191,10 +191,10 @@ If every test run of your skill independently writes the same helper script (a f
 - **`skills/shared/references/`** for shared documentation → skills link directly
 - **`skills/shared/assets/`** for shared templates/data → skills reference relative paths
 
-Examples:
-- `skills/shared/lib/living_doc_id.py` — shared by three living-doc skills
-- `skills/shared/references/living-doc-glossary.md` — shared by multiple living-doc skills
-- See [skills/shared/lib/README.md](skills/shared/lib/README.md) for implementation details
+A shared Python module gets a thin wrapper in each dependent skill's `scripts/`, so the skill keeps working when
+it is installed on its own: the wrapper imports from `shared/lib` by a sibling relative path and fails with an
+instruction to install `shared` when it cannot find it. Give `skills/shared/lib/` a `README.md` recording which
+skill depends on which module — a shared module with no record of its consumers is the thing that drifts.
 
 **Benefits:** Single source of truth, prevents drift, easier maintenance, each skill remains independently deployable.
 

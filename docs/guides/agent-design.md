@@ -135,7 +135,7 @@ Expected output:
 
 **Reference docs:** Do not inline content that is available in a referenced file, unless it is small (< 30 lines) and needed across all modes. Use `[Load only if …]` annotations in the Skills table.
 
-**Gap Finder modes:** Mode detail (what HEALING does, what PLAN does) belongs in the `living-doc-gap-finder` skill — not duplicated in the agent body. The agent body should name the mode and point to the skill.
+**Mode detail belongs in the skill, not the agent body.** What a mode actually does, step by step, belongs in the skill that performs it. The agent body names the mode, says when it fires, and points at the skill. Duplicating the steps gives you two copies to keep in step, and the agent's copy is the one that goes stale.
 
 ---
 
@@ -243,9 +243,12 @@ One `# AC:` + `@AC:` pair per AC. The `@AC:` tag is the machine-readable traceab
 
 ### Cooperating agent boundary
 
+Where two agents work on the same codebase, write the boundary down as a table of layer against owner, for
+example:
+
 | Layer | Owner |
 |---|---|
-| Catalog (entities, ACs, traceability links) | `@living-doc-bdd-copilot` |
-| Automation (PageObjects, step definitions, feature files) | `@living-doc-bdd-copilot` |
+| Catalog (entities, ACs, traceability links) | `@catalog-agent` |
+| Automation (PageObjects, step definitions, feature files) | `@automation-agent` |
 
 Never cross this boundary. When a task belongs to the other agent, hand off using the structured payload — do not attempt the task yourself.
