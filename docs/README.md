@@ -28,7 +28,6 @@ Core practices for designing, testing, and deploying agent workflows with Copilo
 
 | Guide                                   | Description                                                                         |
 |-----------------------------------------|-------------------------------------------------------------------------------------|
-| [Agent Design Best Practices](./guides/agent-design.md) | Core principles, file structure, context management, tool guidance, examples, and stopping conditions for `.agent.md` files |
 | [Responsible Agent Use](./responsible-agent-use.md) | Not burning your Copilot token budget — context, models, agent mode, MCP, plugins, skills, and a must-do checklist |
 | [Agent Testing](./testing/agent-testing.md) | Eval creation and body quality testing for `.agent.md` files — agents are invoked by @-mention, not auto-triggered |
 

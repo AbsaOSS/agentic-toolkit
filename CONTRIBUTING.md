@@ -40,12 +40,6 @@ skills/
 | `assets/`     | Template files, example inputs/outputs, icons — anything the skill produces or consumes                                                  |
 | `evals/`      | Test prompts and assertions to verify skill behavior and trigger accuracy. See [skill-testing.md](./docs/testing/skill-testing.md)               |
 
-#### `references/` — shared vs. skill-specific
-
-- **`skills/<skill>/references/`** — skill-specific docs loaded only by that skill's instructions
-- **`skills/shared/references/`** — shared docs used by multiple skills (e.g., schemas, glossaries, common API specs)
-
-If a reference file is used by 2+ skills, place it in `skills/shared/references/` instead of duplicating it — a schema, a glossary or an API spec that two skills both read belongs there, not copied into each.
 ---
 
 ## 2. Frontmatter schema
@@ -187,23 +181,6 @@ If every test run of your skill independently writes the same helper script (a f
 last tested script left the repository, so a `test_*.py` you add now will never run in CI. If you bundle a script
 worth testing, restore that workflow in the same PR — otherwise the tests pass locally and nothing enforces them
 afterwards.
-
-### Shared utilities and assets across multiple skills
-
-**Pattern:** If code, references, or assets are used by 2+ skills, place them in `skills/shared/`:
-
-- **`skills/shared/lib/`** for shared Python modules → each skill has a wrapper
-- **`skills/shared/references/`** for shared documentation → skills link directly
-- **`skills/shared/assets/`** for shared templates/data → skills reference relative paths
-
-`skills/shared/` does not exist right now — no current skill has a second consumer. Create it, with its own
-`SKILL.md` marking it an internal library rather than a task skill, in the PR that introduces the first genuinely
-shared file.
-
-A shared Python module gets a thin wrapper in each dependent skill's `scripts/`, so the skill keeps working when
-it is installed on its own: the wrapper imports from `shared/lib` by a sibling relative path and fails with an
-instruction to install `shared` when it cannot find it. Give `skills/shared/lib/` a `README.md` recording which
-skill depends on which module — a shared module with no record of its consumers is the thing that drifts.
 
 **Benefits:** Single source of truth, prevents drift, easier maintenance, each skill remains independently deployable.
 
