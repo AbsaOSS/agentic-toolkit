@@ -123,7 +123,7 @@ channel is read when the sink is created, not when the providers are built.
 **The shell must publish the id before any fragment boots** — the sink reads it once, so an early
 fragment ships nothing for the whole page. The shell code above guarantees this with Web Fragments.
 
-| Must match the shell | `eventNamespace`; the channel name (read from `window.top`)                                             |
+| Must match the shell | `eventNamespace`; the channel name (read from `window.top`); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts |
 |----------------------|---------------------------------------------------------------------------------------------------------|
 | **Must differ**      | `application` — every forwarded event is stamped with it, which is how fragments are told apart         |
 | **Never provide**    | `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER`, `provideUwtTelemetryBroadcastHost()`, `UWT_LOG_API_PROVIDER` (`'broadcast'` already binds it to the forwarding provider) |

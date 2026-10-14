@@ -206,6 +206,9 @@ from the user's original request and why.
 ## Gotchas
 
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
+- **App behaviour never depends on telemetry results.** Where `withTelemetryEnabled` turns telemetry
+  off, scenarios never settle, `settled$` never emits, `find` / `getActive` find nothing and
+  `query()` resolves `[]`. If the live check shows no debug lines, check that switch first.
 - **Scenario and BI stay separate** — use `UwtScenarioTelemetryService` and `UwtBITelemetryService`
   directly where needed; no merged service, facade or unified `track…` API unless the user asks.
 

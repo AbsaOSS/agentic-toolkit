@@ -24,6 +24,10 @@
     "should_trigger": true
   },
   {
+    "query": "Turn off ngx-ui-watchtower telemetry in our dev and test environments; keep it on in prod.",
+    "should_trigger": true
+  },
+  {
     "query": "Instrument the checkout flow as a scenario and add BI events for the main buttons — watchtower is already set up.",
     "should_trigger": false
   },

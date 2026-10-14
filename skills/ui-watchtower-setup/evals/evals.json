@@ -114,6 +114,37 @@
       ]
     },
     {
+      "id": "telemetry-off-in-dev",
+      "category": "happy-path",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. Developers don't want telemetry running on their local dev server — only in built deployments. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill wires the app as in the standalone happy path, with the same providers in every environment, and turns telemetry off on the dev server with one withTelemetryEnabled(...) feature on provideUwtTelemetry instead of conditional providers or a 'noop' swap.",
+      "files": [
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/angular.json",
+        "evals/files/standalone-angular/tsconfig.json",
+        "evals/files/standalone-angular/tsconfig.app.json",
+        "evals/files/standalone-angular/tsconfig.spec.json",
+        "evals/files/standalone-angular/src/index.html",
+        "evals/files/standalone-angular/src/styles.css",
+        "evals/files/standalone-angular/src/main.ts",
+        "evals/files/standalone-angular/src/app/app.config.ts",
+        "evals/files/standalone-angular/src/app/app.routes.ts",
+        "evals/files/standalone-angular/src/app/app.ts",
+        "evals/files/standalone-angular/src/app/app.spec.ts",
+        "evals/files/standalone-angular/src/app/customers/customers.ts",
+        "evals/files/standalone-angular/src/app/customers/customer-detail.ts"
+      ],
+      "expectations": [
+        "Installs a release that exports withTelemetryEnabled (0.2.0 or later)",
+        "Passes withTelemetryEnabled(...) to provideUwtTelemetry, off on the dev server (e.g. from isDevMode() or the app's environment) and on otherwise, imported from '@absaoss-cps/ngx-ui-watchtower'",
+        "Registers provideUwtTelemetryRumSink() and UWT_RUM_CREDENTIALS_PROVIDER unconditionally — no per-environment provider lists, platform or environment checks around them, and no 'noop' destination for dev",
+        "Does not add environment checks to the credentials provider, the route-navigation service or other app code to stop telemetry in dev",
+        "Keeps tests on the 'noop' test providers (or a recording sink) without withTelemetryEnabled(false), so the route-navigation test still sees events",
+        "Explains that the live debug check shows nothing on the dev server while telemetry is off there, and how to check it where it is on",
+        "Ends by pointing the user to ui-watchtower-integration"
+      ]
+    },
+    {
       "id": "partially-wired-fills-gaps",
       "category": "regression",
       "prompt": "Someone started wiring ngx-ui-watchtower in this app but never finished. RUM credentials come from GET /rum/init; no log backend. Finish the setup. The project is in evals/files/partially-wired-angular.",

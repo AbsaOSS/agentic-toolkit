@@ -5,8 +5,8 @@ description: >
   destination per app role (AWS CloudWatch RUM, micro-frontend shell or fragment, no-op),
   credentials, log provider, typed name vocabulary, route-navigation tracking as proof, migration of
   a hand-written RumService, and tests. Use when asked to add, install, set up or wire
-  ngx-ui-watchtower, UI telemetry or CloudWatch RUM in an Angular app, replace a RumService, or
-  connect a micro-frontend shell or fragment. NOT for: instrumenting the app's own journeys or BI
+  ngx-ui-watchtower, UI telemetry or CloudWatch RUM in an Angular app, replace a RumService,
+  connect a micro-frontend shell or fragment, or turn telemetry off in some environments. NOT for: instrumenting the app's own journeys or BI
   events (→ ui-watchtower-integration), dashboards, non-Angular apps.
 license: Apache-2.0
 compatibility: >
@@ -82,7 +82,8 @@ Read before writing anything — extend the app, don't restructure it.
 6. **Existing telemetry** — search for `aws-rum-web`, `recordEvent`, `recordPageView`, `pinUserId`,
    `addSessionAttributes`, a `RumService`, or another analytics SDK. If RUM is already wired, Step 5
    applies. If ngx-ui-watchtower is partly wired, run only the steps for what is missing; if
-   nothing is, offer `ui-watchtower-integration`.
+   nothing is, offer `ui-watchtower-integration` — unless the request is itself a wiring change
+   (e.g. turning telemetry off in some environments, Step 3), which you make here.
 7. **Realm role** — standalone app, **shell** that embeds fragments (Web Fragments, Module
    Federation, iframes on the same origin), or **fragment** inside a shell. Look for
    `<web-fragment>`, fragment gateways, remote-entry config. A Module Federation remote loaded
@@ -129,7 +130,7 @@ different destinations also fail bootstrap.
 | Standalone app, sends to RUM | `provideUwtTelemetryRumSink()` (from `/rum`) | `UWT_RUM_CREDENTIALS_PROVIDER` → `assets/rum-credentials.provider.ts` |
 | Shell hosting fragments | `provideUwtTelemetryRumSink()` | + `provideUwtTelemetryBroadcastHost(channelId)` + a log provider — `references/micro-frontends.md` |
 | Fragment inside a shell | `provideUwtTelemetrySink('broadcast')` + lazy `UWT_BROADCAST_CHANNEL` factory | nothing else — `references/micro-frontends.md` |
-| RUM not available yet | `provideUwtTelemetrySink('noop')` | explicit opt-out; everything runs, nothing ships; switching to RUM later takes more than this line — Step 9 |
+| RUM not available yet | `provideUwtTelemetrySink('noop')` | explicit opt-out; everything runs, nothing ships; switching to RUM later takes more than this line — Step 9. Not for turning telemetry off per environment — see below |
 | Own backend | `provideUwtTelemetryDestination(MySink)` (a class extending `UwtTelemetrySink`) | see the API reference, "Custom destination" |
 
 **Log provider:**
@@ -175,6 +176,20 @@ export const appConfig: ApplicationConfig = {
   library is already a no-op on the server.
 - Start with **no** `withScenarios` / `withBIEvents` / `withLogging` / `withRedaction` features. Add
   one only for a stated reason, and record the reason in a comment.
+- **Telemetry off in some environments** (only when the user asks): keep every provider exactly as
+  it is and add one feature, `withTelemetryEnabled(...)` (0.2.0+; on an older pin from Step 1, tell
+  the user it isn't available). Pass a value from the app's environment files, or a factory that
+  reads config already available at bootstrap — it is read once, at startup:
+
+  ```ts
+  provideUwtTelemetry(identity, withTelemetryEnabled(environment.name !== 'dev')),
+  ```
+
+  Off means fully inert: no credentials fetch, no RUM SDK download, no broadcast channel, no page
+  listeners; app code keeps working unchanged. Never do this by omitting or wrapping providers per
+  environment or swapping in `'noop'` — wiring errors would then only show up in some environments,
+  and `'noop'` still times, redacts and listens. In a shell with fragments, see
+  `references/micro-frontends.md`.
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint and adapt
   the response check. It returns `null` (RUM off) for a disabled, incomplete or expired answer
   and throws when the request fails, so a refresh retries instead of ending RUM. It sets
@@ -282,7 +297,9 @@ Run, through the detected package manager, until all are green:
 
    Each console line is `[<application>][<concern>] …`, and its second argument is the exact object
    handed to the sink. Confirm one `route-navigation` line per navigation with the right status and a
-   template `route`, and that nothing is logged during server rendering.
+   template `route`, and that nothing is logged during server rendering. Where
+   `withTelemetryEnabled` turns telemetry off, no lines appear — check in an environment where it
+   is on, then confirm the off one stays silent.
 
 Don't finish until build, tests and type-check are green. The `assets/` templates use current
 Angular router and DI APIs; if the app's Angular version has changed one, adapt the template to the

@@ -46,5 +46,9 @@
   {
     "query": "Fix the failing Jest test in the payments service.",
     "should_trigger": false
+  },
+  {
+    "query": "Turn off ngx-ui-watchtower telemetry in our dev and test environments; keep it on in prod.",
+    "should_trigger": false
   }
 ]

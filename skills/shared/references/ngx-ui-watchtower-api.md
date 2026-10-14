@@ -24,6 +24,7 @@ differ, they win). Import only from the two entry points below — no deep impor
 import {
   // setup
   provideUwtTelemetry, withScenarios, withBIEvents, withLogging, withRedaction,
+  withTelemetryEnabled, UWT_TELEMETRY_ENABLED, // 0.2.0+: turn all telemetry off
   provideUwtTelemetrySink,          // 'broadcast' | 'noop'
   provideUwtTelemetryDestination,   // a custom sink
   provideUwtTelemetryBroadcastHost, // shells only
@@ -79,6 +80,23 @@ All return `EnvironmentProviders`; they work in `ApplicationConfig.providers` an
 
 Exactly one destination per realm: two different ones throw at bootstrap; the same one listed twice
 is fine. Who injects `UWT_LOG_API_PROVIDER`: only `UwtLoggerService` and the broadcast host.
+
+**Turning telemetry off (0.2.0+)** — `withTelemetryEnabled(value | () => boolean)`, a feature of
+`provideUwtTelemetry` (token `UWT_TELEMETRY_ENABLED`, default `true`). The factory runs in an
+injection context; the value is read once at startup (no runtime toggling, e.g. for consent). The
+providers stay the same — a destination and, where required, a log provider are still needed, so
+wiring fails the same way everywhere. When off:
+
+- `start()` returns an inert `UwtScenario` (own `id`, the given `name`, chainable) that records
+  nothing and **never settles**; `find` / `findByName` / `getActive` find nothing, `settled$` never
+  emits, `traceScenario` passes values and errors through.
+- `track()` does nothing; `getLogger()` returns an inert logger; `query()` resolves `[]` without
+  calling the log provider.
+- RUM sink never starts (no credentials fetch, no SDK download), the broadcast sink opens no
+  channel, the broadcast host neither listens nor joins leader election, destination `init` is
+  skipped. The bundle doesn't shrink.
+
+`provideUwtTelemetrySink('noop')` is not the same: it only stops shipping.
 
 ## 3. Identity and configuration defaults
 
