@@ -47,6 +47,9 @@ over `settle(status, …)` so every failure path is findable by searching for `.
 settle wins: a `catch` calling `fail()` followed by a `finally` calling `complete()` records the
 failure.
 
+On `complete`, add the one number that says how much happened (rows returned, file size) when the
+screen has one: it tells a fast empty list from a fast full one.
+
 Use a small, consistent set of `reason` strings — they are grouping keys: `'component-destroyed'`,
 `'superseded'`, `'user-cancelled'`, `'no-results'`, `'guard-rejected'`.
 
@@ -213,8 +216,9 @@ check.
 
 - One event per meaningful action, named `snake_case` in `UwtBIEventNames`.
 - Inside a journey, link it: `track('export_clicked', { format }, { scenarioId: scenario.id })`.
-- Debounce high-frequency sources (search boxes, sliders) before `track()` — e.g.
-  `debounceTime(400)`. Repeated identical clicks within 400 ms are already collapsed by the library.
+- Debounce high-frequency sources (search boxes, sliders) before `track()` or before starting a
+  scenario — e.g. `debounceTime(400)`; one per settled input, never one per keystroke. Repeated
+  identical clicks within 400 ms are already collapsed by the library.
 - Call `UwtBITelemetryService.track()` directly where the action happens; don't route it through an
   app telemetry service, and don't merge it with the scenario service. If a function of yours takes an
   event name, type that parameter `UwtBIEventName`.

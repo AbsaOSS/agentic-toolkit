@@ -93,17 +93,9 @@ so in the proposal.
 
 Always do this scan, even when the user gave a complete list of what to track: their list says what
 they care about, only the code says how it can be wired and what else is worth measuring. Load
-`references/instrumentation-patterns.md` (section 1), read the routes, the components and services
-in scope, and the HTTP calls behind them. Within the scope from Step 2, find:
-
-- **Every wait the user actually sits through** → a scenario (a fetch that gates a screen, a submit,
-  an upload, an export).
-- **Every meaningful or irreversible click** → a BI event.
-- **Every `catch` that ends a journey** → that scenario's `fail(...)` (Step 6, rule 3).
-
-Decide for every candidate whether it is a scenario, a BI event, or both. A wait with no interesting
-click is a scenario; a click with no wait is a BI event; a click inside a journey is both — a scenario
-for the journey and a BI event linked to it with `{ scenarioId }`.
+`references/instrumentation-patterns.md`, read the routes, the components and services in scope,
+and the HTTP calls behind them. Within the scope from Step 2, find candidates with the table in §1
+and classify each one as a scenario, a BI event, or both.
 
 Then map each user request to concrete code: which component or service, which call starts the
 journey, which outcomes it can have. A request you can't find in the code goes under "Requested but
@@ -163,24 +155,11 @@ both, and do not move the calls into a shared service. Single-purpose helpers ar
 
 1. Add every confirmed name to `telemetry.schema.ts` (scenarios and steps kebab-case, BI events
    snake_case, one JSDoc line each). Never interpolate ids into names.
-2. Each journey: start → steps → settle with the **right** status — `complete`, `incomplete` (an
-   expected dead end, e.g. no results), `fail` (a defect, with a `statusCode`), `cancel` (the user
-   left or a newer request superseded it). Timeout is automatic. Collapsing `abandoned` or
-   `incomplete` into `failure` makes the failure rate useless for alerts. On `complete`, add the one
-   number that says how much happened (rows returned, file size) when the screen has one: it tells a
-   fast empty list from a fast full one.
-3. **Never pass a raw `HttpErrorResponse` to `fail()` or `logger.error()`** — its message quotes the
-   URL, ids included. Use the patterns' `safeHttpFailure(error)`; with `traceScenario`, settle it in a
-   `catchError` placed before the operator.
-4. Settle open scenarios when their component is destroyed; under `switchMap`, give
-   `traceScenario` a `cancelOutcome`. Nothing downstream of `traceScenario` may stop after the
-   first value — no `take(1)`/`first()` after it, no `firstValueFrom()` on it (it records
-   `abandoned`): limit upstream and await with `lastValueFrom()`.
-5. BI events inside a journey pass `{ scenarioId: scenario.id }`. Debounce high-frequency sources
-   (search boxes, sliders) before starting a scenario or sending a BI event — one per settled
-   input, never one per keystroke.
-6. Metadata: flat primitives, low cardinality, no personal data.
-7. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
+2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw
+   `HttpErrorResponse` (§2, `safeHttpFailure`).
+3. Avoid the RxJS traps (§4) and settle open scenarios on destroy (§5).
+4. BI events follow §6; names, metadata and privacy follow §7.
+5. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
    `logger.error(message, { error: safeHttpFailure(e).error, correlationId: scenario.id })` so log
    lines join the scenario.
 
@@ -209,8 +188,6 @@ from the user's original request and why.
 - **App behaviour never depends on telemetry results.** Where `withTelemetryEnabled` turns telemetry
   off, scenarios never settle, `settled$` never emits, `find` / `getActive` find nothing and
   `query()` resolves `[]`. If the live check shows no debug lines, check that switch first.
-- **Scenario and BI stay separate** — use `UwtScenarioTelemetryService` and `UwtBITelemetryService`
-  directly where needed; no merged service, facade or unified `track…` API unless the user asks.
 
 ## Out of scope
 
