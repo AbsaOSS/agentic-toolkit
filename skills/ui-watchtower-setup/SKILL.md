@@ -102,6 +102,8 @@ Ask the user only what the code cannot answer, in one message:
 - **RUM**: the endpoint that returns the RUM app-monitor config and short-lived AWS credentials
   (typically a backend "broker"), or whether RUM is not ready yet (→ `'noop'` for now).
 - **User id**: if the app has sign-in but exposes no opaque id, which one to use — or skip it.
+- **Fragment**: the shell's `eventNamespace` (default `com.uwt`), unless the shell's code or
+  contract shows it.
 
 ### Step 2 · Install
 
@@ -141,7 +143,8 @@ different destinations also fail bootstrap.
 | No | Don't inject `UwtLoggerService`, don't pass `withLogging()`, don't declare `UwtLoggerNames`. A **shell** still binds `{ provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }` — the host requires one |
 
 **Identity** — `application`, `environment`, `version` (plus optional `eventNamespace`, default
-`com.uwt`; leave it unless Step 5 needs it). Reuse the app's environment files where they exist;
+`com.uwt`; leave it unless Step 5 needs it, or this is a fragment: then use the shell's —
+`references/micro-frontends.md`). Reuse the app's environment files where they exist;
 if you derive a value from browser globals (e.g. hostname), guard it — this also runs during server
 rendering:
 

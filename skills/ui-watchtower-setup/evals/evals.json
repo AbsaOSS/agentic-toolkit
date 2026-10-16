@@ -58,7 +58,7 @@
         "Adds provideUwtTelemetryBroadcastHost(channelId) with a random channel id (that does not depend on crypto.randomUUID alone, which needs a secure context) generated once per page load and published as window.__uwtTelemetryChannel, guarded for server rendering",
         "Binds UWT_LOG_API_PROVIDER to UwtNoopLogApiProvider because the README says there is no log backend",
         "Points the credentials provider at GET /api/rum/credentials from the README",
-        "Provides the fragment contract (broadcast sink, lazy UWT_BROADCAST_CHANNEL factory reading window.top, distinct application name, never the RUM sink) as a hand-off rather than editing fragment code",
+        "Provides the fragment contract (broadcast sink, lazy UWT_BROADCAST_CHANNEL factory reading window.top, distinct application name, the shell's eventNamespace (com.uwt by default), never the RUM sink) as a hand-off rather than editing fragment code",
         "Does not install aws-rum-web into any fragment"
       ]
     },
@@ -78,6 +78,7 @@
         "Provides UWT_BROADCAST_CHANNEL with useFactory (lazy), not provideUwtTelemetrySink('broadcast', { channelName }) with an eagerly computed value",
         "Guards the window.top read for server rendering and cross-origin access, and falls back to a private channel nobody hosts — never undefined, which would select the shared default channel",
         "Uses an application name distinct from the shell (e.g. 'cart')",
+        "Sets eventNamespace: 'com.workspace', the shell's value from the README",
         "Does not add provideUwtTelemetryRumSink, UWT_RUM_CREDENTIALS_PROVIDER, provideUwtTelemetryBroadcastHost or UWT_LOG_API_PROVIDER",
         "Does not install aws-rum-web"
       ]

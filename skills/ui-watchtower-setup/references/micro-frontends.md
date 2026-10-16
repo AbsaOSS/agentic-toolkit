@@ -76,6 +76,8 @@ providers: [
   fragment or per navigation.
 - Publish it on `window`, not `sessionStorage` (copied into duplicated tabs) or a query parameter
   (fragments share the shell's `location`).
+- The contract you hand to fragment teams states the shell's `eventNamespace` (`com.uwt` when it
+  sets none) — fragments must use the same one.
 
 ## Fragment — the contract to hand to fragment teams
 
@@ -111,7 +113,12 @@ function shellChannelName(): string {
 }
 
 providers: [
-  provideUwtTelemetry({ application: 'cart', environment, version }), // must differ from the shell
+  provideUwtTelemetry({
+    application: 'cart', // must differ from the shell
+    environment,
+    version,
+    eventNamespace: 'com.uwt' // the shell's — must match
+  }),
   provideUwtTelemetrySink('broadcast'),
   { provide: UWT_BROADCAST_CHANNEL, useFactory: shellChannelName } // lazy — see below
 ];
@@ -123,7 +130,7 @@ channel is read when the sink is created, not when the providers are built.
 **The shell must publish the id before any fragment boots** — the sink reads it once, so an early
 fragment ships nothing for the whole page. The shell code above guarantees this with Web Fragments.
 
-| Must match the shell | `eventNamespace`; the channel name (read from `window.top`); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts |
+| Must match the shell | `eventNamespace` (ask for the shell's value if the shell isn't in this repo; default `com.uwt`); the channel name (read from `window.top`); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts |
 |----------------------|---------------------------------------------------------------------------------------------------------|
 | **Must differ**      | `application` — every forwarded event is stamped with it, which is how fragments are told apart         |
 | **Never provide**    | `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER`, `provideUwtTelemetryBroadcastHost()`, `UWT_LOG_API_PROVIDER` (`'broadcast'` already binds it to the forwarding provider) |
