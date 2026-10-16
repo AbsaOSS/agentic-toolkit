@@ -2,8 +2,8 @@
 name: shared
 description: >
   Internal library — not a task skill. Holds shared Python modules (skills/shared/lib/)
-  and shared reference docs (skills/shared/references/) that other living-doc and BDD
-  skills import or load, e.g. the canonical AC-ID grammar and entity-ID assignment logic.
+  and shared reference docs (skills/shared/references/) that other skills import or load,
+  e.g. the canonical AC-ID grammar, entity-ID assignment logic and the ngx-ui-watchtower API.
   Do not activate this for a user request; it has no standalone behavior of its own.
   Install it alongside any skill whose own SKILL.md names it as a required companion —
   the consuming skill's install instructions list the exact command.

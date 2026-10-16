@@ -1,0 +1,7 @@
+{
+  "name": "marketing-site",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": { "react": "^19.1.0", "react-dom": "^19.1.0" },
+  "devDependencies": { "vite": "^7.0.0", "typescript": "~6.0.2" }
+}

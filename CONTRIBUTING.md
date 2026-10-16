@@ -250,4 +250,4 @@ Before opening a pull request, verify:
 - [ ] New skill's description does not conflict with or shadow existing skills
 - [ ] Skill added to the catalog table in `README.md`
 - [ ] Evals exist (or a note explains why they are not applicable)
-- [ ] `skills-ref validate ./skills/my-skill` passes (install: `pip install skills-ref`)
+- [ ] `uvx --from skills-ref agentskills validate ./skills/my-skill` passes (the `skills-ref` package installs an `agentskills` command and needs Python 3.11+; with pip: `pip install skills-ref`, then `agentskills validate ./skills/my-skill`)
