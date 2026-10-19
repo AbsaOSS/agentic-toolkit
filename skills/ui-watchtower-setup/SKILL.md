@@ -98,6 +98,8 @@ Read before writing anything — extend the app, don't restructure it.
 Ask the user only what the code cannot answer, in one message:
 
 - The `application` name to report (unique per app and per fragment), if not obvious.
+- The **name prefix** for scenario, BI event and logger names (kebab-case, e.g. `customer-portal`):
+  suggest the `application` name or a short form of it, and let the user confirm or change it.
 - **Log backend**: does one exist to send log records to (endpoint, existing service)?
 - **RUM**: the endpoint that returns the RUM app-monitor config and short-lived AWS credentials
   (typically a backend "broker"), or whether RUM is not ready yet (→ `'noop'` for now).
@@ -206,13 +208,20 @@ export const appConfig: ApplicationConfig = {
 
 Copy `assets/telemetry.schema.ts` to the app (e.g. `src/app/telemetry/telemetry.schema.ts`). It
 augments the library's name registries, so scenario, step, BI event (and logger) names become
-compile-checked. Setup declares only the route-navigation names; `ui-watchtower-integration` adds the
-app's own later.
+compile-checked. Replace the template's `my-app` prefix with the one confirmed in Step 1. Setup
+declares only the route-navigation scenario; `ui-watchtower-integration` adds the app's own later.
 
 - A name is a **metric dimension**: a typo or an interpolated id silently starts a second metric
   series. Never build a name from data (`` step(`load-${id}`) `` is wrong).
-- Kebab-case for scenario and step names (`route-navigation`, `customers-load`, `fetch`); snake_case for BI
-  events (`export_clicked`). One JSDoc line per name saying what it measures.
+- **kebab-case only** — never snake_case or a mix (the library's own values, such as the
+  `scenario-start` / `scenario-end` step markers, are kebab-case too):
+  - scenarios `<prefix>-<thing>-<action>`, the action a verb (`my-app-route-navigate`,
+    `my-app-customers-load`);
+  - BI events `<prefix>-<thing>-<past-tense verb>` (`my-app-export-clicked`);
+  - loggers `<prefix>-<area>` (`my-app-checkout`);
+  - steps and aggregates without the prefix — they only appear inside a prefixed scenario —
+    `<action>` or `<thing>-<action>` (`fetch`, `render`, `row-format`).
+- One JSDoc line per name saying what it measures.
 - Keep the side-effect import `import './telemetry/telemetry.schema';` where the providers are
   configured (`app.config.ts` or `AppModule`).
 
@@ -225,7 +234,8 @@ old code sends today is fixed immediately, even if the migration has to wait.
 ### Step 6 · Proof — route-navigation tracking
 
 One real scenario proves the whole pipeline. Copy `assets/route-navigation-telemetry.service.ts`
-next to the schema and add `provideRouteNavigationTelemetry()` next to `provideRouter(...)` (a
+next to the schema, set its `NAVIGATION_SCENARIO` to `<prefix>-route-navigate` (the name declared in
+Step 4; the same in its spec), and add `provideRouteNavigationTelemetry()` next to `provideRouter(...)` (a
 `start()` in the root component would miss a blocking initial navigation). It works unchanged for
 static, `:param`, lazy and redirected routes; a `matcher` route needs
 `data: { telemetryPath: 'files/:path' }`. Keep the asset's behaviour — its comments explain it.
@@ -299,7 +309,7 @@ Run, through the detected package manager, until all are green:
    ```
 
    Each console line is `[<application>][<concern>] …`, and its second argument is the exact object
-   handed to the sink. Confirm one `route-navigation` line per navigation with the right status and a
+   handed to the sink. Confirm one `<prefix>-route-navigate` line per navigation with the right status and a
    template `route`, and that nothing is logged during server rendering. Where
    `withTelemetryEnabled` turns telemetry off, no lines appear — check in an environment where it
    is on, then confirm the off one stays silent.

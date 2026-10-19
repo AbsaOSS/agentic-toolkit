@@ -55,7 +55,7 @@ describe('Customers customers-load scenario', () => {
   }
 
   const loads = () =>
-    events.map((e) => e.payload).filter((p) => p['scenarioName'] === 'customers-load');
+    events.map((e) => e.payload).filter((p) => p['scenarioName'] === 'customer-portal-customers-load');
 
   it('records success with the row count', () => {
     load().request.flush([{ id: '1', name: 'Ada' }]);

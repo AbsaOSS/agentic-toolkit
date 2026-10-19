@@ -40,7 +40,8 @@ export const ROUTE_PAGE_VIEW_RECORDER = new InjectionToken<(route: string) => vo
   'ROUTE_PAGE_VIEW_RECORDER'
 );
 
-const NAVIGATION_SCENARIO = 'route-navigation';
+/** `<prefix>-route-navigate` — replace `my-app` with the app's prefix, as in telemetry.schema.ts. */
+const NAVIGATION_SCENARIO = 'my-app-route-navigate';
 
 /** Beyond this, a recorded click is assumed not to have caused the navigation. */
 const INTENT_MAX_AGE_MS = 2_000;
@@ -148,7 +149,7 @@ interface TrackedNavigation {
 type RedirectCarry = Pick<TrackedNavigation, 'startedAt' | 'redirectedFrom' | 'recorded'>;
 
 /**
- * One `route-navigation` scenario per navigation, recorded when it ends — `route` can't change
+ * One `NAVIGATION_SCENARIO` scenario per navigation, recorded when it ends — `route` can't change
  * after a scenario starts, and only the end knows the final template — or at its timeout if it
  * hasn't ended. Backdated to the click or the first `NavigationStart`. Start it with
  * {@link provideRouteNavigationTelemetry}; call {@link markNavigationIntent} from click handlers

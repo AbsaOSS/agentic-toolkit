@@ -39,8 +39,7 @@ nothing to compare against, even when the cutover itself has to wait for a broke
 | Tool                                                   | Use when                                                         | Result                                                                                                     |
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `eventNamespace` in the identity                       | Existing types differ from the library's only by prefix          | `eventNamespace: 'myapp'` → `myapp.scenario`, `myapp.scenario.step`, `myapp.bi`. Cheapest                  |
-| `track(name, metadata, { eventType: 'legacy.type' })`  | A dashboard needs one specific event type                        | Exact event type; payload becomes the `UwtBIEvent` envelope (`eventName`, `eventTime`, `metadata`, `application`, …). A migration escape hatch, not a pattern |
-| `sink.record(eventType, payload)` (sink injected as a field) | Byte-exact payload parity is required | Raw passthrough, no redaction — never forward free text (an error becomes its name or code). Use sparingly |
+| `sink.record(eventType, payload)` (sink injected as a field) | A dashboard needs a specific event type, or byte-exact payload parity | Raw passthrough, no redaction — never forward free text (an error becomes its name or code). Use sparingly |
 
 If a consumer can be updated instead (a query, a metric filter), prefer moving it to the library's
 event types — record that decision in the table.

@@ -127,7 +127,7 @@ so an `HttpErrorResponse` passed as `error` sends its message, which quotes the 
 
 ```ts
 const scenario = inject(UwtScenarioTelemetryService).start({
-  name: 'load-customers',   // declared in UwtScenarioNames
+  name: 'my-app-customers-load', // declared in UwtScenarioNames
   feature?: 'customers',    // free-form classification (plain string)
   operation?: 'list',       // free-form classification (plain string)
   route?: '/customers/:id', // a TEMPLATE, never a resolved URL
@@ -177,23 +177,22 @@ running. More than 50 active scenarios logs a dev-mode leak warning.
 
 ```ts
 inject(UwtBITelemetryService).track(
-  'export_clicked',                              // declared in UwtBIEventNames
+  'my-app-export-clicked',                       // declared in UwtBIEventNames
   { format: 'csv' },                             // flat metadata
-  { scenarioId: scenario.id, feature: 'reports' } // optional: join to a journey; eventType? override
+  { scenarioId: scenario.id, feature: 'reports' } // optional: join to a journey
 );
 ```
 
-What the sink receives is `record('{ns}.bi', event)` — `com.uwt.bi` by default; the `eventType`
-option replaces the type — with
+What the sink receives is always `record('{ns}.bi', event)` — `com.uwt.bi` by default — with
 
 ```ts
-event = { eventName, eventTime /* ISO string */, metadata?, scenarioId?, feature?, application }
+event = { eventName, eventTime /* ISO string */, metadata?, scenarioId?, feature?, application, sessionId?, userId? }
 ```
 
 The name is in **`eventName`** (not `name`). A test with a recording sink asserts on
 `payload.eventName` and `payload.metadata`.
 
-Identical events (name + scenarioId + eventType + feature + metadata) within 400 ms collapse into
+Identical events (name + scenarioId + feature + metadata) within 400 ms collapse into
 one — no click throttling needed. Type any parameter that carries an event name as `UwtBIEventName`,
 not `string`, or it stops compiling once the registry is augmented.
 
@@ -202,7 +201,7 @@ not `string`, or it stops compiling once the registry is augmented.
 Only with a log backend bound to `UWT_LOG_API_PROVIDER`.
 
 ```ts
-private readonly logger = inject(UwtLoggerService).getLogger('checkout'); // declared in UwtLoggerNames
+private readonly logger = inject(UwtLoggerService).getLogger('my-app-checkout'); // declared in UwtLoggerNames
 
 this.logger.log('Submitting order');
 this.logger.warn('Retrying payment', { metadata: { attempt: 2 } });
@@ -288,7 +287,7 @@ A settled scenario record (abridged):
 
 ```json
 {
-  "scenarioId": "250514ab-…", "scenarioName": "table-page-load", "feature": "table",
+  "scenarioId": "250514ab-…", "scenarioName": "my-app-table-load", "feature": "table",
   "status": "abandoned", "reason": "superseded",
   "startTime": "2026-09-05T11:11:04.211Z", "endTime": "2026-09-05T11:11:04.273Z",
   "delta": 62, "elapsed": 3037, "stepCount": 1,
@@ -353,6 +352,6 @@ providers: [
 
 // expect(events).toEqual([
 //   expect.objectContaining({ eventType: 'com.uwt.scenario',
-//     payload: expect.objectContaining({ scenarioName: 'load-customers', status: 'success' }) })
+//     payload: expect.objectContaining({ scenarioName: 'my-app-customers-load', status: 'success' }) })
 // ]);
 ```

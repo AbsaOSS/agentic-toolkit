@@ -146,7 +146,7 @@ describe('RouteNavigationTelemetryService', () => {
       expect.objectContaining({
         eventType: 'com.uwt.scenario',
         payload: expect.objectContaining({
-          scenarioName: 'route-navigation',
+          scenarioName: 'my-app-route-navigate',
           status: 'success',
           route: '/customers',
           metadata: expect.objectContaining({ resolveMs: expect.any(Number) })

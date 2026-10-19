@@ -52,7 +52,7 @@ export class Customers implements OnInit, OnDestroy {
   private loadScenario?: UwtScenario;
 
   ngOnInit(): void {
-    const scenario = this.scenarios.start({ name: 'customers-load', feature: 'customers' });
+    const scenario = this.scenarios.start({ name: 'customer-portal-customers-load', feature: 'customers' });
     this.loadScenario = scenario;
     scenario.step('fetch');
     this.http.get<Customer[]>('/api/customers').subscribe({

@@ -85,7 +85,7 @@ function safeHttpFailure(error: unknown): UwtScenarioOutcome {
 
 ```ts
 async load(): Promise<void> {
-  const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
+  const scenario = this.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
   try {
     scenario.step('fetch');
     const rows = await firstValueFrom(this.api.customers());
@@ -112,7 +112,7 @@ settle the failure first with `catchError` upstream — the first settle wins:
 ```ts
 loadCustomers(): Observable<Customer[]> {
   return defer(() => {
-    const scenario = this.scenarios.start({ name: 'load-customers', feature: 'customers' });
+    const scenario = this.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
     return this.api.customers().pipe(
       catchError((error) => {
         scenario.fail(safeHttpFailure(error));
@@ -129,7 +129,7 @@ loadCustomers(): Observable<Customer[]> {
 ```ts
 onExportClick(): void { this.clickedAt = Date.now(); /* … */ }
 // later
-this.scenarios.start({ name: 'export-download', startedAt: this.clickedAt });
+this.scenarios.start({ name: 'my-app-export-download', startedAt: this.clickedAt });
 ```
 
 `startedAt` is epoch ms, clamped to the page lifetime; an unusable value falls back to now.
@@ -138,9 +138,9 @@ this.scenarios.start({ name: 'export-download', startedAt: this.clickedAt });
 
 ```ts
 for (const row of rows) {
-  scenario.aggregateStart('format-row');
+  scenario.aggregateStart('row-format');
   format(row);
-  scenario.aggregateEnd('format-row');
+  scenario.aggregateEnd('row-format');
 }
 ```
 
@@ -176,7 +176,7 @@ previous request down before your projector runs, so cancelling it there is too 
 query$.pipe(
   debounceTime(300),
   switchMap((q) => {
-    const scenario = this.scenarios.start({ name: 'search', feature: 'catalogue' });
+    const scenario = this.scenarios.start({ name: 'my-app-catalogue-search', feature: 'catalogue' });
     scenario.step('query');
     return this.api.search(q).pipe(
       catchError((error) => {
@@ -214,8 +214,8 @@ check.
 
 ## 6. BI events
 
-- One event per meaningful action, named `snake_case` in `UwtBIEventNames`.
-- Inside a journey, link it: `track('export_clicked', { format }, { scenarioId: scenario.id })`.
+- One event per meaningful action, declared in `UwtBIEventNames` (naming: §7).
+- Inside a journey, link it: `track('my-app-export-clicked', { format }, { scenarioId: scenario.id })`.
 - Debounce high-frequency sources (search boxes, sliders) before `track()` or before starting a
   scenario — e.g. `debounceTime(400)`; one per settled input, never one per keystroke. Repeated
   identical clicks within 400 ms are already collapsed by the library.
@@ -225,7 +225,14 @@ check.
 
 ## 7. Names, metadata and privacy
 
-- Never interpolate data into a scenario, step or BI name. Put the variable part in metadata, and
+- Names are **kebab-case only**, never snake_case or a mix — like the library's own values
+  (`scenario-start`, `scenario-end`). `my-app` in the examples stands for the app's prefix, which
+  every scenario, BI and logger name starts with:
+  - scenarios `<prefix>-<thing>-<action>`, the action a verb (`my-app-customers-load`);
+  - BI events `<prefix>-<thing>-<past-tense verb>` (`my-app-export-clicked`);
+  - loggers `<prefix>-<area>` (`my-app-checkout`);
+  - steps and aggregates without the prefix: `<action>` or `<thing>-<action>` (`fetch`, `row-format`).
+- Never interpolate data into a scenario, step, BI or logger name. Put the variable part in metadata, and
   only if it is low-cardinality (a format, a tab name, a count) — never a record id or free text.
 - `route` is a template (`/customers/:id`).
 - Metadata: flat `string | number | boolean | null`; max 50 keys across the whole scenario.
@@ -242,10 +249,10 @@ tracked by `ui-watchtower-setup`.
 
 | Scenario          | Steps                          | Settles                                                                                     |
 |-------------------|--------------------------------|---------------------------------------------------------------------------------------------|
-| `<screen>-load`   | `fetch`, `render`              | `complete`; `incomplete({reason:'no-results'})`; `fail(safeHttpFailure(e))`; cancel on destroy/supersede |
-| `<form>-submit`   | `validate`, `submit`           | `complete`; `incomplete({reason:'validation-failed'})`; `fail(safeHttpFailure(e))`         |
-| `file-upload`     | `read`, `upload`, `process`    | `complete({metadata:{fileSize}})`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))` |
-| `export-download` | `request`, `transfer`          | `complete`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))`                 |
+| `<prefix>-<screen>-load` | `fetch`, `render`              | `complete`; `incomplete({reason:'no-results'})`; `fail(safeHttpFailure(e))`; cancel on destroy/supersede |
+| `<prefix>-<form>-submit` | `validate`, `submit`           | `complete`; `incomplete({reason:'validation-failed'})`; `fail(safeHttpFailure(e))`         |
+| `<prefix>-file-upload` | `read`, `upload`, `process`    | `complete({metadata:{fileSize}})`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))` |
+| `<prefix>-export-download` | `request`, `transfer`          | `complete`; `cancel({reason:'user-cancelled'})`; `fail(safeHttpFailure(e))`                 |
 
-BI: `export_clicked`, `filter_applied`, `search_submitted` (debounced), `theme_changed`,
-`sidebar_toggled`, `sign_out_clicked`.
+BI, each after `<prefix>-`: `export-clicked`, `filter-applied`, `search-submitted` (debounced),
+`theme-changed`, `sidebar-toggled`, `sign-out-clicked`.

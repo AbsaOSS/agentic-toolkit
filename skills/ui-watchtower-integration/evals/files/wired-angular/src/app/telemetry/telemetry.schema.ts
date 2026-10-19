@@ -10,7 +10,7 @@
 declare module '@absaoss-cps/ngx-ui-watchtower' {
   interface UwtScenarioNames {
     /** A router navigation, from click to activated route, under the final route template. */
-    'route-navigation': true;
+    'customer-portal-route-navigate': true;
   }
 }
 

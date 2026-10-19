@@ -31,6 +31,7 @@
         "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
         "Creates telemetry.schema.ts augmenting UwtScenarioNames, and side-effect-imports it where the providers are configured",
         "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
+        "Proposes a kebab-case name prefix from the application name (customer-portal) for the user to confirm, and names the route scenario customer-portal-route-navigate in the schema, the service and its spec — no snake_case names",
         "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
         "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
         "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
@@ -190,7 +191,7 @@
       ],
       "expectations": [
         "Builds an inventory table of every existing RUM call: event type, payload keys and consumers (the 'Desk usage' dashboard and 'order-failures' metric filter)",
-        "Chooses an explicit parity tool for the desk.order.* events (eventType override or raw sink.record) instead of silently switching them to com.uwt.bi",
+        "Chooses an explicit parity tool for the desk.order.* events (raw sink.record, or an agreed move of the consumers to com.uwt.bi) instead of silently switching them to com.uwt.bi",
         "Does not delete RumService before the migrated paths are diffed against the inventory",
         "Flags that identityPoolId/guestRoleArn (Cognito) is not supported and a backend credential broker is needed, and asks rather than inventing one",
         "Does not run two RUM clients side by side",

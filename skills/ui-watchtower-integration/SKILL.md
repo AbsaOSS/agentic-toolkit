@@ -63,7 +63,8 @@ in the app's providers. If either is missing, stop and tell the user to run
 
 If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
 
-Read what already exists so this pass only adds: the names in `telemetry.schema.ts`, and their uses
+Read what already exists so this pass only adds: the names in `telemetry.schema.ts` (and the prefix
+they share), and their uses
 (search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
 `traceScenario(`). Note the test runner and package manager. If the app already wraps these services in
 its own telemetry service, list that under "Already instrumented", don't extend it or copy the
@@ -114,20 +115,21 @@ one of their questions) or `suggested` (found in the code). Put the user's items
 Scanned: <routes, components and services read, e.g. "checkout/ (3 components, 2 HTTP calls)">
 Answers: <the user's questions, one line each, or "none given — suggestions only">
 Already instrumented (unchanged): <existing scenario and BI names, or "nothing yet">
+Name prefix: <the prefix the existing names use; if none, one suggested from the application name — confirm it>
 
 ### Scenarios (UwtScenarioTelemetryService)
 | Source | Name | Where (file) | Steps | success when | other outcomes |
 |---|---|---|---|---|---|
-| you | customer-search | customers/customer-search.ts | query | results shown | incomplete: no-results; fail: HTTP error; cancel: superseded/left |
+| you | my-app-customer-search | customers/customer-search.ts | query | results shown | incomplete: no-results; fail: HTTP error; cancel: superseded/left |
 
 ### BI events (UwtBITelemetryService)
 | Source | Name | Where (file) | Metadata (flat, no PII) |
 |---|---|---|---|
-| suggested | export_clicked | customers/customers.ts | format |
+| suggested | my-app-export-clicked | customers/customers.ts | format |
 
 ### Requested but changed or not feasible
 - "<request>" — <why, e.g. raw search text is PII and unbounded> → <alternative, e.g. debounced
-  `search_submitted` with `queryLength` and `resultCount`>
+  `my-app-search-submitted` with `queryLength` and `resultCount`>
 
 ### Deliberately not instrumented
 - <thing> — <why>
@@ -153,8 +155,9 @@ and call it there. Do not create an `AppTelemetryService`, facade, base class or
 both, and do not move the calls into a shared service. Single-purpose helpers are fine (for example
 `safeHttpFailure`); a shared abstraction only if the user explicitly asks.
 
-1. Add every confirmed name to `telemetry.schema.ts` (scenarios and steps kebab-case, BI events
-   snake_case, one JSDoc line each). Never interpolate ids into names.
+1. Add every confirmed name to `telemetry.schema.ts` — kebab-case, scenario, BI and logger names
+   with the prefix (`references/instrumentation-patterns.md` §7), one JSDoc line each. Never interpolate ids
+   into names.
 2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw
    `HttpErrorResponse` (§2, `safeHttpFailure`).
 3. Avoid the RxJS traps (§4) and settle open scenarios on destroy (§5).
