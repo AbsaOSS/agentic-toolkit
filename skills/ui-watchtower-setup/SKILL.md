@@ -193,8 +193,9 @@ export const appConfig: ApplicationConfig = {
   Off means fully inert: no credentials fetch, no RUM SDK download, no broadcast channel, no page
   listeners; app code keeps working unchanged. Never do this by omitting or wrapping providers per
   environment or swapping in `'noop'` — wiring errors would then only show up in some environments,
-  and `'noop'` still times, redacts and listens. In a shell with fragments, see
-  `references/micro-frontends.md`.
+  and `'noop'` still times, redacts and listens. Tests keep telemetry on and don't use
+  `withTelemetryEnabled(false)` — not even in an extra off-path test; the switch is the library's,
+  and it's tested there. In a shell with fragments, see `references/micro-frontends.md`.
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint and adapt
   the response check. It returns `null` (RUM off) for a disabled, incomplete or expired answer
   and throws when the request fails, so a refresh retries instead of ending RUM. It sets

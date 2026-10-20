@@ -66,7 +66,9 @@ If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
 Read what already exists so this pass only adds: the names in `telemetry.schema.ts` (and the prefix
 they share), and their uses
 (search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
-`traceScenario(`). Note the test runner and package manager. If the app already wraps these services in
+`traceScenario(`). Note the test runner and package manager. Existing specs stay untouched, setup
+included (unless they now need the telemetry providers, Step 7) — new tests go in their own
+`describe` with their own setup. If the app already wraps these services in
 its own telemetry service, list that under "Already instrumented", don't extend it or copy the
 pattern, and say so in the proposal; write the new code against the two services directly unless the
 user tells you to follow the wrapper.
@@ -170,7 +172,8 @@ both, and do not move the calls into a shared service. Single-purpose helpers ar
 
 Use a recording sink (API reference, "Testing") and assert what reaches the sink — event type,
 `scenarioName`, `status`, `reason`, metadata — for each outcome the proposal claims (success,
-incomplete, failure with status, abandoned on leave). Specs that render instrumented components need
+incomplete, failure with status, abandoned on leave). Don't claim `timeout` as an outcome — it's the
+library's safety net for a missed settle, not something the code settles. Specs that render instrumented components need
 the telemetry providers or they fail with `NG0201`. Check one test bites: remove its settle call,
 confirm it fails, restore.
 

@@ -61,7 +61,8 @@ vocabulary, route tracking and tests are in place). The cutover is one change, i
 1. **Stop the old client** — remove whatever runs `RumService.init()` / `new AwsRum` (usually an
    `APP_INITIALIZER`), and its page-view subscription.
 2. **Wire the new destination** — replace `'noop'` with `provideUwtTelemetryRumSink()`, the
-   credentials provider and the page-view recorder.
+   credentials provider (with `disableAutoPageView: true` in the app monitor config) and the
+   page-view recorder. Write both into the cutover plan you hand over.
 3. **Turn the old service into an adapter** — inject `UwtTelemetrySink` (and the BI / scenario
    services) as fields, and point each remaining method at the library: the migrated call, or
    `this.sink.record(…)` for rows that need byte parity. Then move call sites to the library one at
