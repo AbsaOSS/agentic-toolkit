@@ -229,24 +229,22 @@
         "Reads the app's @angular/core version (^24) from package.json",
         "Reads the library's supported Angular range from the registry (npm view @absaoss-cps/ngx-ui-watchtower peerDependencies or equivalent) instead of assuming one",
         "Concludes that Angular 24 is outside the supported range",
-        "Does not install the package, add providers or change any project file",
-        "Does not suggest or use --force or --legacy-peer-deps",
-        "Tells the user the library doesn't support this Angular version yet, and what would unblock it (a library release that supports it)"
+        "Stops without installing the package, adding providers or changing any project file, and tells the user the library doesn't support this Angular version yet and what would unblock it (a library release that supports it)",
+        "Does not suggest or use --force or --legacy-peer-deps"
       ]
     },
     {
       "id": "negative-non-angular",
       "category": "negative",
       "prompt": "Add ngx-ui-watchtower telemetry to our marketing site. The project is in evals/files/react-app.",
-      "expected_output": "Skill detects a React app, explains that the library is Angular-only, and does not install or wire anything.",
+      "expected_output": "Guard eval: checks the skill doesn't misfire on a non-Angular app, so a run without the skill is expected to pass too. Skill detects a React app, explains that the library is Angular-only, and does not install or wire anything.",
       "files": [
         "evals/files/react-app/package.json",
         "evals/files/react-app/src/main.tsx"
       ],
       "expectations": [
         "Detects that the app is React, not Angular",
-        "States that @absaoss-cps/ngx-ui-watchtower is for Angular applications only",
-        "Does not install the package or modify any file"
+        "Stops without installing the package or changing any project file, and states that @absaoss-cps/ngx-ui-watchtower is for Angular applications only"
       ]
     }
   ]

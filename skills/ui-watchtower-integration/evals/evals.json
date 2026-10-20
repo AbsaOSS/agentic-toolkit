@@ -27,7 +27,7 @@
       ],
       "expectations": [
         "Checks that the library is installed and wired (package, providers, destination) before anything else",
-        "Asks the user, before proposing, what the telemetry should answer \u2014 covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
+        "Asks the user, before proposing, what the telemetry should answer — covering at least the questions to answer, the important journeys and what counts as success, and anything that must not be tracked",
         "Presents a proposal whose items have a Source column distinguishing items the user asked for from suggested ones (here all suggested, and says so)",
         "Waits for confirmation before implementing (implements only after the assumed confirmation)",
         "Does not add a second route-navigation scenario or change the existing wiring",
@@ -93,11 +93,12 @@
         "evals/files/wired-angular/tsconfig.spec.json"
       ],
       "expectations": [
-        "Lists both requests under a 'requested but changed / not feasible' section with the reason for each",
+        "The proposal has a 'Requested but changed or not feasible' section that lists both requests, each with its reason",
         "Does not send the typed text: the search event is debounced and carries only low-cardinality data such as query length or result count",
         "Does not interpolate the customer id into any scenario, step or BI name, and does not put the raw id in metadata",
         "Offers an alternative that still answers the user's question (e.g. one scenario name with the route template, percentiles by delta computed AWS-side)",
-        "Implements only the changed versions, after the assumed confirmation"
+        "Implements only the changed versions, after the assumed confirmation",
+        "Adds tests with a recording sink that assert each outcome of the search telemetry"
       ]
     },
     {
@@ -138,7 +139,7 @@
       "id": "re-run-adds-only",
       "category": "regression",
       "prompt": "Add telemetry for the customer list screen. The project is in evals/files/wired-instrumented-angular.",
-      "expected_output": "Skill reads the existing schema and instrumentation, recognises that customer-portal-customers-load is already measured, and proposes only additions for the screen (e.g. export, search) \u2014 each with a Source label \u2014 without a second load scenario or changes to the existing one; new names go into the existing schema, with tests.",
+      "expected_output": "Skill reads the existing schema and instrumentation, recognises that customer-portal-customers-load is already measured, and proposes only additions for the screen (e.g. export, search) — each with a Source label — without a second load scenario or changes to the existing one; new names go into the existing schema, with tests.",
       "files": [
         "evals/files/wired-instrumented-angular/angular.json",
         "evals/files/wired-instrumented-angular/package.json",
@@ -181,8 +182,7 @@
       ],
       "expectations": [
         "Detects that the library is not installed or wired (no package, no providers)",
-        "Stops and points the user to the ui-watchtower-setup skill",
-        "Does not install packages, add providers or instrument any code"
+        "Stops at the setup check (no goal questions, no proposal table, no code changes) and points the user to the ui-watchtower-setup skill; a short preview of what comes after setup is fine"
       ]
     },
     {
