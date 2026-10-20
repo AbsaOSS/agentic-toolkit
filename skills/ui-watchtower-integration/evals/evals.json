@@ -180,7 +180,7 @@
         "evals/files/unwired-angular/src/app/customers/customers.ts"
       ],
       "expectations": [
-        "Detects that the library is not installed or wired (no package, no providers, no schema)",
+        "Detects that the library is not installed or wired (no package, no providers)",
         "Stops and points the user to the ui-watchtower-setup skill",
         "Does not install packages, add providers or instrument any code"
       ]
