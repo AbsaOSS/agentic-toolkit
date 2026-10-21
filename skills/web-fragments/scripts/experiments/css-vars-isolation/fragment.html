@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>css-vars-isolation fragment</title>
+		<style>
+			/* Does :root match anything inside a shadow tree? (hypothesis: no) */
+			:root {
+				--brand: rgb(128, 0, 128); /* purple — attempt to override the host brand */
+			}
+			/* :host targets the shadow host; vars defined here inherit to fragment descendants */
+			:host {
+				--host-accent: rgb(255, 165, 0); /* orange */
+			}
+			/* Fragment's own cascade layers — independent ordering from the host */
+			@layer base, theme;
+			@layer base {
+				.flayered {
+					color: rgb(0, 0, 255);
+				} /* blue */
+			}
+			@layer theme {
+				.flayered {
+					color: rgb(0, 128, 0);
+				} /* green wins if layers are tree-scoped */
+			}
+			.fbrand {
+				color: var(--brand); /* host red (inherited) or fragment purple (:root)? */
+			}
+			.faccent {
+				color: var(--host-accent, rgb(0, 0, 0)); /* orange if :host vars apply */
+			}
+		</style>
+	</head>
+	<body>
+		<h2>css-vars-isolation fragment</h2>
+		<p id="frag-brand" class="fbrand">FRAG brand var (red=inherited, purple=:root won)</p>
+		<p id="frag-accent" class="faccent">FRAG :host accent (expect orange)</p>
+		<p id="frag-layered" class="flayered">FRAG layered (expect green)</p>
+		<p id="frag-font">FRAG font (Georgia if host body font leaks in)</p>
+		<p id="frag-leak" class="leak-class">FRAG host-class leak (expect black, NOT magenta)</p>
+	</body>
+</html>

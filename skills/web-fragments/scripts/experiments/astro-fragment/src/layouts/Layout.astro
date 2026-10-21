@@ -1,0 +1,38 @@
+---
+import { ClientRouter } from 'astro:transitions';
+const { title } = Astro.props;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <ClientRouter />
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1rem; }
+      nav a { margin-right: 1rem; }
+      .marker { color: rebeccapurple; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <h2>Astro fragment — <span transition:name="page-title">{title}</span></h2>
+    <nav>
+      <a href="/astro/">Home</a>
+      <a href="/astro/page2/">Page 2</a>
+    </nav>
+    <slot />
+    <p class="marker" id="nav-count">navigations: <span id="count">0</span></p>
+    <script>
+      // Count client-router page swaps. A full reload resets this to 0;
+      // a successful SPA navigation increments it (state survives the swap via sessionStorage).
+      const n = Number(sessionStorage.getItem('wf-astro-nav') || '0');
+      const el = document.getElementById('count');
+      if (el) el.textContent = String(n);
+      document.addEventListener('astro:after-swap', () => {
+        const next = Number(sessionStorage.getItem('wf-astro-nav') || '0') + 1;
+        sessionStorage.setItem('wf-astro-nav', String(next));
+        const e2 = document.getElementById('count');
+        if (e2) e2.textContent = String(next);
+      });
+    </script>
+  </body>
+</html>

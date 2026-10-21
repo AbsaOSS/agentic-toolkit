@@ -1,0 +1,74 @@
+---
+const { site } = Astro.props;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>smooth {site}</title>
+    <!-- ALL styles loaded ONCE here, identical on every page, never swapped.
+         Per-site rules are scoped by [data-site]; only #content (with its data-site) is
+         swapped on navigation, so <head> never changes => no #297 accumulation. -->
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1rem; }
+      nav a { margin-right: 1rem; }
+      #content { view-transition-name: wf-content; }
+      [data-site="a"] #site-name { color: rgb(255,0,0); background: rgb(255,230,230); }
+      [data-site="b"] #site-name { color: rgb(0,128,0); border-bottom: 4px solid rgb(0,128,0); }
+      [data-site="c"] #site-name { color: rgb(0,0,255); font-style: italic; }
+      ::view-transition-old(wf-content),
+      ::view-transition-new(wf-content) { animation-duration: 300ms; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/astro/smooth/a/">A</a>
+      <a href="/astro/smooth/b/">B</a>
+      <a href="/astro/smooth/c/">C</a>
+      <a href="/not-a-fragment/page" id="ext-link">OutOfNamespace</a>
+    </nav>
+    <span id="vt-flag" hidden></span>
+    <main id="content" data-site={site}>
+      <h2><span id="site-name">Site {site}</span></h2>
+      <p class="body-copy">Content for site {site}.</p>
+    </main>
+
+    <script is:inline>
+      // Minimal in-fragment content swap. Stays inside the fragment (preventDefault on
+      // links), never mutates <head>, and animates via the same-document View Transition
+      // API when available (graceful fallback to an instant swap otherwise).
+      async function navigate(url, push) {
+        let html;
+        try { html = await (await fetch(url)).text(); }
+        catch { location.href = url; return; }
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const next = doc.querySelector('#content');
+        const cur = document.querySelector('#content');
+        if (!next || !cur) { location.href = url; return; }
+        const swap = () => cur.replaceWith(next);
+        if (typeof document.startViewTransition === 'function') document.startViewTransition(swap);
+        else swap();
+        if (push) history.pushState({}, '', url);
+      }
+      // OPT-OUT: intercept ALL internal links, fall through for everything that shouldn't soft-swap.
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        if (e.defaultPrevented) return;
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new tab/window
+        if (a.target && a.target !== '_self') return;          // target="_blank" etc.
+        if (a.hasAttribute('download')) return;
+        if (a.getAttribute('rel') === 'external') return;
+        const url = new URL(a.href, location.href);
+        if (url.origin !== location.origin) return;            // external site
+        if (!url.pathname.startsWith('/astro/')) return;       // outside THIS fragment's routes
+        if (url.pathname === location.pathname && url.hash) return; // same-page anchor
+        e.preventDefault();
+        navigate(url.pathname + url.search, true);
+      });
+      window.addEventListener('popstate', () => navigate(location.pathname, false));
+      // expose VT availability into the DOM (readable across the shadow boundary)
+      var vf = document.getElementById('vt-flag');
+      if (vf) vf.textContent = String(typeof document.startViewTransition === 'function');
+    </script>
+  </body>
+</html>
