@@ -25,3 +25,4 @@ jobs:
           check-title: "true"
           check-description: "true"
           check-issue-reference: "true"
+          title-formats: "conventional,issue-number"
