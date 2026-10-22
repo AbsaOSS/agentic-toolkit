@@ -51,21 +51,21 @@ Store at `.github/agents/evals/<agent-name>/evals.json`. Same schema as skill ev
   "agent_name": "my-agent",
   "evals": [
     {
-      "id": "business-seed-assembly",
-      "prompt": "I want to set up BDD automation for our app at https://app.example.com. The Angular router is at src/app/app-routing.module.ts.",
-      "expected_output": "Agent assembles seed.yaml from the router file, proposes base_url, lists known_routes, confirms credential env var names before crawling.",
-      "files": ["src/app/app-routing.module.ts"]
+      "id": "release-config-assembly",
+      "prompt": "I want to set up releases for this repository. Versions are in pyproject.toml.",
+      "expected_output": "Agent reads the current version from pyproject.toml, proposes the release config, lists the branch and tag naming it will use, confirms the token env var name before touching the remote.",
+      "files": ["pyproject.toml"]
     },
     {
-      "id": "re-scan-stale-locator",
-      "prompt": "RE-SCAN — the checkout page was redesigned.",
-      "expected_output": "Agent loads manifest.json, navigates to /checkout, validates component_id locators, flags stale ones, updates PageObject selectors. Does NOT touch unrelated pages.",
-      "files": ["manifest.json"]
+      "id": "changelog-mode-dispatch",
+      "prompt": "CHANGELOG — assemble notes for 2.4.0.",
+      "expected_output": "Agent loads the merged pull requests since the 2.3.0 tag, groups them by label, drafts the notes. Does NOT create the tag or push anything.",
+      "files": ["CHANGELOG.md"]
     },
     {
-      "id": "healing-scope",
-      "prompt": "HEALING — these 3 scenarios are failing: LoginPage submit, CheckoutPage confirm, DashboardPage filter.",
-      "expected_output": "Agent scopes work to those 3 failing tests only. Does not re-run or touch passing tests.",
+      "id": "hotfix-scope",
+      "prompt": "HOTFIX — only these 2 pull requests go into 2.3.1: #418 and #421.",
+      "expected_output": "Agent scopes the release to those 2 pull requests only. Does not pick up other merged work on the branch.",
       "files": []
     }
   ]
@@ -77,8 +77,8 @@ Store at `.github/agents/evals/<agent-name>/evals.json`. Same schema as skill ev
 When testing your agent, manually invoke it with `@agent-name` using the prompts from `evals.json`:
 
 ```
-@my-agent I want to set up BDD automation for our app at https://app.example.com. 
-The Angular router is at src/app/app-routing.module.ts.
+@my-agent I want to set up releases for this repository.
+Versions are in pyproject.toml.
 ```
 
 Verify the output against the `expected_output` field. Repeat for each eval case until all pass.
@@ -86,7 +86,7 @@ Verify the output against the `expected_output` field. Repeat for each eval case
 **What to validate:**
 
 1. All body-referenced tools are present in the frontmatter `tools:` list
-2. Mode dispatch (e.g., RE-SCAN, HEALING) activates correctly when mode keywords appear in the prompt
+2. Mode dispatch (e.g., CHANGELOG, HOTFIX) activates correctly when mode keywords appear in the prompt
 3. Scope boundaries match the `## Scope` and `## Does NOT` sections
 4. Handoff targets are correct when the agent needs to delegate work
 
@@ -109,7 +109,7 @@ When body evals reveal a section is wrong (wrong scope, missing tool, bad handof
 | Check | Good signal | Bad signal |
 |---|---|---|
 | **Scope boundaries** | Refuses work outside its Does-NOT list | Silently attempts work outside its scope |
-| **Mode activation** | RE-SCAN / HEALING / REMOVE activate on correct triggers | Wrong mode fires, or modes don't activate |
+| **Mode activation** | CHANGELOG / HOTFIX / PUBLISH activate on correct triggers | Wrong mode fires, or modes don't activate |
 | **Handoff clarity** | Outputs correct hand-off message to the right agent | Hands off to wrong agent or swallows the work |
 | **Tool completeness** | All tools needed by the body are in the frontmatter `tools:` list | Body references a tool not in `tools:` — it will be unavailable |
 | **Description clarity** | Description field clearly explains agent purpose and usage | Description is vague or misleading about scope |
@@ -124,11 +124,10 @@ Since the `description:` field is documentation-only (not an activation trigger)
 
 ```yaml
 description: >
-  Lifecycle for living documentation and BDD automation.
-  Create/update User Stories, Features, Functionalities; generate Gherkin scenarios;
-  scan webapp for PageObjects; manage test artifacts.
-  Use @-mention: @living-doc-bdd-copilot COMMAND.
-  NOT for: unit tests, production code, security/perf review.
+  Release engineering for this repository: cut a release branch, assemble the changelog
+  from merged pull requests, check version numbers and tags, draft the release notes.
+  Use @-mention: @release-agent COMMAND.
+  NOT for: writing code, reviewing diffs, CI configuration, dependency bumps.
 ```
 
 **Bad patterns:**
@@ -140,14 +139,13 @@ description: >
 
 # BAD — talks about auto-triggering (agents use @-mention only)
 description: >
-  Automatically activated when you describe BDD tasks.
+  Automatically activated when you describe a release task.
 
-  Living documentation catalog (User Stories, Features, Functionalities, ACs, impact
-  analysis, gap finding) and BDD automation (Playwright crawl/explore/scan, PageObjects
-  create/heal, Gherkin scenarios/feature files/step definitions, living-doc sync,
-  scenario coverage). Setup: seed.yaml → manifest.json, credential checks, guided
-  traversal. NOT for: unit tests, production code, API specs, CI/CD, debugging,
-  performance, security.
+  Release engineering (release branches, changelog assembly from merged pull requests,
+  version numbers, tags, draft release notes, publishing checks, post-release
+  verification, hotfix branches, rollback procedure). Setup: release config, credential
+  checks, guided walkthrough. NOT for: writing code, reviewing diffs, CI configuration,
+  dependency bumps, debugging, performance, security.
 ```
 
 The `NOT for:` clause is as important as the positive terms — it prevents the agent from firing on adjacent-but-out-of-scope requests. An explicit `Triggers:` keyword list is not required; structured domain nouns and verbs are sufficient for the matching mechanism to work.
@@ -163,7 +161,7 @@ Repeat until all body evals pass:
 3. If output doesn't match, identify the root cause:
    - **Wrong tool?** — add the missing tool to the `tools:` list in the frontmatter
    - **Wrong scope?** — update the `## Scope` or `## Does NOT` section
-   - **Mode didn't activate?** — fix the mode dispatch logic (e.g., RE-SCAN, HEALING keywords)
+   - **Mode didn't activate?** — fix the mode dispatch logic (e.g., CHANGELOG, HOTFIX keywords)
    - **Bad handoff?** — correct the `## Handoff` section
 4. Edit the `.agent.md` file directly with the fix
 5. Re-run that eval case

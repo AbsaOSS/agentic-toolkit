@@ -1,9 +1,8 @@
 ---
 name: shared
 description: >
-  Internal library — not a task skill. Holds shared Python modules (skills/shared/lib/)
-  and shared reference docs (skills/shared/references/) that other skills import or load,
-  e.g. the canonical AC-ID grammar, entity-ID assignment logic and the ngx-ui-watchtower API.
+  Internal reference bundle — not a task skill. Holds shared reference docs
+  (skills/shared/references/) that other skills load, including the ngx-ui-watchtower API.
   Do not activate this for a user request; it has no standalone behavior of its own.
   Install it alongside any skill whose own SKILL.md names it as a required companion —
   the consuming skill's install instructions list the exact command.
@@ -22,10 +21,5 @@ npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill <dependent-
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
 ```
 
-Each dependent skill's own `sys.path` lookup (`Path(__file__).parent.parent.parent / "shared" / "lib"`)
-is a relative sibling path, not a repo-absolute one — installing both skills into the same
-skills root is what makes the import resolve after a standalone (single-skill) install.
-
-See [lib/README.md](lib/README.md) for the module list (`living_doc_id.py`, `ac_tag.py`) and
-the import pattern each consumer follows, and [references/](references/) for the shared
-schemas and glossary docs.
+Dependent skills load the references they need from this sibling directory. See
+[references/](references/) for the shared API documentation.
