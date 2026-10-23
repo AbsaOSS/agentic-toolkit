@@ -198,7 +198,8 @@ export const appConfig: ApplicationConfig = {
   and it's tested there. In a shell with fragments, see `references/micro-frontends.md`.
 - Credentials: copy `assets/rum-credentials.provider.ts`, point it at the broker endpoint and adapt
   the response check. It returns `null` (RUM off) for a disabled, incomplete or expired answer
-  and throws when the request fails, so a refresh retries instead of ending RUM. It sets
+  and throws when the request fails, so the library retries — at startup and on refresh —
+  instead of ending RUM. It sets
   `disableAutoPageView: true` (page views come from Step 6). Don't write an initializer — the sink
   calls it. It uses `fetch`; switch to `HttpClient` if an interceptor adds the broker's auth.
 - **User identity** (only when the app has sign-in): inject `UwtTelemetrySink` as a field of the

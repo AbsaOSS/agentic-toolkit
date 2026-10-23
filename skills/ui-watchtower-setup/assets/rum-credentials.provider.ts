@@ -132,9 +132,9 @@ function hasStrings<K extends string>(
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
    * `null` (RUM off for the session) when the broker turns RUM off or answers with anything
-   * incomplete, malformed or expired. A failed request throws instead: on a refresh the library
-   * then keeps the current credentials and retries in 30 s, where `null` would end RUM for the
-   * session. At startup both just leave RUM off.
+   * incomplete, malformed or expired. A failed request throws instead, and the library retries
+   * every 30 s — at startup up to 10 times, and on a refresh with the current credentials kept —
+   * where `null` would end RUM for the session.
    */
   async load(): Promise<UwtRumBootstrap | null> {
     const response = await fetch(RUM_BROKER_URL, {
