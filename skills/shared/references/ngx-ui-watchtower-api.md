@@ -305,8 +305,8 @@ A settled scenario record (abridged):
 
 `delta` is the duration; `elapsed` is a timeline position (ms since page load), and `sessionElapsed`
 one in the RUM session (ms since the session started — it survives reloads; absent until the
-session's start is known). `scenario-start` /
-`scenario-end` are written by the library and don't count toward `stepCount`. `sessionId` / `userId`
+session's start is known, and always absent with `suppressSessionStartEvent` or cookies off).
+`scenario-start` / `scenario-end` are written by the library and don't count toward `stepCount`. `sessionId` / `userId`
 appear once the RUM client has started and a user is signed in.
 
 ## 10. Debug flags
