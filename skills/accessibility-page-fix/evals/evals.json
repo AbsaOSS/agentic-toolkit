@@ -1,0 +1,212 @@
+{
+  "skill_name": "accessibility-page-fix",
+  "evals": [
+    {
+      "id": "happy-path-fix-given-page",
+      "category": "happy-path",
+      "prompt": "Fix the accessibility issues on the orders page. It is the static page in evals/files/sample-page/index.html. Target WCAG 2.2 AA.",
+      "expected_output": "Skill opens the given page, runs axe on it, walks it by keyboard, fixes the root causes with native elements (real buttons/links, names, language, landmarks, heading, visible focus, contrast, status role), re-runs the checks until clean, and ends with a short report.",
+      "files": [
+        "evals/files/sample-page/index.html"
+      ],
+      "expectations": [
+        "Works only on the page the user named and does not audit other pages",
+        "Runs an axe scan with the wcag2a/wcag2aa/wcag21a/wcag21aa/wcag22a/wcag22aa/best-practice tags before changing code and keeps the results",
+        "Does a manual keyboard walk (Tab order, focus visibility, Enter/Space) and does not rely on axe alone",
+        "Replaces clickable div/span elements with real <button> or <a href> elements instead of only adding role and tabindex",
+        "Gives icon-only controls accessible names and the logo image an alt attribute",
+        "Adds html lang, a main landmark and a real heading for the page title",
+        "Restores a visible :focus-visible indicator instead of leaving outline: none",
+        "Fixes the low-contrast hint text using a color with at least 4.5:1 contrast",
+        "Gives the status message a role=status (or aria-live=polite) rather than role=alert",
+        "Does not disable axe rules, hide problems with aria-hidden, or change page behaviour",
+        "Re-runs the scan after fixing and confirms no violations remain",
+        "Ends with a report covering what was found, what was fixed, what remains, and visual changes",
+        "Gives the placeholder-only inputs accessible names (for example aria-label containing the placeholder text) and sensible autocomplete values instead of autocomplete=off on the PIN/search fields where a token applies",
+        "Uses the bundled scripts or equivalent checks to run the keyboard walk and the 200% text-size check, and notices that the fixed-width search input clips its long placeholder at 200%",
+        "Replaces the fixed px input width with a relative size (rem/em/%) or lets it grow",
+        "Treats the disabled Apply button as an observation in the report instead of changing its behaviour",
+        "Proves the new tests catch the problems: reverts the fix, sees the tests fail, restores it, sees them pass",
+        "Searches for existing helpers (such as a screen-reader-only class) before adding new CSS helpers"
+      ]
+    },
+    {
+      "id": "page-given-as-route-needs-resolving",
+      "category": "input-handling",
+      "prompt": "Can you make the /orders page in this app WCAG AA compliant? Use the static page in evals/files/sample-page as the app.",
+      "expected_output": "Skill resolves the route to the page, confirms how to open it, lists the page states to scan, and proceeds with scan, fix and verify for that page only.",
+      "files": [
+        "evals/files/sample-page/index.html"
+      ],
+      "expectations": [
+        "Resolves the named route to something it can open before scanning",
+        "Lists the states of the page that need scanning (for example default, menu open, status message shown)",
+        "Does not claim the page is fully compliant; states what was and was not tested"
+      ]
+    },
+    {
+      "id": "no-page-given-asks",
+      "category": "input-handling",
+      "prompt": "Fix the accessibility problems in our app.",
+      "expected_output": "Skill asks which page to work on instead of auditing the whole app.",
+      "files": [],
+      "expectations": [
+        "Asks the user to name the page, route or component to fix",
+        "Does not start changing code across the whole app"
+      ]
+    },
+    {
+      "id": "incomplete-results-resolved-by-hand",
+      "category": "edge",
+      "prompt": "The accessibility scan of the orders page (evals/files/sample-page/index.html) shows a color-contrast 'incomplete' for the hint text and the status box. Resolve it properly.",
+      "expected_output": "Skill treats incomplete as a manual check: measures real contrast against the actual backgrounds, fixes or documents the result, and does not disable the rule.",
+      "files": [
+        "evals/files/sample-page/index.html"
+      ],
+      "expectations": [
+        "Computes contrast against the actual background color rather than assuming white",
+        "Fixes colors that fail or records why they pass",
+        "Does not exclude or disable the color-contrast rule to clear the warning"
+      ]
+    },
+    {
+      "id": "shared-component-blast-radius",
+      "category": "edge",
+      "prompt": "On the orders page, the card actions menu button is built by a shared component used on six other pages. It needs an accessible name and aria-expanded. Fix it.",
+      "expected_output": "Skill fixes the shared component at its root, searches for every consumer, checks they are not broken, and lists the shared code and other pages in the report.",
+      "files": [],
+      "expectations": [
+        "Searches for all uses of the shared component before changing it",
+        "Runs or checks the tests and views for the other consumers after the change",
+        "Lists the shared component and the other affected pages in the report"
+      ]
+    },
+    {
+      "id": "negative-infra-setup",
+      "category": "negative",
+      "prompt": "Set up Playwright and axe-core in our app so we can run accessibility tests.",
+      "expected_output": "Skill does not trigger; the infrastructure setup skill applies instead.",
+      "files": [],
+      "expectations": [
+        "Does not start fixing page-level issues",
+        "Points to or defers to the accessibility infrastructure setup"
+      ]
+    },
+    {
+      "id": "same-component-page-and-dialog",
+      "category": "edge",
+      "prompt": "Our sign-in form component is shown as a full page at /login and, when the session is about to expire, inside a 'Please sign in again' dialog on top of any other page. Fix its accessibility on the login page.",
+      "expected_output": "Skill lists both contexts, adds main/h1 only for the page context (not inside the dialog), scans the dialog separately with the scan scoped to the dialog, and reaches the dialog state by mocking a short token lifetime.",
+      "files": [],
+      "expectations": [
+        "Identifies the page and the dialog as separate contexts that both need scanning",
+        "Adds a main landmark and h1 only in the page context, avoiding a second main/h1 inside the dialog",
+        "Scans the dialog with the axe scan limited to the dialog element so the page behind it adds no findings",
+        "Reaches the dialog state by intercepting the sign-in request and returning a token that expires soon, rather than waiting or editing production code",
+        "Reaches the failed-sign-in message state by mocking a failing request and checks whether the notification already announces itself before adding a live region"
+      ]
+    },
+    {
+      "id": "text-over-background-image-incomplete",
+      "category": "edge",
+      "prompt": "axe flags color-contrast as 'incomplete' for white text over our gradient hero banner on the /pricing page. Resolve it.",
+      "expected_output": "Skill measures the real contrast against sampled background pixels, reports the worst case, and fixes or records the result without disabling the rule.",
+      "files": [],
+      "expectations": [
+        "Samples the real background pixels behind the text (hiding the text first) instead of assuming a flat color",
+        "Samples inside the element, away from its border, and reports the worst-case ratio against 4.5:1 (or 3:1 for large text)",
+        "Fixes the color or overlay when the worst case fails, otherwise documents it as verified",
+        "Does not disable or exclude the color-contrast rule"
+      ]
+    },
+    {
+      "id": "authenticated-page-needs-login-state",
+      "category": "input-handling",
+      "prompt": "Fix the accessibility of the /account/settings page. It needs a login and the backend is not available in my environment.",
+      "expected_output": "Skill sets up a mocked, logged-in state (storage state or request interception) inside test or local-dev code only, then scans, walks and fixes the page.",
+      "files": [],
+      "expectations": [
+        "Does not hard-code real credentials or put mocks in production code",
+        "Uses request interception and a saved login state (or the project's existing test login) to render the page",
+        "Lists the page's states before scanning"
+      ]
+    },
+    {
+      "id": "list-page-popups-sticky-footer-reflow",
+      "category": "edge",
+      "prompt": "Fix the accessibility of the /projects list page. It has a search box, a sort dropdown, a card per project with a version dropdown and a 'More actions' menu button, and a sticky paginator at the bottom. The dropdowns and menus come from our UI library and open at the end of <body>. The whole app has a fixed top bar and a left sidebar.",
+      "expected_output": "Skill names repeated controls per item, scans popups separately with region disabled only for them, fixes focus hidden by the sticky paginator, makes the app shell reflow at 320 px without changing the desktop layout, and proves this with screenshots.",
+      "files": [],
+      "expectations": [
+        "Gives each card's version dropdown and menu button a name that contains the visible text and the project name, not one shared name",
+        "Adds aria-haspopup and aria-expanded to the menu button, opens the menu with the keyboard, and confirms focus moves into it and returns on Esc",
+        "Scans the page with the open popup excluded and the popup alone with only the region rule disabled, instead of disabling region for the whole page",
+        "Checks focus near the sticky paginator and fixes hidden focus with scroll-padding or scroll-margin",
+        "Checks the page at 320 px, finds that the fixed shell blocks reflow, and changes the shell only below a breakpoint",
+        "Compares desktop screenshots of this page and at least one other page using the shell before and after, and confirms they are identical",
+        "Lists the shell and other shared components as shared code in the report",
+        "Checks the UI library's exports for accessibility services (focus management, live announcer, root font size) and uses them, through their injection tokens where available, instead of writing local equivalents"
+      ]
+    },
+    {
+      "id": "brand-color-fails-on-several-backgrounds",
+      "category": "edge",
+      "prompt": "axe flags color-contrast on our orange outlined buttons and on orange text in a dropdown whose options have a light highlight on hover and selection. The orange is our brand color. Fix it.",
+      "expected_output": "Skill tests replacement tokens against every background the color appears on, including hover, selected and highlighted states, picks existing tokens where possible, and flags any new color for the design owner.",
+      "files": [],
+      "expectations": [
+        "Lists every background the color is used on, including hover, selected and highlighted states, not only white",
+        "Computes the contrast ratio of each candidate against each of those backgrounds",
+        "Prefers an existing design token, and uses a different shade per background if no single one passes everywhere",
+        "Defines any new color as a named token next to the existing ones and flags it for the design owner",
+        "Lists the color change as an intended visual change in the report"
+      ]
+    },
+    {
+      "id": "dialogs-at-large-text-and-narrow-screens",
+      "category": "edge",
+      "prompt": "Fix the accessibility of the /reports page, including its 'Export' dialog (opened from a button, 760px wide, with a two-step stepper) and its 'Add filter' dialog (fixed 990x270 px).",
+      "expected_output": "Skill checks each dialog at 200% text and 320 px wide, finds text that does not grow and a dialog wider than the screen, fixes the sizes in rem and lets the steps wrap, and proves other pages using shared styles are unchanged.",
+      "files": [],
+      "expectations": [
+        "Opens each dialog and runs the 200% text and 320 px checks on it, not only on the page",
+        "Compares font sizes before and after doubling the root font size and lists text that stays the same size",
+        "Checks that the dialog fits the screen width instead of only checking that its controls can be scrolled into view",
+        "Replaces px dialog sizes, button sizes and font sizes with rem, and makes a fixed dialog height grow with the text",
+        "Wraps a stepper or tab row that cannot fit 320 px onto more rows below a breakpoint",
+        "When changing a shared or global stylesheet, compares screenshots of the other pages that use it and lists it as shared code"
+      ]
+    },
+    {
+      "id": "failure-states",
+      "category": "edge",
+      "prompt": "Check that the accessibility work on the /projects page covers every failure state that can appear on it (requests failing, validation errors in its dialogs). Ignore the app's shared error page.",
+      "expected_output": "Skill lists the page's requests and their error handlers, checks app-wide error handling first, mocks each failure, scans each resulting state with notifications open, and fixes timing, contrast and announcement problems.",
+      "files": [],
+      "expectations": [
+        "Lists the requests made by the page, its child components and its dialogs, and what each error handler shows",
+        "Checks app-wide error handling (interceptors) and leaves failures that go to the shared error page out of scope",
+        "Mocks each failure with a server error or not-found response inside the tests and scans each resulting state",
+        "Scans with the error notification open and checks it stays long enough to read (WCAG 2.2.1)",
+        "Checks focus after a failed action that closed a dialog or menu",
+        "Checks that results appearing later in a dialog are announced, and that the announced text has real spaces",
+        "Announces results that appear without moving focus through the design system's live announcer service when one exists, rather than adding a new live region"
+      ]
+    },
+    {
+      "id": "pixel-comparison-with-base-branch",
+      "category": "edge",
+      "prompt": "I changed shared styles and a shared menu component while fixing the /reports page. Prove the layout of everything else is pixel-perfect compared with the main branch.",
+      "expected_output": "Skill runs the base branch beside the branch under test with the same mocked data, captures full-page screenshots (including inner scroll containers) of every affected page and state at several desktop widths, diffs them pixel by pixel, investigates each difference and classifies it.",
+      "files": [],
+      "expectations": [
+        "Runs the base branch from a separate worktree or checkout, with the same mocked backend and login, instead of comparing against remembered screenshots",
+        "Lists every page, dialog and menu that uses the changed shared code, and captures several states and at least three desktop widths",
+        "Captures the whole page height, including content that scrolls inside the app shell, and checks the screenshots are taller than the viewport",
+        "Verifies the harness by comparing the base with itself",
+        "Looks at the diff image and measures element boxes and computed styles for every differing pair, and traces each to a rule in the diff",
+        "Classifies each difference as intended, regression or noise, fixes regressions and re-compares, and lists the intended ones in the report"
+      ]
+    }
+  ]
+}

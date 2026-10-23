@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Orders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: sans-serif; margin: 0; background: #fff; }
+      .top { background: #333; color: #fff; padding: 12px 16px; display: flex; gap: 16px; align-items: center; }
+      .icon { width: 20px; height: 20px; cursor: pointer; background: #ccc; display: inline-block; }
+      .title { font-size: 24px; margin: 16px; }
+      .hint { color: #aaa; font-size: 14px; margin: 0 16px; }
+      .card { margin: 16px; padding: 12px; border: 1px solid #ddd; height: 90px; overflow: hidden; font-size: 16px; }
+      .card .name { color: #0645ad; cursor: pointer; }
+      .actions { float: right; }
+      .actions span { cursor: pointer; padding: 0 2px; }
+      .status { background: #eee; padding: 8px; margin: 16px; }
+      .filter { margin: 16px; }
+      .filter input { width: 160px; margin-right: 8px; font-size: 14px; }
+      :focus { outline: none; }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <img src="logo.svg" />
+      <span class="icon" onclick="search()"></span>
+      <span class="icon" onclick="toggleSettings()"></span>
+    </div>
+    <div class="title">Orders</div>
+    <p class="hint">Click a card to open the order.</p>
+    <div id="list">
+      <div class="card" onclick="openOrder(1)">
+        <span class="name">Order #1001</span>
+        <span class="actions"><span onclick="menu(event)">⋮</span></span>
+        <p>3 items · shipped</p>
+      </div>
+      <div class="card" onclick="openOrder(2)">
+        <span class="name">Order #1002</span>
+        <span class="actions"><span onclick="menu(event)">⋮</span></span>
+        <p>1 item · processing</p>
+      </div>
+    </div>
+    <form class="filter" onsubmit="return false">
+      <input type="text" placeholder="SEARCH ORDERS BY CUSTOMER NAME" autocomplete="off" />
+      <input type="password" placeholder="PIN" autocomplete="off" />
+      <button type="submit" disabled>Apply</button>
+    </form>
+    <div class="status" id="status">Saved</div>
+    <script>
+      function search() {}
+      function toggleSettings() {}
+      function openOrder() {}
+      function menu(e) { e.stopPropagation(); }
+    </script>
+  </body>
+</html>
