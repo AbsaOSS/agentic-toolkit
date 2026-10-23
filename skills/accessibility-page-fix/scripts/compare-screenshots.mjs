@@ -42,10 +42,13 @@ async function capture(url, file, viewport, options, clicks = '') {
   const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
   await page.addStyleTag({ content: FREEZE });
   if (options.full) {
-    // The tallest scrolling element decides the height: the document, or an inner container of the app shell
+    // The tallest scrolling element decides the height: the document, or an inner container of the app shell.
+    // Scrollers with no visible height (collapsed panels) hide their content and don't count.
     const extra = await page.evaluate(() => {
       const scrollers = [document.scrollingElement, ...document.querySelectorAll('*')].filter(
-        el => el && (el === document.scrollingElement || ['auto', 'scroll'].includes(getComputedStyle(el).overflowY))
+        el =>
+          el &&
+          (el === document.scrollingElement || (el.clientHeight > 0 && ['auto', 'scroll'].includes(getComputedStyle(el).overflowY)))
       );
       return Math.max(0, ...scrollers.map(el => el.scrollHeight - el.clientHeight));
     });
