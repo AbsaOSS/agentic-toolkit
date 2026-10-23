@@ -6,7 +6,6 @@
 //   node <skill>/scripts/compare-screenshots.mjs compare <out-dir> <path[@@click;;click]> [...]
 //        --base http://localhost:4201 --head http://localhost:4200
 //        [--viewports 1440x900,1280x720,1024x768] [--full] [--wait <selector>] [--storage <state.json>]
-//   node <skill>/scripts/compare-screenshots.mjs shoot <out-dir> <url> [<url> ...] [--full] [--viewport 1440x900]
 //   node <skill>/scripts/compare-screenshots.mjs diff <before-dir> <after-dir> [--out <dir>]
 //   node <skill>/scripts/compare-screenshots.mjs boxes <path[@@click]> --base <url> --head <url> [--viewport 1440x900]
 //        [--max 30]
@@ -170,20 +169,10 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
     }
   }
   console.log(`\n${shown} of ${compared} elements differ (base ${Object.keys(boxes.base).length}, head ${Object.keys(boxes.head).length}). Boxes are left, top, width, height.`);
-} else if (mode === 'shoot' && rest.length >= 2) {
-  const [outDir, ...urls] = rest;
-  const viewport = parseViewport(flags.viewport);
-  fs.mkdirSync(outDir, { recursive: true });
-  for (const url of urls) {
-    const file = path.join(outDir, `${slug(url)}-${viewport[0]}.png`);
-    await capture(url, file, viewport, flags);
-    console.log('saved ' + file);
-  }
 } else if (mode === 'diff' && rest.length === 2) {
   for (const r of await diffFolders(rest[0], rest[1], flags.out)) console.log(`${r.name}: ${r.status}`);
 } else {
   console.error('Usage: compare-screenshots.mjs compare <out-dir> <path[@@click]> ... --base <url> --head <url> [--viewports 1440x900,1024x768] [--full]');
-  console.error('       compare-screenshots.mjs shoot <out-dir> <url> ... [--full] [--viewport 1440x900]');
   console.error('       compare-screenshots.mjs diff <before-dir> <after-dir> [--out <dir>]');
   console.error('       compare-screenshots.mjs boxes <path[@@click]> --base <url> --head <url> [--viewport 1440x900]');
   process.exit(2);

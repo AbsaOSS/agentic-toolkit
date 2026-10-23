@@ -147,6 +147,13 @@ component that derives its font size from a px input such as `height`, or a libr
 fixed. Trace it with the browser's Styles panel (the rule that wins, or the inherited one), or by matching the
 element against `document.styleSheets`; inline styles set by components won't show up there.
 
+Writing this as a test: one small helper that scrolls each control into view (instantly, not smoothly) and checks
+that `document.elementFromPoint` at its centre returns the control or something inside or around it. It catches
+controls that are off-screen, clipped or covered, in far less code than comparing rectangles. Scope it to the part
+of the page you are checking, because it gives false alarms for: controls inside collapsed (overflow-hidden)
+panels, radio and checkbox inputs that sit under their own label, and anything that scrolls under a sticky bar
+(which is why it suits dialogs and toolbars better than a whole page).
+
 Horizontal reflow in a dialog: first check that the dialog box fits the viewport width. A dialog wider than the
 screen inside a scrollable overlay lets each control be scrolled into view sideways, so a "can every control be
 reached" check passes while the dialog still fails reflow. For

@@ -105,7 +105,7 @@ verdicts:
 | `scripts/keyboard-walk.mjs <url>` | Tabs through the page; lists each stop, flags invisible stops, stops with no visible focus change, and clickable-looking elements the keyboard cannot reach |
 | `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll, clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots |
 | `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
-| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (several pages, states and widths in one run) and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `shoot` and `diff` do the two halves separately |
+| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (several pages, states and widths in one run) and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
 look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
@@ -170,6 +170,8 @@ Rules while fixing:
 3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
    check, and the project's functional tests for pages that use any shared component you changed. Run the new tests
    several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
+   When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
+   in a table, and share helpers, but re-run the revert proof for any check you rewrote.
 4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
 5. Report using [references/report-template.md](references/report-template.md): what was found, what was fixed,
    what remains and why, observations that are not failures, shared code touched, and visual changes.
