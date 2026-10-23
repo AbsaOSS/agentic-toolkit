@@ -324,6 +324,9 @@ app's version — never silence the error.
 
 Report what was wired (role, destination, credentials endpoint, log provider, user identity) and
 any follow-ups.
+With the RUM destination, also list what it keeps in the browser, for the app's cookie or privacy
+notice: the RUM client's cookies `cwr_s` (session) and `cwr_u` (user id), and the library's
+`localStorage` entry `ngx-ui-watchtower.sessionStarts` (recent session ids with their start times).
 With `'noop'`, hand over the switch to RUM as a checklist — it is more than one line: install
 `aws-rum-web` and the `shimmer` allowance (Step 2), replace the `'noop'` line with
 `provideUwtTelemetryRumSink()` plus the credentials provider (Step 3), and bind

@@ -273,7 +273,9 @@ export class MyBackendSink extends UwtTelemetrySink {
 providers: [provideUwtTelemetryDestination(MyBackendSink, { init: (s) => s.start() })]
 ```
 
-Payloads arrive already redacted; the library guards every call into the sink.
+Payloads arrive already redacted; the library guards every call into the sink. A destination that
+owns its sessions calls `uwtMarkSessionStart(sessionId)` when it starts one, so scenario records carry
+`sessionElapsed`; without it they simply omit the field.
 
 ## 9. What reaches the wire
 
@@ -290,7 +292,7 @@ A settled scenario record (abridged):
   "scenarioId": "250514ab-…", "scenarioName": "my-app-table-load", "feature": "table",
   "status": "abandoned", "reason": "superseded",
   "startTime": "2026-09-05T11:11:04.211Z", "endTime": "2026-09-05T11:11:04.273Z",
-  "delta": 62, "elapsed": 3037, "stepCount": 1,
+  "delta": 62, "elapsed": 3037, "sessionElapsed": 845200, "stepCount": 1,
   "steps": [
     { "name": "scenario-start", "startOffset": 0, "stepDelta": 0, "status": "success" },
     { "name": "fetch", "startOffset": 1, "stepDelta": 61, "status": "abandoned", "reason": "superseded" },
@@ -301,7 +303,9 @@ A settled scenario record (abridged):
 }
 ```
 
-`delta` is the duration; `elapsed` is a timeline position (ms since page load). `scenario-start` /
+`delta` is the duration; `elapsed` is a timeline position (ms since page load), and `sessionElapsed`
+one in the RUM session (ms since the session started — it survives reloads; absent until the
+session's start is known). `scenario-start` /
 `scenario-end` are written by the library and don't count toward `stepCount`. `sessionId` / `userId`
 appear once the RUM client has started and a user is signed in.
 
