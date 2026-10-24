@@ -23,7 +23,7 @@ const describe = () =>
     const cs = getComputedStyle(el);
     const visible = r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth && cs.visibility !== 'hidden';
     const name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 40);
-    return { body: false, tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name, visible, inert: !!el.closest('[inert]'), box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
+    return { body: false, tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name, visible, inert: !!el.closest('[inert]'), defaultRing: cs.outlineStyle === 'auto', box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
   });
 
 /** Screenshot of the area around the focused element, as a flat pixel array. */
@@ -79,6 +79,8 @@ for (let i = 0; i < Number(flags.max); i++) {
     const problems = [];
     if (!stop.visible) problems.push('NOT VISIBLE');
     if (stop.inert) problems.push('INSIDE inert');
+    // `outline-style: auto` is the browser's own ring: visible, but not the design system's (unstyled control)
+    if (stop.defaultRing) problems.push("BROWSER DEFAULT FOCUS RING, not the design system's");
     if (!flags['no-visual'] && stop.visible) {
       const changed = await focusIndicatorPixels(stop.box);
       if (changed < 20) problems.push(`NO VISIBLE FOCUS INDICATOR (${changed}px changed)`);

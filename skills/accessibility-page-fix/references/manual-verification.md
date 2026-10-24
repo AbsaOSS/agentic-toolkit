@@ -71,6 +71,9 @@ changes nothing visible, and clickable-looking elements the keyboard cannot reac
 order is logical or the indicator is strong enough; look at those yourself.
 
 1. Click on the page's heading, then press Tab repeatedly. Record the order and what each stop is.
+   Every stop should show the design system's focus ring. A browser default outline (`outline-style: auto`,
+   reported by the script) means the control has no focus style of its own: give it the shared ring. A test for a
+   focus ring must check for that ring specifically; "any outline" also passes with the browser default.
 2. For each stop confirm: it is a real control, it has a visible focus indicator, and the order follows the visual
    reading order.
 3. Shift+Tab backwards through the same path; the order should reverse.
