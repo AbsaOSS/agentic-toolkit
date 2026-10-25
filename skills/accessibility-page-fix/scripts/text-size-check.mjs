@@ -91,7 +91,8 @@ const fixedSizeText = scope => {
   );
   const before = texts.map(el => parseFloat(getComputedStyle(el).fontSize));
   const style = document.head.appendChild(document.createElement('style'));
-  style.textContent = 'html { font-size: 200% !important; }';
+  // Transitions are off, or a size that animates (a floating placeholder) would still read its old value
+  style.textContent = 'html { font-size: 200% !important; } *, *::before, *::after { transition: none !important; }';
   const fixed = texts.filter((el, i) => parseFloat(getComputedStyle(el).fontSize) < before[i] * 1.9);
   style.remove();
   return fixed.map(el => `text does not grow: "${el.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)}" stays ${getComputedStyle(el).fontSize}`);

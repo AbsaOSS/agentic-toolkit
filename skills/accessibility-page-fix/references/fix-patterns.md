@@ -193,6 +193,9 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 - Popups that the library attaches to the end of `<body>` sit outside every landmark, so axe's `region` best
   practice flags them. If the library can't render them inline, scan the page with the popup excluded and then the
   popup alone with `region` disabled for that scan only, and note it in the test.
+- Date pickers grey out the days you can't pick. Disabled controls are exempt from contrast (WCAG 1.4.3), but if
+  the library doesn't mark them `aria-disabled`, axe can't tell and reports them. Exclude exactly those day cells
+  from that one scan, say why in the test, and report the missing `aria-disabled` as a library issue.
 
 ## Reuse before adding
 

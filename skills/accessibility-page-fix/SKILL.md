@@ -48,23 +48,26 @@ Copy this checklist and track progress:
 1. Check for existing accessibility test infrastructure (an axe fixture, an `accessibility` test project, a
    `test:a11y` script). If it is missing, tell the user and offer the `accessibility-infra-setup` skill; do not
    build a parallel setup. For a one-off scan without infrastructure, use `@axe-core/playwright` directly.
-2. Start the app and open the page. If it needs a login, use the test credentials the project already uses; never
+2. Find out which **variant** of the page you are fixing. Pages often switch implementation on runtime config or
+   feature flags (a config file the app loads at start-up). Check which value local runs and CI use (CI may build
+   its config from a template), test that variant, and name any variant you did not cover in the report.
+3. Start the app and open the page. If it needs a login, use the test credentials the project already uses; never
    invent or hard-code real credentials. If the backend is unavailable, intercept network calls in the browser
    (Playwright `page.route`) and return small fake responses that satisfy the page — only enough to render it.
    Keep mocks inside test or local-dev code, never in production code.
-3. List the page's **states**. Each one is scanned separately because hidden or conditional UI is invisible to axe:
+4. List the page's **states**. Each one is scanned separately because hidden or conditional UI is invisible to axe:
    default, loading, empty, error, populated, dialogs and menus open, expanded/collapsed sections, tabs, form
    validation errors, hover/focus-only content, carousels or pagers moved to a later position.
-4. List the **contexts** the page's components render in. The same component is often a full page in one place
+5. List the **contexts** the page's components render in. The same component is often a full page in one place
    and a dialog, drawer or embedded panel in another (for example a login form shown again in a session-expired
    dialog). Each context is its own state to scan, and fixes must work in all of them.
-5. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
+6. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
    mock a short token lifetime to get a session-expired dialog, mock an empty response for the empty state
    ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
    For **failure states**, go through every request the page and its dialogs make, and read what its error handler
    shows. Check app-wide error handling (HTTP interceptors, global error handlers) first: some failures replace
    the page with a shared error page, which is out of the page's scope.
-6. Wait for animations and async content to settle before every scan (scanning mid-transition gives false
+7. Wait for animations and async content to settle before every scan (scanning mid-transition gives false
    contrast failures).
 
 ### Step 2 · Baseline
