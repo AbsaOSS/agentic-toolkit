@@ -121,7 +121,9 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 
 - Landmarks: `<header>`, `<nav>`, `<main>` (one), `<footer>`, and `<section>`/`<aside>` with an accessible name when
   there are several. A component that renders both as a page and inside a dialog should add `main` and `h1` only
-  in the page context (a dialog gets its name from its own title); a second `main` or `h1` is a violation.
+  in the page context (a dialog gets its name from its own title); a second `main` or `h1` is a violation. Dialogs
+  attached to `<body>` never contain `main`: next to the page's own it is a second one. An app that can also run
+  embedded in a host page (a micro-frontend) leaves `main` to the host there and uses a `div` for its content area.
 - Where the heading would not fit the design, a screen-reader-only heading is fine. Reuse the project's existing
   "screen-reader only" class instead of writing a new one.
 - Exactly one `h1` that names the page; headings descend without skipping levels. Pick the level by structure, then
@@ -146,7 +148,10 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
   close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
   focused element (WCAG 2.4.11): make Esc close them without moving focus (a document `keydown` listener in the
-  notification wrapper), or place them where they cover nothing interactive.
+  notification wrapper), or place them where they cover nothing interactive. An open menu, list or dialog takes Esc
+  first, or one Esc also dismisses an unread error: in the capture phase, before the popup closes, skip the
+  notifications when focus is inside a popup or dialog, or on a control with `aria-expanded="true"`. Checking
+  whether a popup is visible fails while it animates closed.
 - Results that arrive later in a dialog (checks finishing, validation results) belong in a `role="status"` summary
   so they are announced without moving focus.
 - Form errors: put text next to the field, link it with `aria-describedby`, set `aria-invalid="true"`, and move
@@ -157,6 +162,8 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Use `rem`/`em`/`%` for font sizes, spacing, widths and line-heights that carry content. Avoid fixed `height` on
   text containers (use `min-height`). Fixed px widths on panels and inputs are a common cause of text cut off at
   200% (axe cannot see this; the text-size script can).
+- Sizes that something else owns stay in px: a host page's panel, a third-party bar measured in px. Converted to
+  rem, a calculation that subtracts them breaks as soon as the text size changes.
 - Images such as logos: either scale them with the text (rem) or keep them at px and say so in the report. Pick
   one deliberately; a fixed logo is fine, a fixed text container is not.
 - Libraries and canvases that accept only px (charts, carousels, virtual lists): compute px from the **current**
@@ -177,7 +184,8 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - App shell at 320 px: a fixed-position header and a sidebar that fill the screen leave no room for the page. Below
   a breakpoint, switch the shell to normal flow (header becomes static and wraps, the page scrolls with the
   document) and collapse the sidebar by default, following the breakpoint with `matchMedia` and its `change` event.
-  Prove the desktop layout is pixel-identical.
+  When the screen is wide again, restore the sidebar the user had there instead of forcing the default. Prove the
+  desktop layout is pixel-identical.
 - Toolbars and headers built as one flex row: let them wrap (`flex-wrap: wrap`, `min-width: 0` on children) instead
   of overflowing.
 - Grid columns that hold controls: `minmax(min-content, 1fr)` rather than `minmax(0, 1fr)`, so the column can't
@@ -208,12 +216,13 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 - Popups that the library attaches to the end of `<body>` sit outside every landmark, so axe's `region` best
   practice flags them. If the library can't render them inline, scan the page with the popup excluded and then the
   popup alone with `region` disabled for that scan only, and note it in the test.
-- Rich text editors: Tab often types a tab character, so keyboard users can't leave the editor (WCAG 2.1.2). Turn
-  that key binding off through the editor's options; list indentation can keep its own binding. The editable area is
-  usually a plain `contenteditable` element: give it `role="textbox"`, `aria-multiline="true"` and a name that
-  matches its visible label. Toolbar dropdowns and their options often have no names, and color swatches are
-  smaller than 24 px. Add the names once the editor has been created (its "created" callback) and enlarge the
-  swatches with CSS.
+- Rich text editors: Tab often types a tab character, and in lists, quotes and code blocks Tab and Shift+Tab indent
+  and outdent instead. In an empty list item that leaves no way out (WCAG 2.1.2). Turn off every key binding that
+  takes Tab through the editor's options, and test Tab from plain text and from an empty list item. The editable
+  area is usually a plain `contenteditable` element: give it `role="textbox"`, `aria-multiline="true"` and a name
+  that matches its visible label. Every place that uses the editor must pass that name: a textbox without one is a
+  new axe failure. Toolbar dropdowns and their options often have no names, and color swatches are smaller than
+  24 px. Add the names once the editor has been created (its "created" callback) and enlarge the swatches with CSS.
 - Date pickers grey out the days you can't pick. Disabled controls are exempt from contrast (WCAG 1.4.3), but if
   the library doesn't mark them `aria-disabled`, axe can't tell and reports them. Exclude exactly those day cells
   from that one scan, say why in the test, and report the missing `aria-disabled` as a library issue.

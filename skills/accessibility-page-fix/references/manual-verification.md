@@ -230,8 +230,9 @@ color, larger target) in the report. Unintended differences (shifted layout, cha
 The visual design must stay exactly as it was, except for the changes you list. Prove it with a pixel comparison
 of the base branch against yours:
 
-1. Start the base branch next to yours: `git worktree add ../base <base-branch>`, link `node_modules` into it, and
-   run its dev server on another port against the **same** mocked backend. Remove the worktree afterwards.
+1. Start the base branch next to yours: `git worktree add --detach ../base <base-branch>` (detached, so the branch
+   stays free to check out elsewhere), link `node_modules` into it, and run its dev server on another port against
+   the **same** mocked backend. Remove the worktree afterwards.
 2. Build the matrix of pages and states:
    - the page you fixed in every state (default, each view, expanded sections, open menus, each dialog, empty,
      error notification open);
@@ -258,7 +259,12 @@ node <skill>/scripts/compare-screenshots.mjs compare shots /orders "/orders@@#ex
    class name). The first element whose box differs is the cause; everything after it only moved. If no box
    differs, the change is colour or anti-aliasing.
 7. Run the **base against itself** twice. Differences that appear there (animated artwork, logos, canvases) are
-   noise: list them once and ignore them.
+   noise: list them once and ignore them. Some noise comes and goes: anti-aliasing of a border at a fractional
+   position can differ by a few pixels between two loads of the same code. Compare each side with itself several
+   times before calling a small difference a regression.
+8. States the comparison tool can't reach by clicking (a failed request, a loading state) need the same mocked
+   responses on both servers: take those screenshots with a small script that routes the requests the same way on
+   each, then compare the two folders with `compare-screenshots.mjs diff`.
 
 Typical causes of differences found this way:
 - a `gap` added to a flex row that already had a margin between its children (spacing doubled);

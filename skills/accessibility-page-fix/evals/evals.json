@@ -207,6 +207,21 @@
         "Looks at the diff image and measures element boxes and computed styles for every differing pair, and traces each to a rule in the diff",
         "Classifies each difference as intended, regression or noise, fixes regressions and re-compares, and lists the intended ones in the report"
       ]
+    },
+    {
+      "id": "rich-text-editor-keyboard-trap",
+      "category": "edge",
+      "prompt": "Fix accessibility on the /support/new page. It has a subject field, a rich text editor for the message and a Send button.",
+      "expected_output": "Skill finds that Tab cannot leave the rich text editor, turns off every editor key binding that takes Tab (tab character, list and quote indentation), names the editable area and the toolbar dropdowns, enlarges small swatches, and proves the fix with tests from plain text and from an empty list item.",
+      "files": [],
+      "expectations": [
+        "Tabs through the page and notices that focus never leaves the editor (keyboard-walk reports a keyboard trap), as a WCAG 2.1.2 failure",
+        "Turns off every Tab key binding through the editor's options, including list and quote indentation, not only the tab character",
+        "Tests Tab and Shift+Tab from plain text and from an empty list item, and confirms the tests fail without the fix",
+        "Gives the editable area role textbox, aria-multiline and a name that matches its visible label, and passes that name in every place that uses the editor",
+        "Names the toolbar dropdowns and their options, and makes small color swatches at least 24 px",
+        "Keeps the editor's own pixels and behaviour otherwise unchanged and lists the lost Tab indentation in the report"
+      ]
     }
   ]
 }

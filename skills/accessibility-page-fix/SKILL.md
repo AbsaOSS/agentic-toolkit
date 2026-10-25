@@ -60,7 +60,8 @@ Copy this checklist and track progress:
    validation errors, hover/focus-only content, carousels or pagers moved to a later position.
 5. List the **contexts** the page's components render in. The same component is often a full page in one place
    and a dialog, drawer or embedded panel in another (for example a login form shown again in a session-expired
-   dialog). Each context is its own state to scan, and fixes must work in all of them.
+   dialog). Each context is its own state to scan, and fixes must work in all of them. The app itself may also run
+   embedded in a host page that provides its own landmarks (a micro-frontend); check that mode too.
 6. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
    mock a short token lifetime to get a session-expired dialog, mock an empty response for the empty state
    ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
@@ -178,6 +179,11 @@ Rules while fixing:
 3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
    check, and the project's functional tests for pages that use any shared component you changed. Run the new tests
    several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
+   A test that fails only sometimes: run it on the code without your change before blaming the change, and report
+   it as an existing problem if it fails there too. After editing files, let the dev server finish rebuilding before
+   running tests: a reload mid-test drops focus. Before checking that something stays visible, wait for exit
+   animations (a closing element still counts as visible), and wait for widgets that build their DOM after the
+   page renders (an editor's toolbar) before tabbing to them.
    When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
    in a table, and share helpers, but re-run the revert proof for any check you rewrote.
 4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
@@ -239,9 +245,13 @@ Step 4 passes, and no regressions in tests or screenshots.
 - **Layout fixes for small screens belong in a media query.** Wrapping, new flex bases and relaxed minimum
   widths added without one change the wide layout too: the page looks the same at first glance and differs by a
   few pixels. The pixel comparison with the base branch finds this; measure element boxes to find the cause.
-- **Compare like with like.** Run the base branch from a separate worktree (`git worktree add ../base <base>`,
-  with `node_modules` linked from the main checkout), against the same mocked backend and the same login, so a
-  difference can only come from code. A saved login is per origin: put both origins in the state file.
+- **Compare like with like.** Run the base branch from a separate worktree (`git worktree add --detach ../base
+  <base>`, with `node_modules` linked from the main checkout), against the same mocked backend and the same login,
+  so a difference can only come from code. `--detach` matters: a worktree that holds a branch stops anyone checking
+  that branch out elsewhere. A saved login is per origin: put both origins in the state file.
+- **A fix to a copied shared file goes to every copy.** When parallel branches carry byte-identical copies of a
+  shared file, make the fix once, apply the same change to every branch that carries it, and run each branch's own
+  tests on its own code (a detached worktree with its own dev server), so the copies stay identical.
 - **Shared global styles.** Converting a shared stylesheet from px to rem renders the same pixels at the default
   size and fixes every page that uses it. Prove it with screenshots of those pages, and list them as shared code.
 - **Placeholder is not a label.** Inputs labelled only by a placeholder need an accessible name (visible label,
@@ -266,8 +276,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   without moving the pointer (1.4.13).
 - **Sizes in px break text scaling.** Libraries and canvases that only accept px need values derived from the
   current root font size and updated when it changes.
-- **Rich text editors trap the keyboard.** Many type a tab character on Tab, so focus never leaves (WCAG 2.1.2),
-  and their editable area and toolbar dropdowns have no names. `keyboard-walk` reports the trap; the fix is in
+- **Rich text editors trap the keyboard.** Many type a tab character on Tab, or indent a list item, so focus never
+  leaves (WCAG 2.1.2), and their editable area and toolbar dropdowns have no names. `keyboard-walk` reports the trap
+  in plain text; test an empty list item by hand or in a test. The fix is in
   [references/fix-patterns.md](references/fix-patterns.md#third-party-widgets).
 - **Off-screen is still focusable.** Slides, collapsed panels and hidden drawers that stay in the DOM need
   `inert` (or `hidden`) so Tab and screen readers skip them.
