@@ -167,7 +167,10 @@ Rules while fixing:
    fixture and conventions. Mock only what the page needs. Add a focused test for behaviour axe cannot check
    (keyboard path, focus return, text-size layout) when you changed it.
 2. **Prove the new tests catch the problems:** temporarily revert only the fix, run the new tests and confirm they
-   fail; restore the fix and confirm they pass. A test that passes either way protects nothing. If they fail early
+   fail; restore the fix and confirm they pass. A test that passes either way protects nothing: if it passes on
+   the old code, the scenario misses the bug (the last page of a list, where the widget re-focuses and scrolls,
+   instead of a middle page), so change the scenario, not the assertion. Check a suspected issue on every page you
+   plan to fix it on: a detail such as a sticky footer can make it a non-issue there. If the new tests fail early
    for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
    something else, so the scans themselves run against the old code and report the real problems.
 3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type

@@ -100,7 +100,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   `scroll-margin-bottom` (at least the sticky bar's height) on the page's focusable elements instead.
 - Be careful with helpers that set `position: relative` on focus: they break absolutely-positioned controls.
 - After content is removed or replaced, send focus somewhere sensible (the next item, the container, a heading) —
-  not to `<body>`.
+  not to `<body>`. A heading used as a focus target gets `tabindex="-1"` and no ring: it is a starting point, not a
+  control.
+- Don't pull focus away from a widget that manages its own focus (a paginator whose page buttons move with the
+  arrow keys, a tab list). Fix what the page does around it instead: for example, don't scroll the page away from
+  a paginator that keeps focus when it is used from the keyboard (the focus service's input modality tells you).
 
 ## Structure
 
