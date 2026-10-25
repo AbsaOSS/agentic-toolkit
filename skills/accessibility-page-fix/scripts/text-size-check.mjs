@@ -9,10 +9,12 @@
 // --click opens a menu or dialog first (one click per selector); --scope limits the findings to one part of the
 // page, e.g. --scope '[role="dialog"]'.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { openPage, parseArgs } from './_shared.mjs';
 
-const { positional, flags } = parseArgs(process.argv.slice(2), { out: 'a11y-text-size' });
+// Screenshots go to the temp folder by default, not into the app's repository
+const { positional, flags } = parseArgs(process.argv.slice(2), { out: path.join(os.tmpdir(), 'a11y-text-size') });
 if (!positional[0]) {
   console.error('Usage: text-size-check.mjs <url> [--wait <selector>] [--storage <state.json>] [--out <dir>] [--click <selectors>] [--scope <selector>]');
   process.exit(2);

@@ -105,8 +105,8 @@ verdicts:
 
 | Script | What it does |
 |---|---|
-| `scripts/keyboard-walk.mjs <url>` | Tabs through the page; lists each stop, flags invisible stops, stops with no visible focus change, and clickable-looking elements the keyboard cannot reach |
-| `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll, clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots |
+| `scripts/keyboard-walk.mjs <url>` | Tabs through the page; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
+| `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll, clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
 | `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
 | `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (several pages, states and widths in one run) and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
@@ -170,7 +170,9 @@ Rules while fixing:
    fail; restore the fix and confirm they pass. A test that passes either way protects nothing: if it passes on
    the old code, the scenario misses the bug (the last page of a list, where the widget re-focuses and scrolls,
    instead of a middle page), so change the scenario, not the assertion. Check a suspected issue on every page you
-   plan to fix it on: a detail such as a sticky footer can make it a non-issue there. If the new tests fail early
+   plan to fix it on: a detail such as a sticky footer can make it a non-issue there. A probe can be wrong too:
+   pressing a button that is still disabled looks like lost focus. If no scenario fails on the old code, the problem
+   isn't there: remove the fix, and keep the test only as a scan of that state. If the new tests fail early
    for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
    something else, so the scans themselves run against the old code and report the real problems.
 3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
@@ -264,6 +266,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   without moving the pointer (1.4.13).
 - **Sizes in px break text scaling.** Libraries and canvases that only accept px need values derived from the
   current root font size and updated when it changes.
+- **Rich text editors trap the keyboard.** Many type a tab character on Tab, so focus never leaves (WCAG 2.1.2),
+  and their editable area and toolbar dropdowns have no names. `keyboard-walk` reports the trap; the fix is in
+  [references/fix-patterns.md](references/fix-patterns.md#third-party-widgets).
 - **Off-screen is still focusable.** Slides, collapsed panels and hidden drawers that stay in the DOM need
   `inert` (or `hidden`) so Tab and screen readers skip them.
 - **Live regions are tricky.** `role="alert"` interrupts; several at once talk over each other. Use `role="status"`

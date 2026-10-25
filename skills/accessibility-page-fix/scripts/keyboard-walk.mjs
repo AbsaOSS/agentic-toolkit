@@ -72,6 +72,12 @@ for (let i = 0; i < Number(flags.max); i++) {
     console.log(`-- wrapped around after ${stops.length} stops`);
     break;
   }
+  // Tab left focus where it was (an editor that inserts a tab character, a widget that swallows Tab)
+  if (!stop.body && stops.length && stops.at(-1).place === JSON.stringify([stop.tag, stop.box])) {
+    console.log(`${String(i + 1).padStart(2)}. ISSUE: KEYBOARD TRAP, Tab does not move focus out of this ${stop.tag}`);
+    issues++;
+    break;
+  }
   let line;
   if (stop.body) {
     line = `${String(i + 1).padStart(2)}. (focus left the page / on <body>)`;
@@ -88,7 +94,7 @@ for (let i = 0; i < Number(flags.max); i++) {
     issues += problems.length ? 1 : 0;
     line = `${String(i + 1).padStart(2)}. ${stop.tag}${stop.role ? `[role=${stop.role}]` : ''} "${stop.name}" ${stop.box.join('x')}${problems.length ? '  ISSUE: ' + problems.join(', ') : ''}`;
   }
-  stops.push({ key });
+  stops.push({ key, place: JSON.stringify([stop.tag, stop.box]) });
   console.log(line);
 }
 // Heuristic: elements that look clickable (pointer cursor or an onclick attribute) but are not, and are not inside,

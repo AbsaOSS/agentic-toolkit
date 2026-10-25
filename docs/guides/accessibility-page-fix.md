@@ -64,7 +64,7 @@ Run them from the app's directory; they load the app's own Playwright. All accep
 
 ```bash
 node <skill>/scripts/keyboard-walk.mjs http://localhost:4200/orders --wait h1
-node <skill>/scripts/text-size-check.mjs http://localhost:4200/orders --out a11y-text-size
+node <skill>/scripts/text-size-check.mjs http://localhost:4200/orders --out /tmp/orders-text-size
 node <skill>/scripts/text-size-check.mjs http://localhost:4200/orders --click "#export-button" --scope '[role="dialog"]'
 node <skill>/scripts/contrast-sample.mjs http://localhost:4200/orders ".hero-title"
 node <skill>/scripts/compare-screenshots.mjs compare shots /orders /home --base http://localhost:4201 --head http://localhost:4200 --full

@@ -102,6 +102,17 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - After content is removed or replaced, send focus somewhere sensible (the next item, the container, a heading) —
   not to `<body>`. A heading used as a focus target gets `tabindex="-1"` and no ring: it is a starting point, not a
   control.
+- The same goes for an action that removes or disables the focused control: a Publish button whose editor closes, an
+  "Add" button that is disabled once its field is empty, a "Close" button that disappears. Move focus to where the
+  user goes on (the control that opened the editor, the content's heading, the field). Check first that focus really
+  drops: a button in a loading state often stays enabled and keeps it.
+- A list keyed by object identity rebuilds an item when an update returns a new object for it (toggling a vote), and
+  the item's focused button goes with it. Key list items by a stable id.
+- A focus ring in the design system's brand color disappears on a bar of the same color (a branded page header).
+  Give the ring a contrasting color there.
+- A ring drawn with `::before`/`::after` replaces content that some widgets put in those pseudo-elements (a
+  dropdown that shows its current value with `::before`). Draw the ring on the widget's container instead, for
+  example `.dropdown:has(> .label:focus-visible)`.
 - Don't pull focus away from a widget that manages its own focus (a paginator whose page buttons move with the
   arrow keys, a tab list). Fix what the page does around it instead: for example, don't scroll the page away from
   a paginator that keeps focus when it is used from the keyboard (the focus service's input modality tells you).
@@ -197,6 +208,12 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 - Popups that the library attaches to the end of `<body>` sit outside every landmark, so axe's `region` best
   practice flags them. If the library can't render them inline, scan the page with the popup excluded and then the
   popup alone with `region` disabled for that scan only, and note it in the test.
+- Rich text editors: Tab often types a tab character, so keyboard users can't leave the editor (WCAG 2.1.2). Turn
+  that key binding off through the editor's options; list indentation can keep its own binding. The editable area is
+  usually a plain `contenteditable` element: give it `role="textbox"`, `aria-multiline="true"` and a name that
+  matches its visible label. Toolbar dropdowns and their options often have no names, and color swatches are
+  smaller than 24 px. Add the names once the editor has been created (its "created" callback) and enlarge the
+  swatches with CSS.
 - Date pickers grey out the days you can't pick. Disabled controls are exempt from contrast (WCAG 1.4.3), but if
   the library doesn't mark them `aria-disabled`, axe can't tell and reports them. Exclude exactly those day cells
   from that one scan, say why in the test, and report the missing `aria-disabled` as a library issue.
