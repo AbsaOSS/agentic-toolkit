@@ -189,13 +189,17 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 - Widgets may re-render and drop what you added. Decorate in an idempotent function and re-run it when the widget
   changes its DOM (a `MutationObserver` scoped to the widget, run outside change-detection loops, ignoring changes
   inside the widget's content).
-- Don't fork or patch vendored code.
+- Don't fork or patch vendored code, unless the vendored copy belongs to your own library and the user agrees.
 - Popups that the library attaches to the end of `<body>` sit outside every landmark, so axe's `region` best
   practice flags them. If the library can't render them inline, scan the page with the popup excluded and then the
   popup alone with `region` disabled for that scan only, and note it in the test.
 - Date pickers grey out the days you can't pick. Disabled controls are exempt from contrast (WCAG 1.4.3), but if
   the library doesn't mark them `aria-disabled`, axe can't tell and reports them. Exclude exactly those day cells
   from that one scan, say why in the test, and report the missing `aria-disabled` as a library issue.
+- If the library is your own design system, the root cause can be fixed there instead of worked around in every
+  app. That is a separate change in a separate repo, so propose it to the user and let them choose where it goes
+  (for example a vendored copy, or the wrapper component). Cover it with a test that renders the real widget, and
+  remove the app's test workaround once the app uses the fixed version.
 
 ## Reuse before adding
 
