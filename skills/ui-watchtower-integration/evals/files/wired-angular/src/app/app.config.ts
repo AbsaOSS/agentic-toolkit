@@ -35,8 +35,9 @@ export const appConfig: ApplicationConfig = {
       version: APP_VERSION
     }),
     // This app's one destination: AWS CloudWatch RUM. Settings and short-lived
-    // credentials come from GET /rum/init; a failed fetch only disables RUM
-    // for the session.
+    // credentials come from GET /rum/init; a failed fetch is retried every 30 s
+    // (up to 10 times at startup); a disabled or invalid answer turns RUM off
+    // for the rest of the page.
     provideUwtTelemetryRumSink(),
     { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
     // Page views under the route template (/customers/:customerId), never the

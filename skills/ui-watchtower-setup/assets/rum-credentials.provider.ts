@@ -15,11 +15,15 @@ const RUM_BROKER_URL = '/rum/init';
  * {
  *   "enabled": true,
  *   "config": { "applicationId": "…", "region": "eu-west-1", "applicationVersion": "1.4.0",
- *               "sessionSampleRate": 1, "telemetries": ["errors", "performance", "http"] },
+ *               "sessionSampleRate": 1 },
  *   "credentials": { "accessKeyId": "…", "secretAccessKey": "…", "sessionToken": "…",
  *                    "expiration": "2026-10-08T12:00:00Z" }
  * }
  * ```
+ *
+ * Best without `telemetries`: any list the broker sends replaces the library's default, whose
+ * `http` entry adds the X-Ray header to same-origin requests through a `RegExp` — which JSON
+ * can't carry.
  */
 const REQUIRED_CONFIG = ['applicationId', 'region', 'applicationVersion'] as const;
 const REQUIRED_CREDENTIALS = [
@@ -35,7 +39,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /**
  * Optional settings a broker can send as JSON, kept only when correctly typed. Functions,
- * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON.
+ * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
+ * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
+ * `RegExp`s and functions there, and the library drops strings in their place. Telemetries are
+ * kept as names only; set their options in code.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -74,13 +81,6 @@ const isPrimitive = (v: unknown): v is string | number | boolean =>
 const isString = (v: unknown): v is string => typeof v === 'string';
 const isStringOrBoolean = (v: unknown): v is string | boolean =>
   typeof v === 'string' || typeof v === 'boolean';
-/** A telemetry name (`'errors'`) or a `[name]` / `[name, options]` tuple (`['http', { … }]`). */
-const isTelemetry = (t: unknown): boolean =>
-  isString(t) ||
-  (Array.isArray(t) &&
-    (t.length === 1 || t.length === 2) &&
-    isString(t[0]) &&
-    (t.length === 1 || isRecord(t[1])));
 
 function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMonitorConfig> {
   const settings: Record<string, unknown> = {};
@@ -106,7 +106,7 @@ function optionalSettings(config: Record<string, unknown>): Partial<UwtRumAppMon
   keep('headers', isFlatRecord(config['headers'], isString));
   keep('cookieAttributes', isFlatRecord(config['cookieAttributes'], isStringOrBoolean));
   const telemetries = config['telemetries'];
-  keep('telemetries', Array.isArray(telemetries) && telemetries.every(isTelemetry));
+  keep('telemetries', Array.isArray(telemetries) && telemetries.every(isString));
   const compression = config['compressionStrategy'];
   if (isRecord(compression) && typeof compression['enabled'] === 'boolean') {
     settings['compressionStrategy'] = { enabled: compression['enabled'] };
@@ -131,10 +131,10 @@ function hasStrings<K extends string>(
 @Injectable({ providedIn: 'root' })
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
-   * `null` (RUM off for the session) when the broker turns RUM off or answers with anything
-   * incomplete, malformed or expired. A failed request throws instead, and the library retries
-   * every 30 s — at startup up to 10 times, and on a refresh with the current credentials kept —
-   * where `null` would end RUM for the session.
+   * `null` (RUM off for the rest of the page) when the broker turns RUM off or answers with
+   * anything incomplete, malformed or expired. A failed request throws instead, and the library
+   * retries every 30 s — at startup up to 10 times, buffering events, and on a refresh with the
+   * current credentials kept — where `null` would end RUM for the page.
    */
   async load(): Promise<UwtRumBootstrap | null> {
     const response = await fetch(RUM_BROKER_URL, {

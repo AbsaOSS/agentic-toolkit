@@ -40,7 +40,7 @@ to the app's own log backend, never to the destination.
 
 Templates in `assets/` are copied into the app and adapted: `telemetry.schema.ts`,
 `rum-credentials.provider.ts`, `log-api.provider.ts`, `route-navigation-telemetry.service.ts`, and the
-specs for the last two (`*.spec.ts`).
+specs for `rum-credentials.provider.ts` and `route-navigation-telemetry.service.ts` (`*.spec.ts`).
 
 ## Workflow
 
@@ -182,9 +182,9 @@ export const appConfig: ApplicationConfig = {
 - Start with **no** `withScenarios` / `withBIEvents` / `withLogging` / `withRedaction` features. Add
   one only for a stated reason, and record the reason in a comment.
 - **Telemetry off in some environments** (only when the user asks): keep every provider exactly as
-  it is and add one feature, `withTelemetryEnabled(...)` (0.2.0+; on an older pin from Step 1, tell
-  the user it isn't available). Pass a value from the app's environment files, or a factory that
-  reads config already available at bootstrap — it is read once, at startup:
+  it is and add one feature, `withTelemetryEnabled(...)`. Pass a value from the app's environment
+  files, or a factory that reads config already available at bootstrap — it is read once, at
+  startup:
 
   ```ts
   provideUwtTelemetry(identity, withTelemetryEnabled(environment.name !== 'dev')),
@@ -204,7 +204,9 @@ export const appConfig: ApplicationConfig = {
   calls it. It uses `fetch`; switch to `HttpClient` if an interceptor adds the broker's auth.
 - **User identity** (only when the app has sign-in): inject `UwtTelemetrySink` as a field of the
   sign-in service (not inside a callback — `NG0203`), then `setUserId(opaqueId)` on sign-in and
-  `setUserId(undefined)` on sign-out. Never an email or username. Fragments leave this to the shell.
+  `setUserId(undefined)` on a real sign-out only — each call starts a new RUM session, so never on
+  startup or for a visitor who was never signed in. A sign-out before the RUM client has started is
+  applied once it starts. Never an email or username. Fragments leave this to the shell.
 
 ### Step 4 · Declare the vocabulary
 
@@ -266,7 +268,9 @@ In a fragment, skip this step by default — the shell's router measures navigat
 page URL. Add it only if the fragment has internal routes the shell never routes.
 
 **No router:** skip this step and the binding, and remove `disableAutoPageView: true` from the
-credentials provider — RUM's one automatic page view per load is then right.
+credentials provider — RUM's one automatic page view per load is then right. Drop it from the three
+expectations in `rum-credentials.provider.spec.ts` too, and retitle the two tests that say
+automatic page views are off.
 
 ### Step 7 · Tests
 
@@ -325,8 +329,13 @@ app's version — never silence the error.
 Report what was wired (role, destination, credentials endpoint, log provider, user identity) and
 any follow-ups.
 With the RUM destination, also list what it keeps in the browser, for the app's cookie or privacy
-notice: the RUM client's cookies `cwr_s` (session) and `cwr_u` (user id), and the library's
-`localStorage` entry `ngx-ui-watchtower.sessionStarts` (recent session ids with their start times).
+notice: the RUM client's cookies `cwr_s` (session id; by default the session ends after 30 minutes
+without an event) and `cwr_u` (user id, kept for `userIdRetentionDays` — 30 days by default — and
+shared by every app on the hostname), and the library's `localStorage` entry
+`ngx-ui-watchtower.sessionStarts` (up to five recent session ids with their start times). On shared
+devices, suggest `userIdRetentionDays: 0` (no user cookie); where several apps with their own app
+monitors share a hostname, `cookieAttributes: { unique: true }` keeps their sessions apart (the
+session cookie is then `cwr_s_<app monitor id>`). Both settings come from the broker's config.
 With `'noop'`, hand over the switch to RUM as a checklist — it is more than one line: install
 `aws-rum-web` and the `shimmer` allowance (Step 2), replace the `'noop'` line with
 `provideUwtTelemetryRumSink()` plus the credentials provider (Step 3), and bind

@@ -24,7 +24,7 @@ differ, they win). Import only from the two entry points below — no deep impor
 import {
   // setup
   provideUwtTelemetry, withScenarios, withBIEvents, withLogging, withRedaction,
-  withTelemetryEnabled, UWT_TELEMETRY_ENABLED, // 0.2.0+: turn all telemetry off
+  withTelemetryEnabled, UWT_TELEMETRY_ENABLED, // turn all telemetry off
   provideUwtTelemetrySink,          // 'broadcast' | 'noop'
   provideUwtTelemetryDestination,   // a custom sink
   provideUwtTelemetryBroadcastHost, // shells only
@@ -39,6 +39,7 @@ import {
   UwtLoggerService, UWT_LOG_API_PROVIDER, UwtNoopLogApiProvider, UWT_LOG_LEVEL_ORDER,
   // sinks
   UwtTelemetrySink, UwtNoopTelemetrySink, uwtClassifyTelemetryEvent,
+  uwtMarkSessionStart,              // custom destinations that own sessions (§8)
   // debug
   uwtIsDebugEnabled,
   // redaction helpers (for custom sinks)
@@ -81,7 +82,7 @@ All return `EnvironmentProviders`; they work in `ApplicationConfig.providers` an
 Exactly one destination per realm: two different ones throw at bootstrap; the same one listed twice
 is fine. Who injects `UWT_LOG_API_PROVIDER`: only `UwtLoggerService` and the broadcast host.
 
-**Turning telemetry off (0.2.0+)** — `withTelemetryEnabled(value | () => boolean)`, a feature of
+**Turning telemetry off** — `withTelemetryEnabled(value | () => boolean)`, a feature of
 `provideUwtTelemetry` (token `UWT_TELEMETRY_ENABLED`, default `true`). The factory runs in an
 injection context; the value is read once at startup (no runtime toggling, e.g. for consent). The
 providers stay the same — a destination and, where required, a log provider are still needed, so
@@ -240,13 +241,19 @@ interface UwtRumCredentials { accessKeyId; secretAccessKey; sessionToken; expira
 `aws-rum-web` config otherwise (`sessionSampleRate`, `sessionEventLimit` (default 200),
 `telemetries`, `allowCookies`, `disableAutoPageView`, `pageIdFormat`, `pagesToInclude/Exclude`,
 `enableXRay`, `endpoint`, …). Deliberately absent: `identityPoolId`/`guestRoleArn` (Cognito — use
-your broker), `endpointUrl`, `sessionId`, `userId`.
+your broker), `endpointUrl`, `sessionId`, `userId`. Leave `telemetries` out of broker JSON where
+you can: a list replaces the library's default, whose `http` entry adds the X-Ray header to
+same-origin requests through a `RegExp`. If the broker sends one, take names only
+(`['errors', 'http']`): settings that need a `RegExp` or a function (`pagesToExclude`, or
+`urlsToExclude`, `addXRayTraceIdHeader`, `ignore` inside `telemetries`) can't travel as JSON, and
+the sink drops any that arrive as strings (dev-mode warning) rather than let the SDK throw. Set
+them in code.
 
 Return values of `load()`:
 
 | Return                      | Effect                                                                                       |
 |-----------------------------|----------------------------------------------------------------------------------------------|
-| `null`                      | RUM off for the session; mid-session it tears the running client down                         |
+| `null`                      | RUM off for the rest of the page; mid-session it tears the running client down                |
 | throws / rejects            | Retried every 30 s. At startup up to 10 attempts, with events buffered (at most 100); on a refresh, the current credentials are kept |
 | `{ config, credentials }`   | Normal path                                                                                  |
 | `{ config }` only           | Only for an app monitor allowing unauthenticated access                                       |
@@ -305,7 +312,9 @@ A settled scenario record (abridged):
 
 `delta` is the duration; `elapsed` is a timeline position (ms since page load), and `sessionElapsed`
 one in the RUM session (ms since the session started — it survives reloads; absent until the
-session's start is known, and always absent with `suppressSessionStartEvent` or cookies off).
+session's start is known, and always absent with `suppressSessionStartEvent`, cookies off,
+`localStorage` blocked, or a session that began on a page in `pagesToExclude`). Steps carry no copy:
+a step sits at `sessionElapsed - (elapsed - step.elapsed)`.
 `scenario-start` / `scenario-end` are written by the library and don't count toward `stepCount`. `sessionId` / `userId`
 appear once the RUM client has started and a user is signed in.
 

@@ -57,7 +57,7 @@ describe('AppRumCredentialsProvider', () => {
 
   it('carries the typed optional settings through', async () => {
     const settings = {
-      telemetries: ['errors', 'performance', ['http', { recordAllRequests: true }]],
+      telemetries: ['errors', 'performance', 'http'],
       sessionAttributes: { tenant: 'emea', beta: true, tier: 2 },
       applicationAttributes: { team: 'desk' },
       allowCookies: true,
@@ -95,11 +95,11 @@ describe('AppRumCredentialsProvider', () => {
 
   it.each([
     ['a number entry', [42]],
-    ['a tuple without a name', [[42]]],
-    ['a tuple with a non-object option', [['http', 'all']]],
-    ['an empty tuple', [[]]],
-    ['a tuple with extra entries', [['http', {}, 'extra']]]
-  ])('drops malformed telemetries: %s', async (_label, telemetries) => {
+    // Options from JSON can't hold the RegExps and functions aws-rum-web expects.
+    ['options from JSON', ['errors', ['http', { urlsToExclude: ['/health'] }]]],
+    ['a name-only tuple', [['http']]],
+    ['an empty tuple', [[]]]
+  ])('drops telemetries that are not plain names: %s', async (_label, telemetries) => {
     answer({ ...valid, config: { ...valid.config, telemetries } });
     expect((await load())?.config).not.toHaveProperty('telemetries');
   });
