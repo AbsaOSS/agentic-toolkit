@@ -261,7 +261,9 @@ node <skill>/scripts/compare-screenshots.mjs compare shots /orders "/orders@@#ex
 7. Run the **base against itself** twice. Differences that appear there (animated artwork, logos, canvases) are
    noise: list them once and ignore them. Some noise comes and goes: anti-aliasing of a border at a fractional
    position can differ by a few pixels between two loads of the same code. Compare each side with itself several
-   times before calling a small difference a regression.
+   times before calling a small difference a regression. The diff lists each separate changed region with its box
+   and pixel count: a region that also shows up when the base is compared with itself is noise, the others need a
+   cause.
 8. States the comparison tool can't reach by clicking (a failed request, a loading state) need the same mocked
    responses on both servers: take those screenshots with a small script that routes the requests the same way on
    each, then compare the two folders with `compare-screenshots.mjs diff`.

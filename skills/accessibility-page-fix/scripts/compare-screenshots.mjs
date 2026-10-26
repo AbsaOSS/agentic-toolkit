@@ -12,7 +12,8 @@
 //
 // compare: shoots every path on both servers at every viewport and diffs them. Each path may end in
 //   `@@selector;;selector` to click through to a menu or dialog first. Writes <out>/base, <out>/head and, for every
-//   pair that differs, <out>/diff (changed pixels in red over a faded copy of the base).
+//   pair that differs, <out>/diff (changed pixels in red over a faded copy of the base). Each separate changed region
+//   is listed with its box and pixel count.
 // boxes: finds WHY two screenshots differ. Lists the elements whose position or size differs between the builds,
 //   matched by their place in the DOM tree. The first one in the list is the cause; the rest only moved.
 // --full: the page is captured at its whole height, including content that scrolls INSIDE the page (app shells
@@ -89,32 +90,67 @@ async function diffFolders(beforeDir, afterDir, outDir) {
       if (x.width !== y.width || x.height !== y.height) return { size: `${x.width}x${x.height} vs ${y.width}x${y.height}` };
       const out = new Uint8ClampedArray(x.pixels.length);
       let changed = 0;
-      const box = { left: Infinity, top: Infinity, right: -1, bottom: -1 };
+      // Changed pixels are grouped in 16 px cells; touching cells form one region. Separate regions are reported
+      // separately, so a few anti-aliased pixels don't hide inside one box with a real change
+      const CELL = 16;
+      const columns = Math.ceil(x.width / CELL);
+      const cells = new Map();
       for (let i = 0; i < x.pixels.length; i += 4) {
         const delta = Math.abs(x.pixels[i] - y.pixels[i]) + Math.abs(x.pixels[i + 1] - y.pixels[i + 1]) + Math.abs(x.pixels[i + 2] - y.pixels[i + 2]);
         if (delta > 0) {
           changed++;
           const [px, py] = [(i / 4) % x.width, Math.floor(i / 4 / x.width)];
-          box.left = Math.min(box.left, px);
-          box.right = Math.max(box.right, px);
-          box.top = Math.min(box.top, py);
-          box.bottom = Math.max(box.bottom, py);
+          const key = Math.floor(py / CELL) * columns + Math.floor(px / CELL);
+          const cell = cells.get(key) ?? { left: px, top: py, right: px, bottom: py, pixels: 0 };
+          cell.left = Math.min(cell.left, px);
+          cell.right = Math.max(cell.right, px);
+          cell.top = Math.min(cell.top, py);
+          cell.bottom = Math.max(cell.bottom, py);
+          cell.pixels++;
+          cells.set(key, cell);
           out.set([255, 0, 0, 255], i);
         } else out.set([x.pixels[i] / 4 + 191, x.pixels[i + 1] / 4 + 191, x.pixels[i + 2] / 4 + 191, 255], i);
       }
       if (!changed) return { changed: 0 };
+      const regions = [];
+      const seen = new Set();
+      for (const start of cells.keys()) {
+        if (seen.has(start)) continue;
+        seen.add(start);
+        const region = { left: Infinity, top: Infinity, right: -1, bottom: -1, pixels: 0 };
+        for (const queue = [start]; queue.length; ) {
+          const key = queue.pop();
+          const cell = cells.get(key);
+          region.left = Math.min(region.left, cell.left);
+          region.right = Math.max(region.right, cell.right);
+          region.top = Math.min(region.top, cell.top);
+          region.bottom = Math.max(region.bottom, cell.bottom);
+          region.pixels += cell.pixels;
+          const [cx, cy] = [key % columns, Math.floor(key / columns)];
+          for (const [dx, dy] of [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]]) {
+            const next = (cy + dy) * columns + cx + dx;
+            if (cx + dx >= 0 && cx + dx < columns && cells.has(next) && !seen.has(next)) {
+              seen.add(next);
+              queue.push(next);
+            }
+          }
+        }
+        regions.push(region);
+      }
+      regions.sort((p, q) => p.top - q.top || p.left - q.left);
       const canvas = document.createElement('canvas');
       canvas.width = x.width;
       canvas.height = x.height;
       canvas.getContext('2d').putImageData(new ImageData(out, x.width, x.height), 0, 0);
-      return { changed, box, image: canvas.toDataURL('image/png').split(',')[1] };
+      return { changed, regions, image: canvas.toDataURL('image/png').split(',')[1] };
     }, images);
     if (result.size) results.push({ name, status: `different size ${result.size}` });
     else if (!result.changed) results.push({ name, status: 'identical' });
     else {
       if (outDir) fs.writeFileSync(path.join(outDir, name), Buffer.from(result.image, 'base64'));
-      const { left, top, right, bottom } = result.box;
-      results.push({ name, status: `${result.changed} pixels differ (x ${left}-${right}, y ${top}-${bottom})` });
+      const shown = result.regions.slice(0, 8).map(r => `\n    x ${r.left}-${r.right}, y ${r.top}-${r.bottom}: ${r.pixels} px`);
+      const more = result.regions.length > 8 ? `\n    … ${result.regions.length - 8} more` : '';
+      results.push({ name, status: `${result.changed} pixels differ in ${result.regions.length} region(s)${shown.join('')}${more}` });
     }
   }
   await browser.close();

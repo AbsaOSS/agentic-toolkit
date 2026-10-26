@@ -266,6 +266,13 @@ Step 4 passes, and no regressions in tests or screenshots.
   this page can break another.
 - **Scan whole states, not just the happy path.** Open menus, dialogs and error states are where most violations
   hide.
+- **A state that didn't render passes every scan.** Content shown only when the data has certain fields (a tab, a
+  section, a badge) silently stays away when a mock leaves those fields out, and axe then scans a page without it.
+  Copy mock shapes from a real response, assert something unique to the state is visible before scanning, and check
+  that the new test fails on the base code.
+- **Zero-size containers.** Some drawer and dialog libraries give the outer element no width and draw the content
+  in a child, so visibility checks and screenshots of the outer element fail. Point tests at the content element,
+  found by role and name or a stable test id.
 - **`incomplete` is not "pass".** Typical causes: text over images or gradients, content partly clipped by a
   scroll container, elements axe could not measure. Resolve by hand, and where it is a test artifact (scroll
   position, animation) fix the test setup rather than excluding the rule.
