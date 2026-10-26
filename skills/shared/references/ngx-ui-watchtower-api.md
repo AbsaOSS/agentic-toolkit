@@ -246,7 +246,8 @@ you can: a list replaces the library's default, whose `http` entry adds the X-Ra
 same-origin requests through a `RegExp`. If the broker sends one, take names only
 (`['errors', 'http']`): settings that need a `RegExp` or a function (`pagesToExclude`, or
 `urlsToExclude`, `addXRayTraceIdHeader`, `ignore` inside `telemetries`) can't travel as JSON, and
-the sink drops any that arrive as strings (dev-mode warning) rather than let the SDK throw. Set
+if one arrives as a string, the sink doesn't start RUM for the page and warns in the console
+(setting names only), rather than let the SDK throw or record what the filters should exclude. Set
 them in code.
 
 Return values of `load()`:
