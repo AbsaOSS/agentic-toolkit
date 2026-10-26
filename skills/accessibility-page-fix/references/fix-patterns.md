@@ -148,10 +148,13 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
   close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
   focused element (WCAG 2.4.11): make Esc close them without moving focus (a document `keydown` listener in the
-  notification wrapper), or place them where they cover nothing interactive. An open menu, list or dialog takes Esc
-  first, or one Esc also dismisses an unread error: in the capture phase, before the popup closes, skip the
-  notifications when focus is inside a popup or dialog, or on a control with `aria-expanded="true"`. Checking
-  whether a popup is visible fails while it animates closed.
+  notification wrapper), or place them where they cover nothing interactive. Esc closes one layer at a time, top
+  first: an open menu or list, then the notifications, then a dialog or side panel. In the capture phase, before
+  anything else handles the key, skip the notifications when focus is inside a popup or on a control whose popup is
+  open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section that expands in place
+  is not a popup). Otherwise close them and stop the event, so the dialog under them stays open with its form
+  intact. When focus was on a notification's own button, send it back to where it was before. Checking whether a
+  popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
 - Results that arrive later in a dialog (checks finishing, validation results) belong in a `role="status"` summary
   so they are announced without moving focus.
 - Form errors: put text next to the field, link it with `aria-describedby`, set `aria-invalid="true"`, and move

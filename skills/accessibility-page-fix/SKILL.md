@@ -269,7 +269,17 @@ Step 4 passes, and no regressions in tests or screenshots.
 - **A state that didn't render passes every scan.** Content shown only when the data has certain fields (a tab, a
   section, a badge) silently stays away when a mock leaves those fields out, and axe then scans a page without it.
   Copy mock shapes from a real response, assert something unique to the state is visible before scanning, and check
-  that the new test fails on the base code.
+  that the new test fails on the base code. Wait for something the state shows, never for something it lacks: "no
+  rows" is already true while the list is still loading.
+- **Every variant of a shared component.** A narrow-screen rule that makes a panel fill the screen can be undone by a
+  variant's own offsets (a centred pop-up version with fixed `top`, `right` and `height`). List the component's
+  modifier classes and check each one at the narrow width.
+- **Persistent notifications and dialogs share Esc.** An error that stays open over a side panel's buttons needs a
+  way to close it while focus stays in the panel. If the panel takes Esc first, it closes the panel (and may discard
+  the form) while the notification stays on top. Esc closes the top layer only; see
+  [references/fix-patterns.md](references/fix-patterns.md).
+- **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
+  `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
 - **Zero-size containers.** Some drawer and dialog libraries give the outer element no width and draw the content
   in a child, so visibility checks and screenshots of the outer element fail. Point tests at the content element,
   found by role and name or a stable test id.
