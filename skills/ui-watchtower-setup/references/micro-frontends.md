@@ -95,15 +95,15 @@ declare global {
 }
 
 /**
- * The channel of the nearest ancestor window that published one — the shell, even when the shell
- * is itself framed by another app. With no shell, or during server rendering, a private channel
- * nobody hosts, so nothing ships. Never `undefined`: the library would then use its shared default
- * channel, where another same-origin shell may be listening.
+ * The channel of the nearest window that published one — this window (a fragment bootstrapped in
+ * the shell's own window), else the closest ancestor, even when the shell is itself framed by
+ * another app. With no shell, or during server rendering, a private channel nobody hosts, so
+ * nothing ships. Never `undefined`: the library would then use its shared default channel, where
+ * another same-origin shell may be listening.
  */
 function shellChannelName(): string {
   if (typeof window !== 'undefined') {
-    for (let w: Window = window; w !== w.parent; ) {
-      w = w.parent;
+    for (let w: Window = window; ; w = w.parent) {
       try {
         const shell = w.__uwtTelemetryChannel;
         if (shell) {
@@ -111,6 +111,9 @@ function shellChannelName(): string {
         }
       } catch {
         // a cross-origin ancestor: its `parent` is still readable, so keep climbing
+      }
+      if (w === w.parent) {
+        break; // reached the top window
       }
     }
   }
@@ -136,7 +139,7 @@ channel is read when the sink is created, not when the providers are built.
 **The shell must publish the id before any fragment boots** — the sink reads it once, so an early
 fragment ships nothing for the whole page. The shell code above guarantees this with Web Fragments.
 
-| Must match the shell | `eventNamespace` (ask for the shell's value if the shell isn't in this repo; default `com.uwt`); the channel name (read from the nearest ancestor window that publishes it); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts |
+| Must match the shell | `eventNamespace` (ask for the shell's value if the shell isn't in this repo; default `com.uwt`); the channel name (read from the nearest window that publishes it: its own, then its ancestors); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts |
 |----------------------|---------------------------------------------------------------------------------------------------------|
 | **Must differ**      | `application` — every forwarded event is stamped with it, which is how fragments are told apart         |
 | **Never provide**    | `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER`, `provideUwtTelemetryBroadcastHost()`, `UWT_LOG_API_PROVIDER` (`'broadcast'` already binds it to the forwarding provider) |
