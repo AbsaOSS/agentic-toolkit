@@ -245,10 +245,10 @@ your broker), `endpointUrl`, `sessionId`, `userId`. Leave `telemetries` out of b
 you can: a list replaces the library's default, whose `http` entry adds the X-Ray header to
 same-origin requests through a `RegExp`. If the broker sends one, take names only
 (`['errors', 'http']`): settings that need a `RegExp` or a function (`pagesToExclude`, or
-`urlsToExclude`, `addXRayTraceIdHeader`, `ignore` inside `telemetries`) can't travel as JSON, and
-if one arrives as a string, the sink doesn't start RUM for the page and warns in the console
-(setting names only), rather than let the SDK throw or record what the filters should exclude. Set
-them in code.
+`urlsToExclude`, `ignore` inside `telemetries`, and `addXRayTraceIdHeader` unless it's a boolean)
+can't travel as JSON. If one arrives as a string, the sink doesn't start RUM for the page and warns
+in the console (each setting and its expected type, never the value), rather than let the SDK throw
+or record what the filters should exclude. Set them in code.
 
 Return values of `load()`:
 

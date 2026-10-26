@@ -34,8 +34,9 @@ export class AppLogApiProvider implements UwtLogApiProvider {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record),
-      // Only while the page is going away: keepalive lets the request outlive it, but browsers
-      // reject keepalive requests once all in flight exceed 64 KiB, so a burst would be lost.
+      // Only while the page is hidden (it may be closing): keepalive lets the request outlive it,
+      // but browsers reject keepalive requests once all in flight exceed 64 KiB, so a burst would
+      // be lost.
       keepalive: this.document.visibilityState === 'hidden'
     }).catch(() => undefined);
   }
