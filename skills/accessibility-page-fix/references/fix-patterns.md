@@ -106,6 +106,9 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   "Add" button that is disabled once its field is empty, a "Close" button that disappears. Move focus to where the
   user goes on (the control that opened the editor, the content's heading, the field). Check first that focus really
   drops: a button in a loading state often stays enabled and keeps it.
+- A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead, when a
+  second press is harmless (it restarts the request): disabling it drops focus and the ring for the whole loading
+  time, and moving focus back afterwards leaves that gap. Test it with a slow response: a fast mock never shows it.
 - A list keyed by object identity rebuilds an item when an update returns a new object for it (toggling a vote), and
   the item's focused button goes with it. Key list items by a stable id.
 - A focus ring in the design system's brand color disappears on a bar of the same color (a branded page header).
