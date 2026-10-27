@@ -133,7 +133,7 @@ different destinations also fail bootstrap.
 |---|---|---|
 | Standalone app, sends to RUM | `provideUwtTelemetryRumSink()` (from `/rum`) | `UWT_RUM_CREDENTIALS_PROVIDER` → `assets/rum-credentials.provider.ts` |
 | Shell hosting fragments | `provideUwtTelemetryRumSink()` | + `provideUwtTelemetryBroadcastHost(channelId)` + a log provider — `references/micro-frontends.md` |
-| Fragment inside a shell | `provideUwtTelemetrySink('broadcast')` + lazy `UWT_BROADCAST_CHANNEL` factory | nothing else — `references/micro-frontends.md` |
+| Fragment inside a shell | `provideUwtTelemetrySink('broadcast')` (follows the shell's channel by itself) | nothing else — `references/micro-frontends.md` |
 | RUM not available yet | `provideUwtTelemetrySink('noop')` | explicit opt-out; everything runs, nothing ships; switching to RUM later takes more than this line — Step 9. Not for turning telemetry off per environment — see below |
 | Own backend | `provideUwtTelemetryDestination(MySink)` (a class extending `UwtTelemetrySink`) | see the API reference, "Custom destination" |
 
@@ -355,12 +355,17 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
 - **Redaction never scrubs URL path segments** (only query strings and fragments; `scanValuePatterns`
   only scrubs metadata and message values). Keep personal data out of URLs and report route
   templates, never resolved paths.
+- **The X-Ray header follows redirects.** RUM adds `X-Amzn-Trace-Id` to same-origin requests
+  (relative URLs included, and fragments' in a shell). A same-origin endpoint that redirects to
+  another origin (an S3 download, an SSO login) then fails CORS unless that origin allows the
+  header. Look for such endpoints and list them:
+  `provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })`.
 
 ## Out of scope
 
 - Instrumenting the app's own journeys and BI events → `ui-watchtower-integration`.
 - CloudWatch dashboards, RUM extended metrics, alarms, Logs Insights queries.
-- Sending the scenario id to the backend as a correlation header — the library ships no HTTP
-  interceptor on purpose. Offer it as a follow-up, restricted to the app's own API origins.
+- Sending the scenario id to the backend: `uwtScenarioHeaderInterceptor()` in `provideHttpClient`
+  (API reference §4). Offer it as a follow-up; it only helps once the backend logs the header.
 - The fragment teams' own setup when this app is a shell — hand them the fragment contract.
 - Upgrading Angular, OpenTelemetry, and non-Angular frameworks.

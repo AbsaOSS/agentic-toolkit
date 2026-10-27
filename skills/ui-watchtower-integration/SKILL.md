@@ -167,6 +167,10 @@ both, and do not move the calls into a shared service. Single-purpose helpers ar
 5. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
    `logger.error(message, { error: safeHttpFailure(e).error, correlationId: scenario.id })` so log
    lines join the scenario.
+6. Only if `app.config` wires `uwtScenarioHeaderInterceptor()`: pass
+   `{ context: uwtScenarioContext(scenario) }` on the journey's own `HttpClient` calls, so the
+   backend gets the scenario id (API reference §4). Skip calls to endpoints that redirect to
+   another origin.
 
 ### Step 7 · Tests for every outcome
 
@@ -200,5 +204,5 @@ from the user's original request and why.
 - Installing or wiring the library, credentials, destinations, route-navigation tracking →
   `ui-watchtower-setup`.
 - CloudWatch dashboards, extended metrics, alarms.
-- A backend correlation-header interceptor (offer as a follow-up).
+- Wiring the scenario-header interceptor → `ui-watchtower-setup` (offer it as a follow-up).
 - Non-Angular applications.

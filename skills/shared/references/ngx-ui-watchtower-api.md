@@ -1,7 +1,8 @@
 # ngx-ui-watchtower API reference
 
-The public surface of `@absaoss-cps/ngx-ui-watchtower` (latest release; if the installed typings
-differ, they win). Import only from the two entry points below — no deep imports.
+The public surface of `@absaoss-cps/ngx-ui-watchtower` (latest release, 0.4.0; if the installed
+typings differ, they win — items marked *0.4.0+* don't exist before it). Import only from the two
+entry points below — no deep imports.
 
 ## Contents
 
@@ -33,6 +34,7 @@ import {
   UwtBroadcastLogApiProvider,       // bound by 'broadcast'; never bind it yourself
   // scenarios
   UwtScenarioTelemetryService, UwtScenario, traceScenario,
+  uwtScenarioHeaderInterceptor, uwtScenarioContext, UWT_DEFAULT_SCENARIO_HEADER, // §4 backend header, 0.4.0+
   // BI
   UwtBITelemetryService,
   // logging
@@ -49,16 +51,18 @@ import type {
   UwtTelemetryIdentity, UwtTelemetryMetadata, UwtTelemetryError, UwtScenarioOptions,
   UwtScenarioOutcome, UwtScenarioRecord, UwtScenarioStatus, UwtTraceScenarioOptions,
   UwtBIEventName, UwtLogApiProvider, UwtLogQuery, UwtLogRecord, UwtLogDetail,
+  UwtScenarioHeaderOptions,
   // registries augmented by telemetry.schema.ts
   UwtScenarioNames, UwtScenarioSteps, UwtBIEventNames, UwtLoggerNames
 } from '@absaoss-cps/ngx-ui-watchtower';
 
-// '@absaoss-cps/ngx-ui-watchtower/rum' — the whole entry point, seven names
+// '@absaoss-cps/ngx-ui-watchtower/rum' — the whole entry point, eight names
 import {
   provideUwtTelemetryRumSink, UwtRumTelemetrySink, UWT_RUM_CREDENTIALS_PROVIDER
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 import type {
-  UwtRumCredentialsProvider, UwtRumBootstrap, UwtRumCredentials, UwtRumAppMonitorConfig
+  UwtRumCredentialsProvider, UwtRumBootstrap, UwtRumCredentials, UwtRumAppMonitorConfig,
+  UwtRumSinkOptions // 0.4.0+
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 ```
 
@@ -73,11 +77,11 @@ All return `EnvironmentProviders`; they work in `ApplicationConfig.providers` an
 | Call                                                   | Registers                                                                                                         |
 |--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `provideUwtTelemetry(identity, ...features)`           | Identity + default config for every concern; features override one concern each (later wins). **No destination.** |
-| `provideUwtTelemetryRumSink()` (`/rum`)                | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint |
+| `provideUwtTelemetryRumSink(options?)` (`/rum`)        | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint. `options`: `UwtRumSinkOptions` (`xRayExcludeUrls`, §7) |
 | `provideUwtTelemetrySink('noop')`                      | Explicit "ship nowhere" destination                                                                                |
-| `provideUwtTelemetrySink('broadcast', { channelName? })` | Forwards to a shell's broadcast host. Also binds `UWT_LOG_API_PROVIDER` to `UwtBroadcastLogApiProvider`. `channelName` is bound with `useValue` (read eagerly) — fragments should use a lazy `UWT_BROADCAST_CHANNEL` factory instead (see micro-frontends.md) |
+| `provideUwtTelemetrySink('broadcast', { channelName? })` | Forwards to a shell's broadcast host. Also binds `UWT_LOG_API_PROVIDER` to `UwtBroadcastLogApiProvider`. Created at startup. Nested in the shell's page, it follows the shell's channel by itself; set `channelName` only outside the page (a popup) |
 | `provideUwtTelemetryDestination(SinkClass, { init? })` | Any custom sink; `init(sink)` runs once from an initializer, fail-open                                            |
-| `provideUwtTelemetryBroadcastHost(channelName?)`       | Shell-side receiver for fragments; constructed eagerly. Injects `UWT_LOG_API_PROVIDER` — a host without a log provider fails at bootstrap |
+| `provideUwtTelemetryBroadcastHost(channelName?)`       | Shell-side receiver for fragments; constructed eagerly. Publishes its channel for the fragments nested in its page. Injects `UWT_LOG_API_PROVIDER` — a host without a log provider fails at bootstrap |
 
 Exactly one destination per realm: two different ones throw at bootstrap; the same one listed twice
 is fine. Who injects `UWT_LOG_API_PROVIDER`: only `UwtLoggerService` and the broadcast host.
@@ -169,6 +173,23 @@ interface UwtTraceScenarioOptions<T> {
 }
 ```
 
+**Sending the scenario to the backend** (*0.4.0+*). Opt-in, per request:
+
+```ts
+provideHttpClient(withInterceptors([uwtScenarioHeaderInterceptor()])); // { headerName? } renames it
+
+this.http.get('/api/customers', { context: uwtScenarioContext(scenario) })
+  .pipe(traceScenario(scenario)).subscribe();
+```
+
+Marked requests get `X-Uwt-Scenario-Id: <scenario.id>` (`UWT_DEFAULT_SCENARIO_HEADER`) — only
+same-origin ones, only while telemetry is on, never unmarked ones. It only adds the header: errors
+pass through and settling stays with the caller. List it after any interceptor that rewrites URLs
+(e.g. one prefixing an API host). `uwtScenarioContext` returns a new `HttpContext`; add other tokens
+with `.set()`. The backend logs the header as `scenarioId` and adds it to its X-Ray trace as the
+`scenarioId` annotation (letters, digits, underscores only). Don't mark a request to an endpoint
+that redirects to another origin (§7).
+
 Service extras: `find(id)`, `findByName(name)`, `getActive()`, and `settled$` (an observable of
 deep-cloned settled records). On `pagehide` every in-flight scenario settles as `abandoned`
 (`abandonedBy: 'page-hidden'`); on `visibilitychange` to hidden the sink flushes and scenarios keep
@@ -243,12 +264,19 @@ interface UwtRumCredentials { accessKeyId; secretAccessKey; sessionToken; expira
 `enableXRay`, `endpoint`, …). Deliberately absent: `identityPoolId`/`guestRoleArn` (Cognito — use
 your broker), `endpointUrl`, `sessionId`, `userId`. Leave `telemetries` out of broker JSON where
 you can: a list replaces the library's default, whose `http` entry adds the X-Ray header to
-same-origin requests through a `RegExp`. If the broker sends one, take names only
+same-origin requests, relative URLs (`/api/...`) included, through a `RegExp` — and in a shell, to
+nested fragments' requests too. If the broker sends one, take names only
 (`['errors', 'http']`): settings that need a `RegExp` or a function (`pagesToExclude`, or
 `urlsToExclude`, `ignore` inside `telemetries`, and `addXRayTraceIdHeader` unless it's a boolean)
 can't travel as JSON. If one arrives as a string, the sink doesn't start RUM for the page and warns
 in the console (each setting and its expected type, never the value), rather than let the SDK throw
 or record what the filters should exclude. Set them in code.
+
+A same-origin endpoint that redirects to another origin (a download that 302s to S3, an SSO
+login) passes the X-Ray header on, and the request fails unless that origin allows
+`x-amzn-trace-id` in CORS. Fix it at the target, or keep the header off that path in code:
+`provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.4.0+*; matched against the resolved
+URL; covers fragments too; only with the default `telemetries`).
 
 Return values of `load()`:
 
