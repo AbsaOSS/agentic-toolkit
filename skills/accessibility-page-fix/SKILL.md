@@ -54,7 +54,8 @@ Copy this checklist and track progress:
 3. Start the app and open the page. If it needs a login, use the test credentials the project already uses; never
    invent or hard-code real credentials. If the backend is unavailable, intercept network calls in the browser
    (Playwright `page.route`) and return small fake responses that satisfy the page — only enough to render it.
-   Keep mocks inside test or local-dev code, never in production code.
+   Keep mocks inside test or local-dev code, never in production code. A request that fails with status 0 got no
+   response at all: the app was started without its proxy or mock backend, or the host is unreachable from here.
 4. List the page's **states**. Each one is scanned separately because hidden or conditional UI is invisible to axe:
    default, loading, empty, error, populated, dialogs and menus open, expanded/collapsed sections, tabs, form
    validation errors, hover/focus-only content, carousels or pagers moved to a later position.
@@ -157,6 +158,9 @@ Rules while fixing:
 - **Do not** suppress or disable axe rules, add `aria-hidden` to hide a problem, or `display:none` things to make a
   scan pass.
 - **Do not** change business logic, data flow or API contracts. If a fix seems to need it, stop and ask.
+- Fix what the finding needs, no more. A bug you come across that the base branch has too and that is not an
+  accessibility failure (a race when switching items, a validation message shown too early) goes in the report as
+  unchanged, not into the fix.
 - Do not add ARIA that repeats what the native element already says (`role="button"` on a `<button>`).
 - Prefer changing the element (div → button, span → link) over bolting on `role`, `tabindex` and key handlers.
 - Keep the diff reviewable: avoid reformatting unrelated code. Re-indentation from new wrappers is fine; mixed
@@ -184,14 +188,18 @@ Rules while fixing:
    running tests: a reload mid-test drops focus. Before checking that something stays visible, wait for exit
    animations (a closing element still counts as visible), and wait for widgets that build their DOM after the
    page renders (an editor's toolbar) before tabbing to them. A list that filters as you type is rebuilt a moment
-   after the last key: wait for the filtered result before pressing arrow keys. Never retry without a time limit
+   after the last key: wait for the filtered result before pressing arrow keys. After choosing, check something
+   only the choice produces (a dependent field filling in): the field shows the typed text whether or not an
+   option was chosen. Never retry without a time limit
    (`toPass()` without a `timeout`, open-ended loops): if the state never comes, every test hangs until the test
    timeout. Cap long runs with `--timeout` and `--max-failures`.
    When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
    in a table, and share helpers, but re-run the revert proof for any check you rewrote.
 4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
 5. Report using [references/report-template.md](references/report-template.md): what was found, what was fixed,
-   what remains and why, observations that are not failures, shared code touched, and visual changes.
+   what remains and why, observations that are not failures, shared code touched, and visual changes. If CI fails
+   on the pull request, check which jobs ran: jobs that never started (a missing runner or registry) are a CI setup
+   problem, not a test result, and the report says so.
 
 Done means: all scans for the page's states pass with no violations, every incomplete is resolved or explained,
 Step 4 passes, and no regressions in tests or screenshots.

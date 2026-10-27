@@ -281,6 +281,10 @@ handle a missing (null) service with a plain fallback.
 - A brand or accent color that fails: list every background it is used on (white, tinted card, hover, selected,
   highlighted row) and test each candidate token against all of them. If none passes everywhere, use a different
   shade per background. Define new colors as tokens next to the existing ones, and flag them for the design owner.
+- When the fix belongs in the design system (darkening the failing token itself): keep its shade scale in order
+  (a "darken1" must stay darker than the base), check every theme that puts text on that color (a dark "contrast"
+  color may need to become white), and add a test that reads the palette file and checks the ratios, so a later
+  change can't bring the failure back.
 - Disabled controls are exempt, but placeholder text is not.
 - Don't rely on color alone: add text, an icon, a pattern or an underline.
 
