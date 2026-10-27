@@ -110,10 +110,9 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   drops: a button in a loading state often stays enabled and keeps it.
 - A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead:
   disabling it drops focus and the ring for the whole loading time, and moving focus back afterwards leaves that gap.
-  The disabled state was also what stopped a second request, so keep that: ignore a press while loading, and let a
-  new load (another item, another filter) cancel the one in flight. Otherwise two requests race and the older reply
-  can arrive last; after a delete, the deleted row comes back. Test it with a slow response: a fast mock never shows
-  either problem.
+  The disabled state was also what stopped a second request, so keep that: ignore a press while loading. Otherwise
+  two requests race and the older reply can arrive last; after a delete, the deleted row comes back. Test it with a
+  slow response: a fast mock never shows either problem.
 - A list keyed by object identity rebuilds an item when an update returns a new object for it (toggling a vote), and
   the item's focused button goes with it. Key list items by a stable id.
 - A focus ring in the design system's brand color disappears on a bar of the same color (a branded page header).
