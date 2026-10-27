@@ -108,9 +108,12 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   "Add" button that is disabled once its field is empty, a "Close" button that disappears. Move focus to where the
   user goes on (the control that opened the editor, the content's heading, the field). Check first that focus really
   drops: a button in a loading state often stays enabled and keeps it.
-- A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead, when a
-  second press is harmless (it restarts the request): disabling it drops focus and the ring for the whole loading
-  time, and moving focus back afterwards leaves that gap. Test it with a slow response: a fast mock never shows it.
+- A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead:
+  disabling it drops focus and the ring for the whole loading time, and moving focus back afterwards leaves that gap.
+  The disabled state was also what stopped a second request, so keep that: ignore a press while loading, and let a
+  new load (another item, another filter) cancel the one in flight. Otherwise two requests race and the older reply
+  can arrive last; after a delete, the deleted row comes back. Test it with a slow response: a fast mock never shows
+  either problem.
 - A list keyed by object identity rebuilds an item when an update returns a new object for it (toggling a vote), and
   the item's focused button goes with it. Key list items by a stable id.
 - A focus ring in the design system's brand color disappears on a bar of the same color (a branded page header).
@@ -142,7 +145,8 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   input, with a sensible default for its other uses.
 - Two widgets of the same kind on one page (two tables with the same toolbar buttons): when the library offers no
   name for its built-in controls, wrap each widget in a `<section>` named after its visible title. The buttons are
-  then told apart by the region they are in.
+  then told apart by the region they are in. Only the widget goes in its section: a nearby link or button about
+  something else stays outside, or screen readers announce it as part of the widget.
 
 ## Status and error messages
 
@@ -156,13 +160,22 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
   close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
   focused element (WCAG 2.4.11): make Esc close them without moving focus (a document `keydown` listener in the
-  notification wrapper), or place them where they cover nothing interactive. Esc closes one layer at a time, top
-  first: an open menu or list, then the notifications, then a dialog or side panel. In the capture phase, before
-  anything else handles the key, skip the notifications when focus is inside a popup or on a control whose popup is
-  open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section that expands in place
-  is not a popup). Otherwise close them and stop the event, so the dialog under them stays open with its form
-  intact. When focus was on a notification's own button, send it back to where it was before. Checking whether a
-  popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
+  notification wrapper), or place them where they cover nothing interactive. Take Esc only when it is needed: a
+  notification's box overlaps the focused element, focus is in a notification, or nothing has focus. Otherwise
+  leave the key to the page, or it never reaches a tooltip, a drag in progress or a dialog. When Esc is taken, close
+  one layer at a time, top first: an open menu or list, then the notifications, then a dialog or side panel. In the
+  capture phase, before anything else handles the key, skip the notifications when focus is inside a popup or on a
+  control whose popup is open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section
+  that expands in place is not a popup). Otherwise close them and stop the event, so the dialog under them stays
+  open with its form intact. When focus was on a notification's own button, send it back to where it was before; if
+  that element is gone (its panel closed, or it was drawn again), to the open dialog or the main landmark, with a
+  `tabindex="-1"` that is removed again on blur. Focus must never fall to the top of the document. Checking whether
+  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
+- Notification libraries often drop a message identical to one that is still open. That was harmless while messages
+  closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
+  out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen
+  and read the message out again through a live announcer, and cap how many notifications stay open (the oldest
+  closes).
 - Results that arrive later in a dialog (checks finishing, validation results) belong in a `role="status"` summary
   so they are announced without moving focus.
 - Form errors: put text next to the field, link it with `aria-describedby`, set `aria-invalid="true"`, and move
@@ -194,7 +207,8 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   more rows below a breakpoint.
 - App shell at 320 px: a fixed-position header and a sidebar that fill the screen leave no room for the page. Below
   a breakpoint, switch the shell to normal flow (header becomes static and wraps, the page scrolls with the
-  document) and collapse the sidebar by default, following the breakpoint with `matchMedia` and its `change` event.
+  document) and collapse the sidebar by default. Follow the breakpoint with the framework's breakpoint service if it
+  has one (it cleans up and is easy to replace in tests), otherwise with `matchMedia` and its `change` event.
   When the screen is wide again, restore the sidebar the user had there instead of forcing the default. Prove the
   desktop layout is pixel-identical.
 - Toolbars and headers built as one flex row: let them wrap (`flex-wrap: wrap`, `min-width: 0` on children) instead

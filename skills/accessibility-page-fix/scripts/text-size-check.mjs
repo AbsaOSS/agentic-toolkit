@@ -35,6 +35,8 @@ const SETTINGS = [
 const measure = scope =>
   document.fonts.ready.then(() => {
     const issues = [];
+    // A scope that matches nothing would report no findings for a page it never checked
+    if (!document.querySelector(scope)) issues.push(`nothing matches --scope ${scope}: no part of the page was checked`);
     const doc = document.documentElement;
     if (doc.scrollWidth > doc.clientWidth + 1) issues.push(`horizontal scroll: page is ${doc.scrollWidth}px wide in a ${doc.clientWidth}px viewport`);
     for (const root of document.querySelectorAll(scope)) {

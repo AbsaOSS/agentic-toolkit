@@ -243,7 +243,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   Keep errors and warnings open until closed (usually one setting in the app's notification wrapper; it is shared,
   so list it). Scan the page with the notification open. A notification that stays open can then cover the focused
   element (WCAG 2.4.11), typically a sticky footer under a bottom toast: Tab through the page with one open, and
-  let Esc close notifications without moving focus.
+  let Esc close notifications without moving focus. Check the library's duplicate rule too: many drop a message that
+  is already open, so with errors that stay, a repeated failure is never shown or announced again. Read it out
+  again instead of stacking copies.
 - **Live regions need real spaces.** Frameworks that strip whitespace between elements can turn "1 source,
   0 replacements" into "1source0replacements" in the announced text. Check the region's `textContent`.
 - **Playwright's `fullPage` is not the full page.** Apps that scroll an inner container (a shell with a fixed
@@ -273,6 +275,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   this page can break another.
 - **Scan whole states, not just the happy path.** Open menus, dialogs and error states are where most violations
   hide.
+- **A check that matches nothing passes.** Changing a landmark's element (`<main>` to a `div` with `role="main"`)
+  or a class leaves tests and scripts that select it by tag or class measuring nothing, and they still pass. Select
+  landmarks by role, and make every check limited to an area fail when nothing matches the area.
 - **A state that didn't render passes every scan.** Content shown only when the data has certain fields (a tab, a
   section, a badge) silently stays away when a mock leaves those fields out, and axe then scans a page without it.
   Copy mock shapes from a real response, assert something unique to the state is visible before scanning, and check
@@ -283,8 +288,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   modifier classes and check each one at the narrow width.
 - **Persistent notifications and dialogs share Esc.** An error that stays open over a side panel's buttons needs a
   way to close it while focus stays in the panel. If the panel takes Esc first, it closes the panel (and may discard
-  the form) while the notification stays on top. Esc closes the top layer only; see
-  [references/fix-patterns.md](references/fix-patterns.md).
+  the form) while the notification stays on top. If the notifications take every Esc, a tooltip, a drag or a panel
+  never gets it while an error is open. Take Esc for the notifications only when one covers the focused element,
+  and close the top layer only; see [references/fix-patterns.md](references/fix-patterns.md).
 - **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
   `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
 - **Custom radios and checkboxes hide the real input.** The visible box covers a transparent native input, so
