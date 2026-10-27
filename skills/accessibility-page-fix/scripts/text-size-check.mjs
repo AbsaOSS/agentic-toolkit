@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Checks a page at 200% text size, at 320 CSS px wide (reflow), and with WCAG text-spacing overrides.
-// Reports horizontal scrolling, clipped text, placeholders that don't fit, controls pushed off-screen or covering
-// each other, and text that does not grow when the root font size doubles. Saves a screenshot of each setting so you can look at them.
+// Reports horizontal scrolling (of the page or of a scroll container inside it), clipped text, placeholders that
+// don't fit, controls pushed off-screen or covering each other, and text that does not grow when the root font size doubles. Saves a screenshot of each setting so you can look at them.
 //
 // Usage (run from the app directory):
 //   node <skill>/scripts/text-size-check.mjs <url> [--wait <selector>] [--storage <state.json>] [--out <dir>]
@@ -59,6 +59,10 @@ const measure = scope =>
         if (need > room + 1) issues.push(`placeholder does not fit: "${el.placeholder}" needs ${Math.round(need)}px, input has ${Math.round(room)}px`);
       }
       if (el.matches('a[href],button,input,select,textarea,[role=button]') && (r.right > innerWidth + 1 || r.left < -1)) issues.push(`control pushed off-screen: ${label(el)} (x ${Math.round(r.left)}..${Math.round(r.right)} in ${innerWidth}px viewport)`);
+      // A scroll container inside the page (a tab panel, a card body) that scrolls sideways hides a reflow failure from
+      // the page-level check. A data table's own frame may scroll sideways.
+      const isTable = n => n?.matches?.('table,[role=table],[role=grid],[role=treegrid]');
+      if (['auto', 'scroll'].includes(cs.overflowX) && el.scrollWidth > el.clientWidth + 1 && !isTable(el) && !isTable(el.firstElementChild)) issues.push(`scrolls sideways inside the page: ${label(el)} (content ${el.scrollWidth}px in a ${el.clientWidth}px box)`);
     }
     // Controls covering each other. Only the part left after clipping by overflow ancestors counts (collapsed
     // panels), controls in a sticky or fixed layer are only compared with each other (content scrolls under them), and a

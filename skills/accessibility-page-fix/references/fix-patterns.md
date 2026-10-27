@@ -65,6 +65,8 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   `given-name`, …). This supports 1.3.5 and, for logins, 3.3.8: never block paste or password managers, and
   don't leave `autocomplete="off"` on credentials.
 - Errors: text next to the field linked with `aria-describedby`, plus `aria-invalid="true"`.
+- A value the user can't change (the only option there is) is text with a visible label, not a read-only input: a
+  read-only input is still a Tab stop with nothing to do. Match the input's box size so the layout doesn't move.
 - A submit button that is disabled until the form is valid is not a WCAG failure, but it hides the reason from
   users; report it as an observation and don't change behaviour without asking.
 
@@ -138,6 +140,9 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Repeated items (cards, rows) with the same controls: give each control a name that contains its visible text plus
   the item, e.g. "More actions for Orders 2024". A shared component that is repeated should take the name as an
   input, with a sensible default for its other uses.
+- Two widgets of the same kind on one page (two tables with the same toolbar buttons): when the library offers no
+  name for its built-in controls, wrap each widget in a `<section>` named after its visible title. The buttons are
+  then told apart by the region they are in.
 
 ## Status and error messages
 

@@ -107,7 +107,7 @@ verdicts:
 | Script | What it does |
 |---|---|
 | `scripts/keyboard-walk.mjs <url>` | Tabs through the page; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
-| `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll, clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
+| `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
 | `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
 | `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (several pages, states and widths in one run) and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
@@ -183,7 +183,10 @@ Rules while fixing:
    it as an existing problem if it fails there too. After editing files, let the dev server finish rebuilding before
    running tests: a reload mid-test drops focus. Before checking that something stays visible, wait for exit
    animations (a closing element still counts as visible), and wait for widgets that build their DOM after the
-   page renders (an editor's toolbar) before tabbing to them.
+   page renders (an editor's toolbar) before tabbing to them. A list that filters as you type is rebuilt a moment
+   after the last key: wait for the filtered result before pressing arrow keys. Never retry without a time limit
+   (`toPass()` without a `timeout`, open-ended loops): if the state never comes, every test hangs until the test
+   timeout. Cap long runs with `--timeout` and `--max-failures`.
    When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
    in a table, and share helpers, but re-run the revert proof for any check you rewrote.
 4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
@@ -227,6 +230,10 @@ Step 4 passes, and no regressions in tests or screenshots.
   a breakpoint stays side by side and controls start covering each other. Grid and flex rows should hold on their
   own: `minmax(min-content, 1fr)` instead of `minmax(0, 1fr)` for columns holding controls, and `flex-wrap` on
   rows. Check at more than one viewport width, and look for overlapping controls, not just off-screen ones.
+- **Inner scroll containers hide reflow failures.** A tab panel or card body with `overflow: auto` scrolls sideways
+  on its own, so the page reports no horizontal scroll while a toggle or toolbar is cut off at its edge. Check each
+  scroll container's `scrollWidth` at 320 px (`text-size-check` does); only a data table's own frame may scroll
+  sideways. Rows of controls need to wrap below the breakpoint.
 - **Scrolling can hide a reflow failure.** A dialog wider than a 320 px screen can still let every control be
   scrolled into view, sideways. That's two-dimensional scrolling, which fails reflow. Check that the dialog itself
   fits the screen width before checking its controls, and look at the screenshot when a new check passes on the
@@ -280,6 +287,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   [references/fix-patterns.md](references/fix-patterns.md).
 - **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
   `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
+- **Custom radios and checkboxes hide the real input.** The visible box covers a transparent native input, so
+  Playwright's `check()` and `uncheck()` time out on it. In tests, click the label text (or focus the input and press
+  Space), and keep role-based locators for the assertions.
 - **Zero-size containers.** Some drawer and dialog libraries give the outer element no width and draw the content
   in a child, so visibility checks and screenshots of the outer element fail. Point tests at the content element,
   found by role and name or a stable test id.
