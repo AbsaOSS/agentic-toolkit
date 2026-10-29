@@ -56,6 +56,10 @@ Copy this checklist and track progress:
    (Playwright `page.route`) and return small fake responses that satisfy the page — only enough to render it.
    Keep mocks inside test or local-dev code, never in production code. A request that fails with status 0 got no
    response at all: the app was started without its proxy or mock backend, or the host is unreachable from here.
+   Tests that mock the backend must also mock the runtime config and the login endpoints: a developer machine often
+   has a local config file that CI doesn't create. Run the new tests once with that file moved aside. Answer
+   requests nobody mocked with a test failure that names them, never with a catch-all empty response: `{}` for
+   every unknown call hides the endpoints the page really uses and renders states that can't happen.
 4. List the page's **states**. Each one is scanned separately because hidden or conditional UI is invisible to axe:
    default, loading, empty, error, populated, dialogs and menus open, expanded/collapsed sections, tabs, form
    validation errors, hover/focus-only content, carousels or pagers moved to a later position.
@@ -170,7 +174,8 @@ Rules while fixing:
 
 1. **Add a scan per state** for this page in the project's accessibility test project, following the existing
    fixture and conventions. Mock only what the page needs. Add a focused test for behaviour axe cannot check
-   (keyboard path, focus return, text-size layout) when you changed it.
+   (keyboard path, focus return, text-size layout) when you changed it. When you rewrite an existing test file,
+   keep its tests that still apply: compare the removed `it(`/`test(` lines in the diff before you finish.
 2. **Prove the new tests catch the problems:** temporarily revert only the fix, run the new tests and confirm they
    fail; restore the fix and confirm they pass. A test that passes either way protects nothing: if it passes on
    the old code, the scenario misses the bug (the last page of a list, where the widget re-focuses and scrolls,
@@ -209,7 +214,8 @@ Step 4 passes, and no regressions in tests or screenshots.
 - **Library popups sit outside every landmark.** Many UI kits attach open menus and dropdown lists to the end of
   `<body>`, so axe's `region` best practice flags them. When the library offers no inline option, scan the page
   with the popup excluded, then the popup on its own with every rule except `region`, and document it. Don't
-  disable `region` for the whole page.
+  disable `region` for the whole page. Assert the violations of both scans together: asserting the page first
+  hides every popup violation until the page is clean.
 - **Sticky footers and headers hide focus.** A sticky paginator or toolbar covers the controls that scroll under it
   (WCAG 2.4.11). The keyboard walk shows it as stops with no visible focus near the screen edge. Give focusable
   elements a `scroll-margin` at least as tall as the sticky bar.
@@ -217,11 +223,15 @@ Step 4 passes, and no regressions in tests or screenshots.
   element. Restore focus into the menu after the refresh if it was there before.
 - **Global CSS can remove focus outlines.** A rule such as `button:focus { outline: none }` beats a component's own
   `:focus` outline. Check the computed style, and draw the design system's focus ring on `:focus-visible`.
+- **An override that loads can still lose.** Libraries style their parts with long, nested selectors, so a
+  component's override of the same property (a padding, a size) is often outranked and changes nothing. After
+  every style fix, check the computed value in the browser, not just that the rule is in the stylesheet.
 - **Brand colors often fail contrast.** Test a replacement token against every background it appears on, including
   hover, selected and highlighted states, not just white. One token may not fit all of them.
 - **The app shell must reflow too.** At 320 px a fixed-position header and sidebar push every page off-screen.
   Below a breakpoint, switch the shell to normal flow (header wraps, page scrolls, sidebar collapses), leaving the
-  desktop layout untouched.
+  desktop layout untouched. Making the header static is not enough: its own row of logo, breadcrumb, version and
+  user menu must wrap too, or it alone makes the page twice as wide.
 - **Branch from the right base, without tracking main.** A branch created from `origin/main` tracks it, so a plain
   push sends commits to `main`. Create fix branches with `--no-track` and push with `-u origin <branch>`.
 - **One component, several contexts.** Landmarks and headings that are right for a page are wrong inside a dialog
@@ -296,9 +306,12 @@ Step 4 passes, and no regressions in tests or screenshots.
   modifier classes and check each one at the narrow width.
 - **Persistent notifications and dialogs share Esc.** An error that stays open over a side panel's buttons needs a
   way to close it while focus stays in the panel. If the panel takes Esc first, it closes the panel (and may discard
-  the form) while the notification stays on top. If the notifications take every Esc, a tooltip, a drag or a panel
-  never gets it while an error is open. Take Esc for the notifications only when one covers the focused element,
-  and close the top layer only; see [references/fix-patterns.md](references/fix-patterns.md).
+  the form) while the notification stays on top. Let Esc close the top layer, the same way every time: an open
+  menu, list, tooltip or drag first, then the notifications, then the dialog or panel. Don't make it depend on
+  whether a notification covers the focused element: that changes with scrolling, zoom and window size, a
+  screen-reader user can't see it, and an error beside a dialog's form would let Esc discard the form. See
+  [references/fix-patterns.md](references/fix-patterns.md). Some dialog libraries move focus to their first control
+  when an overlay above them is removed; check where focus is a moment after a notification over a dialog closes.
 - **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
   `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
 - **Custom radios and checkboxes hide the real input.** The visible box covers a transparent native input, so

@@ -159,17 +159,21 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
   close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
   focused element (WCAG 2.4.11): make Esc close them without moving focus (a document `keydown` listener in the
-  notification wrapper), or place them where they cover nothing interactive. Take Esc only when it is needed: a
-  notification's box overlaps the focused element, focus is in a notification, or nothing has focus. Otherwise
-  leave the key to the page, or it never reaches a tooltip, a drag in progress or a dialog. When Esc is taken, close
-  one layer at a time, top first: an open menu or list, then the notifications, then a dialog or side panel. In the
-  capture phase, before anything else handles the key, skip the notifications when focus is inside a popup or on a
-  control whose popup is open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section
-  that expands in place is not a popup). Otherwise close them and stop the event, so the dialog under them stays
-  open with its form intact. When focus was on a notification's own button, send it back to where it was before; if
+  notification wrapper), or place them where they cover nothing interactive. Esc closes one layer at a time, top
+  first, the same way whatever is on screen: an open menu, list or tooltip, or a drag in progress, then the
+  notifications, then a dialog or side panel. Don't take Esc only when a notification overlaps the focused element:
+  overlap changes with scrolling, zoom and window size, screen-reader users can't see it, and an error shown beside
+  a dialog's form would let Esc close the dialog and discard the form while the error stays. In the capture phase,
+  before anything else handles the key, skip the notifications when focus is inside a popup or on a control whose
+  popup is open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section that expands
+  in place is not a popup), or a tooltip is showing or a drag is in progress. Otherwise close them and stop the
+  event, so the dialog under them stays open with its form intact. When focus was on a notification's own button, send it back to where it was before; if
   that element is gone (its panel closed, or it was drawn again), to the open dialog or the main landmark, with a
   `tabindex="-1"` that is removed again on blur. Focus must never fall to the top of the document. Checking whether
-  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
+  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed. Some dialog
+  libraries move focus to their first control a few milliseconds after an overlay above them is removed (an
+  open-animation callback that fires again); when a notification closes over a dialog, put focus back on the
+  element that had it if the dialog took it in between.
 - Notification libraries often drop a message identical to one that is still open. That was harmless while messages
   closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
   out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen
