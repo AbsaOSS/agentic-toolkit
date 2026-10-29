@@ -170,10 +170,7 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   event, so the dialog under them stays open with its form intact. When focus was on a notification's own button, send it back to where it was before; if
   that element is gone (its panel closed, or it was drawn again), to the open dialog or the main landmark, with a
   `tabindex="-1"` that is removed again on blur. Focus must never fall to the top of the document. Checking whether
-  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed. Some dialog
-  libraries move focus to their first control a few milliseconds after an overlay above them is removed (an
-  open-animation callback that fires again); when a notification closes over a dialog, put focus back on the
-  element that had it if the dialog took it in between.
+  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
 - Notification libraries often drop a message identical to one that is still open. That was harmless while messages
   closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
   out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen

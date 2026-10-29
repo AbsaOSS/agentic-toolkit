@@ -192,7 +192,9 @@ Rules while fixing:
    it as an existing problem if it fails there too. After editing files, let the dev server finish rebuilding before
    running tests: a reload mid-test drops focus. Before checking that something stays visible, wait for exit
    animations (a closing element still counts as visible), and wait for widgets that build their DOM after the
-   page renders (an editor's toolbar) before tabbing to them. A list that filters as you type is rebuilt a moment
+   page renders (an editor's toolbar) before tabbing to them. A dialog moves focus into itself only when its
+   opening animation ends: wait until focus is inside it before a test moves focus, or the dialog's own focus
+   arrives later and looks like a focus bug. A list that filters as you type is rebuilt a moment
    after the last key: wait for the filtered result before pressing arrow keys. After choosing, check something
    only the choice produces (a dependent field filling in): the field shows the typed text whether or not an
    option was chosen. Never retry without a time limit
@@ -310,8 +312,7 @@ Step 4 passes, and no regressions in tests or screenshots.
   menu, list, tooltip or drag first, then the notifications, then the dialog or panel. Don't make it depend on
   whether a notification covers the focused element: that changes with scrolling, zoom and window size, a
   screen-reader user can't see it, and an error beside a dialog's form would let Esc discard the form. See
-  [references/fix-patterns.md](references/fix-patterns.md). Some dialog libraries move focus to their first control
-  when an overlay above them is removed; check where focus is a moment after a notification over a dialog closes.
+  [references/fix-patterns.md](references/fix-patterns.md).
 - **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
   `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
 - **Custom radios and checkboxes hide the real input.** The visible box covers a transparent native input, so
