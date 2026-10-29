@@ -92,8 +92,8 @@ Read before writing anything — extend the app, don't restructure it.
 8. **Router** — `provideRouter` / `RouterModule.forRoot`; note any `matcher` routes, or that there is
    no router at all (Step 6).
 9. **Sign-in** — an auth service, OIDC/MSAL library or session store, and where sign-in and
-   sign-out complete. Note which **opaque** user id it exposes (a subject or object id — never an
-   email or username).
+   sign-out complete. Note which **opaque** user id it exposes — it must be a UUID, which RUM
+   requires (MSAL's `localAccountId`; an OIDC `sub` often isn't one) — never an email or username.
 
 Ask the user only what the code cannot answer, in one message:
 
@@ -103,7 +103,7 @@ Ask the user only what the code cannot answer, in one message:
 - **Log backend**: does one exist to send log records to (endpoint, existing service)?
 - **RUM**: the endpoint that returns the RUM app-monitor config and short-lived AWS credentials
   (typically a backend "broker"), or whether RUM is not ready yet (→ `'noop'` for now).
-- **User id**: if the app has sign-in but exposes no opaque id, which one to use — or skip it.
+- **User id**: if the app has sign-in but exposes no opaque UUID, which one to use — or skip it.
 - **Fragment**: the shell's `eventNamespace` (default `com.uwt`), unless the shell's code or
   contract shows it.
 
@@ -204,9 +204,10 @@ export const appConfig: ApplicationConfig = {
   calls it. It uses `fetch`; switch to `HttpClient` if an interceptor adds the broker's auth.
 - **User identity** (only when the app has sign-in): inject `UwtTelemetrySink` as a field of the
   sign-in service (not inside a callback — `NG0203`), then `setUserId(opaqueId)` on sign-in and
-  `setUserId(undefined)` on a real sign-out only — each call starts a new RUM session, so never on
-  startup or for a visitor who was never signed in. A sign-out before the RUM client has started is
-  applied once it starts. Never an email or username. Fragments leave this to the shell.
+  `setUserId(undefined)` on sign-out — or straight from the auth state stream, initial `undefined`
+  included: signing out while nobody is signed in does nothing. Call it as early as possible (e.g.
+  once MSAL has initialized), since events carry `signedIn` only after the first call. The id must
+  be a UUID; never an email or username. Fragments leave this to the shell.
 
 ### Step 4 · Declare the vocabulary
 

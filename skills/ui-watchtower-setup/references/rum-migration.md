@@ -96,8 +96,9 @@ diff needs.
 - **Session attributes.** `application`, `environment` and `version` from the identity are attached
   as session attributes. Port any other attributes via `sessionAttributes` in the app monitor config
   returned by the credentials provider.
-- **User identity.** Replace `pinUserId` with `setUserId` (SKILL.md Step 3). Sign-out starts a fresh
-  session; call it out if the old code behaved differently.
+- **User identity.** Replace `pinUserId` with `setUserId` (SKILL.md Step 3); the id must be a UUID.
+  Sign-out starts a fresh session; call it out if the old code behaved differently. A custom
+  "logged in" attribute the old code set is built in now: `signedIn` on every event.
 - **Errors.** The RUM client still captures unhandled JS errors itself. Handled errors the old code
   sent with `recordError` become `scenario.fail(...)` (never a raw `HttpErrorResponse` — see the
   integration patterns' `safeHttpFailure`), or a log line with

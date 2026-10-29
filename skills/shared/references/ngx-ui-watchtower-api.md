@@ -278,12 +278,18 @@ login) passes the X-Ray header on, and the request fails unless that origin allo
 `provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.4.0+*; matched against the resolved
 URL; covers fragments too; only with the default `telemetries`).
 
+User identity: `sink.setUserId(id)` takes a UUID — RUM's API accepts nothing else (MSAL's
+`localAccountId`, not `homeAccountId`; an OIDC `sub` often isn't one). `undefined` or `''` signs out:
+a new session with a new anonymous id, but only when someone was signed in (*0.4.0+*; before, every
+call started one), so it can follow an auth state stream directly. Call it as early as possible —
+events carry `signedIn` only after the first call (§9).
+
 Return values of `load()`:
 
 | Return                      | Effect                                                                                       |
 |-----------------------------|----------------------------------------------------------------------------------------------|
 | `null`                      | RUM off for the rest of the page; mid-session it tears the running client down                |
-| throws / rejects            | Retried every 30 s. At startup up to 10 attempts, with events buffered (at most 100); on a refresh, the current credentials are kept |
+| throws / rejects            | Retried. At startup (*0.4.0+*; before, RUM went off for the page) with a random wait that grows from up to 1 s to up to 60 s, for 5 minutes, events buffered (at most 100); on a refresh every 30 s, keeping the current credentials |
 | `{ config, credentials }`   | Normal path                                                                                  |
 | `{ config }` only           | Only for an app monitor allowing unauthenticated access                                       |
 
@@ -320,6 +326,11 @@ owns its sessions calls `uwtMarkSessionStart(sessionId)` when it starts one, so 
 | `{ns}.scenario`                 | Once per scenario, at settlement                         | `UwtScenarioRecord`                       |
 | `{ns}.scenario.step`            | Per closed step — only with `emitLifecycleEvents: true` | step + scenario identity                  |
 | `{ns}.bi`                       | Per `track()` call (after dedup)                         | `UwtBIEvent`                              |
+
+Every RUM event's metadata also carries `application`, `environment`, `appVersion` and, once the app
+has called `setUserId`, `signedIn: true | false` (*0.4.0+*). Anonymous ids are random UUIDs too, so
+`signedIn` is what tells them from real users: count distinct anonymous users as distinct user ids
+where `signedIn` is `false`.
 
 A settled scenario record (abridged):
 

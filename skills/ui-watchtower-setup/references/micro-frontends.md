@@ -116,8 +116,8 @@ Inside a fragment:
 - `getSessionId()` is `undefined` until the shell answers the identity handshake — don't assert on it
   at bootstrap. Work is still correlated by `scenarioId`.
 - Log lines go to the shell's log provider; `logger.query()` is answered by the shell.
-- Don't call `setUserId()`: it is forwarded and changes the shell's user (and `undefined` starts a
-  new session). The shell owns user identity.
+- Don't call `setUserId()`: it is forwarded and changes the shell's user. The shell owns user
+  identity.
 - Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
 
 ## Upgrading from the manual channel pattern (0.3.x)

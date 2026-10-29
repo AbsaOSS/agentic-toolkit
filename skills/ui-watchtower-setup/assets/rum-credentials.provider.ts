@@ -133,8 +133,9 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
    * `null` (RUM off for the rest of the page) when the broker turns RUM off or answers with
    * anything incomplete, malformed or expired. A failed request throws instead, and the library
-   * retries every 30 s — at startup up to 10 times, buffering events, and on a refresh with the
-   * current credentials kept — where `null` would end RUM for the page.
+   * retries — at startup with a growing, random wait for up to 5 minutes, buffering events; on a
+   * refresh every 30 s, with the current credentials kept — where `null` would end RUM for the
+   * page.
    */
   async load(): Promise<UwtRumBootstrap | null> {
     const response = await fetch(RUM_BROKER_URL, {
