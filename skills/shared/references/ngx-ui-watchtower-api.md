@@ -41,7 +41,7 @@ import {
   UwtLoggerService, UWT_LOG_API_PROVIDER, UwtNoopLogApiProvider, UWT_LOG_LEVEL_ORDER,
   // sinks
   UwtTelemetrySink, UwtNoopTelemetrySink, uwtClassifyTelemetryEvent,
-  uwtMarkSessionStart,              // custom destinations that own sessions (§8)
+  uwtMarkSessionStart,              // custom destinations that own sessions (§8), 0.4.0+
   // debug
   uwtIsDebugEnabled,
   // redaction helpers (for custom sinks)
@@ -351,9 +351,10 @@ A settled scenario record (abridged):
 ```
 
 `delta` is the duration; `elapsed` is a timeline position (ms since page load), and `sessionElapsed`
-one in the RUM session (ms since the session started — it survives reloads; absent until the
-session's start is known, and always absent with `suppressSessionStartEvent`, cookies off,
-`localStorage` blocked, or a session that began on a page in `pagesToExclude`). Steps carry no copy:
+(*0.4.0+*) one in the RUM session (ms since the session started — it survives reloads; absent until
+the session's start is known, and always absent with `suppressSessionStartEvent`, cookies off,
+`localStorage` blocked, a session that began on a page in `pagesToExclude`, or a clock set back past
+the session's start). Steps carry no copy:
 a step sits at `sessionElapsed - (elapsed - step.elapsed)`.
 `scenario-start` / `scenario-end` are written by the library and don't count toward `stepCount`. `sessionId` / `userId`
 appear once the RUM client has started and a user is signed in.
