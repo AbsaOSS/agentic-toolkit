@@ -151,6 +151,9 @@ perceivability, then polish). For each group:
    behaviour: if the design system ships accessibility services (focus management, a live announcer, focus
    trapping, root-font-size tracking), use them, through their injection tokens or public API, instead of local
    code. List its exports once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`).
+   Check the design system's newer releases and changelog too: a fix you are about to work around may already be
+   released. When a library component fails because of a local style override (a recoloured menu, a custom
+   button), try removing the override before patching it: the library default often passes as it is.
 2. Re-run only the affected scans and the keyboard check for that area.
 3. Re-run the comparison (`compare-screenshots.mjs compare`). Unintended visual changes are bugs; intended ones
    (a darker color, a larger target) are listed in the report. Changes for narrow screens or large text must leave
@@ -186,18 +189,20 @@ Rules while fixing:
    for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
    something else, so the scans themselves run against the old code and report the real problems.
 3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
-   check, and the project's functional tests for pages that use any shared component you changed. Run the new tests
-   several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
+   check, the project's functional tests for pages that use any shared component you changed, and the screenshot
+   comparison with the base branch (Step 5.3). Passing scans are not a substitute for the comparison. Run the new
+   tests several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
    A test that fails only sometimes: run it on the code without your change before blaming the change, and report
    it as an existing problem if it fails there too. After editing files, let the dev server finish rebuilding before
-   running tests: a reload mid-test drops focus. Before checking that something stays visible, wait for exit
-   animations (a closing element still counts as visible), and wait for widgets that build their DOM after the
-   page renders (an editor's toolbar) before tabbing to them. A dialog moves focus into itself only when its
-   opening animation ends: wait until focus is inside it before a test moves focus, or the dialog's own focus
-   arrives later and looks like a focus bug. A list that filters as you type is rebuilt a moment
-   after the last key: wait for the filtered result before pressing arrow keys. After choosing, check something
-   only the choice produces (a dependent field filling in): the field shows the typed text whether or not an
-   option was chosen. Never retry without a time limit
+   running tests: a reload mid-test drops focus. Don't stop a dev server in the same command as the run that uses
+   it, and don't `git stash` the user's work to compare with the base: use the detached worktree. Before checking
+   that something stays visible, wait for exit animations (a closing element still counts as visible), and wait
+   for widgets that build their DOM after the page renders (an editor's toolbar) before tabbing to them. A dialog
+   moves focus into itself only when its opening animation ends: wait until focus is inside it before a test moves
+   focus, or the dialog's own focus arrives later and looks like a focus bug. A list that filters as you type is
+   rebuilt a moment after the last key: wait for the filtered result before pressing arrow keys. After choosing,
+   check something only the choice produces (a dependent field filling in): the field shows the typed text whether
+   or not an option was chosen. Never retry without a time limit
    (`toPass()` without a `timeout`, open-ended loops): if the state never comes, every test hangs until the test
    timeout. Cap long runs with `--timeout` and `--max-failures`.
    When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
@@ -227,9 +232,14 @@ Step 4 passes, and no regressions in tests or screenshots.
   `:focus` outline. Check the computed style, and draw the design system's focus ring on `:focus-visible`.
 - **An override that loads can still lose.** Libraries style their parts with long, nested selectors, so a
   component's override of the same property (a padding, a size) is often outranked and changes nothing. After
-  every style fix, check the computed value in the browser, not just that the rule is in the stylesheet.
+  every style fix, check the computed value in the browser, not just that the rule is in the stylesheet. A global
+  stylesheet loses even with `!important` when the library's rule is also `!important` and more specific (scoped
+  component styles add attribute selectors); put the override in the consuming component's own styles instead.
+  The same goes for the element: a library field's border is often drawn by a wrapper, not the `<input>`.
 - **Brand colors often fail contrast.** Test a replacement token against every background it appears on, including
-  hover, selected and highlighted states, not just white. One token may not fit all of them.
+  hover, selected and highlighted states, not just white. One token may not fit all of them. Libraries also tint
+  solid buttons on hover and keyboard focus (a translucent overlay): white text that passes on the plain color can
+  fail in those states, so measure the button hovered and focused too.
 - **The app shell must reflow too.** At 320 px a fixed-position header and sidebar push every page off-screen.
   Below a breakpoint, switch the shell to normal flow (header wraps, page scrolls, sidebar collapses), leaving the
   desktop layout untouched. Making the header static is not enough: its own row of logo, breadcrumb, version and
@@ -323,7 +333,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   found by role and name or a stable test id.
 - **`incomplete` is not "pass".** Typical causes: text over images or gradients, content partly clipped by a
   scroll container, elements axe could not measure. Resolve by hand, and where it is a test artifact (scroll
-  position, animation) fix the test setup rather than excluding the rule.
+  position, animation) fix the test setup rather than excluding the rule. A scan right after load can catch a
+  library's opening animation (collapsed content still focusable for a moment): repeat the check after it settles
+  before calling it a bug, and describe it as transient if it only exists during the animation.
 - **Visible focus is not enough.** The indicator must not be clipped by `overflow: hidden` or covered by sticky
   headers/footers (WCAG 2.4.11), and mouse clicks should not leave sticky highlight states meant for keyboard users
   — use `:focus-visible` for those.
@@ -335,6 +347,16 @@ Step 4 passes, and no regressions in tests or screenshots.
   leaves (WCAG 2.1.2), and their editable area and toolbar dropdowns have no names. `keyboard-walk` reports the trap
   in plain text; test an empty list item by hand or in a test. The fix is in
   [references/fix-patterns.md](references/fix-patterns.md#third-party-widgets).
+- **`pointer-events: none` only stops the mouse.** A list dimmed while it reloads, a panel greyed out while it saves:
+  keyboard and screen reader users still reach and activate everything in it. Add `inert` for as long as it is
+  disabled, and test that Tab skips it.
+- **Attributes on a component's host don't reach its inner control.** A library button or input renders its own
+  `<button>` or `<input>`; an ARIA attribute written on the component tag lands on a wrapper that can't take focus
+  and does nothing. Use the component's inputs, and if it has none for the attribute, ask the library for one
+  rather than patching its DOM.
+- **Spacing that came from a minimum height disappears when the row wraps.** A toolbar with `min-height` and
+  centred content looks padded on one line; stacked on a narrow screen, its items touch whatever is above and
+  below. Give it vertical padding.
 - **Off-screen is still focusable.** Slides, collapsed panels and hidden drawers that stay in the DOM need
   `inert` (or `hidden`) so Tab and screen readers skip them.
 - **Live regions are tricky.** `role="alert"` interrupts; several at once talk over each other. Use `role="status"`

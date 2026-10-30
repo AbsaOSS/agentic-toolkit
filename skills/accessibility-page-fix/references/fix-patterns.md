@@ -167,10 +167,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   before anything else handles the key, skip the notifications when focus is inside a popup or on a control whose
   popup is open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section that expands
   in place is not a popup), or a tooltip is showing or a drag is in progress. Otherwise close them and stop the
-  event, so the dialog under them stays open with its form intact. When focus was on a notification's own button, send it back to where it was before; if
-  that element is gone (its panel closed, or it was drawn again), to the open dialog or the main landmark, with a
-  `tabindex="-1"` that is removed again on blur. Focus must never fall to the top of the document. Checking whether
-  a popup is visible fails while it animates closed. Remove the listeners when the app is destroyed.
+  event, so the dialog under them stays open with its form intact. When focus was on a notification's own button,
+  send it back to where it was before; if that element is gone (its panel closed, or it was drawn again), to the
+  open dialog or the main landmark, with a `tabindex="-1"` that is removed again on blur. Focus must never fall to
+  the top of the document. Checking whether a popup is visible fails while it animates closed. Remove the
+  listeners when the app is destroyed.
 - Notification libraries often drop a message identical to one that is still open. That was harmless while messages
   closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
   out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen
@@ -220,6 +221,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   pseudo-element keeps the design.
 
 ## Off-screen and hidden content
+
+- A sticky side column (filters next to a long list) must stay usable when it is taller than the screen: give it
+  `align-self: flex-start`, a `max-height` of the visible area and `overflow-y: auto`, and switch it back to normal
+  flow below the narrow-screen breakpoint. Collapsed panels inside it must clip everything: absolutely positioned
+  parts (hidden checkbox inputs) escape a clipping parent that isn't positioned and make the column scroll.
 
 Content that is out of view but still in the DOM is reachable by Tab and screen readers unless you hide it:
 
@@ -299,6 +305,9 @@ axe reports `incomplete` when it can't decide. Resolve each by hand, and record 
 | Element "partially obscured" | Usually a scroll container clipping it at scan time: scroll to the top (or the relevant position) in the test setup and re-scan |
 | Hidden or zero-size content | Confirm it is intentionally hidden from everyone |
 | Pseudo-element content | Inspect computed styles |
+| "Unable to determine if aria-controls referenced ID exists" | Open the popup and check that the referenced element exists while it is open (popups are often rendered only then, or outside the scanned area) |
+| Element "overlapped by another element" | Find what covers it (`elementFromPoint` at its centre). An open popup covering it is fine; a sticky bar or notification covering it is a 2.4.11 problem |
+| Focusable content inside `aria-hidden` | Tab through it after animations settle; if it is still reachable, make it `inert` or hidden |
 
 Never turn off a rule to clear an incomplete. If it can't be proven either way, keep it as a documented manual
 check.
