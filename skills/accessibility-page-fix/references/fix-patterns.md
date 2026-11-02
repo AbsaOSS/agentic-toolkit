@@ -196,6 +196,12 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   slide, scroll offset) and re-measures their container.
 - Some libraries measure their container only at creation or on window `resize`. A layout change without a window
   resize (font size, collapsing a sidebar) leaves them stale; trigger their refresh API, or re-create them.
+- Carousel cards can grow past their slide when a long title sets a flex item's min-content width. Constrain the
+  card to its slide (`width: 100%`, `min-width: 0` on the slide/card as needed); let the title column shrink, keep
+  adjacent actions from shrinking, and truncate the title with ellipsis. Keep the complete title as the link's
+  accessible text and add a viewport-bounded tooltip as a supplement, not as the only way to get the name.
+  Exercise short, long-spaced and unbroken names across slides and viewport widths; compare card bounds and check
+  the tooltip stays on-screen.
 - Check 200% text, 400% zoom (320 px wide) and text-spacing overrides.
 - Unstyled buttons use the browser's fixed default size (13.33 px). Give them a rem font size (`0.8333rem` keeps
   the same pixels) or `font: inherit`.
@@ -212,6 +218,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   has one (it cleans up and is easy to replace in tests), otherwise with `matchMedia` and its `change` event.
   When the screen is wide again, restore the sidebar the user had there instead of forcing the default. Prove the
   desktop layout is pixel-identical.
+- If a sidebar should remain at the top while a narrow shell scrolls as a document, changing the shell from fixed
+  positioning to normal flow can make the sidebar scroll away too. Apply `position: sticky; top: 0` at that
+  breakpoint only when it matches the intended layout, and check its ancestors for overflow/height constraints that
+  disable sticky positioning. Verify by scrolling the actual page at and around the breakpoint, not by inspecting
+  the computed position alone.
 - Toolbars and headers built as one flex row: let them wrap (`flex-wrap: wrap`, `min-width: 0` on children) instead
   of overflowing.
 - Grid columns that hold controls: `minmax(min-content, 1fr)` rather than `minmax(0, 1fr)`, so the column can't

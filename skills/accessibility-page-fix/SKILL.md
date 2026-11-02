@@ -131,6 +131,10 @@ look for), `--storage <state.json>` (a saved Playwright login state for pages be
   grows, and nothing is cut off, overlaps, or needs two-dimensional scrolling (except truly 2D content like maps or
   tables). Check **every dialog and menu** this way too, not only the page: they are sized separately and often in
   px.
+- **Responsive shell scrolling:** identify what actually scrolls (the document, main content, or an inner panel).
+  At the narrow breakpoint and just above it, scroll that content and verify any sidebar meant to stay pinned does
+  so. A shell that changes from fixed positioning to document flow can change the sidebar's containing block;
+  test the real scroll behavior, including expanded and collapsed navigation, rather than only checking CSS classes.
 - **Structure:** one `h1`, headings in order, landmarks present (`header`, `nav`, `main`), lists and tables use
   real elements, reading order matches visual order.
 - **Dynamic content:** status and error messages reach screen readers without stealing focus; focus moves
