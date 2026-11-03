@@ -158,20 +158,38 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   (templating engines that strip whitespace between elements glue them together).
 - Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
   close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
-  focused element (WCAG 2.4.11): make Esc close them without moving focus (a document `keydown` listener in the
-  notification wrapper), or place them where they cover nothing interactive. Esc closes one layer at a time, top
-  first, the same way whatever is on screen: an open menu, list or tooltip, or a drag in progress, then the
-  notifications, then a dialog or side panel. Don't take Esc only when a notification overlaps the focused element:
-  overlap changes with scrolling, zoom and window size, screen-reader users can't see it, and an error shown beside
-  a dialog's form would let Esc close the dialog and discard the form while the error stays. In the capture phase,
-  before anything else handles the key, skip the notifications when focus is inside a popup or on a control whose
-  popup is open (`aria-expanded="true"` together with `role="combobox"` or `aria-haspopup`; a section that expands
-  in place is not a popup), or a tooltip is showing or a drag is in progress. Otherwise close them and stop the
-  event, so the dialog under them stays open with its form intact. When focus was on a notification's own button,
-  send it back to where it was before; if that element is gone (its panel closed, or it was drawn again), to the
-  open dialog or the main landmark, with a `tabindex="-1"` that is removed again on blur. Focus must never fall to
-  the top of the document. Checking whether a popup is visible fails while it animates closed. Remove the
-  listeners when the app is destroyed.
+  focused element (WCAG 2.4.11): make Esc close them without moving focus, or place them where they cover nothing
+  interactive. When the notification service belongs to a design system you can change, fix it there, not in each
+  app. Until that release ships, an app-level listener in the app's notification wrapper can stand in; mark it as
+  temporary and delete it on upgrade. Esc closes one layer at a time, top first, the same way whatever is on screen:
+  an open menu, list or tooltip, or a drag in progress first, then whichever of the notifications and the dialog or
+  side panel is on top. That order is not fixed: a dialog opened after the notifications sits above them, and Esc
+  must close it, not the notifications under it. Ask the overlay library's own stacking order (a shared z-index
+  stack: compare the notification container's z-index with the current top) instead of assuming notifications are
+  always on top, and test a dialog opened over an open error. Don't take Esc only when a notification overlaps the
+  focused element: overlap changes with scrolling, zoom and window size, screen-reader users can't see it, and an
+  error shown beside a dialog's form would let Esc close the dialog and discard the form while the error stays.
+  Inside the library, let every popup that handles Esc (menu, list, table drag, dialog) call `preventDefault()`.
+  Have the notification service listen on `window`, in the bubble phase so it runs after them. It skips an Esc that
+  is already `defaultPrevented` or when the notifications aren't on top. Otherwise it closes them and calls
+  `preventDefault()`, so the dialog under them stays open with its form intact. Check every Esc handler, not only
+  the popups: a component that closes its menu from its own key handler runs first, so the menu is already closed
+  when its listener looks and doesn't mark the Esc; that component must call `preventDefault()` itself. A listener
+  added while an Esc is being dispatched (the first notification, shown by an Esc handler that closed a panel,
+  starts the listening) still receives that Esc on `window` and closes the new notification at once: remember
+  `window.event` when a notification is shown and skip that event. An app can't change library popups, so its
+  stopgap listener works the other way round: it runs first, in the capture phase. It skips when focus is inside a
+  popup or on a control whose popup is open (`aria-expanded="true"` together with `role="combobox"` or
+  `aria-haspopup`; a section that expands in place is not a popup), or when a tooltip is showing, a drag is in
+  progress, or another overlay is on top. To tell what is on top it must read the stack the library writes to: a
+  library version that vendors its own copy keeps a separate stack, so the check is always false and Esc silently
+  stops closing notifications. Tests that mock the stack can't see this; with the real components, check that Esc
+  closes a dialog opened over an error, and then the error. Otherwise it closes the notifications and stops the
+  event. When focus was
+  on a notification's own button, send it back to where it was before; if that element is gone (its panel closed, or
+  it was drawn again), to the open dialog or the main landmark, with a `tabindex="-1"` that is removed again on
+  blur. Focus must never fall to the top of the document. Checking whether a popup is visible fails while it
+  animates closed. Remove the listeners when the app is destroyed.
 - Notification libraries often drop a message identical to one that is still open. That was harmless while messages
   closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
   out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen
@@ -223,6 +241,12 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   breakpoint only when it matches the intended layout, and check its ancestors for overflow/height constraints that
   disable sticky positioning. Verify by scrolling the actual page at and around the breakpoint, not by inspecting
   the computed position alone.
+- A full-height sticky sidebar under a header that scrolls away starts below the header at the top of the page, so
+  its bottom is off-screen until the page is scrolled. Controls the library pins to the sidebar's bottom (an
+  absolutely positioned expand/collapse button) disappear there, and may cover the last item on a short screen.
+  Pin them to the viewport at that breakpoint instead, and check the library doesn't change their position on
+  focus (some switch to `position: relative` to draw the focus ring). Test at the top of the page, after scrolling
+  down and back up, focused from the keyboard, and on a short screen.
 - Toolbars and headers built as one flex row: let them wrap (`flex-wrap: wrap`, `min-width: 0` on children) instead
   of overflowing.
 - Grid columns that hold controls: `minmax(min-content, 1fr)` rather than `minmax(0, 1fr)`, so the column can't

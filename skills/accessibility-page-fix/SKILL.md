@@ -323,7 +323,8 @@ Step 4 passes, and no regressions in tests or screenshots.
 - **Persistent notifications and dialogs share Esc.** An error that stays open over a side panel's buttons needs a
   way to close it while focus stays in the panel. If the panel takes Esc first, it closes the panel (and may discard
   the form) while the notification stays on top. Let Esc close the top layer, the same way every time: an open
-  menu, list, tooltip or drag first, then the notifications, then the dialog or panel. Don't make it depend on
+  menu, list, tooltip or drag first, then whichever of the notifications and the dialog or panel is on top, read
+  from the overlay library's stacking order (a dialog opened over an error is above it). Don't make it depend on
   whether a notification covers the focused element: that changes with scrolling, zoom and window size, a
   screen-reader user can't see it, and an error beside a dialog's form would let Esc discard the form. See
   [references/fix-patterns.md](references/fix-patterns.md).
