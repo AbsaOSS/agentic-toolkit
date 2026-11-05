@@ -1,0 +1,93 @@
+{
+  "headings": {
+    "recommendations": "Recommendations",
+    "suggestions": "Suggestions (optional)"
+  },
+  "none": "No suggestions.",
+  "target_note": "_Note: CPS recommended target stack is ruff, mypy, pytest + pytest-cov, pip-audit._",
+  "ruff": {
+    "add_title": "Add ruff for {capabilities}",
+    "consolidate_title": "Consolidate on ruff: replace {tools}",
+    "enable_title": "Enable more ruff rules for {capabilities}",
+    "capabilities": {
+      "Linter": {
+        "label": "linting",
+        "missing": "Linting: enable `[tool.ruff.lint]` in `pyproject.toml`.",
+        "replaces": "Linting: replaces {tools} (ruff reimplements their common rules, much faster)."
+      },
+      "Formatter": {
+        "label": "formatting",
+        "missing": "Formatting: use `ruff format` (no extra dependency once ruff is present).",
+        "replaces": "Formatting: replaces {tools} (black-compatible output)."
+      },
+      "Security": {
+        "label": "security checks",
+        "missing": "Security: enable the `S` (flake8-bandit) rules with `extend-select = [\"S\"]` in `[tool.ruff.lint]`.",
+        "replaces": "Security: replaces {tools} with the `S` (flake8-bandit) rules via `extend-select = [\"S\"]`."
+      },
+      "Complexity": {
+        "label": "complexity checks",
+        "missing": "Complexity: enable the `C90` (mccabe) rules with `extend-select = [\"C90\"]` and set `[tool.ruff.lint.mccabe] max-complexity`.",
+        "replaces": "Complexity: replaces {tools} with the `C90` (mccabe) rules via `extend-select = [\"C90\"]`."
+      }
+    },
+    "add_dependency": "Add ruff as a dev dependency and configure `[tool.ruff]` in `pyproject.toml`.",
+    "ci": "Run {commands} in CI on `pull_request`.",
+    "remove": "Remove {tools} from dev dependencies, pre-commit and CI once ruff covers them."
+  },
+  "gates": {
+    "Type checker": {
+      "setup": {
+        "title": "Add mypy for type checking",
+        "bullets": ["Add mypy as a dev dependency and configure `[tool.mypy]` in `pyproject.toml`.", "Run `mypy` in CI on `pull_request`."]
+      },
+      "declare": "Declare the type checker as a dev dependency and configure it in `pyproject.toml` so local runs match CI.",
+      "ci": "Run `mypy` in CI on `pull_request`."
+    },
+    "Test runner": {
+      "setup": {
+        "title": "Add pytest as the test runner",
+        "bullets": ["Add pytest as a dev dependency and configure `[tool.pytest.ini_options]`.", "Run `pytest` in CI on `pull_request`."]
+      },
+      "declare": "Declare the test runner as a dev dependency and configure it in `pyproject.toml` so local runs match CI.",
+      "ci": "Run the test suite (e.g. `pytest`) in CI on `pull_request`."
+    },
+    "Coverage": {
+      "setup": {
+        "title": "Add pytest-cov for coverage",
+        "bullets": ["Add pytest-cov as a dev dependency and set `fail_under = 80` in `[tool.coverage.report]`.", "Run `pytest --cov` in CI on `pull_request`."]
+      },
+      "declare": "Declare pytest-cov (or coverage) as a dev dependency and configure it in `pyproject.toml` so local runs match CI.",
+      "ci": "Run tests with coverage in CI and enforce the threshold, e.g. `pytest --cov --cov-fail-under=80`."
+    },
+    "Dependency audit": {
+      "setup": {
+        "title": "Add pip-audit for dependency audit",
+        "bullets": ["Add pip-audit as a dev dependency.", "Run `pip-audit` in CI on `pull_request`."]
+      },
+      "declare": "Declare pip-audit as a dev dependency so local runs match CI.",
+      "ci": "Run `pip-audit` in CI on `pull_request`."
+    }
+  },
+  "declare_title": "Declare {gate} tooling in the project ({tools})",
+  "ci_title": "Enforce {gate} in CI",
+  "unittest": {
+    "title": "Run tests with pytest instead of unittest",
+    "bullets": ["pytest executes existing unittest tests unchanged and aligns with pytest-cov."]
+  },
+  "coverage_threshold": {
+    "title": "Set a coverage threshold of at least 80",
+    "bullets": ["Set `fail_under = 80` in `[tool.coverage.report]` (or `--cov-fail-under=80`) so CI fails when coverage drops."]
+  },
+  "coverage_threshold_low": {
+    "title": "Raise the coverage threshold to at least 80",
+    "bullets": [
+      "Current threshold is {value}%; the recommended minimum is 80%.",
+      "Raise `fail_under` in `[tool.coverage.report]` (or `--cov-fail-under`) to 80 or higher."
+    ]
+  },
+  "external": {
+    "title": "Verify external workflows",
+    "bullets": ["Check manually that the external reusable workflow(s) run the gates marked EXTERNAL: {workflows}."]
+  }
+}

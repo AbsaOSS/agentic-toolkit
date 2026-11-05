@@ -1,0 +1,115 @@
+{
+  "skill_name": "python-quality-gates-report",
+  "setup": "Copy the fixture directory to a temp dir, run `git init`, `git remote add origin git@github.com:example-org/<fixture>.git`, commit everything, then run the prompt from that directory.",
+  "evals": [
+    {
+      "id": "happy-path-modern-ruff-stack",
+      "category": "happy-path",
+      "prompt": "/python-quality-gates-report",
+      "expected_output": "Report with all 8 gates PRESENT locally and in CI, verdict COMPLIANT, coverage threshold 85%, 'Suggestions (optional)' section saying 'No suggestions.'.",
+      "files": [
+        "evals/files/modern-ruff/pyproject.toml",
+        "evals/files/modern-ruff/.github/workflows/ci.yml",
+        "evals/files/modern-ruff/src/app/__init__.py",
+        "evals/files/modern-ruff/tests/test_app.py"
+      ],
+      "expectations": [
+        "Terminal output is exactly the 3 fixed lines (start, Collecting facts..., ✅ Report ready) with no other chat text",
+        "Writes python-quality-gates-report.md in the repository root",
+        "Title is '# Python Quality Gates Report: example-org/modern-ruff'",
+        "Section 2 and section 3 list all 8 gates as PRESENT; Security and Complexity tools are ruff",
+        "Coverage row shows threshold 85%",
+        "Verdict is COMPLIANT with 'Mandatory gates enforced in CI: 5/5.'",
+        "Suggestions section says 'No suggestions.'",
+        "Report contains no emoji and no <details> blocks",
+        "No project file other than the report is created or modified"
+      ]
+    },
+    {
+      "id": "legacy-stack-overlaps-and-migration",
+      "category": "edge-case",
+      "prompt": "/python-quality-gates-report",
+      "expected_output": "Linter OVERLAP (pylint, flake8) locally and in CI via tox; Type checker and Dependency audit MISSING; radon present locally but only in a scheduled workflow, so Complexity MISSING in CI; verdict PARTIAL 4/5; migration recommendations for black, flake8, pylint, bandit, radon plus a coverage threshold recommendation.",
+      "files": [
+        "evals/files/legacy-stack/setup.py",
+        "evals/files/legacy-stack/requirements-dev.txt",
+        "evals/files/legacy-stack/tox.ini",
+        "evals/files/legacy-stack/.github/workflows/build.yml",
+        "evals/files/legacy-stack/.github/workflows/nightly.yml",
+        "evals/files/legacy-stack/src/legacy/__init__.py",
+        "evals/files/legacy-stack/tests/test_legacy.py"
+      ],
+      "expectations": [
+        "Linter is OVERLAP with pylint and flake8 in both section 2 and section 3",
+        "CI evidence for lint/format/tests resolves through tox (mentions tox.ini) and does not cite the `pip install tox` line",
+        "Type checker is MISSING locally and in CI",
+        "Complexity is PRESENT locally (radon) and MISSING in CI, with evidence noting the nightly workflow is not on pull_request/push",
+        "Verdict is PARTIAL with 4/5 mandatory gates enforced",
+        "Recommendations include one grouped ruff item replacing black, flake8, pylint, bandit and radon",
+        "Recommendations include setting a coverage threshold (fail_under = 80)"
+      ]
+    },
+    {
+      "id": "low-coverage-threshold",
+      "category": "edge-case",
+      "prompt": "/python-quality-gates-report",
+      "expected_output": "Same stack as modern-ruff but with a coverage threshold of 60%; all gates PRESENT, verdict COMPLIANT, and a 'Suggestions (optional)' item to raise the threshold to at least 80.",
+      "files": [
+        "evals/files/low-coverage/pyproject.toml",
+        "evals/files/low-coverage/.github/workflows/ci.yml",
+        "evals/files/low-coverage/src/app/__init__.py",
+        "evals/files/low-coverage/tests/test_app.py"
+      ],
+      "expectations": [
+        "Coverage row shows threshold 60%",
+        "Verdict is still COMPLIANT (a low threshold never changes gate status or verdict)",
+        "Heading is 'Suggestions (optional)' and contains an item to raise the coverage threshold to at least 80, mentioning the current value 60"
+      ]
+    },
+    {
+      "id": "no-ci-workflows",
+      "category": "edge-case",
+      "prompt": "/python-quality-gates-report",
+      "expected_output": "ruff (Linter, Formatter) and pytest PRESENT locally; everything MISSING in CI; verdict NON-COMPLIANT 0/5; recommendations to run ruff/pytest in CI and set up mypy, coverage, S, pip-audit, C90.",
+      "files": [
+        "evals/files/no-ci/pyproject.toml",
+        "evals/files/no-ci/src/tool/__init__.py",
+        "evals/files/no-ci/tests/test_tool.py"
+      ],
+      "expectations": [
+        "Section 2 shows Linter, Formatter (ruff) and Test runner (pytest) PRESENT; Type checker and Coverage MISSING",
+        "Section 3 shows all 8 gates MISSING",
+        "Verdict is NON-COMPLIANT with 0/5",
+        "Security is not counted as PRESENT (ruff selects only E and F)",
+        "Python versions field mentions requires-python >=3.11"
+      ]
+    },
+    {
+      "id": "no-python-repository",
+      "category": "negative",
+      "prompt": "/python-quality-gates-report",
+      "expected_output": "Short report stating no Python code was detected; no analysers are spawned.",
+      "files": [
+        "evals/files/no-python/package.json",
+        "evals/files/no-python/README.md",
+        "evals/files/no-python/src/index.ts"
+      ],
+      "expectations": [
+        "Report contains only the title, Repository URL, Scan time and 'No Python code detected in this repository.'",
+        "Terminal output omits the 'Running analysers in parallel' line",
+        "No subagents are spawned"
+      ]
+    },
+    {
+      "id": "no-trigger-general-question",
+      "category": "negative",
+      "prompt": "Which Python linter should I use for a new project?",
+      "expected_output": "Skill does not activate; a normal answer is given and no report file is written.",
+      "files": [],
+      "expectations": [
+        "Does not run scan.py or write python-quality-gates-report.md",
+        "Does not print the fixed '🔍 Analysing Python quality gates' line"
+      ]
+    }
+  ]
+}

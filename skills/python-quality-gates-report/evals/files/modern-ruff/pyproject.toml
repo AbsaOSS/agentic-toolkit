@@ -1,0 +1,25 @@
+[project]
+name = "modern-app"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = ["ruff==0.8.0", "mypy==1.13.0", "pytest==8.3.3", "pytest-cov==6.0.0", "pip-audit==2.7.3"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "S", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.report]
+fail_under = 85
