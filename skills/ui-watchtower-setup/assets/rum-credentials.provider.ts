@@ -42,7 +42,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
  * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
  * `RegExp`s and functions there, and with a string in their place the library doesn't start RUM
- * for the page. Telemetries are kept as names only; set their options in code.
+ * for the page (0.4.0+; before, the SDK threw). Telemetries are kept as names only; set their
+ * options in code.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',

@@ -12,10 +12,12 @@ becomes N sessions with N event budgets, N credential fetches and N SDK download
 realm — the shell — owns the RUM client; fragments forward** to it over a same-origin
 `BroadcastChannel`. Application code is identical in both; only the providers differ.
 
-**Version.** This setup needs ngx-ui-watchtower **0.4.0 or later** in the shell and every fragment:
-from 0.4.0, fragments find the shell's channel themselves and the shell traces their HTTP. Install
-the latest. Where a shell or fragment must stay on 0.3.x, use the manual pattern under "Upgrading"
-for the whole page until all are on 0.4.0.
+**Version.** This setup needs ngx-ui-watchtower **0.5.0 or later** in the shell and every fragment:
+from 0.5.0 (ui-watchtower #29), fragments find the shell's channel themselves and the shell traces
+their HTTP. Install the latest and check its version. While the shell or any fragment is on 0.4.x
+or older (0.4.0 is the latest release until 0.5.0 ships), use the manual pattern under "Before
+0.5.0" for the whole page. Otherwise a fragment falls back to the shared default channel, which the shell
+doesn't listen on, and its telemetry is silently lost.
 
 ## Shell
 
@@ -70,13 +72,13 @@ providers: [
   origin-wide. On the shared default channel, a second tab's fragments get recorded through the
   first tab's RUM client — wrong page, wrong context. Generate the id once per page load, never per
   fragment or per navigation.
-- **Nothing to publish.** The host leaves the channel on the shell's window, and fragments nested in
-  the page (Web Fragments, same-origin iframes) find it themselves. Don't add a
-  `window.__uwtTelemetryChannel` global, except while upgrading (below).
-- **Fragment HTTP is traced by the shell.** The shell's RUM client also patches each nested
-  fragment's `fetch`/XHR: fragment requests get the X-Ray header and RUM HTTP events in the shell's
-  session, with nothing to configure. They count toward the shell's session event budget
-  (`sessionEventLimit`, default 200).
+- **Nothing to publish** (*0.5.0+*). The host leaves the channel on the shell's window, and
+  fragments nested in the page (Web Fragments, same-origin iframes) find it themselves. Don't add a
+  `window.__uwtTelemetryChannel` global, except below 0.5.0 ("Before 0.5.0", below).
+- **Fragment HTTP is traced by the shell** (*0.5.0+*). The shell's RUM client also patches each
+  nested fragment's `fetch`/XHR: fragment requests get the X-Ray header and RUM HTTP events in the
+  shell's session, with nothing to configure. They count toward the shell's session event budget
+  (`sessionEventLimit`, default 200). Before 0.5.0, fragment requests aren't traced.
 - The contract you hand to fragment teams states the shell's `eventNamespace` (`com.uwt` when it
   sets none) — fragments must use the same one.
 
@@ -92,9 +94,11 @@ providers: [
     version,
     eventNamespace: 'com.uwt' // the shell's — must match
   }),
-  provideUwtTelemetrySink('broadcast') // no channel: it follows the shell's
+  provideUwtTelemetrySink('broadcast') // no channel: it follows the shell's (0.5.0+)
 ];
 ```
+
+Below 0.5.0, add the `UWT_BROADCAST_CHANNEL` factory from "Before 0.5.0" below.
 
 The fragment's sink and log provider look the shell's channel up by walking `window.parent`, once,
 at startup. So **the shell's host must exist before any fragment boots**: a fragment that boots first
@@ -102,7 +106,7 @@ falls back to the shared default channel and ships nothing the shell hears. A sh
 fragments after it bootstraps (Web Fragments does) guarantees this. Set `UWT_BROADCAST_CHANNEL` or
 `channelName` only in a realm outside the shell's page (a popup window), and then to the shell's id.
 
-If the shell sends the scenario header (API reference §4), the fragment adds
+If the shell sends the scenario header (API reference §4, *0.5.0+*), the fragment adds
 `uwtScenarioHeaderInterceptor()` to its own `provideHttpClient` too: interceptors don't cross realms.
 
 | Must match the shell | `eventNamespace` (ask for the shell's value if the shell isn't in this repo; default `com.uwt`); `withTelemetryEnabled(...)` — the switch is per realm, so a fragment left on beside a shell that is off still opens a channel nobody hosts. The channel name follows the shell by itself |
@@ -115,14 +119,20 @@ Inside a fragment:
 
 - `getSessionId()` is `undefined` until the shell answers the identity handshake — don't assert on it
   at bootstrap. Work is still correlated by `scenarioId`.
+- The shell's host stamps its own current `sessionId` and `userId` on every scenario, step, BI and
+  log record a fragment forwards, and re-measures `sessionElapsed` if the session changed
+  (*0.4.0+*). So fragment records carry the shell's session and user even when the fragment's own
+  copy lags. While the shell's RUM client hasn't started, there is no session to stamp.
 - Log lines go to the shell's log provider; `logger.query()` is answered by the shell.
 - Don't call `setUserId()`: it is forwarded and changes the shell's user. The shell owns user
   identity.
 - Paint observation doesn't work (a hidden iframe never paints) — settle with `complete()`.
 
-## Upgrading from the manual channel pattern (0.3.x)
+## Before 0.5.0: manual channel pattern
 
-On 0.3.x the shell publishes the channel itself and each fragment reads it:
+On 0.4.x and older the shell publishes the channel itself and each fragment reads it. Use this
+whenever the shell or any fragment is below 0.5.0, including a new setup while 0.4.x is the latest
+release:
 
 ```ts
 // shell, next to channelId above
@@ -147,15 +157,19 @@ function shellChannelName(): string {
 providers: [/* … */ { provide: UWT_BROADCAST_CHANNEL, useFactory: shellChannelName }];
 ```
 
-That keeps working on 0.4.0 (an explicit channel wins), but shells and fragments deploy separately,
-so remove it in this order: upgrade every fragment to 0.4.0 and drop its factory first, then remove
-the shell's global. A fragment still on 0.3.x reads only that global.
+**The shell must publish the id before any fragment boots**: the fragment's sink reads it once, so
+an early fragment ships nothing for the whole page. A shell that renders its fragments after it
+bootstraps (Web Fragments does) guarantees this.
+
+That keeps working on 0.5.0 (an explicit channel wins), but shells and fragments deploy separately,
+so remove it in this order: upgrade every fragment to 0.5.0 and drop its factory first, then remove
+the shell's global. A fragment still below 0.5.0 reads only that global.
 
 ## Verifying
 
 - On a first page load the shell's `inject(UwtTelemetryBroadcastHost).received` counter grows, also
   when the shell runs inside another app's iframe.
-- A fragment's API request carries `X-Amzn-Trace-Id` in DevTools → Network.
+- On 0.5.0+, a fragment's API request carries `X-Amzn-Trace-Id` in DevTools → Network.
 - Two tabs have two different channel ids.
 - With the debug flags on, lines are prefixed per realm: `[shell][scenario] …`, `[cart][bi] …`.
 - `BroadcastChannel` is same-origin only: a fragment served from another origin forwards nothing,

@@ -1,8 +1,9 @@
 # ngx-ui-watchtower API reference
 
 The public surface of `@absaoss-cps/ngx-ui-watchtower` (latest release, 0.4.0; if the installed
-typings differ, they win — items marked *0.4.0+* don't exist before it). Import only from the two
-entry points below — no deep imports.
+typings differ, they win — items marked *0.4.0+* don't exist before it, and items marked *0.5.0+*
+describe the next release, with ui-watchtower #29). Import only from the two entry points below — no
+deep imports.
 
 ## Contents
 
@@ -34,7 +35,7 @@ import {
   UwtBroadcastLogApiProvider,       // bound by 'broadcast'; never bind it yourself
   // scenarios
   UwtScenarioTelemetryService, UwtScenario, traceScenario,
-  uwtScenarioHeaderInterceptor, uwtScenarioContext, UWT_DEFAULT_SCENARIO_HEADER, // §4 backend header, 0.4.0+
+  uwtScenarioHeaderInterceptor, uwtScenarioContext, UWT_DEFAULT_SCENARIO_HEADER, // §4 backend header, 0.5.0+
   // BI
   UwtBITelemetryService,
   // logging
@@ -51,18 +52,18 @@ import type {
   UwtTelemetryIdentity, UwtTelemetryMetadata, UwtTelemetryError, UwtScenarioOptions,
   UwtScenarioOutcome, UwtScenarioRecord, UwtScenarioStatus, UwtTraceScenarioOptions,
   UwtBIEventName, UwtLogApiProvider, UwtLogQuery, UwtLogRecord, UwtLogDetail,
-  UwtScenarioHeaderOptions,
+  UwtScenarioHeaderOptions, // 0.5.0+
   // registries augmented by telemetry.schema.ts
   UwtScenarioNames, UwtScenarioSteps, UwtBIEventNames, UwtLoggerNames
 } from '@absaoss-cps/ngx-ui-watchtower';
 
-// '@absaoss-cps/ngx-ui-watchtower/rum' — the whole entry point, eight names
+// '@absaoss-cps/ngx-ui-watchtower/rum' — the whole entry point, eight names (seven before 0.5.0)
 import {
   provideUwtTelemetryRumSink, UwtRumTelemetrySink, UWT_RUM_CREDENTIALS_PROVIDER
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 import type {
   UwtRumCredentialsProvider, UwtRumBootstrap, UwtRumCredentials, UwtRumAppMonitorConfig,
-  UwtRumSinkOptions // 0.4.0+
+  UwtRumSinkOptions // 0.5.0+
 } from '@absaoss-cps/ngx-ui-watchtower/rum';
 ```
 
@@ -77,11 +78,11 @@ All return `EnvironmentProviders`; they work in `ApplicationConfig.providers` an
 | Call                                                   | Registers                                                                                                         |
 |--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `provideUwtTelemetry(identity, ...features)`           | Identity + default config for every concern; features override one concern each (later wins). **No destination.** |
-| `provideUwtTelemetryRumSink(options?)` (`/rum`)        | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint. `options`: `UwtRumSinkOptions` (`xRayExcludeUrls`, §7) |
+| `provideUwtTelemetryRumSink(options?)` (`/rum`)        | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint. `options` (*0.5.0+*): `UwtRumSinkOptions` (`xRayExcludeUrls`, §7) |
 | `provideUwtTelemetrySink('noop')`                      | Explicit "ship nowhere" destination                                                                                |
-| `provideUwtTelemetrySink('broadcast', { channelName? })` | Forwards to a shell's broadcast host. Also binds `UWT_LOG_API_PROVIDER` to `UwtBroadcastLogApiProvider`. Created at startup. Nested in the shell's page, it follows the shell's channel by itself; set `channelName` only outside the page (a popup) |
+| `provideUwtTelemetrySink('broadcast', { channelName? })` | Forwards to a shell's broadcast host. Also binds `UWT_LOG_API_PROVIDER` to `UwtBroadcastLogApiProvider`. *0.5.0+*: created at startup; nested in the shell's page, it follows the shell's channel by itself, so set `channelName` only outside the page (a popup). Before 0.5.0, set the shell's channel explicitly (micro-frontends.md, "Before 0.5.0") |
 | `provideUwtTelemetryDestination(SinkClass, { init? })` | Any custom sink; `init(sink)` runs once from an initializer, fail-open                                            |
-| `provideUwtTelemetryBroadcastHost(channelName?)`       | Shell-side receiver for fragments; constructed eagerly. Publishes its channel for the fragments nested in its page. Injects `UWT_LOG_API_PROVIDER` — a host without a log provider fails at bootstrap |
+| `provideUwtTelemetryBroadcastHost(channelName?)`       | Shell-side receiver for fragments; constructed eagerly. Publishes its channel for the fragments nested in its page (*0.5.0+*). Injects `UWT_LOG_API_PROVIDER` — a host without a log provider fails at bootstrap |
 
 Exactly one destination per realm: two different ones throw at bootstrap; the same one listed twice
 is fine. Who injects `UWT_LOG_API_PROVIDER`: only `UwtLoggerService` and the broadcast host.
@@ -162,18 +163,23 @@ low-cardinality grouping key (`'superseded'`, `'no-results'`). Settling is absor
 settle wins, later calls are ignored. Timeout settles as `timeout` automatically.
 
 `traceScenario(scenario, options?)` — RxJS operator: `complete()` on source completion,
-`fail({ error })` on error, `cancel(cancelOutcome)` on unsubscribe before either. So anything
-downstream that stops after the first value — `take(1)`/`first()` after it, `firstValueFrom()` on
-it — records `abandoned`; limit upstream and await with `lastValueFrom()`.
+`fail({ error })` on error. On an unsubscribe before either, it depends on whether a value got
+through. Before any value it calls `cancel(cancelOutcome)`: a superseding `switchMap` or
+`takeUntilDestroyed()` records `abandoned`. After a value (*0.4.0+*) it calls `complete()` with the
+outcome mapped from the last value, so `firstValueFrom()`, and `take(1)`/`first()` placed after it,
+record `success`. Before 0.4.0 a teardown after a value recorded `abandoned`; there, limit upstream
+and await with `lastValueFrom()`. For a multi-value stream (polling, progress, a websocket), where
+stopping after a value means the user gave up, pass `valueThenTeardown: 'cancel'`.
 
 ```ts
 interface UwtTraceScenarioOptions<T> {
   outcome?: (value: T) => UwtScenarioOutcome | void;   // from the last emitted value
   cancelOutcome?: UwtScenarioOutcome | (() => UwtScenarioOutcome | void);
+  valueThenTeardown?: 'complete' | 'cancel';           // teardown after a value; default 'complete' (0.4.0+)
 }
 ```
 
-**Sending the scenario to the backend** (*0.4.0+*). Opt-in, per request:
+**Sending the scenario to the backend** (*0.5.0+*). Opt-in, per request:
 
 ```ts
 provideHttpClient(withInterceptors([uwtScenarioHeaderInterceptor()])); // { headerName? } renames it
@@ -209,7 +215,11 @@ What the sink receives is always `record('{ns}.bi', event)` — `com.uwt.bi` by 
 
 ```ts
 event = { eventName, eventTime /* ISO string */, metadata?, scenarioId?, feature?, application, sessionId?, userId? }
+// sessionId / userId: 0.4.0+
 ```
+
+There is no per-event type override: `track()`'s `eventType` option was removed in 0.4.0. To keep
+an old dashboard's event type, use `eventNamespace` or a raw `sink.record()` (rum-migration.md §2).
 
 The name is in **`eventName`** (not `name`). A test with a recording sink asserts on
 `payload.eventName` and `payload.metadata`.
@@ -264,18 +274,19 @@ interface UwtRumCredentials { accessKeyId; secretAccessKey; sessionToken; expira
 `enableXRay`, `endpoint`, …). Deliberately absent: `identityPoolId`/`guestRoleArn` (Cognito — use
 your broker), `endpointUrl`, `sessionId`, `userId`. Leave `telemetries` out of broker JSON where
 you can: a list replaces the library's default, whose `http` entry adds the X-Ray header to
-same-origin requests, relative URLs (`/api/...`) included, through a `RegExp` — and in a shell, to
-nested fragments' requests too. If the broker sends one, take names only
+same-origin requests through a `RegExp` — relative URLs (`/api/...`) included and, in a shell, nested
+fragments' requests too (*0.5.0+*; before, only absolute same-origin URLs, so most `HttpClient` calls
+got no header). If the broker sends one, take names only
 (`['errors', 'http']`): settings that need a `RegExp` or a function (`pagesToExclude`, or
 `urlsToExclude`, `ignore` inside `telemetries`, and `addXRayTraceIdHeader` unless it's a boolean)
 can't travel as JSON. If one arrives as a string, the sink doesn't start RUM for the page and warns
 in the console (each setting and its expected type, never the value), rather than let the SDK throw
-or record what the filters should exclude. Set them in code.
+or record what the filters should exclude (*0.4.0+*; before, the SDK threw). Set them in code.
 
 A same-origin endpoint that redirects to another origin (a download that 302s to S3, an SSO
 login) passes the X-Ray header on, and the request fails unless that origin allows
 `x-amzn-trace-id` in CORS. Fix it at the target, or keep the header off that path in code:
-`provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.4.0+*; matched against the resolved
+`provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.5.0+*; matched against the resolved
 URL; covers fragments too; only with the default `telemetries`).
 
 User identity: `sink.setUserId(id)` takes a UUID — RUM's API accepts nothing else (MSAL's

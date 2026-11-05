@@ -102,9 +102,10 @@ async load(): Promise<void> {
 }
 ```
 
-**Observable** — `traceScenario` settles on completion, error or early unsubscribe. Like any cold
-observable, nothing happens until something subscribes: return it to a caller that subscribes (a
-template's `async` pipe, a component's `subscribe()`), or await it with `lastValueFrom()`. Start the
+**Observable** — `traceScenario` settles on completion, error or unsubscribe: an unsubscribe before
+any value cancels, one after a value completes (*0.4.0+*, §4). Like any cold observable, nothing
+happens until something subscribes: return it to a caller that subscribes (a template's `async`
+pipe, a component's `subscribe()`), or await it with `lastValueFrom()` or `firstValueFrom()`. Start the
 scenario inside `defer()` so each subscription measures its own journey from when it subscribes. On
 error `traceScenario` calls `fail({ error })` with the raw error and no status, so for HTTP sources
 settle the failure first with `catchError` upstream — the first settle wins:
@@ -153,24 +154,28 @@ render-heavy journey, complete after the next frame:
 
 ## 4. RxJS traps
 
-**Nothing downstream of `traceScenario` may stop after the first value.** `traceScenario` settles
-`success` when the source *completes*; anything after it that unsubscribes on the first value —
-`take(1)` or `first()` placed after it, or `firstValueFrom()` on the traced observable — tears it
-down before completion arrives, and the scenario records `abandoned`. This holds even for
-`HttpClient`, which completes right after its one value: `firstValueFrom` unsubscribes first.
+**A multi-value stream stopped after a value records `success`** (*0.4.0+*). `traceScenario` treats
+an unsubscribe after a value as completion, because that is how `firstValueFrom()`, `take(1)` and
+`first()` end a single-value journey such as an HTTP call. For polling, progress or a websocket,
+stopping after a value usually means the user gave up, so opt back into cancelling:
 
 ```ts
-// Records abandoned:
+// One request: success, however it is consumed.
 await firstValueFrom(this.api.customers().pipe(traceScenario(scenario)));
-this.events$.pipe(traceScenario(scenario), take(1));
 
-// Records success: limit upstream, await completion.
-await lastValueFrom(this.api.customers().pipe(traceScenario(scenario)));
-this.events$.pipe(take(1), traceScenario(scenario));
+// Polling until the user leaves: abandoned, not success.
+this.api.pollJobStatus(jobId).pipe(
+  traceScenario(scenario, { valueThenTeardown: 'cancel' }),
+  takeUntilDestroyed(this.destroyRef)
+).subscribe();
 ```
 
-**`switchMap` supersession** — give `traceScenario` a `cancelOutcome`; `switchMap` tears the
-previous request down before your projector runs, so cancelling it there is too late:
+Before 0.4.0 a teardown after a value recorded `abandoned`: there, nothing downstream of
+`traceScenario` may stop after the first value — limit upstream and await with `lastValueFrom()`.
+
+**`switchMap` supersession** — a request superseded before its response is still cancelled; give
+`traceScenario` a `cancelOutcome` for the reason. `switchMap` tears the previous request down before
+your projector runs, so cancelling it there is too late:
 
 ```ts
 query$.pipe(

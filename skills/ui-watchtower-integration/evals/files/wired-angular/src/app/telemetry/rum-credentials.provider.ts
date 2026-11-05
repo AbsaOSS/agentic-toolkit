@@ -42,7 +42,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
  * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
  * `RegExp`s and functions there, and with a string in their place the library doesn't start RUM
- * for the page. Telemetries are kept as names only; set their options in code.
+ * for the page (0.4.0+; before, the SDK threw). Telemetries are kept as names only; set their
+ * options in code.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -133,8 +134,9 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
    * `null` (RUM off for the rest of the page) when the broker turns RUM off or answers with
    * anything incomplete, malformed or expired. A failed request throws instead, and the library
-   * retries every 30 s — at startup up to 10 times, buffering events, and on a refresh with the
-   * current credentials kept — where `null` would end RUM for the page.
+   * retries — at startup with a growing, random wait for up to 5 minutes, buffering events; on a
+   * refresh every 30 s, with the current credentials kept — where `null` would end RUM for the
+   * page.
    */
   async load(): Promise<UwtRumBootstrap | null> {
     const response = await fetch(RUM_BROKER_URL, {
