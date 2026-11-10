@@ -78,7 +78,7 @@ All return `EnvironmentProviders`; they work in `ApplicationConfig.providers` an
 | Call                                                   | Registers                                                                                                         |
 |--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `provideUwtTelemetry(identity, ...features)`           | Identity + default config for every concern; features override one concern each (later wins). **No destination.** |
-| `provideUwtTelemetryRumSink(options?)` (`/rum`)        | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint. `options` (*0.5.0+*): `UwtRumSinkOptions` (`xRayExcludeUrls`, §7) |
+| `provideUwtTelemetryRumSink(options?)` (`/rum`)        | The AWS CloudWatch RUM destination. Needs `UWT_RUM_CREDENTIALS_PROVIDER`. Starts the client from a non-awaited initializer, so a slow broker never delays first paint. `options` (*0.5.0+*): `UwtRumSinkOptions` (`traceHeaderExcludeUrls`, §7) |
 | `provideUwtTelemetrySink('noop')`                      | Explicit "ship nowhere" destination                                                                                |
 | `provideUwtTelemetrySink('broadcast', { channelName? })` | Forwards to a shell's broadcast host. Also binds `UWT_LOG_API_PROVIDER` to `UwtBroadcastLogApiProvider`. *0.5.0+*: created at startup; nested in the shell's page, it follows the shell's channel by itself, so set `channelName` only outside the page (a popup). Before 0.5.0, set the shell's channel explicitly (micro-frontends.md, "Before 0.5.0") |
 | `provideUwtTelemetryDestination(SinkClass, { init? })` | Any custom sink; `init(sink)` runs once from an initializer, fail-open                                            |
@@ -284,10 +284,11 @@ in the console (each setting and its expected type, never the value), rather tha
 or record what the filters should exclude (*0.4.0+*; before, the SDK threw). Set them in code.
 
 A same-origin endpoint that redirects to another origin (a download that 302s to S3, an SSO
-login) passes the X-Ray header on, and the request fails unless that origin allows
-`x-amzn-trace-id` in CORS. Fix it at the target, or keep the header off that path in code:
-`provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.5.0+*; matched against the resolved
-URL; covers fragments too; only with the default `telemetries`).
+login) passes the trace header on, and the request fails unless that origin allows it in CORS:
+`x-amzn-trace-id`, or `traceparent` with `enableW3CTraceId` (the SDK sends one or the other).
+Fix it at the target, or keep the header off that path in code:
+`provideUwtTelemetryRumSink({ traceHeaderExcludeUrls: [/\/files\//] })` (*0.5.0+*; matched against
+the resolved URL; covers fragments too; only with the default `telemetries`).
 
 User identity: `sink.setUserId(id)` takes a UUID — RUM's API accepts nothing else (MSAL's
 `localAccountId`, not `homeAccountId`; an OIDC `sub` often isn't one). `undefined` or `''` signs out:

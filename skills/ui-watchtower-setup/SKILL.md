@@ -356,11 +356,12 @@ a shell, also hand over the fragment contract from `references/micro-frontends.m
 - **Redaction never scrubs URL path segments** (only query strings and fragments; `scanValuePatterns`
   only scrubs metadata and message values). Keep personal data out of URLs and report route
   templates, never resolved paths.
-- **The X-Ray header follows redirects.** RUM adds `X-Amzn-Trace-Id` to same-origin requests
-  (relative URLs included, and fragments' in a shell, *0.5.0+*; before, only absolute same-origin
-  URLs). A same-origin endpoint that redirects to another origin (an S3 download, an SSO login) then
-  fails CORS unless that origin allows the header. Look for such endpoints and list them:
-  `provideUwtTelemetryRumSink({ xRayExcludeUrls: [/\/files\//] })` (*0.5.0+*).
+- **The trace header follows redirects.** RUM adds `X-Amzn-Trace-Id` (`traceparent` with
+  `enableW3CTraceId`) to same-origin requests (relative URLs included, and fragments' in a shell,
+  *0.5.0+*; before, only absolute same-origin URLs). A same-origin endpoint that redirects to
+  another origin (an S3 download, an SSO login) then fails CORS unless that origin allows the
+  header. Look for such endpoints and list them:
+  `provideUwtTelemetryRumSink({ traceHeaderExcludeUrls: [/\/files\//] })` (*0.5.0+*).
 
 ## Out of scope
 
