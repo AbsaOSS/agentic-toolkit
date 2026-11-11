@@ -222,6 +222,69 @@
         "Names the toolbar dropdowns and their options, and makes small color swatches at least 24 px",
         "Keeps the editor's own pixels and behaviour otherwise unchanged and lists the lost Tab indentation in the report"
       ]
+    },
+    {
+      "id": "embedded-open-shadow-root",
+      "category": "edge",
+      "prompt": "Check the /curation/orders page inside our local host app. It embeds the app in an open shadow root, and the standalone route only imitates the host's URL and CSS class.",
+      "expected_output": "Skill runs the real host with the embedded app, confirms the fragment rendered inside its shadow root, and uses checks that inspect open shadow DOM rather than trusting document-only queries.",
+      "files": [],
+      "expectations": [
+        "Runs the page through the actual host app, not only the standalone route that imitates it",
+        "Confirms both the host and the intended embedded page state rendered before scanning",
+        "Checks that DOM queries, style overrides, text-size checks, contrast sampling, and keyboard focus reach into open shadow roots",
+        "Does not interpret an empty document query as a pass and names any host mode it could not test"
+      ]
+    },
+    {
+      "id": "short-viewport-sticky-focus",
+      "category": "edge",
+      "prompt": "The sticky paginator passes the keyboard test on desktop, but at 200% zoom it wraps and may cover focused results. Check and fix it.",
+      "expected_output": "Skill tests both the narrow width and the short CSS viewport produced by zoom, detects the wrapped paginator covering focus, and fixes the narrow layout without changing desktop behavior.",
+      "files": [],
+      "expectations": [
+        "Tests at a short viewport height as well as a 320px width and the desktop size",
+        "Checks actual focus visibility against the paginator, not only its CSS max-height or scroll margin",
+        "Uses a regression test that fails before the fix and passes after it",
+        "Preserves the desktop behavior and reports the viewport sizes tested"
+      ]
+    },
+    {
+      "id": "unreachable-requested-state",
+      "category": "edge",
+      "prompt": "Use the bundled keyboard walk to check the export dialog, opening it with the Export button. The app loaded the page but that button is missing.",
+      "expected_output": "The script reports that the requested state could not be reached and exits nonzero instead of walking the page behind it as if the dialog were tested.",
+      "files": [],
+      "expectations": [
+        "Does not swallow a missing --click selector and continue checking the wrong state",
+        "Exits nonzero with an error that identifies the selector whose state could not be reached"
+      ]
+    },
+    {
+      "id": "transient-hints-and-notification-cap",
+      "category": "edge",
+      "prompt": "The export failure notification must remain available, but the file-picker hint disappears after five seconds and is also shown beside the field. The stack is capped at three messages. Check that behavior.",
+      "expected_output": "Skill distinguishes essential error information from a transient hint duplicated inline, checks how the stack cap affects persistent errors, and tests the timeout without a real-time sleep.",
+      "files": [],
+      "expectations": [
+        "Keeps essential error information available until the user can perceive and act on it",
+        "Allows the duplicated nonessential hint to be transient while its information remains available inline",
+        "Checks that the notification cap cannot silently evict an important error without an accessible alternative",
+        "Uses the test runner's fake clock to advance past the timeout rather than waiting in real time"
+      ]
+    },
+    {
+      "id": "final-design-token-state-contrast",
+      "category": "edge",
+      "prompt": "The hover overlay on a solid button makes white text fail contrast. The design owner has marked the button's base color token final. Fix the state without changing the token.",
+      "expected_output": "Skill measures the hovered and focused states, preserves the approved base token, and uses an appropriately scoped state treatment or asks the design owner.",
+      "files": [],
+      "expectations": [
+        "Measures contrast in the actual hover and keyboard-focus states, not only on the base color",
+        "Does not alter a token explicitly marked final",
+        "Scopes any state overlay to the affected component or uses an approved design-system option",
+        "Verifies the computed style and reports the intended visual change"
+      ]
     }
   ]
 }

@@ -41,12 +41,36 @@ const FREEZE = '*,*::before,*::after{animation:none!important;transition:none!im
 async function capture(url, file, viewport, options, clicks = '') {
   const [width, height] = viewport;
   const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
-  await page.addStyleTag({ content: FREEZE });
+  await page.evaluate(css => {
+    const roots = [document];
+    const walk = root => {
+      for (const el of root.querySelectorAll('*')) {
+        if (el.shadowRoot) {
+          roots.push(el.shadowRoot);
+          walk(el.shadowRoot);
+        }
+      }
+    };
+    walk(document);
+    for (const root of roots) {
+      const style = document.createElement('style');
+      style.textContent = css;
+      (root instanceof Document ? root.head : root).appendChild(style);
+    }
+  }, FREEZE);
   if (options.full) {
     // The tallest scrolling element decides the height: the document, or an inner container of the app shell.
     // Scrollers with no visible height (collapsed panels) hide their content and don't count.
     const extra = await page.evaluate(() => {
-      const scrollers = [document.scrollingElement, ...document.querySelectorAll('*')].filter(
+      const elements = [];
+      const walk = root => {
+        for (const el of root.querySelectorAll('*')) {
+          elements.push(el);
+          if (el.shadowRoot) walk(el.shadowRoot);
+        }
+      };
+      walk(document);
+      const scrollers = [document.scrollingElement, ...elements].filter(
         el =>
           el &&
           (el === document.scrollingElement || (el.clientHeight > 0 && ['auto', 'scroll'].includes(getComputedStyle(el).overflowY)))
@@ -183,7 +207,23 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
   const boxes = {};
   for (const side of ['base', 'head']) {
     const { browser, page } = await openPage(String(flags[side]).replace(/\/$/, '') + route, { ...flags, click: clicks || undefined }, { width, height });
-    await page.addStyleTag({ content: FREEZE });
+    await page.evaluate(css => {
+      const roots = [document];
+      const collect = root => {
+        for (const el of root.querySelectorAll('*')) {
+          if (el.shadowRoot) {
+            roots.push(el.shadowRoot);
+            collect(el.shadowRoot);
+          }
+        }
+      };
+      collect(document);
+      for (const root of roots) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        (root instanceof Document ? root.head : root).appendChild(style);
+      }
+    }, FREEZE);
     boxes[side] = await page.evaluate(() => {
       const out = {};
       const walk = (el, at) => {
@@ -191,6 +231,7 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
         const cls = (el.className?.toString() || '').split(/\s+/).filter(Boolean).slice(0, 2).join('.');
         out[at] = { label: el.tagName.toLowerCase() + (cls ? '.' + cls : ''), box: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 10) / 10) };
         [...el.children].forEach((child, i) => walk(child, `${at}/${i}`));
+        [...(el.shadowRoot?.children ?? [])].forEach((child, i) => walk(child, `${at}/shadow/${i}`));
       };
       walk(document.body, 'body');
       return out;

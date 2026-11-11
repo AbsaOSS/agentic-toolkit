@@ -44,21 +44,23 @@ export async function openPage(url, flags, viewport = { width: 1440, height: 900
   if (flags.wait) {
     // Wait until the element exists, not until it is visible: at some sizes (320 px, 200% text) the page may hide
     // or push it off-screen, which is exactly what the checks are looking for.
-    await page
-      .locator(flags.wait)
-      .first()
-      .waitFor({ state: 'attached', timeout: Number(flags['wait-timeout'] ?? 20000) })
-      .catch(() => console.warn(`warning: "${flags.wait}" did not appear; checking the page as it is`));
+    try {
+      await page.locator(flags.wait).first().waitFor({ state: 'attached', timeout: Number(flags['wait-timeout'] ?? 20000) });
+    } catch (error) {
+      await browser.close();
+      throw new Error(`Could not reach --wait "${flags.wait}"; refusing to check the wrong page or state`, { cause: error });
+    }
   }
   await page.waitForLoadState('networkidle').catch(() => {});
   await page.waitForTimeout(Number(flags.settle ?? 800));
   // `--click "a;;b"` clicks each selector in turn, to open a menu or dialog before the checks run
   for (const selector of flags.click ? String(flags.click).split(';;') : []) {
-    await page
-      .locator(selector.trim())
-      .first()
-      .click({ timeout: 10000 })
-      .catch(() => console.warn(`warning: could not click "${selector.trim()}"; checking the page as it is`));
+    try {
+      await page.locator(selector.trim()).first().click({ timeout: 10000 });
+    } catch (error) {
+      await browser.close();
+      throw new Error(`Could not click --click "${selector.trim()}"; refusing to check the wrong page or state`, { cause: error });
+    }
     await page.waitForTimeout(Number(flags.settle ?? 800));
   }
   return { browser, context, page };

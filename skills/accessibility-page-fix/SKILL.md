@@ -66,7 +66,10 @@ Copy this checklist and track progress:
 5. List the **contexts** the page's components render in. The same component is often a full page in one place
    and a dialog, drawer or embedded panel in another (for example a login form shown again in a session-expired
    dialog). Each context is its own state to scan, and fixes must work in all of them. The app itself may also run
-   embedded in a host page that provides its own landmarks (a micro-frontend); check that mode too.
+   embedded in a host page that provides its own landmarks (a micro-frontend); check that mode in the actual host
+   app, not only on a standalone route that imitates its URL or CSS class. Confirm the embedded page rendered and,
+   when it uses an open shadow root, that the checks reached into it. If the root is closed, use the host's supported
+   test hooks and verify through browser-visible behavior; don't report an empty DOM query as a pass.
 6. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
    mock a short token lifetime to get a session-expired dialog, mock an empty response for the empty state
    ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
@@ -111,14 +114,15 @@ verdicts:
 
 | Script | What it does |
 |---|---|
-| `scripts/keyboard-walk.mjs <url>` | Tabs through the page; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
-| `scripts/text-size-check.mjs <url>` | Loads the page at 200% text, 320 px wide and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
-| `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
-| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (several pages, states and widths in one run) and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
+| `scripts/keyboard-walk.mjs <url>` | Tabs through the page, including open shadow roots; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
+| `scripts/text-size-check.mjs <url>` | Checks open shadow roots at 200% text, 320 px wide, a short viewport, and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
+| `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast, including inside open shadow roots, for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
+| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
 look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
-`--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking). `text-size-check` also takes
+`--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking). If a requested `--wait` or
+`--click` target is missing, the script fails instead of silently checking a different state. `text-size-check` also takes
 `--scope <selector>` to report only one part of the page, such as `[role="dialog"]`.
 
 - **Keyboard:** Tab and Shift+Tab through everything. Every interactive element is reachable, in a logical order,
@@ -129,8 +133,10 @@ look for), `--storage <state.json>` (a saved Playwright login state for pages be
   markup), the right role, and its state exposed (expanded, selected, checked, busy, current).
 - **Text size and reflow:** set the browser/root font size to 200% and the viewport to 320 CSS px wide. All text
   grows, and nothing is cut off, overlaps, or needs two-dimensional scrolling (except truly 2D content like maps or
-  tables). Check **every dialog and menu** this way too, not only the page: they are sized separately and often in
-  px.
+  tables). Also try a short viewport height (for example 320×256 or 640×360 CSS px) when sticky controls or wrapped
+  toolbars may cover content; test the actual zoomed viewport rather than approximating browser zoom with font-size
+  CSS alone. Check **every dialog and menu** this way too, not only the page: they are sized separately and often
+  in px.
 - **Responsive shell scrolling:** identify what actually scrolls (the document, main content, or an inner panel).
   At the narrow breakpoint and just above it, scroll that content and verify any sidebar meant to stay pinned does
   so. A shell that changes from fixed positioning to document flow can change the sidebar's containing block;
@@ -138,7 +144,9 @@ look for), `--storage <state.json>` (a saved Playwright login state for pages be
 - **Structure:** one `h1`, headings in order, landmarks present (`header`, `nav`, `main`), lists and tables use
   real elements, reading order matches visual order.
 - **Dynamic content:** status and error messages reach screen readers without stealing focus; focus moves
-  sensibly when content opens, closes or is replaced.
+  sensibly when content opens, closes or is replaced. After a delayed action removes the focused item, test that
+  focus moves to the next/previous item or a meaningful heading, and that it does not steal focus if the user moved
+  elsewhere while the action was pending.
 - **Pointer:** targets are at least 24×24 CSS px (or have enough spacing); nothing needs a drag as the only way.
 - **Contrast and color:** text 4.5:1 (3:1 for large text), UI components and meaningful graphics 3:1; color is
   never the only signal.
@@ -192,7 +200,9 @@ Rules while fixing:
    isn't there: remove the fix, and keep the test only as a scan of that state. If the new tests fail early
    for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
    something else, so the scans themselves run against the old code and report the real problems.
-3. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
+3. Use fake timers for timer-based behavior where the test runner supports them: install the clock before the
+   page's timer is created, advance it past the relevant threshold, and assert the resulting state instead of
+   waiting in real time. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
    check, the project's functional tests for pages that use any shared component you changed, and the screenshot
    comparison with the base branch (Step 5.3). Passing scans are not a substitute for the comparison. Run the new
    tests several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
@@ -222,6 +232,11 @@ Step 4 passes, and no regressions in tests or screenshots.
 
 ## Gotchas
 
+- **Open shadow roots hide content from document queries.** `document.querySelectorAll`, `document.activeElement`
+  and styles injected into the document do not reach an embedded app's shadow DOM. The bundled keyboard, text-size,
+  contrast and screenshot checks traverse open shadow roots; still verify that the host and fragment actually
+  rendered and that the observed result is inside the right root. Closed roots need host-supported test hooks or
+  browser-visible interaction checks; never treat an empty query as evidence that the embedded UI passed.
 - **Library popups sit outside every landmark.** Many UI kits attach open menus and dropdown lists to the end of
   `<body>`, so axe's `region` best practice flags them. When the library offers no inline option, scan the page
   with the popup excluded, then the popup on its own with every rule except `region`, and document it. Don't

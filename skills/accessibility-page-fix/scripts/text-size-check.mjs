@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Checks a page at 200% text size, at 320 CSS px wide (reflow), and with WCAG text-spacing overrides.
+// Checks a page at 200% text size, at narrow and short viewports, and with WCAG text-spacing overrides.
 // Reports horizontal scrolling (of the page or of a scroll container inside it), clipped text, placeholders that
 // don't fit, controls pushed off-screen or covering each other, and text that does not grow when the root font size doubles. Saves a screenshot of each setting so you can look at them.
 //
@@ -23,8 +23,9 @@ fs.mkdirSync(flags.out, { recursive: true });
 
 const SETTINGS = [
   { name: 'baseline (100%)', viewport: { width: 1440, height: 900 }, css: '' },
-  { name: '200% text', viewport: { width: 1440, height: 900 }, css: 'html { font-size: 200% !important; }' },
+  { name: '200% text', viewport: { width: 1440, height: 900 }, css: 'html, wf-html { font-size: 200% !important; }' },
   { name: '320px wide', viewport: { width: 320, height: 640 }, css: '' },
+  { name: 'short viewport', viewport: { width: 320, height: 256 }, css: '' },
   {
     name: 'text spacing',
     viewport: { width: 1440, height: 900 },
@@ -35,21 +36,52 @@ const SETTINGS = [
 const measure = scope =>
   document.fonts.ready.then(() => {
     const issues = [];
+    const allElements = [];
+    const walk = root => {
+      for (const el of root.querySelectorAll('*')) {
+        allElements.push(el);
+        if (el.shadowRoot) walk(el.shadowRoot);
+      }
+    };
+    walk(document);
+    const scopes = allElements.filter(el => el.matches(scope));
+    const elements = new Set();
+    const visit = root => {
+      for (const child of root.children) {
+        elements.add(child);
+        visit(child);
+        if (child.shadowRoot) visit(child.shadowRoot);
+      }
+    };
+    for (const el of scopes) {
+      visit(el);
+      if (el.shadowRoot) visit(el.shadowRoot);
+    }
     // A scope that matches nothing would report no findings for a page it never checked
-    if (!document.querySelector(scope)) issues.push(`nothing matches --scope ${scope}: no part of the page was checked`);
-    const doc = document.documentElement;
-    if (doc.scrollWidth > doc.clientWidth + 1) issues.push(`horizontal scroll: page is ${doc.scrollWidth}px wide in a ${doc.clientWidth}px viewport`);
-    for (const root of document.querySelectorAll(scope)) {
+    if (!scopes.length) issues.push(`nothing matches --scope ${scope}: no part of the page was checked`);
+    const scrollRoots = [document.documentElement, ...allElements.filter(el => el.shadowRoot).map(el => el.shadowRoot.host)];
+    for (const root of scrollRoots) {
+      if (root.scrollWidth > root.clientWidth + 1) {
+        const name = root === document.documentElement ? 'page' : root.tagName.toLowerCase();
+        issues.push(`horizontal scroll: ${name} is ${root.scrollWidth}px wide in a ${root.clientWidth}px viewport`);
+      }
+    }
+    for (const root of scopes) {
       const box = root.getBoundingClientRect();
       if (root !== document.body && (box.left < -1 || box.right > innerWidth + 1)) issues.push(`wider than the screen: ${scope} is ${Math.round(box.width)}px wide (x ${Math.round(box.left)}..${Math.round(box.right)})`);
     }
     const label = el => `${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).trim().split(/\s+/)[0] : ''} "${(el.getAttribute('aria-label') || el.textContent || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 28)}"`;
     const canvas = document.createElement('canvas').getContext('2d');
-    for (const el of document.querySelectorAll(`${scope} *`)) {
+    const composedParent = el => el.parentElement || el.getRootNode()?.host || null;
+    const composedClosest = (el, selector) => {
+      for (let node = el; node; node = composedParent(node)) if (node.matches?.(selector)) return node;
+      return null;
+    };
+    for (const el of elements) {
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       // Boxes of 2px or less are the intentional "screen-reader only" pattern, not clipped content
-      if (r.width <= 2 || r.height <= 2 || cs.visibility === 'hidden' || el.closest('[hidden],[inert]')) continue;
+      if (r.width <= 2 || r.height <= 2 || cs.visibility === 'hidden' || composedClosest(el, '[hidden],[inert]')) continue;
       const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
       const clips = ['hidden', 'clip'].includes(cs.overflowX) || ['hidden', 'clip'].includes(cs.overflowY);
       if (hasText && clips && cs.textOverflow !== 'ellipsis' && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) issues.push(`clipped text: ${label(el)} (content ${el.scrollWidth}x${el.scrollHeight}, box ${el.clientWidth}x${el.clientHeight})`);
@@ -71,21 +103,25 @@ const measure = scope =>
     // control lying wholly inside another (a clear button inside an input) is a deliberate overlay.
     const visibleBox = el => {
       let { left, top, right, bottom } = el.getBoundingClientRect();
-      for (let p = el.parentElement; p; p = p.parentElement) {
+      for (let p = composedParent(el); p; p = composedParent(p)) {
         if (getComputedStyle(p).overflow === 'visible') continue;
         const c = p.getBoundingClientRect();
         [left, top, right, bottom] = [Math.max(left, c.left), Math.max(top, c.top), Math.min(right, c.right), Math.min(bottom, c.bottom)];
       }
       return right - left > 1 && bottom - top > 1 ? { left, top, right, bottom } : null;
     };
-    const layer = el => { for (let n = el; n; n = n.parentElement) if (['sticky', 'fixed'].includes(getComputedStyle(n).position)) return n; return null; };
-    const controls = [...document.querySelectorAll(`${scope} :is(a[href],button,input,select,textarea,[role=button],[role=combobox])`)]
+    const layer = el => { for (let n = el; n; n = composedParent(n)) if (['sticky', 'fixed'].includes(getComputedStyle(n).position)) return n; return null; };
+    const controls = [...elements].filter(el => el.matches('a[href],button,input,select,textarea,[role=button],[role=combobox]'))
       .filter(el => el.checkVisibility())
       .map(el => ({ el, layer: layer(el), box: visibleBox(el) }))
       .filter(c => c.box);
     const inside = (x, y) => x.left >= y.left - 1 && x.right <= y.right + 1 && x.top >= y.top - 1 && x.bottom <= y.bottom + 1;
+    const composedContains = (parent, child) => {
+      for (let node = child; node; node = composedParent(node)) if (node === parent) return true;
+      return false;
+    };
     controls.forEach((a, i) => controls.slice(i + 1).forEach(b => {
-      if (a.el.contains(b.el) || b.el.contains(a.el) || a.layer !== b.layer || inside(a.box, b.box) || inside(b.box, a.box)) return;
+      if (composedContains(a.el, b.el) || composedContains(b.el, a.el) || a.layer !== b.layer || inside(a.box, b.box) || inside(b.box, a.box)) return;
       if (a.box.left < b.box.right - 1 && b.box.left < a.box.right - 1 && a.box.top < b.box.bottom - 1 && b.box.top < a.box.bottom - 1) issues.push(`controls overlap: ${label(a.el)} / ${label(b.el)}`);
     }));
     return issues;
@@ -94,15 +130,41 @@ const measure = scope =>
 // Text whose font size stays the same when the root font size doubles: px sizes, browser defaults (buttons use a
 // fixed 13.33px unless styled), or library inputs that turn a px size into a px font size.
 const fixedSizeText = scope => {
-  const texts = [...document.querySelectorAll(`${scope} *`)].filter(
+  const allElements = [];
+  const walk = root => {
+    for (const el of root.querySelectorAll('*')) {
+      allElements.push(el);
+      if (el.shadowRoot) walk(el.shadowRoot);
+    }
+  };
+  walk(document);
+  const scopes = allElements.filter(el => el.matches(scope));
+  const elements = new Set();
+  const visit = root => {
+    for (const child of root.children) {
+      elements.add(child);
+      visit(child);
+      if (child.shadowRoot) visit(child.shadowRoot);
+    }
+  };
+  for (const el of scopes) {
+    visit(el);
+    if (el.shadowRoot) visit(el.shadowRoot);
+  }
+  const texts = [...elements].filter(
     el => el.checkVisibility() && [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())
   );
   const before = texts.map(el => parseFloat(getComputedStyle(el).fontSize));
-  const style = document.head.appendChild(document.createElement('style'));
+  const roots = [document, ...allElements.filter(el => el.shadowRoot).map(el => el.shadowRoot)];
+  const styles = roots.map(root => {
+    const style = document.createElement('style');
+    style.textContent = 'html, wf-html { font-size: 200% !important; } *, *::before, *::after { transition: none !important; }';
+    (root instanceof Document ? root.head : root).appendChild(style);
+    return style;
+  });
   // Transitions are off, or a size that animates (a floating placeholder) would still read its old value
-  style.textContent = 'html { font-size: 200% !important; } *, *::before, *::after { transition: none !important; }';
   const fixed = texts.filter((el, i) => parseFloat(getComputedStyle(el).fontSize) < before[i] * 1.9);
-  style.remove();
+  styles.forEach(style => style.remove());
   return fixed.map(el => `text does not grow: "${el.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)}" stays ${getComputedStyle(el).fontSize}`);
 };
 
@@ -111,7 +173,25 @@ let total = 0;
 for (const setting of SETTINGS) {
   const { browser, page } = await openPage(positional[0], flags, setting.viewport);
   const fixed = setting.name === '200% text' ? await page.evaluate(fixedSizeText, scope) : [];
-  if (setting.css) await page.addStyleTag({ content: setting.css });
+  if (setting.css) {
+    await page.evaluate(css => {
+      const roots = [document];
+      const walk = root => {
+        for (const el of root.querySelectorAll('*')) {
+          if (el.shadowRoot) {
+            roots.push(el.shadowRoot);
+            walk(el.shadowRoot);
+          }
+        }
+      };
+      walk(document);
+      for (const root of roots) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        (root instanceof Document ? root.head : root).appendChild(style);
+      }
+    }, setting.css);
+  }
   await page.waitForTimeout(500); // let width-dependent components re-measure
   const issues = [...fixed, ...(await page.evaluate(measure, scope))];
   const shot = path.join(flags.out, setting.name.replace(/\W+/g, '-').toLowerCase() + '.png');

@@ -102,12 +102,17 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   `scroll-margin-bottom` (at least the sticky bar's height) on the page's focusable elements instead.
 - Be careful with helpers that set `position: relative` on focus: they break absolutely-positioned controls.
 - After content is removed or replaced, send focus somewhere sensible (the next item, the container, a heading) —
-  not to `<body>`. A heading used as a focus target gets `tabindex="-1"` and no ring: it is a starting point, not a
-  control.
+  not to `<body>`. A heading used as a programmatic focus target gets `tabindex="-1"` so it is not added to the Tab
+  order. If keyboard users can land there after an action, give it a visible `:focus-visible` indicator, scoped to
+  that component rather than adding a broad global selector for the heading tag.
 - The same goes for an action that removes or disables the focused control: a Publish button whose editor closes, an
   "Add" button that is disabled once its field is empty, a "Close" button that disappears. Move focus to where the
   user goes on (the control that opened the editor, the content's heading, the field). Check first that focus really
   drops: a button in a loading state often stays enabled and keeps it.
+- When restoring focus after an asynchronous action, do it only if focus was lost with the removed content (or is
+  still on the document body). If the user moved focus elsewhere while the request was pending, don't pull it back.
+  Test both a delayed success and moving focus elsewhere before that success; also check next/previous item and
+  empty-state targets at the relevant viewport sizes.
 - A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead:
   disabling it drops focus and the ring for the whole loading time, and moving focus back afterwards leaves that gap.
   The disabled state was also what stopped a second request, so keep that: ignore a press while loading. Otherwise
@@ -156,8 +161,10 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   design-system live announcer service already does this; use it before adding a region of your own.
 - A live region's text is what gets announced: make sure numbers and labels in it are separated by real spaces
   (templating engines that strip whitespace between elements glue them together).
-- Notifications: errors and warnings stay until the user closes them (WCAG 2.2.1); routine success messages can
-  close on their own. The close button needs a name and a 24×24 px target. Because they stay, they can cover the
+- Notifications: keep error and warning information available long enough for users to perceive and act on it
+  (WCAG 2.2.1); routine success messages can close on their own. A brief hint may be transient if it is not
+  essential information and remains available elsewhere, such as inline validation beside the field. The close
+  button needs a name and a 24×24 px target. Persistent notifications can cover the
   focused element (WCAG 2.4.11): make Esc close them without moving focus, or place them where they cover nothing
   interactive. When the notification service belongs to a design system you can change, fix it there, not in each
   app. Until that release ships, an app-level listener in the app's notification wrapper can stand in; mark it as
@@ -190,11 +197,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   it was drawn again), to the open dialog or the main landmark, with a `tabindex="-1"` that is removed again on
   blur. Focus must never fall to the top of the document. Checking whether a popup is visible fails while it
   animates closed. Remove the listeners when the app is destroyed.
-- Notification libraries often drop a message identical to one that is still open. That was harmless while messages
-  closed after a few seconds. Once errors stay open, the same failure a second time shows nothing and is not read
-  out. Don't allow duplicates instead: identical errors stack up and cover half the screen. Keep one copy on screen
-  and read the message out again through a live announcer, and cap how many notifications stay open (the oldest
-  closes).
+- Notification libraries often drop a message identical to one that is still open. Once errors stay open, the same
+  failure a second time may show nothing and not be read out. Keep one copy on screen and announce the repeated
+  message through a live announcer instead of stacking duplicates. If the stack is capped, verify that adding a
+  routine or transient notification cannot evict an important persistent error without leaving its information
+  available elsewhere; test the cap with several simultaneous failures.
 - Results that arrive later in a dialog (checks finishing, validation results) belong in a `role="status"` summary
   so they are announced without moving focus.
 - Form errors: put text next to the field, link it with `aria-describedby`, set `aria-invalid="true"`, and move
@@ -320,6 +327,9 @@ handle a missing (null) service with a plain fallback.
 - Text: 4.5:1 (3:1 for ≥ 24 px, or ≥ 18.66 px bold). UI components, icons, focus indicators: 3:1.
 - Use the design system's tokens. When picking a lighter-looking replacement, compute the ratio against the
   **actual** background (page, card, hover state) instead of white.
+- Treat design tokens marked final or approved as fixed inputs: do not change their value to solve a component-state
+  contrast failure. Test the actual hover/focus treatment and prefer a local state overlay or another approved
+  design-system treatment; ask the design owner before proposing a token change.
 - A brand or accent color that fails: list every background it is used on (white, tinted card, hover, selected,
   highlighted row) and test each candidate token against all of them. If none passes everywhere, use a different
   shade per background. Define new colors as tokens next to the existing ones, and flag them for the design owner.

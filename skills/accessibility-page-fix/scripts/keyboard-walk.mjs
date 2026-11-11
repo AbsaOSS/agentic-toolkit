@@ -17,13 +17,21 @@ const { browser, page } = await openPage(positional[0], flags);
 
 const describe = () =>
   page.evaluate(() => {
-    const el = document.activeElement;
+    const activeElement = root => {
+      let active = root.activeElement;
+      while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+      return active;
+    };
+    const composedParent = el => el.parentElement || el.getRootNode()?.host || null;
+    const el = activeElement(document);
     if (!el || el === document.body) return { body: true };
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
     const visible = r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth && cs.visibility !== 'hidden';
     const name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 40);
-    return { body: false, tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name, visible, inert: !!el.closest('[inert]'), defaultRing: cs.outlineStyle === 'auto', box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
+    let inert = false;
+    for (let node = el; node; node = composedParent(node)) inert ||= node.hasAttribute?.('inert');
+    return { body: false, tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name, visible, inert, defaultRing: cs.outlineStyle === 'auto', box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
   });
 
 /** Screenshot of the area around the focused element, as a flat pixel array. */
@@ -46,7 +54,11 @@ async function pixelsAround(box) {
 
 /** Counts pixels that change around the element when it loses focus; few or none means no visible focus indicator. */
 async function focusIndicatorPixels(box) {
-  const focused = await page.evaluateHandle(() => document.activeElement);
+  const focused = await page.evaluateHandle(() => {
+    let active = document.activeElement;
+    while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+    return active;
+  });
   const withFocus = await pixelsAround(box);
   await focused.evaluate(el => el.blur());
   const without = await pixelsAround(box);
@@ -101,16 +113,34 @@ for (let i = 0; i < Number(flags.max); i++) {
 // something the keyboard can reach. These are the classic "div with a click handler" problem.
 const unreachable = await page.evaluate(() => {
   const focusable = 'a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"]),[role=button],[role=link],[role=menuitem],[role=tab],[contenteditable=true]';
+  const allElements = [];
+  const walk = root => {
+    for (const el of root.querySelectorAll('*')) {
+      allElements.push(el);
+      if (el.shadowRoot) walk(el.shadowRoot);
+    }
+  };
+  walk(document);
+  const composedParent = el => el.parentElement || el.getRootNode()?.host || null;
+  const composedClosest = (el, selector) => {
+    for (let node = el; node; node = composedParent(node)) if (node.matches?.(selector)) return node;
+    return null;
+  };
+  const composedContains = (parent, child) => {
+    for (let node = child; node; node = composedParent(node)) if (node === parent) return true;
+    return false;
+  };
   const out = [];
-  for (const el of document.querySelectorAll('body *')) {
+  for (const el of allElements) {
     const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0 || el.closest('[inert],[hidden]')) continue;
+    if (r.width === 0 || r.height === 0 || composedClosest(el, '[inert],[hidden]')) continue;
     const clickable = el.hasAttribute('onclick') || getComputedStyle(el).cursor === 'pointer';
     // Skip elements that are, are inside, or contain something focusable, and labels whose control is focusable
     // (a <label> wrapping its <input>, or pointing at it with for=)
-    if (!clickable || el.closest(focusable) || el.querySelector(focusable) || el.control) continue;
+    if (!clickable || composedClosest(el, focusable) || el.control || allElements.some(child => child !== el && child.matches(focusable) && composedContains(el, child))) continue;
     // Only report the outermost clickable element, not every child that inherits the cursor
-    if (el.parentElement && (el.parentElement.hasAttribute('onclick') || getComputedStyle(el.parentElement).cursor === 'pointer')) continue;
+    const parent = composedParent(el);
+    if (parent && (parent.hasAttribute('onclick') || getComputedStyle(parent).cursor === 'pointer')) continue;
     out.push(`${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).trim().split(/\s+/)[0] : ''} "${(el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30)}"`);
   }
   return out.slice(0, 20);

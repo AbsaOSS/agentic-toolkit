@@ -19,6 +19,7 @@ const { browser, page } = await openPage(url, flags);
 const target = page.locator(selector).first();
 if (!(await target.count())) {
   console.error('No element matches ' + selector);
+  await browser.close();
   process.exit(2);
 }
 
@@ -31,7 +32,24 @@ const info = await target.evaluate(el => {
 const textColor = (flags.color ?? info.color).match(/[\d.]+/g).slice(0, 3).map(Number);
 
 // Make the element's text invisible (also placeholder and child text) but keep its own background, then sample.
-await page.addStyleTag({ content: `${selector}, ${selector} * , ${selector}::placeholder { color: transparent !important; text-shadow: none !important; -webkit-text-fill-color: transparent !important; }` });
+await page.evaluate(selector => {
+  const roots = [document];
+  const walk = root => {
+    for (const el of root.querySelectorAll('*')) {
+      if (el.shadowRoot) {
+        roots.push(el.shadowRoot);
+        walk(el.shadowRoot);
+      }
+    }
+  };
+  walk(document);
+  const css = `${selector}, ${selector} *, ${selector}::placeholder { color: transparent !important; text-shadow: none !important; -webkit-text-fill-color: transparent !important; }`;
+  for (const root of roots) {
+    const style = document.createElement('style');
+    style.textContent = css;
+    (root instanceof Document ? root.head : root).appendChild(style);
+  }
+}, selector);
 const inset = Number(flags.inset);
 const clip = { x: info.box.x + inset, y: info.box.y + inset, width: Math.max(2, info.box.width - inset * 2), height: Math.max(2, info.box.height - inset * 2) };
 const png = await page.screenshot({ clip });

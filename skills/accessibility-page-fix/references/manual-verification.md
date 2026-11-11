@@ -129,7 +129,11 @@ Text size (1.4.4): set the root font size to 200% (for example 32 px when the de
 await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
 ```
 
-Reflow (1.4.10): set the viewport to 320 × 640 and reload.
+Reflow (1.4.10): set the viewport to 320 × 640 and reload. Also check a short viewport (for example 320 × 256),
+especially when the page has a sticky footer, paginator, or controls that wrap at narrow widths. A page may reflow
+correctly by width but still hide keyboard focus when there is little vertical room. When checking browser zoom,
+use the resulting CSS viewport dimensions and verify the actual zoomed layout; changing only the root font size is
+not equivalent to browser zoom.
 
 ```ts
 await page.setViewportSize({ width: 320, height: 640 });
@@ -183,7 +187,22 @@ With sticky headers, footers or banners present, Tab through the page and verify
 covered (2.4.11). Make the window short enough for content to scroll under the sticky bar, or this never shows.
 In the keyboard walk it appears as "no visible focus" on stops near the top or bottom edge. Fix with
 `scroll-padding` on the scroll container, `scroll-margin` on the focusable elements, or by changing the sticky
-layer.
+layer. Check wrapped sticky controls at narrow widths and short heights, not just the desktop layout.
+
+For delayed actions that remove the focused element, test both successful and failed/cancelled outcomes as relevant.
+Delay the response, move focus elsewhere before it completes, and confirm the completion does not steal focus back.
+When focus should move, check that the next or previous item (or the empty-state heading) is visible after the move,
+including on a short viewport.
+
+## Embedded apps and shadow roots
+
+When the page runs as a fragment or micro-frontend, open it through its real host application as well as directly.
+Confirm the host and fragment both loaded and that the expected page state is present before scanning. Open shadow
+roots form separate DOM and stylesheet trees: document-level `querySelectorAll` and injected styles do not inspect
+or affect them. Use checks that explicitly traverse open roots and verify the fragment's rendered controls and
+computed styles there. For closed roots, test through the host's supported hooks and keyboard-visible behavior; do
+not treat an empty query as a clean result. The bundled keyboard, text-size, contrast, and screenshot scripts
+traverse open shadow roots.
 
 ## Target size
 
