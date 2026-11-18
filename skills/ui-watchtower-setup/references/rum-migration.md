@@ -39,7 +39,7 @@ nothing to compare against, even when the cutover itself has to wait for a broke
 | Tool                                                   | Use when                                                         | Result                                                                                                     |
 |--------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `eventNamespace` in the identity                       | Existing types differ from the library's only by prefix          | `eventNamespace: 'myapp'` → `myapp.scenario`, `myapp.scenario.step`, `myapp.bi`. Cheapest                  |
-| `sink.record(eventType, payload)` (sink injected as a field) | A dashboard needs a specific event type, or byte-exact payload parity | Raw passthrough, no redaction — never forward free text (an error becomes its name or code). Use sparingly |
+| `destination.record(eventType, payload)` (Angular: `UwtTelemetrySink` injected as a field; core: the engine module's `destination`) | A dashboard needs a specific event type, or byte-exact payload parity | Raw passthrough, no redaction — never forward free text (an error becomes its name or code). Use sparingly |
 
 If a consumer can be updated instead (a query, a metric filter), prefer moving it to the library's
 event types — record that decision in the table.
@@ -53,21 +53,24 @@ event types — record that decision in the table.
 
 ## 4. Cut over without ever running two RUM clients
 
-Two `AwsRum` instances mean two sessions per visitor, so the old client and
-`provideUwtTelemetryRumSink()` must never start in the same build. Until the cutover, the old
-`RumService` stays the **only** RUM client (the library can already be wired with `'noop'`, so the
-vocabulary, route tracking and tests are in place). The cutover is one change, in this order:
+Two `AwsRum` instances mean two sessions per visitor, so the old client and the library's RUM
+sink must never start in the same build. Until the cutover, the old `RumService` stays the **only**
+RUM client (the library can already be wired with the no-op destination, so the vocabulary, route
+tracking and tests are in place). The cutover is one change, in this order:
 
-1. **Stop the old client** — remove whatever runs `RumService.init()` / `new AwsRum` (usually an
-   `APP_INITIALIZER`), and its page-view subscription.
-2. **Wire the new destination** — replace `'noop'` with `provideUwtTelemetryRumSink()`, the
-   credentials provider (with `disableAutoPageView: true` in the app monitor config) and the
-   page-view recorder. Write both into the cutover plan you hand over.
-3. **Turn the old service into an adapter** — inject `UwtTelemetrySink` (and the BI / scenario
-   services) as fields, and point each remaining method at the library: the migrated call, or
-   `this.sink.record(…)` for rows that need byte parity. Then move call sites to the library one at
-   a time. The class stays, without any `AwsRum` of its own, as the reference for §5 until every row
-   is ticked.
+1. **Stop the old client** — remove whatever runs `RumService.init()` / `new AwsRum` (an
+   `APP_INITIALIZER`, a call in `main.ts`, a module-level instance), and its page-view
+   subscription.
+2. **Wire the new destination** — replace the no-op destination with the RUM sink and the
+   credentials provider (with `disableAutoPageView: true` in the app monitor config), and add the
+   page views: in Angular, `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER` and
+   `ROUTE_PAGE_VIEW_RECORDER`; on the core, `UwtRumTelemetrySink` with `init()`, and the route
+   tracker's `recordPageView`. Write both into the cutover plan you hand over.
+3. **Turn the old service into an adapter** — point each remaining method at the library: the
+   migrated call, or `destination.record(…)` for rows that need byte parity (in Angular, inject
+   `UwtTelemetrySink` and the BI / scenario services as fields; on the core, import the engine
+   module). Then move call sites to the library one at a time. The old service stays, without any
+   `AwsRum` of its own, as the reference for §5 until every row is ticked.
 
 ## 5. Diff the wire
 
@@ -77,7 +80,7 @@ when type and payload match what its consumers need.
 
 ## 6. Delete
 
-Only when every row is ticked: delete `RumService`, its providers and its tests; remove any direct
+Only when every row is ticked: delete `RumService`, its wiring and its tests; remove any direct
 `aws-rum-web` imports outside the library.
 
 Ticking rows needs the app running in a browser. If you can't run it in this session (no install,
@@ -89,7 +92,7 @@ diff needs.
 ## Specific checks
 
 - **Page views.** Setup records one page view per navigation under the route template
-  (`disableAutoPageView: true` plus the route service's page-view recorder — Step 6). Drop any
+  (`disableAutoPageView: true` plus the route tracker's page views — Step 6). Drop any
   manual `recordPageView` calls in the old code; never keep both. If the old setup relied on
   automatic page views, its page ids were resolved paths (`/customers/42`) and become templates
   (`/customers/:id`) — tell the owners of page-based dashboards.
@@ -101,5 +104,6 @@ diff needs.
   "logged in" attribute the old code set is built in now: `signedIn` on every event.
 - **Errors.** The RUM client still captures unhandled JS errors itself. Handled errors the old code
   sent with `recordError` become `scenario.fail(...)` (never a raw `HttpErrorResponse` — see the
-  integration patterns' `safeHttpFailure`), or a log line with
-  `withLogging({ mirrorErrorsToRum: true })` when the app has a log backend.
+  integration patterns' `safeHttpFailure`), or a log line with `mirrorErrorsToRum: true` when the
+  app has a log backend (Angular: `withLogging({ mirrorErrorsToRum: true })`; core:
+  `logging: { mirrorErrorsToRum: true }` in the engine options).
