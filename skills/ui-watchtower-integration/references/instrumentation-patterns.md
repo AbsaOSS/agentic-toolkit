@@ -2,32 +2,37 @@
 
 How to choose, implement and settle scenarios and BI events.
 
+The examples call `scenarios.start(…)` and `bi.track(…)`. In Angular these are the injected
+services, `UwtScenarioTelemetryService` and `UwtBITelemetryService` (`this.scenarios`, `this.bi`);
+elsewhere, `telemetry.scenarios` and `telemetry.bi` on the app's engine. Same methods, same
+behaviour. Import types such as `UwtScenarioOutcome` from the package the app uses.
+
 ## Contents
 
 1. [Finding candidates](#1-finding-candidates)
 2. [Choosing the settle status](#2-choosing-the-settle-status)
 3. [Scenario shapes](#3-scenario-shapes)
-4. [RxJS traps](#4-rxjs-traps)
-5. [Cleanup on destroy](#5-cleanup-on-destroy)
+4. [RxJS](#4-rxjs)
+5. [Cleanup when the owner goes away](#5-cleanup-when-the-owner-goes-away)
 6. [BI events](#6-bi-events)
 7. [Names, metadata and privacy](#7-names-metadata-and-privacy)
 8. [Starter catalogue](#8-starter-catalogue)
 
 ## 1. Finding candidates
 
-| Look for                                                         | Becomes                                                     | Service                       |
-|------------------------------------------------------------------|-------------------------------------------------------------|-------------------------------|
-| An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) | `UwtScenarioTelemetryService` |
-| A meaningful or irreversible click; a setting change              | BI event                                                    | `UwtBITelemetryService`       |
-| A `catch` / `error` handler that ends a journey                  | That scenario's `fail(safeHttpFailure(error))` (§2)         | the scenario                  |
-| A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    | the scenario                  |
-| Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })`                        | the scenario                  |
+| Look for                                                         | Becomes                                                     | API                 |
+|------------------------------------------------------------------|-------------------------------------------------------------|---------------------|
+| An `await` / subscription the user waits on before seeing a result | Scenario (route load, gating fetch, submit, upload, export) | `scenarios.start()` |
+| A meaningful or irreversible click; a setting change              | BI event                                                    | `bi.track()`        |
+| A `catch` / `error` handler that ends a journey                  | That scenario's `fail(safeHttpFailure(error))` (§2)         | the scenario        |
+| A guard, empty result, feature flag routing elsewhere            | That scenario's `incomplete({ reason })`                    | the scenario        |
+| Component teardown, supersession by a newer request              | That scenario's `cancel({ reason })` (§5)                   | the scenario        |
 
 **Scenario, BI, or both.** Ask what question the telemetry answers: "did it work and how long did it
 take" is a scenario; "did it happen, and how often" is a BI event. A click inside a journey is both —
 the scenario for the journey, a BI event for the click, linked with `{ scenarioId: scenario.id }`.
-Each call site injects only the service(s) it uses (`inject(UwtScenarioTelemetryService)`,
-`inject(UwtBITelemetryService)`); there is no shared telemetry service between them.
+Each call site uses only the API(s) it needs — in Angular it injects only that service — and there
+is no shared telemetry service, hook or composable between them.
 
 Skip: anything that fires continuously (scroll, mousemove, per-keystroke), purely decorative UI,
 and work the user never waits for.
@@ -53,44 +58,44 @@ screen has one: it tells a fast empty list from a fast full one.
 Use a small, consistent set of `reason` strings — they are grouping keys: `'component-destroyed'`,
 `'superseded'`, `'user-cancelled'`, `'no-results'`, `'guard-rejected'`.
 
-Pass a `statusCode` with `fail()` so failures group by category — but **never a raw
-`HttpErrorResponse`** (to `fail()` or `logger.error()`): its message quotes the request URL
-(`/api/customers/42`), and redaction never scrubs path segments. Any other error's message is free
-text and is sent as is (only URL query strings are stripped). Keep a class-like name and the status:
+Pass a `statusCode` with `fail()` so failures group by category — but **never a raw HTTP error
+object** (Angular's `HttpErrorResponse`, axios's `AxiosError`, the app's own) to `fail()` or
+`logger.error()`: its message quotes the request URL (`/api/customers/42`), and redaction never
+scrubs path segments. Any other error's message is free text and is sent as is (only URL query
+strings are stripped). Keep a class-like name and the status:
 
 ```ts
-/** A class-like name (`TimeoutError`); any other `name` could be free text. */
+/** A class-like name (`HttpErrorResponse`, `TimeoutError`); any other `name` could be free text. */
 const SAFE_ERROR_NAME = /^[A-Z][A-Za-z0-9]{0,63}$/;
 
 /** Error messages can quote URLs, ids or user data — keep only a class-like name and an HTTP status. */
 function safeHttpFailure(error: unknown): UwtScenarioOutcome {
   const { name, status } = (error ?? {}) as { name?: unknown; status?: unknown };
-  if (typeof status === 'number') {
-    return {
-      error: Object.assign(new Error('HTTP request failed'), { name: 'HttpErrorResponse' }),
-      statusCode: status
-    };
-  }
-  const safe = new Error('Journey failed');
+  const http = typeof status === 'number';
+  const safe = new Error(http ? 'HTTP request failed' : 'Journey failed');
   if (typeof name === 'string' && SAFE_ERROR_NAME.test(name)) {
     safe.name = name;
   }
-  return { error: safe };
+  return http ? { error: safe, statusCode: status } : { error: safe };
 }
 ```
+
+`fetch` doesn't reject on an HTTP error status: where the app calls it directly, check
+`response.ok` and settle with `fail({ error: new Error('HTTP request failed'), statusCode:
+response.status })` — unless the app's own fetch wrapper already throws an error carrying `status`.
 
 ## 3. Scenario shapes
 
 **Promise / async**:
 
 ```ts
-async load(): Promise<void> {
-  const scenario = this.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
+async function loadCustomers(): Promise<void> {
+  const scenario = scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
   try {
     scenario.step('fetch');
-    const rows = await firstValueFrom(this.api.customers());
+    const rows = await api.customers(); // Angular: await firstValueFrom(this.http.get(…))
     scenario.step('render');
-    this.rows.set(rows);
+    showRows(rows);
     if (rows.length === 0) {
       scenario.incomplete({ reason: 'no-results' });
       return;
@@ -102,35 +107,14 @@ async load(): Promise<void> {
 }
 ```
 
-**Observable** — `traceScenario` settles on completion, error or unsubscribe: an unsubscribe before
-any value cancels, one after a value completes (*0.4.0+*, §4). Like any cold observable, nothing
-happens until something subscribes: return it to a caller that subscribes (a template's `async`
-pipe, a component's `subscribe()`), or await it with `lastValueFrom()` or `firstValueFrom()`. Start the
-scenario inside `defer()` so each subscription measures its own journey from when it subscribes. On
-error `traceScenario` calls `fail({ error })` with the raw error and no status, so for HTTP sources
-settle the failure first with `catchError` upstream — the first settle wins:
-
-```ts
-loadCustomers(): Observable<Customer[]> {
-  return defer(() => {
-    const scenario = this.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
-    return this.api.customers().pipe(
-      catchError((error) => {
-        scenario.fail(safeHttpFailure(error));
-        return throwError(() => error);
-      }),
-      traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
-    );
-  });
-}
-```
+A load that can be dropped (a newer one, the user leaving) is cancelled by whoever drops it — §5.
 
 **Backdating** — the journey starts at the click, not when the async handler runs:
 
 ```ts
 onExportClick(): void { this.clickedAt = Date.now(); /* … */ }
 // later
-this.scenarios.start({ name: 'my-app-export-download', startedAt: this.clickedAt });
+scenarios.start({ name: 'my-app-export-download', startedAt: this.clickedAt });
 ```
 
 `startedAt` is epoch ms, clamped to the page lifetime; an unusable value falls back to now.
@@ -150,12 +134,38 @@ string, never the `UwtScenario` object.
 
 **Measuring what the user saw** — `complete()` stops the clock when the JavaScript finishes; for a
 render-heavy journey, complete after the next frame:
-`requestAnimationFrame(() => requestAnimationFrame(() => scenario.complete()))`.
+`requestAnimationFrame(() => requestAnimationFrame(() => scenario.complete()))`. Not in a
+micro-frontend fragment: its hidden realm never paints, so the scenario would end as `timeout`.
 
-## 4. RxJS traps
+## 4. RxJS
 
-**A multi-value stream stopped after a value records `success`** (*0.4.0+*). `traceScenario` treats
-an unsubscribe after a value as completion, because that is how `firstValueFrom()`, `take(1)` and
+Only where the app already uses RxJS (every Angular app). `traceScenario` comes from the adapter in
+Angular, else from `@absaoss-cps/ui-watchtower/rxjs`. It settles on completion, error or
+unsubscribe: an unsubscribe before any value cancels, one after a value completes (in the core, and
+in the adapter from 0.4.0). Like any cold observable, nothing happens until something subscribes:
+return it to a caller that subscribes (a template's `async` pipe, a component's `subscribe()`), or
+await it with `lastValueFrom()` or `firstValueFrom()`. Start the scenario inside `defer()` so each
+subscription measures its own journey from when it subscribes. On error `traceScenario` calls
+`fail({ error })` with the raw error and no status, so for HTTP sources settle the failure first
+with `catchError` upstream — the first settle wins:
+
+```ts
+loadCustomers(): Observable<Customer[]> {
+  return defer(() => {
+    const scenario = this.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
+    return this.api.customers().pipe(
+      catchError((error) => {
+        scenario.fail(safeHttpFailure(error));
+        return throwError(() => error);
+      }),
+      traceScenario(scenario, { outcome: (rows) => ({ metadata: { count: rows.length } }) })
+    );
+  });
+}
+```
+
+**A multi-value stream stopped after a value records `success`.** `traceScenario` treats an
+unsubscribe after a value as completion, because that is how `firstValueFrom()`, `take(1)` and
 `first()` end a single-value journey such as an HTTP call. For polling, progress or a websocket,
 stopping after a value usually means the user gave up, so opt back into cancelling:
 
@@ -170,8 +180,9 @@ this.api.pollJobStatus(jobId).pipe(
 ).subscribe();
 ```
 
-Before 0.4.0 a teardown after a value recorded `abandoned`: there, nothing downstream of
-`traceScenario` may stop after the first value — limit upstream and await with `lastValueFrom()`.
+In adapter releases before 0.4.0 a teardown after a value recorded `abandoned`: there, nothing
+downstream of `traceScenario` may stop after the first value — limit upstream and await with
+`lastValueFrom()`.
 
 **`switchMap` supersession** — a request superseded before its response is still cancelled; give
 `traceScenario` a `cancelOutcome` for the reason. `switchMap` tears the previous request down before
@@ -197,10 +208,14 @@ query$.pipe(
 Managing scenarios by hand? Cancel the previous one at the top of the projector, before starting the
 next.
 
-## 5. Cleanup on destroy
+## 5. Cleanup when the owner goes away
 
-Every component that starts a scenario settles it on destroy; otherwise it sits in the active
-registry until its timeout (and forever with `timeoutMs: 0`).
+Whatever starts a scenario settles it when its result stops mattering — the component goes away, or
+a newer load replaces it. Otherwise it sits in the active registry until its timeout (and forever
+with `timeoutMs: 0`). Cancelling an already-settled scenario is a harmless no-op, and the first
+settle wins, so a late response after the cancel records nothing more: no "is it still open" check.
+
+**Angular** — `ngOnDestroy` (or `DestroyRef.onDestroy`); `takeUntilDestroyed` for subscriptions:
 
 ```ts
 ngOnDestroy(): void {
@@ -214,19 +229,87 @@ ngOnDestroy(): void {
 }
 ```
 
-Cancelling an already-settled scenario is a harmless no-op, so this needs no "is it still open"
-check.
+**React** — start in the effect, cancel in its cleanup. The cleanup runs on unmount and before the
+effect runs again for new dependencies, so use `'superseded'` for an effect keyed on inputs and
+`'component-destroyed'` for one that runs once, on mount:
+
+```tsx
+useEffect(() => {
+  const controller = new AbortController();
+  const scenario = telemetry.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
+  scenario.step('fetch');
+  api.customers(filter, { signal: controller.signal }).then(
+    (rows) => {
+      setRows(rows);
+      if (rows.length === 0) {
+        scenario.incomplete({ reason: 'no-results' });
+      } else {
+        scenario.complete({ metadata: { count: rows.length } });
+      }
+    },
+    (error) => scenario.fail(safeHttpFailure(error))
+  );
+  return () => {
+    scenario.cancel({ reason: 'superseded' }); // a new filter, or unmounting
+    controller.abort();
+  };
+}, [filter]);
+```
+
+With TanStack Query, the query function is the journey: start and settle inside it, and cancel when
+the `signal` it receives aborts; a cache hit starts nothing. StrictMode's development-only second
+mount records one extra `abandoned` (SKILL.md, Gotchas).
+
+**Vue** — in a composable, a watcher's `onCleanup` runs before the next run and when the watcher
+stops, which unmounting the component does:
+
+```ts
+export function useCustomers(filter: Ref<string>) {
+  const rows = ref<Customer[]>([]);
+  watch(
+    filter,
+    (value, _previous, onCleanup) => {
+      const controller = new AbortController();
+      const scenario = telemetry.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
+      onCleanup(() => {
+        scenario.cancel({ reason: 'superseded' }); // a new filter, or unmounting
+        controller.abort();
+      });
+      scenario.step('fetch');
+      api.customers(value, { signal: controller.signal }).then(
+        (result) => {
+          rows.value = result;
+          if (result.length === 0) {
+            scenario.incomplete({ reason: 'no-results' });
+          } else {
+            scenario.complete({ metadata: { count: result.length } });
+          }
+        },
+        (error) => scenario.fail(safeHttpFailure(error))
+      );
+    },
+    { immediate: true }
+  );
+  return { rows };
+}
+```
+
+A scenario started outside a watcher is cancelled in `onUnmounted` (a component) or
+`onScopeDispose` (a composable) with `'component-destroyed'`.
+
+**Elsewhere** — the framework's teardown hook (Svelte's `onDestroy`, Lit's `disconnectedCallback`),
+or the code that removes the view.
 
 ## 6. BI events
 
 - One event per meaningful action, declared in `UwtBIEventNames` (naming: §7).
-- Inside a journey, link it: `track('my-app-export-clicked', { format }, { scenarioId: scenario.id })`.
+- Inside a journey, link it: `bi.track('my-app-export-clicked', { format }, { scenarioId: scenario.id })`.
 - Debounce high-frequency sources (search boxes, sliders) before `track()` or before starting a
-  scenario — e.g. `debounceTime(400)`; one per settled input, never one per keystroke. Repeated
-  identical clicks within 400 ms are already collapsed by the library.
-- Call `UwtBITelemetryService.track()` directly where the action happens; don't route it through an
-  app telemetry service, and don't merge it with the scenario service. If a function of yours takes an
-  event name, type that parameter `UwtBIEventName`.
+  scenario — e.g. RxJS `debounceTime(400)` or a timer; one per settled input, never one per
+  keystroke. Repeated identical clicks within 400 ms are already collapsed by the library.
+- Call `track()` directly where the action happens (a click handler, `onClick`, `@click`); don't
+  route it through an app telemetry service, hook or composable, and don't merge it with the
+  scenario API. If a function of yours takes an event name, type that parameter `UwtBIEventName`.
 
 ## 7. Names, metadata and privacy
 
@@ -242,10 +325,10 @@ check.
 - `route` is a template (`/customers/:id`).
 - Metadata: flat `string | number | boolean | null`; max 50 keys across the whole scenario.
 - No personal data: no emails, names, usernames, account numbers, free-text input. Use opaque ids.
-- Code you write that touches `window`, `navigator`, `document` or `localStorage` runs during server
-  rendering too — guard it:
-  `this.isBrowser ? { language: navigator.language } : {}` with
-  `isBrowser = isPlatformBrowser(inject(PLATFORM_ID))`.
+- Code you write that touches `window`, `navigator`, `document` or `localStorage` may also run
+  during server rendering — guard it: `isPlatformBrowser(inject(PLATFORM_ID))` in Angular,
+  `typeof window !== 'undefined'` elsewhere. Effects, `onMounted` and event handlers run only in the
+  browser.
 
 ## 8. Starter catalogue
 

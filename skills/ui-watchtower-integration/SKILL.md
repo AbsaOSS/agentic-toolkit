@@ -1,34 +1,35 @@
 ---
 name: ui-watchtower-integration
 description: >
-  Instruments an Angular app that already uses @absaoss-cps/ngx-ui-watchtower with scenarios (user
-  journeys) and BI events driven by the team's own questions: asks what they want to learn, scans
-  the code for candidates, proposes a merged plan, implements after confirmation, and tests it. Use
-  for "measure checkout", "track exports", "add journey/BI telemetry". NOT for: installing or wiring
-  the library (→ ui-watchtower-setup), dashboards, non-Angular apps.
+  Instruments a frontend app that already uses ui-watchtower — the Angular adapter
+  @absaoss-cps/ngx-ui-watchtower, or the framework-free core @absaoss-cps/ui-watchtower in React,
+  Vue, Svelte or plain TypeScript — with scenarios (user journeys) and BI events driven by the
+  team's own questions: asks what they want to learn, scans the code for candidates, proposes a
+  merged plan, implements after confirmation, and tests it. Use for "measure checkout", "track
+  exports", "add journey/BI telemetry", "instrument this page". NOT for: installing or wiring the
+  library (→ ui-watchtower-setup), dashboards, server-side or native mobile apps.
 license: Apache-2.0
 compatibility: >
-  Requires an Angular application where @absaoss-cps/ngx-ui-watchtower is already installed and
-  wired (see ui-watchtower-setup).
+  Requires a frontend app where ui-watchtower is already installed and wired — the Angular
+  adapter's providers, or the core's engine (see ui-watchtower-setup).
 ---
 
 # ui-watchtower-integration
 
-Measures what matters in a specific app, with
-[`@absaoss-cps/ngx-ui-watchtower`](https://www.npmjs.com/package/@absaoss-cps/ngx-ui-watchtower)
-already in place:
+Measures what matters in a specific app, with ui-watchtower already in place:
 
-| Concern | Answers | API |
+| Concern | Answers | API (Angular: injected service · elsewhere: the engine) |
 |---|---|---|
-| **Scenarios** | Did this user journey succeed, and how long did it take? | `UwtScenarioTelemetryService.start()` → `UwtScenario` |
-| **BI events** | Did this meaningful thing happen? | `UwtBITelemetryService.track()` |
+| **Scenarios** | Did this user journey succeed, and how long did it take? | `UwtScenarioTelemetryService.start()` · `telemetry.scenarios.start()` → `UwtScenario` |
+| **BI events** | Did this meaningful thing happen? | `UwtBITelemetryService.track()` · `telemetry.bi.track()` |
 
-These are **two separate concerns with two separate services**. A scenario measures a journey: it
-has a duration and settles with a status. A BI event only counts that something happened. Inject
-`UwtScenarioTelemetryService` and/or `UwtBITelemetryService` directly in the component or service
-where the telemetry is needed, and never merge them behind an `AppTelemetryService`, a facade or a
-single `track…` API unless the user explicitly asks for one — a merged API hides which concern a call
-is and which status it settles with.
+These are **two separate concerns with two separate APIs**. A scenario measures a journey: it has a
+duration and settles with a status. A BI event only counts that something happened. Call the API
+for the concern at hand directly where the telemetry is needed — inject the service in Angular,
+use the app's engine (`telemetry.scenarios`, `telemetry.bi`) elsewhere — and never merge them
+behind an `AppTelemetryService`, a facade, a shared hook or composable, or a single `track…` API
+unless the user explicitly asks for one — a merged API hides which concern a call is and which
+status it settles with.
 
 It asks the team what they want to learn before proposing, marks each item as theirs or suggested,
 and can be re-run as the app grows — each pass only adds.
@@ -37,8 +38,9 @@ and can be re-run as the app grows — each pass only adds.
 
 | Load | When |
 |---|---|
-| [ngx-ui-watchtower-api](../shared/references/ngx-ui-watchtower-api.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/shared/references/ngx-ui-watchtower-api.md)) | Before writing code — exact imports, signatures, test harness |
-| `references/instrumentation-patterns.md` | Steps 3–6 — finding candidates, settle statuses, RxJS traps, cleanup, BI rules, starter catalogue |
+| [ui-watchtower-api](../shared/references/ui-watchtower-api.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/shared/references/ui-watchtower-api.md)) | Before writing code — the scenario, BI and logging API, what reaches the wire, test harness |
+| [ngx-ui-watchtower-api](../shared/references/ngx-ui-watchtower-api.md) ([remote](https://github.com/AbsaOSS/agentic-toolkit/blob/master/skills/shared/references/ngx-ui-watchtower-api.md)) | Angular apps — imports, services, TestBed |
+| `references/instrumentation-patterns.md` | Steps 3–7 — finding candidates, settle statuses, promise and RxJS shapes, cleanup per framework, BI rules, starter catalogue |
 
 ## Workflow
 
@@ -57,21 +59,28 @@ Copy this checklist and track progress:
 
 ### Step 1 · Check that setup is done (read-only)
 
-Look for the package in `package.json`, and `provideUwtTelemetry(...)` plus exactly one destination
-in the app's providers. If either is missing, stop and tell the user to run
-**`ui-watchtower-setup`** first — instrumenting an unwired app fails at bootstrap with `NG0201`.
+Find which package the app uses, then check it is wired:
 
-If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
+- **Angular** (`@absaoss-cps/ngx-ui-watchtower` in `package.json`): `provideUwtTelemetry(...)` plus
+  exactly one destination in the app's providers — without them, instrumented code fails at
+  bootstrap with `NG0201`.
+- **Anything else** (`@absaoss-cps/ui-watchtower`): one engine, created by `uwtCreateTelemetry(...)`
+  with a destination at startup — usually an engine module such as `src/telemetry/telemetry.ts`
+  that exports `telemetry`. Note how the app's code reaches it (an import of that module, or the
+  app's own context or `provide`) and use the same way.
+
+If the package or its wiring is missing, stop and tell the user to run **`ui-watchtower-setup`**
+first. If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
 
 Read what already exists so this pass only adds: the names in `telemetry.schema.ts` (and the prefix
-they share), and their uses
-(search each name, every injection of `UwtScenarioTelemetryService` / `UwtBITelemetryService`, and
-`traceScenario(`). Note the test runner and package manager. Existing specs stay untouched, setup
-included (unless they now need the telemetry providers, Step 7) — new tests go in their own
-`describe` with their own setup. If the app already wraps these services in
-its own telemetry service, list that under "Already instrumented", don't extend it or copy the
-pattern, and say so in the proposal; write the new code against the two services directly unless the
-user tells you to follow the wrapper.
+they share), and their uses — search each name, every injection of `UwtScenarioTelemetryService` /
+`UwtBITelemetryService` or use of `telemetry.scenarios` / `telemetry.bi`, and `traceScenario(`.
+Note the framework, the test runner and the package manager. Existing specs stay untouched, setup
+included (unless they now need a test engine, Step 7) — new tests go in their own `describe` with
+their own setup. If the app already wraps these APIs in its own telemetry service, hook or
+composable, list that under "Already instrumented", don't extend it or copy the pattern, and say
+so in the proposal; write the new code against the two APIs directly unless the user tells you to
+follow the wrapper.
 
 ### Step 2 · Ask the user what they want to learn
 
@@ -96,11 +105,11 @@ so in the proposal.
 
 Always do this scan, even when the user gave a complete list of what to track: their list says what
 they care about, only the code says how it can be wired and what else is worth measuring. Load
-`references/instrumentation-patterns.md`, read the routes, the components and services in scope,
-and the HTTP calls behind them. Within the scope from Step 2, find candidates with the table in §1
-and classify each one as a scenario, a BI event, or both.
+`references/instrumentation-patterns.md`, read the routes, the components, services, hooks or
+composables in scope, and the HTTP calls behind them. Within the scope from Step 2, find candidates
+with the table in §1 and classify each one as a scenario, a BI event, or both.
 
-Then map each user request to concrete code: which component or service, which call starts the
+Then map each user request to concrete code: which component or function, which call starts the
 journey, which outcomes it can have. A request you can't find in the code goes under "Requested but
 changed or not feasible". Candidates the user didn't mention are not optional extras: they become
 `suggested` rows, so the proposal never contains only what was asked for.
@@ -109,7 +118,9 @@ changed or not feasible". Candidates the user didn't mention are not optional ex
 
 Use this table shape even when nobody is there to answer — it is what the user reviews, and prose
 loses the `Source` column. `Source` says where each item came from — `you` (the user asked for it, or it answers
-one of their questions) or `suggested` (found in the code). Put the user's items first.
+one of their questions) or `suggested` (found in the code). Put the user's items first. Head each
+table with the API the app uses: the service in Angular, `telemetry.scenarios` / `telemetry.bi`
+elsewhere.
 
 ```markdown
 ## Proposed telemetry for <application>
@@ -119,12 +130,12 @@ Answers: <the user's questions, one line each, or "none given — suggestions on
 Already instrumented (unchanged): <existing scenario and BI names, or "nothing yet">
 Name prefix: <the prefix the existing names use; if none, one suggested from the application name — confirm it>
 
-### Scenarios (UwtScenarioTelemetryService)
+### Scenarios (UwtScenarioTelemetryService | telemetry.scenarios)
 | Source | Name | Where (file) | Steps | success when | other outcomes |
 |---|---|---|---|---|---|
 | you | my-app-customer-search | customers/customer-search.ts | query | results shown | incomplete: no-results; fail: HTTP error; cancel: superseded/left |
 
-### BI events (UwtBITelemetryService)
+### BI events (UwtBITelemetryService | telemetry.bi)
 | Source | Name | Where (file) | Metadata (flat, no PII) |
 |---|---|---|---|
 | suggested | my-app-export-clicked | customers/customers.ts | format |
@@ -151,43 +162,52 @@ changed materially. Implement nothing before this.
 
 Follow `references/instrumentation-patterns.md`.
 
-**Use the two services directly.** In each component or service that needs telemetry, `inject()` the
-service for the concern at hand — `UwtScenarioTelemetryService`, `UwtBITelemetryService`, or both —
-and call it there. Do not create an `AppTelemetryService`, facade, base class or one `track…` API over
-both, and do not move the calls into a shared service. Single-purpose helpers are fine (for example
-`safeHttpFailure`); a shared abstraction only if the user explicitly asks.
+**Use the two APIs directly.** Where a component, service, hook or composable needs telemetry, call
+the API for the concern at hand right there: in Angular, `inject()` `UwtScenarioTelemetryService`,
+`UwtBITelemetryService`, or both; elsewhere, import the app's engine and call `telemetry.scenarios`
+or `telemetry.bi`. Do not create an `AppTelemetryService`, facade, base class, shared hook or
+composable, or one `track…` API over both, and do not move the calls into a shared module.
+Single-purpose helpers are fine (for example `safeHttpFailure`); a shared abstraction only if the
+user explicitly asks.
 
 1. Add every confirmed name to `telemetry.schema.ts` — kebab-case, scenario, BI and logger names
    with the prefix (`references/instrumentation-patterns.md` §7), one JSDoc line each. Never interpolate ids
    into names.
-2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw
-   `HttpErrorResponse` (§2, `safeHttpFailure`).
-3. Avoid the RxJS traps (§4) and settle open scenarios on destroy (§5).
+2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw HTTP
+   error object (§2, `safeHttpFailure`).
+3. In RxJS code, avoid the traps in §4. Settle open scenarios when their owner goes away (§5: Angular
+   `ngOnDestroy`, a React effect's cleanup, Vue's `onUnmounted` or a watcher's cleanup).
 4. BI events follow §6; names, metadata and privacy follow §7.
 5. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
    `logger.error(message, { error: safeHttpFailure(e).error, correlationId: scenario.id })` so log
    lines join the scenario.
-6. Only if `app.config` wires `uwtScenarioHeaderInterceptor()` (*0.5.0+*): pass
-   `{ context: uwtScenarioContext(scenario) }` on the journey's own `HttpClient` calls, so the
-   backend gets the scenario id (API reference §4). Skip calls to endpoints that redirect to
-   another origin.
 
 ### Step 7 · Tests for every outcome
 
-Use a recording sink (API reference, "Testing") and assert what reaches the sink — event type,
-`scenarioName`, `status`, `reason`, metadata — for each outcome the proposal claims (success,
-incomplete, failure with status, abandoned on leave). Don't claim `timeout` as an outcome — it's the
-library's safety net for a missed settle, not something the code settles. Specs that render instrumented components need
-the telemetry providers or they fail with `NG0201`. Check one test bites: remove its settle call,
-confirm it fails, restore.
+Assert what reaches the destination — event type, `scenarioName`, `status`, `reason`, metadata —
+for each outcome the proposal claims (success, incomplete, failure with status, abandoned on
+leave). Don't claim `timeout` as an outcome — it's the library's safety net for a missed settle, not
+something the code settles.
+
+- **Angular:** a recording sink in TestBed (`ngx-ui-watchtower-api.md`, "Testing"). Specs that
+  render instrumented components need the telemetry providers or they fail with `NG0201`.
+- **Elsewhere:** the test engine from setup's test setup file (setup's `references/core.md`,
+  Step 7; add it if the app has none). Spy on its destination and assert on the calls:
+  `const record = vi.spyOn(destination, 'record')`, then
+  `expect(record).toHaveBeenCalledWith('com.uwt.scenario', expect.objectContaining({ scenarioName, status, reason }))`
+  (`'com.uwt.bi'` with `eventName` and `metadata` for BI events); restore spies after each test.
+
+Check one test bites: remove its settle call, confirm it fails, restore.
 
 ### Step 8 · Validate
 
 Run, through the app's package manager: the **build**, the **unit tests**, and a **real type-check**
-(`tsc -p tsconfig.app.json --noEmit` and the spec tsconfig — Vitest never type-checks). Then a live
-check with `localStorage.setItem('debugScenario', 'true')` and `debugBI`: one line per settled
-scenario with the right status, leaving mid-journey gives `abandoned`, and a repeated identical
-click gives one BI event.
+(the app's own type-check script, e.g. `tsc -b` or `vue-tsc --noEmit`, else `tsc --noEmit -p` on
+the app's and the specs' tsconfig; in Angular, `tsc -p tsconfig.app.json --noEmit` and the spec
+tsconfig — Vitest never type-checks). Then a live check with
+`localStorage.setItem('debugScenario', 'true')` and `debugBI`: one line per settled scenario with
+the right status, leaving mid-journey gives `abandoned`, and a repeated identical click gives one
+BI event.
 
 Report what was instrumented (by source), what was proposed but not confirmed, and anything changed
 from the user's original request and why.
@@ -195,14 +215,18 @@ from the user's original request and why.
 ## Gotchas
 
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
-- **App behaviour never depends on telemetry results.** Where `withTelemetryEnabled` turns telemetry
-  off, scenarios never settle, `settled$` never emits, `find` / `getActive` find nothing and
-  `query()` resolves `[]`. If the live check shows no debug lines, check that switch first.
+- **App behaviour never depends on telemetry results.** Where the off switch
+  (`withTelemetryEnabled` in Angular, `enabled: false` on the core) turns telemetry off, scenarios
+  never settle, `settled$` / `onSettled` never fire, `find` / `getActive` find nothing and `query()`
+  resolves `[]`. If the live check shows no debug lines, check that switch first.
+- **React StrictMode** mounts every component twice in development: a scenario started in an effect
+  is first cancelled by its cleanup (`abandoned`) and started again. Expected in development only;
+  production builds record one.
 
 ## Out of scope
 
 - Installing or wiring the library, credentials, destinations, route-navigation tracking →
   `ui-watchtower-setup`.
 - CloudWatch dashboards, extended metrics, alarms.
-- Wiring the scenario-header interceptor → `ui-watchtower-setup` (offer it as a follow-up).
-- Non-Angular applications.
+- Sending the scenario id to the backend (ui-watchtower #29, unreleased).
+- Server-side and native mobile apps.
