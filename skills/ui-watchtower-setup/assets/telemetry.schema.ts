@@ -10,10 +10,17 @@
  * have no prefix.
  *
  * Keep a side-effect import of this file (`import './telemetry.schema';`)
- * where the telemetry providers are configured and in the router telemetry
- * service, so it can never become unreferenced.
+ * where telemetry is set up — the engine module, or the Angular providers —
+ * and in the route-navigation tracker, so it can never become unreferenced.
+ *
+ * Declare the names on the package the app imports: `@absaoss-cps/ui-watchtower`,
+ * or `@absaoss-cps/ngx-ui-watchtower` in an Angular app (it re-exports the same
+ * registries).
  */
-declare module '@absaoss-cps/ngx-ui-watchtower' {
+// Loads the module being augmented, even where nothing else in the program imports it.
+import type {} from '@absaoss-cps/ui-watchtower';
+
+declare module '@absaoss-cps/ui-watchtower' {
   interface UwtScenarioNames {
     /** A router navigation, from click to activated route, under the final route template. */
     'my-app-route-navigate': true;
@@ -36,7 +43,7 @@ declare module '@absaoss-cps/ngx-ui-watchtower' {
   //   'my-app-export-clicked': true;
   // }
 
-  // Only when the app has a log backend (UWT_LOG_API_PROVIDER bound to a real provider):
+  // Only when the app has a log backend (a real log provider, not the no-op one):
   // interface UwtLoggerNames {
   //   /** Application lifecycle and routing (<prefix>-<area>). */
   //   'my-app-lifecycle': true;

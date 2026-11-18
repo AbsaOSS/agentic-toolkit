@@ -19,7 +19,7 @@ import {
   provideRouteNavigationTelemetry,
   RouteNavigationTelemetryService,
   ROUTE_PAGE_VIEW_RECORDER
-} from './route-navigation-telemetry.service';
+} from './route-navigation.angular';
 
 const events: { eventType: string; payload: Record<string, unknown> }[] = [];
 const pageViews: string[] = [];

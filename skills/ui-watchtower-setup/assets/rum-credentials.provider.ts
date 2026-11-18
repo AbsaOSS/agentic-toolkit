@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+// Types only: in an Angular app, import them from '@absaoss-cps/ngx-ui-watchtower/rum'.
 import type {
   UwtRumAppMonitorConfig,
   UwtRumBootstrap,
   UwtRumCredentialsProvider
-} from '@absaoss-cps/ngx-ui-watchtower/rum';
+} from '@absaoss-cps/ui-watchtower/rum';
 
 /** The app's broker: RUM app-monitor settings plus short-lived AWS credentials. */
 const RUM_BROKER_URL = '/rum/init';
@@ -42,8 +42,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
  * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
  * `RegExp`s and functions there, and with a string in their place the library doesn't start RUM
- * for the page (0.4.0+; before, the SDK threw). Telemetries are kept as names only; set their
- * options in code.
+ * for the page. Telemetries are kept as names only; set their options in code.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -127,9 +126,9 @@ function hasStrings<K extends string>(
 
 /**
  * Called at startup and ~5 min before each credential expiry, so the browser never holds a
- * long-lived AWS identity.
+ * long-lived AWS identity. Pass an instance as the RUM sink's `credentialsProvider`; in Angular,
+ * bind it with `{ provide: UWT_RUM_CREDENTIALS_PROVIDER, useClass: AppRumCredentialsProvider }`.
  */
-@Injectable({ providedIn: 'root' })
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
    * `null` (RUM off for the rest of the page) when the broker turns RUM off or answers with
