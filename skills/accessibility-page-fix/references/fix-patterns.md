@@ -284,7 +284,8 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
   inputs or by decorating the rendered DOM.
 - Widgets may re-render and drop what you added. Decorate in an idempotent function and re-run it when the widget
   changes its DOM (a `MutationObserver` scoped to the widget, run outside change-detection loops, ignoring changes
-  inside the widget's content).
+  inside the widget's content). When the app also runs embedded in a host, check the console there: the host may
+  supply an observer that the app's own polyfills patch a second time, and every `new` call then fails.
 - Don't fork or patch vendored code, unless the vendored copy belongs to your own library and the user agrees.
 - Popups that the library attaches to the end of `<body>` sit outside every landmark, so axe's `region` best
   practice flags them. If the library can't render them inline, scan the page with the popup excluded and then the

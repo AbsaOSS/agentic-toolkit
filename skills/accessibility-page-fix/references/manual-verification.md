@@ -204,6 +204,17 @@ computed styles there. For closed roots, test through the host's supported hooks
 not treat an empty query as a clean result. The bundled keyboard, text-size, contrast, and screenshot scripts
 traverse open shadow roots.
 
+Inside the host, also check what a standalone run can't show:
+
+- **Console errors.** Read the browser console on every state. The host can hand the fragment its own, already
+  patched browser APIs (observers, timers, history), so code that works standalone can throw only inside the host.
+  An observer added by a fix (re-applying ARIA, watching a carousel) is a typical trigger.
+- **Links and navigation.** Activate every link and button that navigates, through the host, and check where you
+  land. A URL built from the app's own routes can lose the host's path prefix and open a host page instead.
+- **History.** The host may replace history state or fire its own `popstate`. If a fix saves a position for the
+  return trip (page number, focused item), test app Back, browser Back and Back → Forward → Back through the host,
+  not only the in-app Back button.
+
 ## Target size
 
 Find small targets quickly:

@@ -225,7 +225,9 @@ Rules while fixing:
 5. Report using [references/report-template.md](references/report-template.md): what was found, what was fixed,
    what remains and why, observations that are not failures, shared code touched, and visual changes. If CI fails
    on the pull request, check which jobs ran: jobs that never started (a missing runner or registry) are a CI setup
-   problem, not a test result, and the report says so.
+   problem, not a test result, and the report says so. The same goes for a job the runner stopped mid-run (a
+   "shutdown signal" or "operation was canceled" in the log): it is marked failed, but no test failed. Read the log
+   for real test failures before changing code, and re-run only the failed jobs.
 
 Done means: all scans for the page's states pass with no violations, every incomplete is resolved or explained,
 Step 4 passes, and no regressions in tests or screenshots.
@@ -237,6 +239,10 @@ Step 4 passes, and no regressions in tests or screenshots.
   contrast and screenshot checks traverse open shadow roots; still verify that the host and fragment actually
   rendered and that the observed result is inside the right root. Closed roots need host-supported test hooks or
   browser-visible interaction checks; never treat an empty query as evidence that the embedded UI passed.
+- **The host changes more than the DOM.** Inside a host, the fragment's links, history and even browser APIs can
+  behave differently: a link loses the host's path prefix, the host rewrites history state, an observer the fix
+  creates throws. Through the real host, read the console, follow every link the fix touches, and test Back and
+  Forward ([references/manual-verification.md](references/manual-verification.md#embedded-apps-and-shadow-roots)).
 - **Library popups sit outside every landmark.** Many UI kits attach open menus and dropdown lists to the end of
   `<body>`, so axe's `region` best practice flags them. When the library offers no inline option, scan the page
   with the popup excluded, then the popup on its own with every rule except `region`, and document it. Don't
@@ -306,7 +312,8 @@ Step 4 passes, and no regressions in tests or screenshots.
 - **Compare like with like.** Run the base branch from a separate worktree (`git worktree add --detach ../base
   <base>`, with `node_modules` linked from the main checkout), against the same mocked backend and the same login,
   so a difference can only come from code. `--detach` matters: a worktree that holds a branch stops anyone checking
-  that branch out elsewhere. A saved login is per origin: put both origins in the state file.
+  that branch out elsewhere. A saved login is per origin: put both origins in the state file. The worktree is only
+  for running the base: make the fix itself on a branch in the user's own checkout.
 - **A fix to a copied shared file goes to every copy.** When parallel branches carry byte-identical copies of a
   shared file, make the fix once, apply the same change to every branch that carries it, and run each branch's own
   tests on its own code (a detached worktree with its own dev server), so the copies stay identical.
