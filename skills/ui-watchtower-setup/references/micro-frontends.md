@@ -79,7 +79,7 @@ export function shellChannelName(): string {
 - Server rendering on the core path: Node has a `BroadcastChannel` too, so give the host, the
   connection and the broadcast classes `enabled: enabled && typeof window !== 'undefined'`. (The
   Angular adapter checks the platform itself.)
-- Current releases (core 0.1.0, adapter 0.5.1) need this. A later release may find the shell's
+- Current releases (core 0.1.1, adapter 0.5.1) need this. A later release may find the shell's
   channel by itself (ui-watchtower #29, unreleased); an explicit channel keeps working then.
 
 ## Shell

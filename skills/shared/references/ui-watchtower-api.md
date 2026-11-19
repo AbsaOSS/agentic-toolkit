@@ -1,7 +1,7 @@
 # ui-watchtower API reference (core)
 
 The public surface of `@absaoss-cps/ui-watchtower`, the framework-independent core (latest
-release, 0.1.0; if the installed typings differ, they win). It works in any frontend — plain
+release, 0.1.1; if the installed typings differ, they win). It works in any frontend — plain
 JavaScript or TypeScript, in any framework — and touches no browser global when
 imported. An Angular app uses the adapter instead, `@absaoss-cps/ngx-ui-watchtower`
 (`ngx-ui-watchtower-api.md`), which wraps these same objects; everything below about behaviour
@@ -93,7 +93,8 @@ Every call is fail-open: telemetry never throws into the app. `uwtCreateTelemetr
 when `identity` (its `application`, `environment` or `version`), `destination` or `logApi` is
 missing — a wiring error surfaces at startup.
 
-`dispose()` stops watching the page, settles scenarios still in flight as `abandoned` and flushes.
+`dispose()` stops watching the page, settles scenarios still in flight as `abandoned`
+(`abandonedBy: 'disposed'`; core 0.1.0 records `'page-hidden'`, as on unload) and flushes.
 The destination and log store are the app's: dispose them yourself, after the engine. Every
 `dispose()` can be called more than once.
 
@@ -504,7 +505,7 @@ messages, for verification.
 
 ## 13. Not yet released
 
-These are in ui-watchtower #29 (open), not in core 0.1.0 or adapter 0.5.1. Use one only when the
+These are in ui-watchtower #29 (open), not in core 0.1.1 or adapter 0.5.1. Use one only when the
 installed package's typings have it; never wire it from this list alone:
 
 - Fragments that follow the shell's channel by themselves, with no `channelName`.
