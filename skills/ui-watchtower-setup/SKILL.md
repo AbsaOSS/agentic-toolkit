@@ -292,7 +292,8 @@ Run, through the detected package manager, until all are green:
 3. **Type-check** with the app's own script if it has one (e.g. `tsc -b`), else `tsc --noEmit -p`
    on the app's and the specs' tsconfig (Angular: `angular.md`, Step 8) — passing tests prove
    nothing about types (Vitest never type-checks).
-4. **Live check** in the browser with the debug flags (no reload needed):
+4. **Live check** in the browser with the debug flags (read on every event, so no reload is
+   needed for events sent after you set them; an event sent at startup needs one reload):
 
    ```js
    localStorage.setItem('debugScenario', 'true');
@@ -301,11 +302,12 @@ Run, through the detected package manager, until all are green:
    ```
 
    Each console line is `[<application>][<concern>] …`, and its second argument is the exact
-   object handed to the destination. Confirm a line for the Step 6 telemetry — one
-   `<prefix>-route-navigate` line per navigation with a template `route`, the picked events with
-   the right status, or the temporary event before you remove it — and that nothing is logged
-   during server rendering. Where the off switch turns telemetry off, no lines appear — check in an
-   environment where it is on, then confirm the off one stays silent.
+   object handed to the destination. Confirm a line for the telemetry kept in Step 6 — one
+   `<prefix>-route-navigate` line per navigation with a template `route`, or the picked events
+   with the right status — and that nothing is logged during server rendering. A temporary check
+   was already confirmed and removed in Step 6: here, confirm that its event no longer appears.
+   Where the off switch turns telemetry off, no lines appear — check in an environment where it is
+   on, then confirm the off one stays silent.
 
 Don't finish until build, tests and type-check are green. The templates use current router and
 framework APIs; if the app's version has changed one, adapt the template to the app's version —
@@ -316,10 +318,11 @@ never silence the error.
 Report what was wired (path, role, destination, credentials endpoint, log provider, user identity),
 how the setup was confirmed (and, for a temporary check, that it was removed), and any follow-ups.
 With the RUM destination, also report:
-- **Page views:** RUM records them by itself, one per page load and route change, under the URL
-  path (`pageIdFormat: 'PATH'`), ids included (`/customers/42`). If a path can carry personal data
-  (an email, a name), say so and offer route-navigation tracking, which records route templates
-  instead.
+- **Page views:** without route-navigation tracking, RUM records them by itself, one per page load
+  and route change, under the URL path (`pageIdFormat: 'PATH'`), ids included (`/customers/42`). If
+  a path can carry personal data (an email, a name), say so and offer route-navigation tracking.
+  With it, the tracker records one per completed navigation under the route template
+  (`/customers/:id`), and RUM's automatic ones are off (`disableAutoPageView: true`).
 - **What it keeps in the browser**, for the app's cookie or privacy notice: the RUM client's cookies
   `cwr_s` (session id; by default the session ends after 30 minutes without an event) and `cwr_u`
   (user id, kept for `userIdRetentionDays` — 30 days by default — and shared by every app on the

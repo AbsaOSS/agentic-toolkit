@@ -200,33 +200,10 @@ test per outcome, as `route-navigation.angular.spec.ts` does for Angular.
 ## Step 7 · Tests
 
 Specs that import code using the engine get a test engine from one mock of the engine module in
-the test setup file, so no spec builds the real destination (its `init()` would call the
-broker). Mirror the module's exports:
-
-```ts
-// src/test-setup.ts — listed in the test runner's `setupFiles`
-vi.mock('./telemetry/telemetry', async () => {
-  const { uwtCreateTelemetry, UwtNoopLogApiProvider, UwtNoopTelemetrySink } =
-    await import('@absaoss-cps/ui-watchtower');
-  const destination = new UwtNoopTelemetrySink();
-  return {
-    destination,
-    telemetry: uwtCreateTelemetry({
-      identity: { application: 'my-app-test', environment: 'test', version: '0.0.0' },
-      destination,
-      logApi: new UwtNoopLogApiProvider(),
-      scenarios: { defaultTimeoutMs: 0 }, // no scenario timers left running in tests
-      document: null // no page lifecycle in unit tests
-    })
-  };
-});
-```
-
-With route-tracking page views, the tracker also calls `destination.recordPageView`: give the mock
-destination one (a class extending `UwtNoopTelemetrySink` with `recordPageView(): void {}`).
-
-To assert on what is sent, spy on the mock's destination (`vi.spyOn(destination, 'record')`), or
-build an engine with API §11's recording sink in the spec.
+the test setup file (`setupFiles`), so no spec builds the real destination — the snippet is in API
+§11, with how to assert on what is sent. With route-tracking page views, the tracker also calls
+`destination.recordPageView`: give the mock destination one (a class extending
+`UwtNoopTelemetrySink` with `recordPageView(): void {}`).
 
 - The spec templates (SKILL.md Step 7) use Vitest's globals (`globals: true`; otherwise import
   `describe`, `it`, `expect`, `vi` from `vitest`).

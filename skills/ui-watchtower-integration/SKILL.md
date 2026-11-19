@@ -193,11 +193,10 @@ something the code settles.
 
 - **Angular:** a recording sink in TestBed (`ngx-ui-watchtower-api.md`, "Testing"). Specs that
   render instrumented components need the telemetry providers or they fail with `NG0201`.
-- **Elsewhere:** the test engine from setup's test setup file (setup's `references/core.md`,
-  Step 7; add it if the app has none). Spy on its destination and assert on the calls:
-  `const record = vi.spyOn(destination, 'record')`, then
-  `expect(record).toHaveBeenCalledWith('com.uwt.scenario', expect.objectContaining({ scenarioName, status, reason }))`
-  (`'com.uwt.bi'` with `eventName` and `metadata` for BI events); restore spies after each test.
+- **Elsewhere:** the mock of the engine module in the test setup file (API reference §11; add it
+  if the app has none). Spy on its destination and assert on the calls: `vi.spyOn(destination,
+  'record')`, then `'com.uwt.scenario'` with `scenarioName`, `status`, `reason`, or `'com.uwt.bi'`
+  with `eventName` and `metadata`; restore spies after each test.
 
 Check one test bites: remove its settle call, confirm it fails, restore.
 

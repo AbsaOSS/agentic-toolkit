@@ -432,10 +432,41 @@ const telemetry = uwtCreateTelemetry({
 // ]);
 ```
 
-Code that imports the app's engine module gets this engine in tests by mocking that module
-(`vi.mock` / `jest.mock`) or by letting the module read its destination from a function tests can
-replace — whichever the app's tests already do for other singletons. jsdom has no
-`BroadcastChannel`; a fragment's tests stub it or use the recording sink instead.
+**Code that imports the app's engine module** (`src/telemetry/telemetry.ts`) gets a test engine
+from one mock of that module in the test setup file, so no spec builds the real destination (a RUM
+sink's `init()` would call the broker). Mirror the module's exports; add it if the app has none:
+
+```ts
+// src/test-setup.ts — listed in the test runner's `setupFiles`
+vi.mock('./telemetry/telemetry', async () => {
+  const { uwtCreateTelemetry, UwtNoopLogApiProvider, UwtNoopTelemetrySink } =
+    await import('@absaoss-cps/ui-watchtower');
+  const destination = new UwtNoopTelemetrySink();
+  return {
+    destination,
+    telemetry: uwtCreateTelemetry({
+      identity: { application: 'my-app-test', environment: 'test', version: '0.0.0' },
+      destination,
+      logApi: new UwtNoopLogApiProvider(),
+      scenarios: { defaultTimeoutMs: 0 }, // no scenario timers left running in tests
+      document: null // no page lifecycle in unit tests
+    })
+  };
+});
+```
+
+To assert on what is sent, spy on that destination and restore the spy after each test:
+
+```ts
+const record = vi.spyOn(destination, 'record');
+// …drive the code
+expect(record).toHaveBeenCalledWith('com.uwt.scenario',
+  expect.objectContaining({ scenarioName: 'my-app-customers-load', status: 'success' }));
+// BI events: 'com.uwt.bi' with eventName and metadata
+```
+
+With Jest, use `jest.mock` with `require` inside the factory. jsdom has no `BroadcastChannel`; a
+fragment's tests stub it or use the recording sink instead.
 
 ## 12. Shell and fragments
 
