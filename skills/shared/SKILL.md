@@ -2,7 +2,8 @@
 name: shared
 description: >
   Internal reference bundle — not a task skill. Holds shared reference docs
-  (skills/shared/references/) that other skills load, including the ngx-ui-watchtower API.
+  (skills/shared/references/) that other skills load: the ui-watchtower core API and the
+  ngx-ui-watchtower (Angular adapter) API.
   Do not activate this for a user request; it has no standalone behavior of its own.
   Install it alongside any skill whose own SKILL.md names it as a required companion —
   the consuming skill's install instructions list the exact command.

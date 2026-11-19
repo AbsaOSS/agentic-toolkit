@@ -103,18 +103,51 @@ export const appConfig: ApplicationConfig = {
 - **User identity**: inject `UwtTelemetrySink` as a field of the sign-in service (not inside a
   callback — `NG0203`), then `setUserId(...)` as in SKILL.md Step 3.
 
-## Step 6 · Route navigation
+## Step 6 · Confirm the setup
 
-Copy `assets/route-navigation-tracker.ts` and `assets/route-navigation.angular.ts` (and their
-specs) next to the schema, and add `provideRouteNavigationTelemetry()` next to `provideRouter(...)`
-— a `start()` in the root component would miss a blocking initial navigation. It works unchanged
-for static, `:param`, lazy and redirected routes; a `matcher` route needs
+The option the user chose in Step 1 (SKILL.md Step 6).
+
+**Picked app telemetry** — inject the service for the concern where the action happens and call
+it there, e.g. a BI event in the handler of the app's main button:
+
+```ts
+private readonly bi = inject(UwtBITelemetryService);
+
+protected exportCsv(): void {
+  this.bi.track('my-app-export-clicked', { format: 'csv' });
+  // …the existing handler, unchanged
+}
+```
+
+For a scenario around a load the user waits for, inject `UwtScenarioTelemetryService`, start it
+before the request, and settle it: `traceScenario` on the `HttpClient` call (with `catchError`
+settling `fail` with only the error class and HTTP status first — never the raw
+`HttpErrorResponse`), and `cancel` in `ngOnDestroy`.
+
+**Temporary check** — one marked app initializer in the app's providers (`app.config.ts`, or
+`AppModule` `providers`), and its entry in `UwtBIEventNames`:
+
+```ts
+// TEMPORARY: setup check — remove
+provideAppInitializer(() => inject(UwtBITelemetryService).track('my-app-setup-checked')),
+```
+
+It touches no component, so no spec needs new providers for it. It runs at startup, so set the
+debug flag (`localStorage.setItem('debugBI', 'true')`) and reload once. Remove both afterwards
+(SKILL.md Step 6).
+
+**Route-navigation tracking** (only when the user chose it) — copy
+`assets/route-navigation-tracker.ts` and `assets/route-navigation.angular.ts` (and their specs) next
+to the schema, and add `provideRouteNavigationTelemetry()` next to `provideRouter(...)` — a
+`start()` in the root component would miss a blocking initial navigation. It works unchanged for
+static, `:param`, lazy and redirected routes; a `matcher` route needs
 `data: { telemetryPath: 'files/:path' }`. To start the clock at the click, inject
 `RouteNavigationTelemetryService` and call `markNavigationIntent()` first in click handlers that
 navigate — most useful where the handler does work before `router.navigate…`.
 
-**Page views** — where RUM is the destination, bind `ROUTE_PAGE_VIEW_RECORDER` (with `'noop'`,
-bind nothing):
+Where RUM is the destination, it also takes over page views: add `disableAutoPageView: true` to the
+credentials provider's config (and to its spec's three config expectations), and bind
+`ROUTE_PAGE_VIEW_RECORDER` (with `'noop'`, do neither):
 
 ```ts
 import { inject } from '@angular/core';
@@ -146,8 +179,9 @@ import { ROUTE_PAGE_VIEW_RECORDER } from './telemetry/route-navigation.angular';
     { provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }
   ]
   ```
-- The binding's spec, `route-navigation.angular.spec.ts`, runs the real Router in TestBed with a
-  recording sink and its own route table — add the app's own route shapes.
+- With route-navigation tracking, the binding's spec, `route-navigation.angular.spec.ts`, runs the
+  real Router in TestBed with a recording sink and its own route table — add the app's own route
+  shapes.
 
 ## Step 8 · Validate — specifics
 

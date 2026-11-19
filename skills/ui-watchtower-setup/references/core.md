@@ -1,9 +1,9 @@
 # Core path: any app without an adapter
 
-Use for every app that isn't Angular: React, Vue, Svelte, Solid, Lit, plain TypeScript or
-JavaScript. The app installs the framework-free core, `@absaoss-cps/ui-watchtower`, and creates
-one engine itself. React and Vue add `react.md` / `vue.md` on top of this file, for where things
-go and the router binding. The API is in `ui-watchtower-api.md` (the "API" below).
+Use for every app that isn't Angular, whatever framework it uses, or none. The app installs the
+framework-free core, `@absaoss-cps/ui-watchtower`, and creates one engine itself. Only Angular has
+an adapter; for any other framework, call the core directly and don't build framework-specific
+wrappers around it. The API is in `ui-watchtower-api.md` (the "API" below).
 
 ## Step 1 · Detect — also check
 
@@ -12,7 +12,7 @@ go and the router binding. The API is in `ui-watchtower-api.md` (the "API" below
 - **TypeScript's `moduleResolution`**: `bundler`, `node16` or `nodenext` read the package's
   `exports`, which the `/rum` and `/rxjs` entry points need. With `node` / `node10`, those imports
   don't resolve — tell the user; changing it is their call.
-- **Entry module** (`src/main.ts`, `src/main.tsx`, `src/index.js`) and how the app reads its
+- **Entry module** (`src/main.ts`, `src/index.js`) and how the app reads its
   build-time config (`import.meta.env`, `process.env`, an `environment` file) — the identity and
   the off switch come from there.
 - **RxJS**: only if the app already uses it is `/rxjs` worth anything. Never install it for
@@ -39,22 +39,21 @@ it in a service or facade either: code uses `telemetry.scenarios`, `telemetry.bi
 ```ts
 // src/telemetry/telemetry.ts
 import './telemetry.schema'; // the vocabulary (Step 4)
+import { version } from '../../package.json'; // see "Identity values" below
 import { uwtCreateTelemetry, UwtNoopLogApiProvider } from '@absaoss-cps/ui-watchtower';
 import { UwtRumTelemetrySink } from '@absaoss-cps/ui-watchtower/rum';
 import { AppRumCredentialsProvider } from './rum-credentials.provider';
 
-// From the app's own config (Vite's import.meta.env here); derive nothing from browser globals
-// unguarded (server rendering).
 const identity = {
   application: 'my-app',
   environment: import.meta.env.MODE, // e.g. 'dev' | 'qa' | 'prod'
-  version: import.meta.env.VITE_APP_VERSION
+  version
 };
 
 /** Read once, at startup: the same value goes to everything created here. */
 const enabled = true;
 
-/** The RUM destination; exported for page views (Step 6). */
+/** The RUM destination; exported for route-tracking page views (Step 6) and migration parity. */
 export const destination = new UwtRumTelemetrySink({
   identity,
   credentialsProvider: new AppRumCredentialsProvider(),
@@ -70,8 +69,22 @@ export const telemetry = uwtCreateTelemetry({
 });
 ```
 
+**Identity values.** `uwtCreateTelemetry` throws when `application`, `environment` or `version` is
+missing, so a value that is `undefined` at runtime blanks the page at startup. Take each from
+something that exists in every build, and check the built app, not only the tests:
+
+- `version`: the app's own `package.json` version, as above. Vite and esbuild bundle only the named
+  field; with webpack, import the default (`import pkg from '../../package.json'`, then
+  `pkg.version`); TypeScript needs `resolveJsonModule`. No `version` in `package.json`, or a
+  monorepo where it isn't the release's: a constant kept in step by hand, with a comment saying so.
+- `environment`: the build's own name. Vite's `import.meta.env.MODE` is `production` for every
+  deployed build; if the app tells `qa` from `prod` some other way (a config file, a hostname map),
+  use that. Don't read `import.meta.env.VITE_…` variables the app never defines: Vite leaves them
+  `undefined`.
+- Derive nothing from browser globals unguarded (server rendering).
+
 Import it from the entry module (`import './telemetry/telemetry';`) so the engine exists before
-the first render and the first navigation. `uwtCreateTelemetry` throws when `identity`,
+the app renders anything. `uwtCreateTelemetry` throws when `identity`,
 `destination` or `logApi` is missing — a wiring error, fixed in the wiring, never caught.
 
 **Destination by role** (SKILL.md Step 3):
@@ -105,19 +118,51 @@ uses `fetch`; use the app's HTTP client instead if that is what adds the broker'
 and `telemetry.setUserId(undefined)` on sign-out — or from the auth state stream, initial
 `undefined` included. A fragment leaves this to the shell.
 
-**Server rendering** (Next.js, Nuxt, Remix, SvelteKit, Astro…): the module can load on the server
+**Server rendering** (a framework that renders pages on the server): the module can load there
 — the core touches no browser global when imported, and the RUM sink never starts without a page
-— but telemetry is called only from code that runs in the browser (effects, `onMounted`, event
-handlers), so nothing is recorded while rendering on the server.
+— but telemetry is called only from code that runs in the browser (event handlers, code that runs
+once the page has loaded), so nothing is recorded while rendering on the server.
 
 **`dispose()`** — an app's engine lives as long as the page: don't dispose it. Only a realm that
 goes away while the page stays (a fragment the shell unmounts) disposes: the engine, then what it
 created for it (`micro-frontends.md`).
 
-## Step 6 · Route navigation
+## Step 6 · Confirm the setup
 
-Copy `assets/route-navigation-tracker.ts` next to the schema and create the tracker once, in its
-own module:
+The option the user chose in Step 1 (SKILL.md Step 6); app code reaches the engine by importing
+`telemetry` from the engine module.
+
+**Picked app telemetry** — call the API where the action happens, e.g. a BI event in the handler
+of the app's main button:
+
+```ts
+import { telemetry } from './telemetry/telemetry';
+
+exportButton.addEventListener('click', () => {
+  telemetry.bi.track('my-app-export-clicked', { format: 'csv' });
+  // …the existing handler, unchanged
+});
+```
+
+For a scenario around a load the user waits for, use API §4, "With promises": start it before the
+request, `complete` on the result, `fail` with only an error class and HTTP status, `cancel` when
+the load is dropped.
+
+**Temporary check** — one marked call in the entry module, right after the engine import, and its
+entry in `UwtBIEventNames`:
+
+```ts
+// TEMPORARY: setup check — remove
+import { telemetry } from './telemetry/telemetry';
+telemetry.bi.track('my-app-setup-checked');
+```
+
+It runs at startup, so set the debug flag (`localStorage.setItem('debugBI', 'true')`) and reload
+once. Remove both afterwards (SKILL.md Step 6).
+
+**Route-navigation tracking** (only when the user chose it) — copy
+`assets/route-navigation-tracker.ts` next to the schema and create the tracker once, in its own
+module:
 
 ```ts
 // src/telemetry/route-navigation.ts
@@ -127,21 +172,30 @@ import { destination, telemetry } from './telemetry';
 export const navigationTracker = new RouteNavigationTracker({
   startScenario: (options) => telemetry.scenarios.start(options),
   // Only where RUM is the destination (else drop it and the `destination` import): page views
-  // under the route template.
+  // under the route template, with `disableAutoPageView: true` in the credentials provider.
   recordPageView: (route) => destination.recordPageView(route)
 });
 ```
 
-Then bind the router: React Router → `react.md`, Vue Router → `vue.md`.
+There is no ready binding outside Angular: write a small one on the app's router, called before
+its first navigation. For each navigation, with an id of your choice, call `start(id)` when it
+starts and `recognized(id, template)` once its route matched, then exactly one of:
 
-**Other routers** (Svelte, Solid, TanStack, a meta-framework's own router…): write a small binding
-on the router's navigation events, with `assets/route-navigation.vue.ts` as the model — `start(id)`
-when a navigation starts, `recognized(id, template)` once its route matched, then exactly one of
-`end`, `redirected`, `cancel`, `skip` or `fail` (each documented in the tracker). It needs the
-route **template** (`/customers/:id`). A router that exposes only the resolved path, or no
-navigation events: skip this step and record no page views — keep `disableAutoPageView: true`,
-since automatic ones would send the resolved paths — and say so in the hand-over. Never send
-resolved paths.
+- `end(id)` — it completed;
+- `redirected(id)` — a guard or loader sent it elsewhere; the next `start` continues the same
+  journey;
+- `cancel(id, { reason, incomplete? })` — a newer navigation replaced it (`superseded`), or a guard
+  said no (`incomplete: true`);
+- `skip(id, reason)` — the router never ran it (the current URL again). A redirect that lands on the
+  page the user is already on also ends here, after `redirected`; otherwise that navigation stays
+  open until its 30 s timeout;
+- `fail(id, error)` — it threw.
+
+Each call is documented in the tracker; `assets/route-navigation.angular.ts` maps one router's
+events completely. The binding needs the route **template** (`/customers/:id`): a router that
+exposes only the resolved path, or no navigation events, can't use route tracking — say so and offer
+the other two options. Never send resolved paths. Test the binding with the router in memory, one
+test per outcome, as `route-navigation.angular.spec.ts` does for Angular.
 
 ## Step 7 · Tests
 
@@ -154,11 +208,7 @@ broker). Mirror the module's exports:
 vi.mock('./telemetry/telemetry', async () => {
   const { uwtCreateTelemetry, UwtNoopLogApiProvider, UwtNoopTelemetrySink } =
     await import('@absaoss-cps/ui-watchtower');
-  // A no-op destination with the RUM sink's page-view method, which the route tracker calls.
-  class TestSink extends UwtNoopTelemetrySink {
-    recordPageView(): void {}
-  }
-  const destination = new TestSink();
+  const destination = new UwtNoopTelemetrySink();
   return {
     destination,
     telemetry: uwtCreateTelemetry({
@@ -172,7 +222,11 @@ vi.mock('./telemetry/telemetry', async () => {
 });
 ```
 
-To assert on what is sent, a spec builds its own engine with API §11's recording sink.
+With route-tracking page views, the tracker also calls `destination.recordPageView`: give the mock
+destination one (a class extending `UwtNoopTelemetrySink` with `recordPageView(): void {}`).
+
+To assert on what is sent, spy on the mock's destination (`vi.spyOn(destination, 'record')`), or
+build an engine with API §11's recording sink in the spec.
 
 - The spec templates (SKILL.md Step 7) use Vitest's globals (`globals: true`; otherwise import
   `describe`, `it`, `expect`, `vi` from `vitest`).

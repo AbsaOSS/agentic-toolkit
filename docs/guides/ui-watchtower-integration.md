@@ -1,9 +1,11 @@
 # UI Watchtower Integration Skill
 
-The `ui-watchtower-integration` skill measures what matters in a specific Angular app with
-[`@absaoss-cps/ngx-ui-watchtower`](https://www.npmjs.com/package/@absaoss-cps/ngx-ui-watchtower):
-**scenarios** (did a user journey succeed, and how long did it take) and **BI events** (did a
-meaningful thing happen).
+The `ui-watchtower-integration` skill measures what matters in a specific app that already uses
+UI Watchtower — the Angular adapter
+[`@absaoss-cps/ngx-ui-watchtower`](https://www.npmjs.com/package/@absaoss-cps/ngx-ui-watchtower), or
+the framework-free core [`@absaoss-cps/ui-watchtower`](https://www.npmjs.com/package/@absaoss-cps/ui-watchtower)
+in any other app: **scenarios** (did a user journey succeed, and how long did it take) and **BI
+events** (did a meaningful thing happen).
 
 It starts from what you want to learn, not only from what it finds in the code: it asks first,
 proposes a plan that marks which items you asked for and which it suggests, and implements only what
@@ -18,12 +20,12 @@ first.
 
 | Step | Action |
 |---|---|
-| Check | Confirms the library is installed with a destination, otherwise stops and points to the setup skill; reads what is already instrumented so a re-run only adds |
+| Check | Confirms the library is installed and wired (Angular providers, or the core's engine), otherwise stops and points to the setup skill; reads what is already instrumented so a re-run only adds |
 | Ask | One short set of questions: what the telemetry should answer, which journeys matter and what success means, which interactions to count, known pain points, what must not be tracked, scope of this pass |
 | Scan | Finds candidate journeys, clicks and journey-ending errors in the code, within that scope |
 | Propose | A merged plan with a **Source** column (`you` / `suggested`) and a section for requests it had to change (e.g. no raw search text, no ids in names) with the alternative |
-| Implement | Only what you confirmed — names in the schema, the right settle status for each outcome, cleanup on destroy; the scenario and BI services used directly where needed, never merged behind a facade |
-| Test & validate | A test per outcome through a recording sink; build, unit tests, a real type-check, a live check with the debug flags |
+| Implement | Only what you confirmed — names in the schema, the right settle status for each outcome, cleanup when a view goes away; the scenario and BI APIs used directly where needed, never merged behind a facade |
+| Test & validate | A test per outcome, asserting what reaches the destination; build, unit tests, a real type-check, a live check with the debug flags |
 
 ---
 
@@ -57,8 +59,8 @@ then says it is based on the code only.
 
 - Installing or wiring the library → [UI Watchtower Setup](./ui-watchtower-setup.md)
 - CloudWatch dashboards, RUM extended metrics and alarms
-- A backend correlation-header interceptor (offered as a follow-up)
-- Non-Angular applications
+- Sending the scenario id to the backend (not released yet)
+- Server-side and native mobile apps
 
 ---
 
@@ -66,7 +68,7 @@ then says it is based on the code only.
 
 ```bash
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill ui-watchtower-integration
-# Companion: holds the ngx-ui-watchtower API reference both watchtower skills load
+# Companion: holds the ui-watchtower API references both watchtower skills load
 npx skills add https://github.com/AbsaOSS/agentic-toolkit -g --skill shared
 ```
 

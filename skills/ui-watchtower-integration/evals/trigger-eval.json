@@ -40,7 +40,7 @@
     "should_trigger": false
   },
   {
-    "query": "Add Google Analytics to the React marketing site.",
+    "query": "Add Google Analytics to the marketing site.",
     "should_trigger": false
   },
   {
@@ -49,6 +49,18 @@
   },
   {
     "query": "Turn off ngx-ui-watchtower telemetry in our dev and test environments; keep it on in prod.",
+    "should_trigger": false
+  },
+  {
+    "query": "Measure whether the customer list in our web app is slow or failing, using the watchtower scenarios we already wired.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add BI events for the export and filter buttons; ui-watchtower (the core package) is already set up.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up ui-watchtower in our new single-page app with CloudWatch RUM.",
     "should_trigger": false
   }
 ]

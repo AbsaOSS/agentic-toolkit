@@ -1,4 +1,3 @@
-import { Injectable } from '@angular/core';
 import type {
   UwtRumAppMonitorConfig,
   UwtRumBootstrap,
@@ -42,8 +41,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
  * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
  * `RegExp`s and functions there, and with a string in their place the library doesn't start RUM
- * for the page (0.4.0+; before, the SDK threw). Telemetries are kept as names only; set their
- * options in code.
+ * for the page. Telemetries are kept as names only; set their options in code.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -127,9 +125,9 @@ function hasStrings<K extends string>(
 
 /**
  * Called at startup and ~5 min before each credential expiry, so the browser never holds a
- * long-lived AWS identity.
+ * long-lived AWS identity. Pass an instance as the RUM sink's `credentialsProvider`; in Angular,
+ * bind it with `{ provide: UWT_RUM_CREDENTIALS_PROVIDER, useClass: AppRumCredentialsProvider }`.
  */
-@Injectable({ providedIn: 'root' })
 export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
   /**
    * `null` (RUM off for the rest of the page) when the broker turns RUM off or answers with
@@ -169,8 +167,8 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
         applicationId: config.applicationId,
         region: config.region,
         applicationVersion: config.applicationVersion,
-        // Always: page views come from the route service, under the template — automatic ones
-        // would send the resolved path (/customers/42).
+        // This app chose route-navigation tracking (setup Step 6, option 1): it records page views
+        // under the route template itself, so RUM's automatic ones (the URL path) are off.
         disableAutoPageView: true
       },
       credentials: {

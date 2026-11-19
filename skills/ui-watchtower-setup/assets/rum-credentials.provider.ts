@@ -167,10 +167,11 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
         ...optionalSettings(config),
         applicationId: config.applicationId,
         region: config.region,
-        applicationVersion: config.applicationVersion,
-        // Always: page views come from the route service, under the template — automatic ones
-        // would send the resolved path (/customers/42).
-        disableAutoPageView: true
+        applicationVersion: config.applicationVersion
+        // Page views stay automatic, RUM's default. The broker's `disableAutoPageView` is dropped
+        // on purpose: how page views are recorded is the app's choice. Only an app that records
+        // route-template page views itself (route-navigation tracking, setup Step 6) adds
+        // `disableAutoPageView: true` here.
       },
       credentials: {
         accessKeyId: credentials.accessKeyId,

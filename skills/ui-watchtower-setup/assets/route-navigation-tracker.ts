@@ -4,9 +4,9 @@ import './telemetry.schema';
 /**
  * Route-navigation telemetry, independent of any framework and of which ui-watchtower package
  * the app uses. One `NAVIGATION_SCENARIO` scenario per navigation, under the route TEMPLATE
- * (`/customers/:id`), never the resolved URL. A router binding (`route-navigation.angular.ts`,
- * `route-navigation.react.ts`, `route-navigation.vue.ts`) turns its router's events into the
- * calls below.
+ * (`/customers/:id`), never the resolved URL. A router binding turns its router's events into
+ * the calls below: `route-navigation.angular.ts` for the Angular Router, or a small one written
+ * for the app's own router. Used only when the app opts into route-navigation tracking.
  */
 
 /** `<prefix>-route-navigate` — replace `my-app` with the app's prefix, as in telemetry.schema.ts. */

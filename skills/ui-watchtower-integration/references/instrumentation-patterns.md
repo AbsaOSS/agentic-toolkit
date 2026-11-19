@@ -32,7 +32,7 @@ behaviour. Import types such as `UwtScenarioOutcome` from the package the app us
 take" is a scenario; "did it happen, and how often" is a BI event. A click inside a journey is both —
 the scenario for the journey, a BI event for the click, linked with `{ scenarioId: scenario.id }`.
 Each call site uses only the API(s) it needs — in Angular it injects only that service — and there
-is no shared telemetry service, hook or composable between them.
+is no shared telemetry service or wrapper between them.
 
 Skip: anything that fires continuously (scroll, mousemove, per-keystroke), purely decorative UI,
 and work the user never waits for.
@@ -229,76 +229,39 @@ ngOnDestroy(): void {
 }
 ```
 
-**React** — start in the effect, cancel in its cleanup. The cleanup runs on unmount and before the
-effect runs again for new dependencies, so use `'superseded'` for an effect keyed on inputs and
-`'component-destroyed'` for one that runs once, on mount:
-
-```tsx
-useEffect(() => {
-  const controller = new AbortController();
-  const scenario = telemetry.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
-  scenario.step('fetch');
-  api.customers(filter, { signal: controller.signal }).then(
-    (rows) => {
-      setRows(rows);
-      if (rows.length === 0) {
-        scenario.incomplete({ reason: 'no-results' });
-      } else {
-        scenario.complete({ metadata: { count: rows.length } });
-      }
-    },
-    (error) => scenario.fail(safeHttpFailure(error))
-  );
-  return () => {
-    scenario.cancel({ reason: 'superseded' }); // a new filter, or unmounting
-    controller.abort();
-  };
-}, [filter]);
-```
-
-With TanStack Query, the query function is the journey: start and settle inside it, and cancel when
-the `signal` it receives aborts; a cache hit starts nothing. StrictMode's development-only second
-mount records one extra `abandoned` (SKILL.md, Gotchas).
-
-**Vue** — in a composable, a watcher's `onCleanup` runs before the next run and when the watcher
-stops, which unmounting the component does:
+**Any other app** — the code that starts a load owns its cancellation: keep the scenario with the
+request's `AbortController`, and cancel both when a newer load replaces it or when the view goes
+away (the framework's own teardown hook, or the code that removes the view):
 
 ```ts
-export function useCustomers(filter: Ref<string>) {
-  const rows = ref<Customer[]>([]);
-  watch(
-    filter,
-    (value, _previous, onCleanup) => {
-      const controller = new AbortController();
-      const scenario = telemetry.scenarios.start({ name: 'my-app-customers-load', feature: 'customers' });
-      onCleanup(() => {
-        scenario.cancel({ reason: 'superseded' }); // a new filter, or unmounting
-        controller.abort();
-      });
-      scenario.step('fetch');
-      api.customers(value, { signal: controller.signal }).then(
-        (result) => {
-          rows.value = result;
-          if (result.length === 0) {
-            scenario.incomplete({ reason: 'no-results' });
-          } else {
-            scenario.complete({ metadata: { count: result.length } });
-          }
-        },
-        (error) => scenario.fail(safeHttpFailure(error))
-      );
-    },
-    { immediate: true }
-  );
-  return { rows };
+let current: { scenario: UwtScenario; controller: AbortController } | undefined;
+
+async function loadNotes(filter: string): Promise<void> {
+  current?.scenario.cancel({ reason: 'superseded' });
+  current?.controller.abort();
+  const controller = new AbortController();
+  const scenario = telemetry.scenarios.start({ name: 'my-app-notes-load', feature: 'notes' });
+  current = { scenario, controller };
+  try {
+    scenario.step('fetch');
+    const notes = await api.notes(filter, { signal: controller.signal });
+    showNotes(notes);
+    if (notes.length === 0) {
+      scenario.incomplete({ reason: 'no-results' });
+    } else {
+      scenario.complete({ metadata: { count: notes.length } });
+    }
+  } catch (error) {
+    scenario.fail(safeHttpFailure(error)); // ignored after a cancel: the first settle wins
+  }
+}
+
+/** Called by whatever removes the notes view. */
+function disposeNotesView(): void {
+  current?.scenario.cancel({ reason: 'component-destroyed' });
+  current?.controller.abort();
 }
 ```
-
-A scenario started outside a watcher is cancelled in `onUnmounted` (a component) or
-`onScopeDispose` (a composable) with `'component-destroyed'`.
-
-**Elsewhere** — the framework's teardown hook (Svelte's `onDestroy`, Lit's `disconnectedCallback`),
-or the code that removes the view.
 
 ## 6. BI events
 
@@ -307,8 +270,8 @@ or the code that removes the view.
 - Debounce high-frequency sources (search boxes, sliders) before `track()` or before starting a
   scenario — e.g. RxJS `debounceTime(400)` or a timer; one per settled input, never one per
   keystroke. Repeated identical clicks within 400 ms are already collapsed by the library.
-- Call `track()` directly where the action happens (a click handler, `onClick`, `@click`); don't
-  route it through an app telemetry service, hook or composable, and don't merge it with the
+- Call `track()` directly where the action happens (the event handler); don't route it through an
+  app telemetry service or wrapper module, and don't merge it with the
   scenario API. If a function of yours takes an event name, type that parameter `UwtBIEventName`.
 
 ## 7. Names, metadata and privacy
@@ -327,13 +290,13 @@ or the code that removes the view.
 - No personal data: no emails, names, usernames, account numbers, free-text input. Use opaque ids.
 - Code you write that touches `window`, `navigator`, `document` or `localStorage` may also run
   during server rendering — guard it: `isPlatformBrowser(inject(PLATFORM_ID))` in Angular,
-  `typeof window !== 'undefined'` elsewhere. Effects, `onMounted` and event handlers run only in the
-  browser.
+  `typeof window !== 'undefined'` elsewhere. Event handlers run only in the browser.
 
 ## 8. Starter catalogue
 
-Adapt to the app's real vocabulary and to what the user asked for. Route navigation is already
-tracked by `ui-watchtower-setup`.
+Adapt to the app's real vocabulary and to what the user asked for. Route navigation is measured
+only if setup added route-navigation tracking (a `<prefix>-route-navigate` scenario); otherwise RUM's
+automatic page views count page loads and route changes, without timing them.
 
 | Scenario          | Steps                          | Settles                                                                                     |
 |-------------------|--------------------------------|---------------------------------------------------------------------------------------------|

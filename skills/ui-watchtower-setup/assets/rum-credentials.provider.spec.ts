@@ -19,12 +19,12 @@ describe('AppRumCredentialsProvider', () => {
   afterEach(() => vi.unstubAllGlobals());
   const load = () => new AppRumCredentialsProvider().load();
 
-  it('maps a complete answer and turns automatic page views off', async () => {
+  it('maps a complete answer, leaving page views automatic', async () => {
     answer(valid);
     await expect(load()).resolves.toEqual({
       config: {
         applicationId: 'app-1', region: 'eu-west-1', applicationVersion: '1.4.0',
-        sessionSampleRate: 1, disableAutoPageView: true
+        sessionSampleRate: 1
       },
       credentials: valid.credentials
     });
@@ -71,17 +71,16 @@ describe('AppRumCredentialsProvider', () => {
     answer({ ...valid, config: { ...valid.config, ...settings } });
     expect((await load())?.config).toEqual({
       ...valid.config,
-      ...settings,
-      disableAutoPageView: true
+      ...settings
     });
   });
 
-  it('drops wrongly typed and unknown settings, and keeps automatic page views off', async () => {
+  it('drops wrongly typed and unknown settings, and the broker\'s page-view switch', async () => {
     answer({
       ...valid,
       config: {
         ...valid.config,
-        disableAutoPageView: false,
+        disableAutoPageView: true,
         allowCookies: 'yes',
         sessionEventLimit: '500',
         pageIdFormat: 'FULL_URL',
@@ -90,7 +89,7 @@ describe('AppRumCredentialsProvider', () => {
         identityPoolId: 'eu-west-1:pool'
       }
     });
-    expect((await load())?.config).toEqual({ ...valid.config, disableAutoPageView: true });
+    expect((await load())?.config).toEqual(valid.config);
   });
 
   it.each([

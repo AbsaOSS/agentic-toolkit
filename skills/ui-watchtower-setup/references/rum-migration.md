@@ -55,17 +55,16 @@ event types — record that decision in the table.
 
 Two `AwsRum` instances mean two sessions per visitor, so the old client and the library's RUM
 sink must never start in the same build. Until the cutover, the old `RumService` stays the **only**
-RUM client (the library can already be wired with the no-op destination, so the vocabulary, route
-tracking and tests are in place). The cutover is one change, in this order:
+RUM client (the library can already be wired with the no-op destination, so the vocabulary and
+tests are in place). The cutover is one change, in this order:
 
 1. **Stop the old client** — remove whatever runs `RumService.init()` / `new AwsRum` (an
    `APP_INITIALIZER`, a call in `main.ts`, a module-level instance), and its page-view
    subscription.
 2. **Wire the new destination** — replace the no-op destination with the RUM sink and the
-   credentials provider (with `disableAutoPageView: true` in the app monitor config), and add the
-   page views: in Angular, `provideUwtTelemetryRumSink()`, `UWT_RUM_CREDENTIALS_PROVIDER` and
-   `ROUTE_PAGE_VIEW_RECORDER`; on the core, `UwtRumTelemetrySink` with `init()`, and the route
-   tracker's `recordPageView`. Write both into the cutover plan you hand over.
+   credentials provider: in Angular, `provideUwtTelemetryRumSink()` and
+   `UWT_RUM_CREDENTIALS_PROVIDER`; on the core, `UwtRumTelemetrySink` with `init()`. Page views
+   follow the "Page views" check below. Write it into the cutover plan you hand over.
 3. **Turn the old service into an adapter** — point each remaining method at the library: the
    migrated call, or `destination.record(…)` for rows that need byte parity (in Angular, inject
    `UwtTelemetrySink` and the BI / scenario services as fields; on the core, import the engine
@@ -91,11 +90,15 @@ diff needs.
 
 ## Specific checks
 
-- **Page views.** Setup records one page view per navigation under the route template
-  (`disableAutoPageView: true` plus the route tracker's page views — Step 6). Drop any
-  manual `recordPageView` calls in the old code; never keep both. If the old setup relied on
-  automatic page views, its page ids were resolved paths (`/customers/42`) and become templates
-  (`/customers/:id`) — tell the owners of page-based dashboards.
+- **Page views.** Keep what the old code did, with exactly one page-view path:
+  - It relied on RUM's automatic page views → keep them: leave `disableAutoPageView` unset; page
+    ids stay the URL paths they were.
+  - It recorded page views itself, and dashboards depend on those page ids (e.g. route templates)
+    → ask whether to replace them with route-navigation tracking (SKILL.md Step 6, option 1),
+    which records route-template page views with `disableAutoPageView: true`. Then drop the old
+    manual `recordPageView` calls at the cutover; never keep both. If the user declines, the
+    cutover switches to automatic page views — tell the owners of page-based dashboards that page
+    ids become URL paths.
 - **Session attributes.** `application`, `environment` and `version` from the identity are attached
   as session attributes. Port any other attributes via `sessionAttributes` in the app monitor config
   returned by the credentials provider.

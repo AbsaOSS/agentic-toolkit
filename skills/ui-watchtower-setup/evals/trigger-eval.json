@@ -40,7 +40,7 @@
     "should_trigger": false
   },
   {
-    "query": "Add Google Analytics to the React marketing site.",
+    "query": "Add Google Analytics to the marketing site.",
     "should_trigger": false
   },
   {
@@ -49,6 +49,30 @@
   },
   {
     "query": "Set up accessibility checks with axe-core in this Angular app.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add ui-watchtower telemetry with CloudWatch RUM to our single-page app (it isn't Angular).",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up @absaoss-cps/ui-watchtower in this project; RUM isn't ready yet, so no destination for now.",
+    "should_trigger": true
+  },
+  {
+    "query": "We have a plain TypeScript single-page app with no framework — wire UI telemetry and CloudWatch RUM using the watchtower library.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our catalogue fragment is a plain TypeScript app inside the Angular shell; set up watchtower so it forwards its telemetry through the shell.",
+    "should_trigger": true
+  },
+  {
+    "query": "Measure how long the customer list in our app takes to load — ui-watchtower is already set up.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add OpenTelemetry tracing to our Node.js API service.",
     "should_trigger": false
   }
 ]

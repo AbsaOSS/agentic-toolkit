@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { RouteNavigationTelemetryService } from './telemetry/route-navigation-telemetry.service';
+import { RouteNavigationTelemetryService } from './telemetry/route-navigation.angular';
 
 @Component({
   selector: 'app-root',

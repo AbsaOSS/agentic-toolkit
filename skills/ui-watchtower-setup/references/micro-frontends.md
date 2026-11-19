@@ -100,7 +100,7 @@ providers: [
   provideUwtTelemetry({ application: 'shell', environment, version }),
   provideUwtTelemetryRumSink(),
   { provide: UWT_RUM_CREDENTIALS_PROVIDER, useClass: AppRumCredentialsProvider },
-  // + route tracking and ROUTE_PAGE_VIEW_RECORDER (angular.md, Step 6)
+  // + route tracking and ROUTE_PAGE_VIEW_RECORDER, only if the user chose it (angular.md, Step 6)
   provideUwtTelemetryBroadcastHost(channelId),
   { provide: UWT_LOG_API_PROVIDER, useClass: UwtNoopLogApiProvider }
 ];
@@ -165,6 +165,7 @@ import {
 } from '@absaoss-cps/ui-watchtower';
 import { shellChannelName } from './telemetry-channel';
 
+// `environment` and `version` come from the same sources as in core.md, "Identity values".
 const identity = { application: 'cart', environment, version, eventNamespace: 'com.uwt' };
 const enabled = true; // the same switch as the shell's
 

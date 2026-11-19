@@ -5,7 +5,7 @@
       "id": "happy-path-standalone-angular",
       "category": "happy-path",
       "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. The project is in evals/files/standalone-angular.",
-      "expected_output": "Skill detects a standalone Angular 22 app with a router and Vitest, installs the package and aws-rum-web, wires provideUwtTelemetry + provideUwtTelemetryRumSink + UWT_RUM_CREDENTIALS_PROVIDER, creates telemetry.schema.ts, adds route-navigation tracking as the single proof scenario (reporting /customers/:customerId as a template) with a recording-sink test, adds app.spec.ts providers only if App injects telemetry, validates, and hands over to ui-watchtower-integration for the app's own journeys.",
+      "expected_output": "Skill detects a standalone Angular 22 app with a router and Vitest, installs the adapter and aws-rum-web, wires provideUwtTelemetry + provideUwtTelemetryRumSink + UWT_RUM_CREDENTIALS_PROVIDER with RUM's automatic page views, creates telemetry.schema.ts, asks how to confirm the setup and, with no answer, confirms it with a temporary check that leaves nothing behind, adds no routing code, validates, and hands over to ui-watchtower-integration.",
       "files": [
         "evals/files/standalone-angular/package.json",
         "evals/files/standalone-angular/angular.json",
@@ -24,16 +24,17 @@
       ],
       "expectations": [
         "Reads package.json and the app config before writing anything, and identifies the standalone bootstrap, the router and the test runner",
-        "Installs @absaoss-cps/ngx-ui-watchtower and aws-rum-web with the detected package manager",
+        "Installs @absaoss-cps/ngx-ui-watchtower and aws-rum-web with the detected package manager, and does not install @absaoss-cps/ui-watchtower itself",
         "Adds allowedCommonJsDependencies: ['shimmer'] to the build options in angular.json",
         "Adds provideUwtTelemetry({ application, environment, version }) and provideUwtTelemetryRumSink() to app.config.ts, importing RUM symbols only from '@absaoss-cps/ngx-ui-watchtower/rum'",
         "Binds UWT_RUM_CREDENTIALS_PROVIDER to a credentials provider fetching /rum/init that returns null for an unusable answer and throws when the request fails",
         "Does NOT inject UwtLoggerService, pass withLogging, or declare UwtLoggerNames (no log backend)",
-        "Creates telemetry.schema.ts augmenting UwtScenarioNames, and side-effect-imports it where the providers are configured",
-        "Adds route-navigation tracking (the asset service, started with provideRouteNavigationTelemetry() in the app providers) as the single proof scenario, with a recording-sink test, and does not instrument other journeys or BI events",
-        "Proposes a kebab-case name prefix from the application name (customer-portal) for the user to confirm, and names the route scenario customer-portal-route-navigate in the schema, the service and its spec — no snake_case names",
-        "Reports /customers/:customerId as a route template, never a resolved id (the asset used unchanged, or equivalent), and the route-navigation test asserts it",
-        "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView, with disableAutoPageView: true in the credentials provider, so page views use the route template",
+        "Creates telemetry.schema.ts augmenting '@absaoss-cps/ngx-ui-watchtower' and side-effect-imports it where the providers are configured; it declares no name the final code doesn't use",
+        "The copied templates import from @absaoss-cps/ngx-ui-watchtower (and its /rum entry point), the schema's declare module included — never from @absaoss-cps/ui-watchtower",
+        "Asks, in its one question message, how to confirm the setup — route-navigation tracking kept, one or two telemetry items named from this app's code (e.g. the Export CSV button or the GET /api/customers load), or nothing permanent — and, with no answer, proceeds with the temporary check",
+        "Confirms the setup with a temporary check: one marked temporary call and its schema entry, the live debug check listed for the user, then both removed — the final project has no temporary call, no setup-check name and nothing else left from the check",
+        "Adds no route-navigation tracking (no tracker, binding, provideRouteNavigationTelemetry or ROUTE_PAGE_VIEW_RECORDER) and leaves disableAutoPageView unset, so RUM records its automatic page views",
+        "Proposes a kebab-case name prefix from the application name (customer-portal) for the user to confirm — no snake_case names",
         "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
         "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
         "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
@@ -56,10 +57,11 @@
       "expectations": [
         "Identifies the app as a shell hosting fragments (from <web-fragment> usage and the README)",
         "Registers the telemetry providers in the shared app.config.ts, not split between browser and server configs, and without platform checks around them",
-        "Adds provideUwtTelemetryBroadcastHost(channelId) with a random channel id (that does not depend on crypto.randomUUID alone, which needs a secure context) generated once per page load, guarded for server rendering, and does not publish it as a window global (the library hands it to nested fragments)",
+        "Adds provideUwtTelemetryBroadcastHost(channelId) with a random channel id (that does not depend on crypto.randomUUID alone, which needs a secure context) generated once per page load, guarded for server rendering, and publishes it as window.__uwtTelemetryChannel for the fragments",
         "Binds UWT_LOG_API_PROVIDER to UwtNoopLogApiProvider because the README says there is no log backend",
         "Points the credentials provider at GET /api/rum/credentials from the README",
-        "Provides the fragment contract (broadcast sink with no channel setting, since it follows the shell's; distinct application name; the shell's eventNamespace (com.uwt by default); never the RUM sink) as a hand-off rather than editing fragment code",
+        "Provides the fragment contract (broadcast sink on the shell's channel, read from window.__uwtTelemetryChannel with a private fallback, never the shared default; distinct application name; the shell's eventNamespace (com.uwt by default); never the RUM sink) as a hand-off rather than editing fragment code",
+        "Adds no route-navigation tracking (no tracker, binding, provideRouteNavigationTelemetry or ROUTE_PAGE_VIEW_RECORDER) and leaves disableAutoPageView unset (neither was asked for)",
         "Does not install aws-rum-web into any fragment"
       ]
     },
@@ -67,7 +69,7 @@
       "id": "happy-path-fragment",
       "category": "happy-path",
       "prompt": "Our cart fragment needs to send telemetry through the shell. Set up ngx-ui-watchtower here. The project is in evals/files/fragment.",
-      "expected_output": "Skill configures the fragment to forward: provideUwtTelemetry with its own application name and provideUwtTelemetrySink('broadcast') with no channel setting (it follows the shell's channel by itself). No RUM sink, no credentials, no broadcast host, no log provider, no aws-rum-web.",
+      "expected_output": "Skill configures the fragment to forward: provideUwtTelemetry with its own application name, provideUwtTelemetrySink('broadcast'), and the shell's channel read from window.__uwtTelemetryChannel up the parent chain, with a private fallback. No RUM sink, no credentials, no broadcast host, no log provider, no aws-rum-web.",
       "files": [
         "evals/files/fragment/package.json",
         "evals/files/fragment/README.md",
@@ -76,7 +78,7 @@
       ],
       "expectations": [
         "Uses provideUwtTelemetrySink('broadcast') as the only destination",
-        "Sets no channel: no UWT_BROADCAST_CHANNEL provider, no channelName option and no window.__uwtTelemetryChannel lookup, since the fragment follows the shell's channel by itself",
+        "Sets the shell's channel: a UWT_BROADCAST_CHANNEL factory (or the channelName option) that reads window.__uwtTelemetryChannel walking up window.parent, with a private fallback name — never undefined or the shared default channel",
         "Uses an application name distinct from the shell (e.g. 'cart')",
         "Sets eventNamespace: 'com.workspace', the shell's value from the README",
         "Does not add provideUwtTelemetryRumSink, UWT_RUM_CREDENTIALS_PROVIDER, provideUwtTelemetryBroadcastHost or UWT_LOG_API_PROVIDER",
@@ -87,7 +89,7 @@
       "id": "rum-not-ready-noop",
       "category": "happy-path",
       "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM isn't ready yet — we don't have a credentials endpoint. No log backend. The project is in evals/files/standalone-angular.",
-      "expected_output": "Skill wires provideUwtTelemetry with the explicit 'noop' destination, installs only the library (no aws-rum-web, no shimmer allowance, no credentials provider), still adds the schema, route-navigation proof and tests, and hands over the later switch to the RUM sink as a checklist (aws-rum-web and the shimmer allowance, the RUM sink plus a credentials provider, ROUTE_PAGE_VIEW_RECORDER).",
+      "expected_output": "Skill wires provideUwtTelemetry with the explicit 'noop' destination, installs only the adapter (no aws-rum-web, no shimmer allowance, no credentials provider), adds the schema, confirms the setup with a temporary check that leaves nothing behind, adds no routing code, and hands over the later switch to the RUM sink as a checklist.",
       "files": [
         "evals/files/standalone-angular/package.json",
         "evals/files/standalone-angular/angular.json",
@@ -107,10 +109,10 @@
       "expectations": [
         "Uses provideUwtTelemetrySink('noop') as the only destination",
         "Does not install aws-rum-web, add the shimmer allowance, import from '@absaoss-cps/ngx-ui-watchtower/rum', or add a credentials provider",
-        "Does not bind a page-view recorder (no RUM sink to record to)",
-        "Creates telemetry.schema.ts and adds route-navigation tracking with a recording-sink test",
+        "Does not bind a page-view recorder and adds no route-navigation tracking (neither was asked for)",
+        "Creates telemetry.schema.ts, asks how to confirm the setup and, with no answer, confirms it with a temporary check that leaves nothing behind in the project",
         "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
-        "Explains how to switch to RUM later: replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER, bind ROUTE_PAGE_VIEW_RECORDER, and install aws-rum-web",
+        "Explains how to switch to RUM later: install aws-rum-web and add the shimmer allowance, and replace the noop line with provideUwtTelemetryRumSink() plus a UWT_RUM_CREDENTIALS_PROVIDER — no page-view or routing change, since RUM's automatic page views apply",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
     },
@@ -139,8 +141,8 @@
         "Installs the latest @absaoss-cps/ngx-ui-watchtower release with the detected package manager",
         "Passes withTelemetryEnabled(...) to provideUwtTelemetry, off on the dev server (e.g. from isDevMode() or the app's environment) and on otherwise, imported from '@absaoss-cps/ngx-ui-watchtower'",
         "Registers provideUwtTelemetryRumSink() and UWT_RUM_CREDENTIALS_PROVIDER unconditionally — no per-environment provider lists, platform or environment checks around them, and no 'noop' destination for dev",
-        "Does not add environment checks to the credentials provider, the route-navigation service or other app code to stop telemetry in dev",
-        "Keeps tests on the 'noop' test providers (or a recording sink) without withTelemetryEnabled(false), so the route-navigation test still sees events",
+        "Does not add environment checks to the credentials provider or other app code to stop telemetry in dev",
+        "Keeps tests on the 'noop' test providers (or a recording sink) and never uses withTelemetryEnabled(false) in tests",
         "Explains that the live debug check shows nothing on the dev server while telemetry is off there, and how to check it where it is on",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
@@ -149,7 +151,7 @@
       "id": "partially-wired-fills-gaps",
       "category": "regression",
       "prompt": "Someone started wiring ngx-ui-watchtower in this app but never finished. RUM credentials come from GET /rum/init; no log backend. Finish the setup. The project is in evals/files/partially-wired-angular.",
-      "expected_output": "Skill detects the existing provideUwtTelemetry and the missing destination, keeps the single existing configuration, adds the RUM sink and credentials provider, the schema, route-navigation proof and spec providers, and hands over — without duplicating anything already present.",
+      "expected_output": "Skill detects the existing provideUwtTelemetry and the missing destination, keeps the single existing configuration, adds the RUM sink and credentials provider, the schema and a confirmation that leaves no routing code, and hands over — without duplicating anything already present.",
       "files": [
         "evals/files/partially-wired-angular/angular.json",
         "evals/files/partially-wired-angular/package.json",
@@ -171,7 +173,7 @@
         "Keeps exactly one provideUwtTelemetry call (reuses or edits the existing one, does not add a second)",
         "Adds provideUwtTelemetryRumSink() and a UWT_RUM_CREDENTIALS_PROVIDER fetching /rum/init, importing RUM symbols only from '/rum'",
         "Creates telemetry.schema.ts and side-effect-imports it where the providers are configured",
-        "Adds route-navigation tracking with a recording-sink test, and telemetry providers in app.spec.ts only if App now injects a telemetry service",
+        "Adds no route-navigation tracking (not asked for), confirms the setup (a temporary check that leaves nothing behind when nobody answers), and gives app.spec.ts telemetry providers only if App now injects a telemetry service",
         "Ends by pointing the user to ui-watchtower-integration"
       ]
     },
@@ -179,7 +181,7 @@
       "id": "regression-existing-rum-parity",
       "category": "regression",
       "prompt": "Replace our hand-written RumService with ngx-ui-watchtower. The project is in evals/files/ngmodule-existing-rum.",
-      "expected_output": "Skill loads references/rum-migration.md, inventories every recordEvent/recordPageView/addSessionAttributes call with its event type, payload and consumers, picks a parity tool per row (the dashboard and metric filter need desk.order.* types), keeps RumService until the wire is diffed, flags the Cognito identity pool as unsupported and requiring a credential broker, replaces the email session attribute with an opaque user id, fixes the live per-keystroke raw search event right away (debounced, no raw text) even though the RUM switch waits for a broker, and records page views once, under the route template.",
+      "expected_output": "Skill loads references/rum-migration.md, inventories every recordEvent/recordPageView/addSessionAttributes call with its event type, payload and consumers, picks a parity tool per row (the dashboard and metric filter need desk.order.* types), keeps RumService until the wire is diffed, flags the Cognito identity pool as unsupported and requiring a credential broker, replaces the email session attribute with an opaque user id, fixes the live per-keystroke raw search event right away (debounced, no raw text) even though the RUM switch waits for a broker, and keeps one page-view path: the old recorder until the cutover, then RUM's automatic page views or, if the user wants route templates, route-navigation tracking.",
       "files": [
         "evals/files/ngmodule-existing-rum/package.json",
         "evals/files/ngmodule-existing-rum/src/app/app.module.ts",
@@ -194,7 +196,7 @@
         "Does not delete RumService before the migrated paths are diffed against the inventory",
         "Flags that identityPoolId/guestRoleArn (Cognito) is not supported and a backend credential broker is needed, and asks rather than inventing one",
         "Does not run two RUM clients side by side",
-        "Keeps exactly one page-view path and does not start a second one: the old manual recordPageView stays the only recorder until the cutover, and its page ids carry no query string or fragment (the route-template recorder with disableAutoPageView: true is planned for the cutover)",
+        "Keeps exactly one page-view path and does not start a second one: the old manual recordPageView stays the only recorder until the cutover, its page ids carry no query string or fragment, and the cutover plan switches to either RUM's automatic page views (disableAutoPageView unset) or, if the user wants route templates, route-navigation tracking — never both",
         "Replaces the email session attribute with an opaque user id in the old service (planning sink.setUserId(opaqueId) for the cutover) and calls out that emails must not be sent",
         "Replaces per-keystroke search tracking with a debounced event that carries no raw query text (for example queryLength)"
       ]
@@ -233,17 +235,157 @@
       ]
     },
     {
-      "id": "negative-non-angular",
-      "category": "negative",
-      "prompt": "Add ngx-ui-watchtower telemetry to our marketing site. The project is in evals/files/react-app.",
-      "expected_output": "Guard eval: checks the skill doesn't misfire on a non-Angular app, so a run without the skill is expected to pass too. Skill detects a React app, explains that the library is Angular-only, and does not install or wire anything.",
+      "id": "happy-path-plain-ts-log-backend-sign-in",
+      "category": "happy-path",
+      "prompt": "Add ui-watchtower to this app. RUM credentials come from GET /rum/init. The project is in evals/files/plain-ts.",
+      "expected_output": "Skill detects a plain TypeScript app with no framework or router, installs the core and aws-rum-web, creates one engine module with the RUM sink and the log provider pointed at the README's log service, declares logger names, sets the user id from the account's opaque localAccountId on sign-in and clears it on sign-out, keeps RUM's automatic page views, confirms the setup with a temporary check that leaves nothing behind, adds the credentials spec, validates, and hands over.",
       "files": [
-        "evals/files/react-app/package.json",
-        "evals/files/react-app/src/main.tsx"
+        "evals/files/plain-ts/README.md",
+        "evals/files/plain-ts/index.html",
+        "evals/files/plain-ts/package.json",
+        "evals/files/plain-ts/src/auth.ts",
+        "evals/files/plain-ts/src/main.ts",
+        "evals/files/plain-ts/src/notes.spec.ts",
+        "evals/files/plain-ts/src/notes.ts",
+        "evals/files/plain-ts/tsconfig.json",
+        "evals/files/plain-ts/vite.config.ts"
       ],
       "expectations": [
-        "Detects that the app is React, not Angular",
-        "Stops without installing the package or changing any project file, and states that @absaoss-cps/ngx-ui-watchtower is for Angular applications only"
+        "Detects a plain TypeScript app (no framework, no router) built with Vite, and chooses the core package @absaoss-cps/ui-watchtower",
+        "Installs @absaoss-cps/ui-watchtower and aws-rum-web with npm",
+        "Creates one engine module with a UwtRumTelemetrySink (init() called and not awaited), imported from src/main.ts",
+        "Uses the log-provider template pointed at POST /api/logs and GET /api/logs from the README as the engine's logApi, and declares at least one kebab-case logger name with the app's prefix in UwtLoggerNames",
+        "Calls telemetry.setUserId with the account's localAccountId on sign-in and with undefined on sign-out (e.g. from onAccountChange), never the username, email or name",
+        "Adds no route-navigation tracking (no tracker, binding or recordPageView) and leaves disableAutoPageView unset in the credentials provider and its spec, so RUM records its automatic page views",
+        "Creates telemetry.schema.ts augmenting '@absaoss-cps/ui-watchtower' and side-effect-imports it in the engine module",
+        "Leaves notes.spec.ts unchanged and adds rum-credentials.provider.spec.ts, with no disableAutoPageView in its expectations",
+        "Asks, in its one question message, how to confirm the setup — route-navigation tracking kept, one or two telemetry items named from this app's code (e.g. the Create note form or the GET /api/notes load), or nothing permanent — and, with no answer, proceeds with the temporary check",
+        "Confirms the setup with a temporary check: one marked temporary call and its schema entry, the live debug check listed for the user, then both removed — the final project has no temporary call, no setup-check name and nothing else left from the check",
+        "Supplies identity.version from the app's real version (e.g. a named import of the version in package.json, or a build-time define) and never reads an import.meta.env variable the app does not define, so the engine does not throw at startup",
+        "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a type-check",
+        "Ends by pointing the user to ui-watchtower-integration"
+      ]
+    },
+    {
+      "id": "angular-route-tracking-opt-in",
+      "category": "happy-path",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. Confirm the setup with route-navigation tracking, and keep it. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill wires the adapter as in the standalone happy path and, because the user asked for it, adds route-navigation tracking: the tracker and its Angular binding, route-template page views through ROUTE_PAGE_VIEW_RECORDER with disableAutoPageView: true in the credentials provider, the specs, and nothing else.",
+      "files": [
+        "evals/files/standalone-angular/angular.json",
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/src/app/app.config.ts",
+        "evals/files/standalone-angular/src/app/app.routes.ts",
+        "evals/files/standalone-angular/src/app/app.spec.ts",
+        "evals/files/standalone-angular/src/app/app.ts",
+        "evals/files/standalone-angular/src/app/customers/customer-detail.ts",
+        "evals/files/standalone-angular/src/app/customers/customers.ts",
+        "evals/files/standalone-angular/src/index.html",
+        "evals/files/standalone-angular/src/main.ts",
+        "evals/files/standalone-angular/src/styles.css",
+        "evals/files/standalone-angular/tsconfig.app.json",
+        "evals/files/standalone-angular/tsconfig.json",
+        "evals/files/standalone-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Does not ask again how to confirm the setup (the prompt chose route-navigation tracking)",
+        "Adds the tracker and its Angular binding from the assets, started with provideRouteNavigationTelemetry() next to provideRouter, with the scenario named customer-portal-route-navigate (kebab-case, the app's prefix) in the schema, the tracker and its spec",
+        "Reports /customers/:customerId as a route template, never a resolved id (the template used unchanged, or equivalent), and the route-navigation test asserts it",
+        "Binds ROUTE_PAGE_VIEW_RECORDER to UwtRumTelemetrySink.recordPageView and adds disableAutoPageView: true to the credentials provider and to its spec's expectations, so page views come only from the tracker",
+        "Copies route-navigation-tracker.spec.ts, route-navigation.angular.spec.ts and rum-credentials.provider.spec.ts next to their files",
+        "Instruments nothing else: no BI events and no other scenarios",
+        "Gives app.spec.ts telemetry providers if App now injects a telemetry service (otherwise NG0201), and leaves it unchanged if it doesn't",
+        "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
+      ]
+    },
+    {
+      "id": "angular-confirm-with-app-telemetry",
+      "category": "happy-path",
+      "prompt": "Set up ngx-ui-watchtower in this Angular app. RUM credentials come from GET /rum/init. We have no log backend. To check it works, track the Export CSV button. The project is in evals/files/standalone-angular.",
+      "expected_output": "Skill wires the adapter with RUM's automatic page views and confirms the setup with the one item the user picked: a BI event on the Export CSV button, declared, tracked directly in the component and tested — no routing code, nothing else instrumented.",
+      "files": [
+        "evals/files/standalone-angular/angular.json",
+        "evals/files/standalone-angular/package.json",
+        "evals/files/standalone-angular/src/app/app.config.ts",
+        "evals/files/standalone-angular/src/app/app.routes.ts",
+        "evals/files/standalone-angular/src/app/app.spec.ts",
+        "evals/files/standalone-angular/src/app/app.ts",
+        "evals/files/standalone-angular/src/app/customers/customer-detail.ts",
+        "evals/files/standalone-angular/src/app/customers/customers.ts",
+        "evals/files/standalone-angular/src/index.html",
+        "evals/files/standalone-angular/src/main.ts",
+        "evals/files/standalone-angular/src/styles.css",
+        "evals/files/standalone-angular/tsconfig.app.json",
+        "evals/files/standalone-angular/tsconfig.json",
+        "evals/files/standalone-angular/tsconfig.spec.json"
+      ],
+      "expectations": [
+        "Does not ask again how to confirm the setup (the prompt picked the Export CSV button)",
+        "Adds no route-navigation tracking (no tracker, binding, provideRouteNavigationTelemetry or ROUTE_PAGE_VIEW_RECORDER) and leaves disableAutoPageView unset, so RUM records its automatic page views",
+        "Tracks the export with UwtBITelemetryService injected in the customers component and track() called in exportCsv, under a kebab-case name with the app's prefix (e.g. customer-portal-export-clicked) declared in UwtBIEventNames, with only low-cardinality metadata (e.g. format)",
+        "Calls the service directly: no AppTelemetryService, facade or wrapper",
+        "A test asserts the BI event through a recording destination (its eventName and metadata), and any spec that now renders the customers component gets telemetry providers",
+        "Instruments nothing beyond the export (no other BI events or scenarios) and says the rest is ui-watchtower-integration's job",
+        "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a real type-check (tsc -p per tsconfig), not just ng test",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
+      ]
+    },
+    {
+      "id": "core-path-named-angular-package",
+      "category": "happy-path",
+      "prompt": "Add ngx-ui-watchtower telemetry to this app. RUM credentials come from GET /rum/init. The project is in evals/files/plain-ts.",
+      "expected_output": "Skill sees a plain TypeScript app, explains that ngx-ui-watchtower is the Angular adapter, and sets up the framework-free core instead: one engine module created at startup, no framework wrapper, RUM's automatic page views, and a confirmation that leaves nothing behind when nobody answers.",
+      "files": [
+        "evals/files/plain-ts/README.md",
+        "evals/files/plain-ts/index.html",
+        "evals/files/plain-ts/package.json",
+        "evals/files/plain-ts/src/auth.ts",
+        "evals/files/plain-ts/src/main.ts",
+        "evals/files/plain-ts/src/notes.spec.ts",
+        "evals/files/plain-ts/src/notes.ts",
+        "evals/files/plain-ts/tsconfig.json",
+        "evals/files/plain-ts/vite.config.ts"
+      ],
+      "expectations": [
+        "Explains that @absaoss-cps/ngx-ui-watchtower is the Angular adapter and uses the core @absaoss-cps/ui-watchtower instead, without installing the adapter",
+        "Installs @absaoss-cps/ui-watchtower and aws-rum-web (within the core's peer range) with npm",
+        "Creates one engine module that calls uwtCreateTelemetry once with a UwtRumTelemetrySink (from '@absaoss-cps/ui-watchtower/rum', init() called and not awaited), imported from src/main.ts, and builds no framework-style wrapper around it",
+        "Supplies identity.version from the app's real version (e.g. a named import of the version in package.json, or a build-time define) and never reads an import.meta.env variable the app does not define, so the engine does not throw at startup",
+        "Adds no route-navigation tracking (no tracker, binding or recordPageView) and leaves disableAutoPageView unset in the credentials provider and its spec, so RUM records its automatic page views",
+        "Asks, in its one question message, how to confirm the setup — route-navigation tracking kept, one or two telemetry items named from this app's code (e.g. the Create note form or the GET /api/notes load), or nothing permanent — and, with no answer, proceeds with the temporary check",
+        "Confirms the setup with a temporary check: one marked temporary call and its schema entry, the live debug check listed for the user, then both removed — the final project has no temporary call, no setup-check name and nothing else left from the check",
+        "Runs (or, where it cannot execute, lists for the user) the build, the unit tests and a type-check",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
+      ]
+    },
+    {
+      "id": "core-fragment-in-angular-shell",
+      "category": "happy-path",
+      "prompt": "Our catalogue fragment is a plain TypeScript app inside the Angular workspace shell. Set up ui-watchtower here so its telemetry goes through the shell. The project is in evals/files/plain-ts-fragment.",
+      "expected_output": "Skill recognises a framework-free fragment in an Angular shell, uses the core with one broadcast connection on the shell's channel (read from window.__uwtTelemetryChannel, with a private fallback) shared by the broadcast sink and log provider, its own application name and the shell's eventNamespace, nothing RUM-related and no routing code, confirms through the shell, and tells the user what the shell must provide.",
+      "files": [
+        "evals/files/plain-ts-fragment/README.md",
+        "evals/files/plain-ts-fragment/index.html",
+        "evals/files/plain-ts-fragment/package.json",
+        "evals/files/plain-ts-fragment/src/catalogue.spec.ts",
+        "evals/files/plain-ts-fragment/src/catalogue.ts",
+        "evals/files/plain-ts-fragment/src/main.ts",
+        "evals/files/plain-ts-fragment/tsconfig.json",
+        "evals/files/plain-ts-fragment/vite.config.ts"
+      ],
+      "expectations": [
+        "Recognises a fragment (from the README) whose shell uses the Angular adapter, and uses the core package @absaoss-cps/ui-watchtower here",
+        "Installs only @absaoss-cps/ui-watchtower — no aws-rum-web",
+        "Creates one engine module where one uwtConnectBroadcastChannel connection serves a UwtBroadcastTelemetrySink and a UwtBroadcastLogApiProvider, imported from src/main.ts",
+        "Takes the channel name from the shell: reads window.__uwtTelemetryChannel walking up window.parent, falling back to a private name — never undefined or the shared default channel",
+        "Uses an application name distinct from the shell (e.g. 'catalogue') and eventNamespace: 'com.workspace' from the README",
+        "Does not create a RUM sink, a credentials provider, a broadcast host or a log provider of its own, and does not call setUserId",
+        "Adds no route-navigation tracking",
+        "Confirms through the shell without leaving code behind when nobody answers (a temporary check, removed afterwards)",
+        "Supplies identity.version from the app's real version (e.g. a named import of the version in package.json, or a build-time define) and never reads an import.meta.env variable the app does not define, so the engine does not throw at startup",
+        "Tells the user the shell must publish window.__uwtTelemetryChannel (one id per page load) before the fragment boots, and that the fragment's off switch must match the shell's",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
       ]
     }
   ]

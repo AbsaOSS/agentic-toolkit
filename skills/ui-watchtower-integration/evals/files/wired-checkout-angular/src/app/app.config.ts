@@ -11,7 +11,7 @@ import { routes } from './app.routes';
 import {
   provideRouteNavigationTelemetry,
   ROUTE_PAGE_VIEW_RECORDER
-} from './telemetry/route-navigation-telemetry.service';
+} from './telemetry/route-navigation.angular';
 import { AppRumCredentialsProvider } from './telemetry/rum-credentials.provider';
 import './telemetry/telemetry.schema'; // side-effect import: the telemetry vocabulary
 
@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
     // with a growing, random wait for up to 5 minutes, on refresh every 30 s); a
     // disabled or invalid answer turns RUM off for the rest of the page.
     provideUwtTelemetryRumSink(),
-    { provide: UWT_RUM_CREDENTIALS_PROVIDER, useExisting: AppRumCredentialsProvider },
+    { provide: UWT_RUM_CREDENTIALS_PROVIDER, useClass: AppRumCredentialsProvider },
     // Page views under the route template (/summary), never the
     // resolved path; the credentials provider sets disableAutoPageView: true.
     {

@@ -2,7 +2,7 @@
 
 The public surface of `@absaoss-cps/ui-watchtower`, the framework-independent core (latest
 release, 0.1.0; if the installed typings differ, they win). It works in any frontend — plain
-JavaScript or TypeScript, React, Vue, any framework — and touches no browser global when
+JavaScript or TypeScript, in any framework — and touches no browser global when
 imported. An Angular app uses the adapter instead, `@absaoss-cps/ngx-ui-watchtower`
 (`ngx-ui-watchtower-api.md`), which wraps these same objects; everything below about behaviour
 (§3–§12) applies to it too. Import only from the entry points in §1 — no deep imports.
@@ -319,8 +319,10 @@ out: a new session with a new anonymous id, but only when someone was signed in,
 an auth state stream directly. Call it as early as possible — events carry `signedIn` only after the
 first call (§9).
 
-`destination.recordPageView(pageId)` exists for apps that set `disableAutoPageView: true` and record
-page ids (route templates) themselves — never alongside automatic page views. `dispose()` stops the
+Page views are automatic by default (RUM records one per page load and route change, under the URL
+path); leave `disableAutoPageView` unset. `destination.recordPageView(pageId)` is for an app that
+opts into recording route-template page ids itself: it sets `disableAutoPageView: true` — never
+both. `dispose()` stops the
 client.
 
 ## 8. Custom destination

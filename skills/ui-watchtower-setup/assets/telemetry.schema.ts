@@ -11,7 +11,8 @@
  *
  * Keep a side-effect import of this file (`import './telemetry.schema';`)
  * where telemetry is set up — the engine module, or the Angular providers —
- * and in the route-navigation tracker, so it can never become unreferenced.
+ * (and in the route-navigation tracker, if the app uses it), so it can never become
+ * unreferenced.
  *
  * Declare the names on the package the app imports: `@absaoss-cps/ui-watchtower`,
  * or `@absaoss-cps/ngx-ui-watchtower` in an Angular app (it re-exports the same
@@ -22,8 +23,9 @@ import type {} from '@absaoss-cps/ui-watchtower';
 
 declare module '@absaoss-cps/ui-watchtower' {
   interface UwtScenarioNames {
-    /** A router navigation, from click to activated route, under the final route template. */
-    'my-app-route-navigate': true;
+    // Only with route-navigation tracking (setup Step 6, option 1):
+    // /** A router navigation, from click to activated route, under the final route template. */
+    // 'my-app-route-navigate': true;
 
     // One entry per confirmed journey, <prefix>-<thing>-<action>, with a line saying what it measures:
     // /** Loading the customer list, from request to first render. */

@@ -2,8 +2,8 @@
 name: ui-watchtower-integration
 description: >
   Instruments a frontend app that already uses ui-watchtower — the Angular adapter
-  @absaoss-cps/ngx-ui-watchtower, or the framework-free core @absaoss-cps/ui-watchtower in React,
-  Vue, Svelte or plain TypeScript — with scenarios (user journeys) and BI events driven by the
+  @absaoss-cps/ngx-ui-watchtower, or the framework-free core @absaoss-cps/ui-watchtower in any
+  other app (any framework, or none) — with scenarios (user journeys) and BI events driven by the
   team's own questions: asks what they want to learn, scans the code for candidates, proposes a
   merged plan, implements after confirmation, and tests it. Use for "measure checkout", "track
   exports", "add journey/BI telemetry", "instrument this page". NOT for: installing or wiring the
@@ -27,7 +27,7 @@ These are **two separate concerns with two separate APIs**. A scenario measures 
 duration and settles with a status. A BI event only counts that something happened. Call the API
 for the concern at hand directly where the telemetry is needed — inject the service in Angular,
 use the app's engine (`telemetry.scenarios`, `telemetry.bi`) elsewhere — and never merge them
-behind an `AppTelemetryService`, a facade, a shared hook or composable, or a single `track…` API
+behind an `AppTelemetryService`, a facade, a shared wrapper module, or a single `track…` API
 unless the user explicitly asks for one — a merged API hides which concern a call is and which
 status it settles with.
 
@@ -66,8 +66,8 @@ Find which package the app uses, then check it is wired:
   bootstrap with `NG0201`.
 - **Anything else** (`@absaoss-cps/ui-watchtower`): one engine, created by `uwtCreateTelemetry(...)`
   with a destination at startup — usually an engine module such as `src/telemetry/telemetry.ts`
-  that exports `telemetry`. Note how the app's code reaches it (an import of that module, or the
-  app's own context or `provide`) and use the same way.
+  that exports `telemetry`. App code reaches it by importing that module; if the app already
+  passes it around another way, use that.
 
 If the package or its wiring is missing, stop and tell the user to run **`ui-watchtower-setup`**
 first. If only `telemetry.schema.ts` is missing, don't stop — create it in Step 6.
@@ -75,10 +75,12 @@ first. If only `telemetry.schema.ts` is missing, don't stop — create it in Ste
 Read what already exists so this pass only adds: the names in `telemetry.schema.ts` (and the prefix
 they share), and their uses — search each name, every injection of `UwtScenarioTelemetryService` /
 `UwtBITelemetryService` or use of `telemetry.scenarios` / `telemetry.bi`, and `traceScenario(`.
-Note the framework, the test runner and the package manager. Existing specs stay untouched, setup
+If setup added route-navigation tracking (a `<prefix>-route-navigate` scenario), navigations are
+already measured: add no second navigation scenario. Note the test runner and the package
+manager. Existing specs stay untouched, setup
 included (unless they now need a test engine, Step 7) — new tests go in their own `describe` with
-their own setup. If the app already wraps these APIs in its own telemetry service, hook or
-composable, list that under "Already instrumented", don't extend it or copy the pattern, and say
+their own setup. If the app already wraps these APIs in its own telemetry service or module,
+list that under "Already instrumented", don't extend it or copy the pattern, and say
 so in the proposal; write the new code against the two APIs directly unless the user tells you to
 follow the wrapper.
 
@@ -105,8 +107,8 @@ so in the proposal.
 
 Always do this scan, even when the user gave a complete list of what to track: their list says what
 they care about, only the code says how it can be wired and what else is worth measuring. Load
-`references/instrumentation-patterns.md`, read the routes, the components, services, hooks or
-composables in scope, and the HTTP calls behind them. Within the scope from Step 2, find candidates
+`references/instrumentation-patterns.md`, read the routes, the components, services and modules
+in scope, and the HTTP calls behind them. Within the scope from Step 2, find candidates
 with the table in §1 and classify each one as a scenario, a BI event, or both.
 
 Then map each user request to concrete code: which component or function, which call starts the
@@ -162,11 +164,11 @@ changed materially. Implement nothing before this.
 
 Follow `references/instrumentation-patterns.md`.
 
-**Use the two APIs directly.** Where a component, service, hook or composable needs telemetry, call
+**Use the two APIs directly.** Where a component, service or module needs telemetry, call
 the API for the concern at hand right there: in Angular, `inject()` `UwtScenarioTelemetryService`,
 `UwtBITelemetryService`, or both; elsewhere, import the app's engine and call `telemetry.scenarios`
-or `telemetry.bi`. Do not create an `AppTelemetryService`, facade, base class, shared hook or
-composable, or one `track…` API over both, and do not move the calls into a shared module.
+or `telemetry.bi`. Do not create an `AppTelemetryService`, facade, base class, shared wrapper, or
+one `track…` API over both, and do not move the calls into a shared module.
 Single-purpose helpers are fine (for example `safeHttpFailure`); a shared abstraction only if the
 user explicitly asks.
 
@@ -175,8 +177,8 @@ user explicitly asks.
    into names.
 2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw HTTP
    error object (§2, `safeHttpFailure`).
-3. In RxJS code, avoid the traps in §4. Settle open scenarios when their owner goes away (§5: Angular
-   `ngOnDestroy`, a React effect's cleanup, Vue's `onUnmounted` or a watcher's cleanup).
+3. In RxJS code, avoid the traps in §4. Settle open scenarios when their owner goes away or a
+   newer load replaces them (§5).
 4. BI events follow §6; names, metadata and privacy follow §7.
 5. Only if the app has a log backend (`UwtLoggerNames` declared): at a journey-ending error, also
    `logger.error(message, { error: safeHttpFailure(e).error, correlationId: scenario.id })` so log
@@ -219,9 +221,6 @@ from the user's original request and why.
   (`withTelemetryEnabled` in Angular, `enabled: false` on the core) turns telemetry off, scenarios
   never settle, `settled$` / `onSettled` never fire, `find` / `getActive` find nothing and `query()`
   resolves `[]`. If the live check shows no debug lines, check that switch first.
-- **React StrictMode** mounts every component twice in development: a scenario started in an effect
-  is first cancelled by its cleanup (`abandoned`) and started again. Expected in development only;
-  production builds record one.
 
 ## Out of scope
 
