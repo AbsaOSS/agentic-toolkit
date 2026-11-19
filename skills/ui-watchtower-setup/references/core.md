@@ -12,6 +12,9 @@ wrappers around it. The API is in `ui-watchtower-api.md` (the "API" below).
 - **TypeScript's `moduleResolution`**: `bundler`, `node16` or `nodenext` read the package's
   `exports`, which the `/rum` and `/rxjs` entry points need. With `node` / `node10`, those imports
   don't resolve — tell the user; changing it is their call.
+- **JavaScript files**: the schema (SKILL.md Step 4) checks names only where TypeScript checks the
+  call: `.ts` files, or `.js` files with `// @ts-check` (or `checkJs`) in a project that runs a
+  type-check. Elsewhere it documents the names but catches no typo; say so in the report.
 - **Entry module** (`src/main.ts`, `src/index.js`) and how the app reads its
   build-time config (`import.meta.env`, `process.env`, an `environment` file) — the identity and
   the off switch come from there.
@@ -70,7 +73,8 @@ export const telemetry = uwtCreateTelemetry({
 ```
 
 **Identity values.** `uwtCreateTelemetry` throws when `application`, `environment` or `version` is
-missing, so a value that is `undefined` at runtime blanks the page at startup. Take each from
+missing, even with `enabled: false`, so a value that is `undefined` at runtime blanks the page at
+startup. Take each from
 something that exists in every build, and check the built app, not only the tests:
 
 - `version`: the app's own `package.json` version, as above. Vite and esbuild bundle only the named
@@ -81,6 +85,9 @@ something that exists in every build, and check the built app, not only the test
   deployed build; if the app tells `qa` from `prod` some other way (a config file, a hostname map),
   use that. Don't read `import.meta.env.VITE_…` variables the app never defines: Vite leaves them
   `undefined`.
+- Identity from configuration that may be absent (a file a deployment can leave out): turn
+  `enabled` off when it is absent, and still give the engine an identity. A fixed `application`
+  and `''` for `environment` and `version` pass the check, and nothing is sent while off.
 - Derive nothing from browser globals unguarded (server rendering).
 
 Import it from the entry module (`import './telemetry/telemetry';`) so the engine exists before

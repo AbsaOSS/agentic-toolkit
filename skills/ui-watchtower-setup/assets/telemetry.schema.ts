@@ -6,8 +6,8 @@
  * an entry, a name not listed in it is a compile error.
  *
  * Names are kebab-case. Scenario, BI event and logger names start with the
- * app's prefix — `my-app` here: replace it with the confirmed one. Step names
- * have no prefix.
+ * app's prefix, `my-app` (the one confirmed in setup Step 1). Step names have
+ * no prefix.
  *
  * Keep a side-effect import of this file (`import './telemetry.schema';`)
  * where telemetry is set up — the engine module, or the Angular providers —

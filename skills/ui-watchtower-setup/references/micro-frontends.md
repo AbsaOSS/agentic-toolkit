@@ -70,6 +70,12 @@ export function shellChannelName(): string {
   starts (Web Fragments does) guarantees this.
 - A realm outside the shell's page (a popup window) can't walk to it: give it the shell's id
   another way.
+- **A fragment that can also run on its own** (opened at its own URL, with no shell): on the private
+  fallback it opens a channel, asks for the shell's identity and times scenarios, all for nobody.
+  Check once at startup whether a shell published a channel
+  (`!shellChannelName().startsWith('ui-watchtower-unhosted-')`) and make that part of the switch:
+  `enabled = <the app's switch> && shellFound`. That check is the app's code: test it as plain code
+  (a published channel → found, none → not found), not the telemetry while it is off.
 - Server rendering on the core path: Node has a `BroadcastChannel` too, so give the host, the
   connection and the broadcast classes `enabled: enabled && typeof window !== 'undefined'`. (The
   Angular adapter checks the platform itself.)
@@ -206,9 +212,11 @@ Inside a fragment:
 
 ## Verifying
 
-- On a first page load the shell host's `received` counter grows (Angular:
-  `inject(UwtTelemetryBroadcastHost).received`; core: `broadcastHost.received`), also when the
-  shell runs inside another app's iframe.
+- Once a fragment sends something (an event or a log record, e.g. the temporary setup check), the
+  shell host's `received` counter grows (Angular: `inject(UwtTelemetryBroadcastHost).received`;
+  core: `broadcastHost.received`), also when the shell runs inside another app's iframe. It
+  doesn't count a fragment's identity request at startup: a fragment that sends nothing leaves it
+  at 0.
 - Two tabs have two different `window.__uwtTelemetryChannel` values.
 - With the debug flags on, lines are prefixed per realm: `[shell][scenario] …`, `[cart][bi] …`.
 - `BroadcastChannel` is same-origin only: a fragment served from another origin forwards nothing,
