@@ -115,9 +115,10 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   empty-state targets at the relevant viewport sizes.
 - A button that only disables itself while its own action runs (Reload, Refresh) should stay enabled instead:
   disabling it drops focus and the ring for the whole loading time, and moving focus back afterwards leaves that gap.
-  The disabled state was also what stopped a second request, so keep that: ignore a press while loading. Otherwise
-  two requests race and the older reply can arrive last; after a delete, the deleted row comes back. Test it with a
-  slow response: a fast mock never shows either problem.
+  Preserve duplicate-request protection at the layer that owns it. Check whether the component library's loading
+  input already ignores another activation; if it does, don't add a second component guard. Otherwise prevent another
+  request while the first is in flight, since an older reply can arrive last (after a delete, the deleted row can
+  come back). With a slow response, test that focus stays on the enabled control and at most one request starts.
 - A list keyed by object identity rebuilds an item when an update returns a new object for it (toggling a vote), and
   the item's focused button goes with it. Key list items by a stable id.
 - A focus ring in the design system's brand color disappears on a bar of the same color (a branded page header).
@@ -197,11 +198,11 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
   it was drawn again), to the open dialog or the main landmark, with a `tabindex="-1"` that is removed again on
   blur. Focus must never fall to the top of the document. Checking whether a popup is visible fails while it
   animates closed. Remove the listeners when the app is destroyed.
-- Notification libraries often drop a message identical to one that is still open. Once errors stay open, the same
-  failure a second time may show nothing and not be read out. Keep one copy on screen and announce the repeated
-  message through a live announcer instead of stacking duplicates. If the stack is capped, verify that adding a
-  routine or transient notification cannot evict an important persistent error without leaving its information
-  available elsewhere; test the cap with several simultaneous failures.
+- Notification libraries may drop a message identical to one that is still open. Check whether important information
+  remains available and how a repeat is announced before changing that behavior. Do not add custom duplicate
+  announcements unless a demonstrated user need requires them and the library has no suitable behavior. If the stack
+  is capped, verify that adding a routine or transient notification cannot evict an important persistent error
+  without leaving its information available elsewhere; test the cap with several simultaneous failures.
 - Results that arrive later in a dialog (checks finishing, validation results) belong in a `role="status"` summary
   so they are announced without moving focus.
 - Form errors: put text next to the field, link it with `aria-describedby`, set `aria-invalid="true"`, and move

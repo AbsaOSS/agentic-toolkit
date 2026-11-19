@@ -190,7 +190,9 @@ Rules while fixing:
 1. **Add a scan per state** for this page in the project's accessibility test project, following the existing
    fixture and conventions. Mock only what the page needs. Add a focused test for behaviour axe cannot check
    (keyboard path, focus return, text-size layout) when you changed it. When you rewrite an existing test file,
-   keep its tests that still apply: compare the removed `it(`/`test(` lines in the diff before you finish.
+   keep its tests that still apply: compare the removed `it(`/`test(` lines in the diff before you finish. If you
+   intentionally remove behavior, also remove tests that exist only to assert that behavior and update docs or test
+   descriptions that still claim it; keep any unrelated assertions and coverage.
 2. **Prove the new tests catch the problems:** temporarily revert only the fix, run the new tests and confirm they
    fail; restore the fix and confirm they pass. A test that passes either way protects nothing: if it passes on
    the old code, the scenario misses the bug (the last page of a list, where the widget re-focuses and scrolls,
@@ -298,9 +300,10 @@ Step 4 passes, and no regressions in tests or screenshots.
   Keep errors and warnings open until closed (usually one setting in the app's notification wrapper; it is shared,
   so list it). Scan the page with the notification open. A notification that stays open can then cover the focused
   element (WCAG 2.4.11), typically a sticky footer under a bottom toast: Tab through the page with one open, and
-  let Esc close notifications without moving focus. Check the library's duplicate rule too: many drop a message that
-  is already open, so with errors that stay, a repeated failure is never shown or announced again. Read it out
-  again instead of stacking copies.
+  let Esc close notifications without moving focus. Check how the library handles duplicate messages and whether
+  users still have access to important information. Do not add custom re-announcement just because the library
+  suppresses a duplicate; add it only when a demonstrated user need requires it and the library offers no suitable
+  behavior. Prefer a supported announcement API over inspecting rendered notification DOM.
 - **Live regions need real spaces.** Frameworks that strip whitespace between elements can turn "1 source,
   0 replacements" into "1source0replacements" in the announced text. Check the region's `textContent`.
 - **Playwright's `fullPage` is not the full page.** Apps that scroll an inner container (a shell with a fixed
