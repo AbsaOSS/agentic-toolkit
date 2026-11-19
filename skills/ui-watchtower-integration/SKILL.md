@@ -172,7 +172,8 @@ one `track…` API over both, and do not move the calls into a shared module.
 Single-purpose helpers are fine (for example `safeHttpFailure`); a shared abstraction only if the
 user explicitly asks.
 
-1. Add every confirmed name to `telemetry.schema.ts` — kebab-case, scenario, BI and logger names
+1. Add every confirmed name to `telemetry.schema.ts`, adding a registry's interface if it isn't
+   there yet (API reference §1 lists them) — kebab-case, scenario, BI and logger names
    with the prefix (`references/instrumentation-patterns.md` §7), one JSDoc line each. Never interpolate ids
    into names.
 2. Settle every journey with the right status (§2) and shape it with §3; never pass a raw HTTP

@@ -181,7 +181,7 @@ const destination = new UwtBroadcastTelemetrySink({ identity, connection, enable
 const logApi = new UwtBroadcastLogApiProvider({ connection, enabled });
 export const telemetry = uwtCreateTelemetry({ identity, destination, logApi, enabled });
 
-/** Only if the shell unmounts this fragment while the page stays: from its unmount hook. */
+/** Only if the shell unmounts this fragment while the page stays: from its unmount hook (Web Fragments: see below). */
 export function disposeTelemetry(): void {
   telemetry.dispose();
   destination.dispose();
@@ -209,6 +209,18 @@ Inside a fragment:
   identity.
 - Don't settle a scenario on a paint (`requestAnimationFrame`): a fragment's hidden realm never
   paints — call `complete()` once the work is done.
+- **Web Fragments gives a fragment no unmount hook** (web-fragments 0.8.2,
+  [web-fragments#302](https://github.com/web-fragments/web-fragments/issues/302)). It moves the
+  fragment's `pagehide` listener to the shell's window, where it fires only when the whole page
+  goes away, and Chromium can refuse `unload`. So when the shell removes the fragment, nothing in
+  the fragment runs: the engine is never disposed (in Angular, nothing destroys the app, so
+  `ngOnDestroy` never runs) and scenarios still in flight are lost. The shell can patch its
+  web-fragments to dispatch an event in the fragment just before removal, on the fragment's shadow
+  root (where web-fragments delivers the fragment's `window` listeners); the fragment then
+  disposes from that event: `disposeTelemetry()` above, or `appRef.destroy()` in Angular. Say in
+  the report which case applies: with such a patch, that disposal depends on it; without one, that
+  removing the fragment loses the scenarios in flight and, in Angular, never destroys the app
+  (`ngOnDestroy` does not run).
 
 ## Verifying
 

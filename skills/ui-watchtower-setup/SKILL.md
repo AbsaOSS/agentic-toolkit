@@ -203,7 +203,9 @@ value from browser globals (e.g. hostname), guard it — this also runs during s
 Copy `assets/telemetry.schema.ts` next to the rest of the telemetry code (e.g.
 `src/telemetry/telemetry.schema.ts`; `src/app/telemetry/` in Angular). It augments the library's
 name registries, so scenario, step, BI event (and logger) names become compile-checked. Replace
-the template's `my-app` prefix with the one confirmed in Step 1. Setup declares only the names the
+the template's `my-app` prefix with the one confirmed in Step 1. Keep only the registries that get
+names, and drop the template's commented-out examples: they guide you and don't belong in the
+app. Setup declares only the names the
 telemetry kept in Step 6 uses — none for a temporary check; `ui-watchtower-integration` adds the
 app's own later.
 

@@ -82,7 +82,8 @@
         "Uses an application name distinct from the shell (e.g. 'cart')",
         "Sets eventNamespace: 'com.workspace', the shell's value from the README",
         "Does not add provideUwtTelemetryRumSink, UWT_RUM_CREDENTIALS_PROVIDER, provideUwtTelemetryBroadcastHost or UWT_LOG_API_PROVIDER",
-        "Does not install aws-rum-web"
+        "Does not install aws-rum-web",
+        "Tells the user that the shell embeds it with Web Fragments, so removing the fragment never destroys the Angular app (ngOnDestroy does not run) and loses the scenarios in flight unless the shell patches web-fragments to send an unmount event (web-fragments#302), and adds no unload or pagehide listener to dispose"
       ]
     },
     {
@@ -385,6 +386,33 @@
         "Confirms through the shell without leaving code behind when nobody answers (a temporary check, removed afterwards)",
         "Supplies identity.version from the app's real version (e.g. a named import of the version in package.json, or a build-time define) and never reads an import.meta.env variable the app does not define, so the engine does not throw at startup",
         "Tells the user the shell must publish window.__uwtTelemetryChannel (one id per page load) before the fragment boots, and that the fragment's off switch must match the shell's",
+        "Tells the user that the shell embeds it with Web Fragments, so removing the fragment disposes nothing and loses the scenarios in flight unless the shell patches web-fragments to send an unmount event (web-fragments#302), and adds no unload or pagehide listener to dispose",
+        "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
+      ]
+    },
+    {
+      "id": "core-fragment-removed-by-patched-shell",
+      "category": "happy-path",
+      "prompt": "Our catalogue fragment is a plain TypeScript app inside the Angular workspace shell, embedded with Web Fragments. The shell team patched web-fragments: just before the shell removes a fragment, the fragment receives a 'web-fragment-unmount' event on window. Set up ui-watchtower here so its telemetry goes through the shell and nothing is left behind when the shell removes the fragment. The project is in evals/files/plain-ts-fragment.",
+      "expected_output": "Skill sets up the framework-free fragment as usual (core, one broadcast connection on the shell's channel shared by the broadcast sink and log provider, nothing RUM-related) and disposes from the shell's event: one window listener for 'web-fragment-unmount', added once, runs the disposal: the engine, then the sink, the log provider and the connection. It adds no disposal on unload or pagehide, which Web Fragments does not deliver when it removes a fragment, and tells the user that disposal depends on the shell's patch.",
+      "files": [
+        "evals/files/plain-ts-fragment/README.md",
+        "evals/files/plain-ts-fragment/index.html",
+        "evals/files/plain-ts-fragment/package.json",
+        "evals/files/plain-ts-fragment/src/catalogue.spec.ts",
+        "evals/files/plain-ts-fragment/src/catalogue.ts",
+        "evals/files/plain-ts-fragment/src/main.ts",
+        "evals/files/plain-ts-fragment/tsconfig.json",
+        "evals/files/plain-ts-fragment/vite.config.ts"
+      ],
+      "expectations": [
+        "Creates one engine module where one uwtConnectBroadcastChannel connection, on the shell's channel (window.__uwtTelemetryChannel walking up window.parent, with a private fallback), serves a UwtBroadcastTelemetrySink and a UwtBroadcastLogApiProvider",
+        "Disposes in this order: the engine first, then the broadcast sink, the log provider and the connection (one function such as the skill's disposeTelemetry(), or the same four calls in one place)",
+        "Runs that disposal from one window listener for 'web-fragment-unmount', added once at startup (in the engine module or src/main.ts), never per component or per render",
+        "Adds no unload or pagehide listener to dispose: Web Fragments moves a fragment's pagehide listener to the shell's window and Chromium can refuse unload",
+        "Does not wrap the disposal or any telemetry call in try/catch (the channel-name helper's try/catch around reading a possibly cross-origin ancestor is fine)",
+        "Does not create a RUM sink, a credentials provider, a broadcast host or any log provider other than the broadcast one, and does not call setUserId",
+        "Tells the user that disposal relies on the shell's patched web-fragments sending 'web-fragment-unmount', in the final reply (report.md)",
         "Ends by pointing the user to ui-watchtower-integration for measuring the app's own journeys and interactions"
       ]
     }
