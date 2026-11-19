@@ -79,7 +79,7 @@ export function shellChannelName(): string {
 - Server rendering on the core path: Node has a `BroadcastChannel` too, so give the host, the
   connection and the broadcast classes `enabled: enabled && typeof window !== 'undefined'`. (The
   Angular adapter checks the platform itself.)
-- Current releases (core 0.1.0, adapter 0.5.0) need this. A later release may find the shell's
+- Current releases (core 0.1.0, adapter 0.5.1) need this. A later release may find the shell's
   channel by itself (ui-watchtower #29, unreleased); an explicit channel keeps working then.
 
 ## Shell
@@ -217,10 +217,12 @@ Inside a fragment:
   `ngOnDestroy` never runs) and scenarios still in flight are lost. The shell can patch its
   web-fragments to dispatch an event in the fragment just before removal, on the fragment's shadow
   root (where web-fragments delivers the fragment's `window` listeners); the fragment then
-  disposes from that event: `disposeTelemetry()` above, or `appRef.destroy()` in Angular. Say in
-  the report which case applies: with such a patch, that disposal depends on it; without one, that
-  removing the fragment loses the scenarios in flight and, in Angular, never destroys the app
-  (`ngOnDestroy` does not run).
+  disposes from that event: `disposeTelemetry()` above, or `appRef.destroy()` in Angular. In
+  Angular, that destroy sends the scenarios in flight from adapter 0.5.1. Older releases close the
+  channel before they settle (ui-watchtower #36), so there they are lost even with the patch:
+  suggest the upgrade. Say in the report which case applies: with such a patch, that disposal
+  depends on it; without one, that removing the fragment loses the scenarios in flight and, in
+  Angular, never destroys the app (`ngOnDestroy` does not run).
 
 ## Verifying
 

@@ -1,6 +1,6 @@
 # ngx-ui-watchtower API reference (Angular adapter)
 
-`@absaoss-cps/ngx-ui-watchtower` (latest release, 0.5.0; if the installed typings differ, they win)
+`@absaoss-cps/ngx-ui-watchtower` (latest release, 0.5.1; if the installed typings differ, they win)
 is the Angular adapter over the core `@absaoss-cps/ui-watchtower`: providers, injectable services
 and Observables around the same engine. Installing it installs the core — never add the core to an
 Angular app yourself. **Behaviour** (identity and defaults, scenarios, BI events, logging, the RUM
@@ -141,7 +141,7 @@ running destination (e.g. `setUserId`).
 
 ## 6. Not yet released
 
-In ui-watchtower #29 (open), not in 0.5.0. Use one only when the installed typings export it; never
+In ui-watchtower #29 (open), not in 0.5.1. Use one only when the installed typings export it; never
 wire it from this list alone:
 
 - `uwtScenarioHeaderInterceptor()`, `uwtScenarioContext(scenario)`, `UWT_DEFAULT_SCENARIO_HEADER`,
@@ -151,7 +151,7 @@ wire it from this list alone:
 - `provideUwtTelemetryRumSink({ traceHeaderExcludeUrls })` (`UwtRumSinkOptions`): keeps the trace
   header off a path.
 - `provideUwtTelemetrySink('broadcast')` following the shell's channel by itself; the X-Ray header
-  on relative same-origin URLs (in 0.5.0, only absolute ones get it, so most `HttpClient` calls
+  on relative same-origin URLs (in 0.5.1, only absolute ones get it, so most `HttpClient` calls
   don't); and the shell's RUM client tracing nested fragments' requests.
 
 ## 7. Testing

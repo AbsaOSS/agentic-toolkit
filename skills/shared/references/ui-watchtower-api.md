@@ -504,7 +504,7 @@ messages, for verification.
 
 ## 13. Not yet released
 
-These are in ui-watchtower #29 (open), not in core 0.1.0 or adapter 0.5.0. Use one only when the
+These are in ui-watchtower #29 (open), not in core 0.1.0 or adapter 0.5.1. Use one only when the
 installed package's typings have it; never wire it from this list alone:
 
 - Fragments that follow the shell's channel by themselves, with no `channelName`.
