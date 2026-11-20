@@ -85,22 +85,24 @@ describe('AppRumCredentialsProvider', () => {
         sessionEventLimit: '500',
         pageIdFormat: 'FULL_URL',
         sessionAttributes: { nested: { a: 1 } },
-        telemetries: [42],
         identityPoolId: 'eu-west-1:pool'
       }
     });
     expect((await load())?.config).toEqual(valid.config);
   });
 
+  // An invalid list must not fall back to the library's defaults (which include http).
   it.each([
     ['a number entry', [42]],
     // Options from JSON can't hold the RegExps and functions aws-rum-web expects.
     ['options from JSON', ['errors', ['http', { urlsToExclude: ['/health'] }]]],
     ['a name-only tuple', [['http']]],
-    ['an empty tuple', [[]]]
-  ])('drops telemetries that are not plain names: %s', async (_label, telemetries) => {
+    ['an empty tuple', [[]]],
+    ['a list among names', ['errors', ['http', { urlsToExclude: ['/health'] }]]],
+    ['not a list', 'errors']
+  ])('returns null for telemetries that are not plain names: %s', async (_label, telemetries) => {
     answer({ ...valid, config: { ...valid.config, telemetries } });
-    expect((await load())?.config).not.toHaveProperty('telemetries');
+    await expect(load()).resolves.toBeNull();
   });
 
   it('drops an out-of-range sample rate instead of passing it on', async () => {

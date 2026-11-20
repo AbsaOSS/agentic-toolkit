@@ -42,7 +42,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `RegExp`s and plugins (`pagesToInclude`, `eventPluginsToLoad`, …) can't travel as JSON — nor
  * can telemetry options (`['http', { urlsToExclude: [/\/health/] }]`): the SDK expects
  * `RegExp`s and functions there, and with a string in their place the library doesn't start RUM
- * for the page. Telemetries are kept as names only; set their options in code.
+ * for the page. Telemetries are kept as names only; set their options in code. A telemetries
+ * value that isn't a list of names turns RUM off in `load()`, not dropped: dropping it would
+ * restore the library's defaults, including http.
  */
 const NUMBER_SETTINGS = [
   'sessionLengthSeconds',
@@ -159,6 +161,11 @@ export class AppRumCredentialsProvider implements UwtRumCredentialsProvider {
       // Unparseable or already expired: RUM would reject every dispatch.
       !(Date.parse(credentials.expiration) > Date.now())
     ) {
+      return null;
+    }
+    // Anything but a list of names: dropping it would restore the library's default telemetries.
+    const telemetries = config['telemetries'];
+    if (telemetries != null && !(Array.isArray(telemetries) && telemetries.every(isString))) {
       return null;
     }
 

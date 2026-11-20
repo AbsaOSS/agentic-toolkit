@@ -212,11 +212,15 @@ the right status, leaving mid-journey gives `abandoned`, and a repeated identica
 BI event.
 
 Report what was instrumented (by source), what was proposed but not confirmed, and anything changed
-from the user's original request and why.
+from the user's original request and why. The final report repeats the `Scanned:` line and the
+proposal tables, so the user sees the proposal without opening the transcript.
 
 ## Gotchas
 
 - **Telemetry never throws into the app** — don't wrap calls in try/catch.
+- **Strict TypeScript:** many app tsconfigs set `noPropertyAccessFromIndexSignature`. Then a
+  recorded payload's keys must be read with brackets (`payload['error']`), not dots (`payload.error`),
+  or the specs fail to compile (TS4111). Run the spec type-check; passing tests don't prove it.
 - **App behaviour never depends on telemetry results.** Where the off switch
   (`withTelemetryEnabled` in Angular, `enabled: false` on the core) turns telemetry off, scenarios
   never settle, `settled$` / `onSettled` never fire, `find` / `getActive` find nothing and `query()`

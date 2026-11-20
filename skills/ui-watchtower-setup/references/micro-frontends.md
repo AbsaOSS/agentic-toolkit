@@ -70,6 +70,13 @@ export function shellChannelName(): string {
   starts (Web Fragments does) guarantees this.
 - A realm outside the shell's page (a popup window) can't walk to it: give it the shell's id
   another way.
+- **What to hand over, in words:** the fragment takes the shell's channel from the published name and
+  sends its events and logs through a broadcast sink on that channel to the shell's host. It never sends
+  them to a RUM client of its own.
+  When none is found it uses the private fallback channel, never the shared default channel (another
+  same-origin shell may listen there). And when the shell removes the fragment, nothing in it runs,
+  so scenarios still in flight are lost unless the shell patches web-fragments (see "Web Fragments
+  gives a fragment no unmount hook" below). Say both in the contract, not only in the code.
 - **A fragment that can also run on its own** (opened at its own URL, with no shell): on the private
   fallback it opens a channel, asks for the shell's identity and times scenarios, all for nobody.
   Check once at startup whether a shell published a channel

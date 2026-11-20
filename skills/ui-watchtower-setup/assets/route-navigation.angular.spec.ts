@@ -21,6 +21,8 @@ import {
   ROUTE_PAGE_VIEW_RECORDER
 } from './route-navigation.angular';
 
+// The app's name prefix from telemetry.schema.ts. Change it here when the app's prefix is not `my-app`.
+const APP_PREFIX = 'my-app';
 const events: { eventType: string; payload: Record<string, unknown> }[] = [];
 const pageViews: string[] = [];
 
@@ -146,7 +148,7 @@ describe('RouteNavigationTelemetryService', () => {
       expect.objectContaining({
         eventType: 'com.uwt.scenario',
         payload: expect.objectContaining({
-          scenarioName: 'my-app-route-navigate',
+          scenarioName: `${APP_PREFIX}-route-navigate`,
           status: 'success',
           route: '/customers',
           metadata: expect.objectContaining({ resolveMs: expect.any(Number) })

@@ -137,6 +137,8 @@ Ask the user only what the code cannot answer, in one message:
   3. nothing permanent — you check with temporary code and remove it.
 
   With no answer, use option 3: never assume routing or permanent telemetry is wanted.
+  The question itself names all three options in full, and the candidates from item 10 by their
+  real component and call. A bare "how should the setup be confirmed?" does not count as asking.
 
 ### Step 2 · Install
 
