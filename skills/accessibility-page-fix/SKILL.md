@@ -28,8 +28,9 @@ The user names the page to fix. Accept any of these and resolve it to a URL you 
 - a feature name ("the settings page") — find it in the router/navigation, confirm with the user if ambiguous
 
 If no page is given, ask for one. Do not audit the whole app. If the user wants several pages, do them one by one,
-each with its own Steps 1–6. A request to check a named page or part of it ("check the export dialog", "check that
-the failure states are covered") also asks you to fix what fails there, unless the user says to only report.
+each with its own Steps 1–6. A request to check, verify or prove something on a named page ("check the export
+dialog", "check that the failure states are covered", "prove the layout is unchanged") also asks you to fix what
+fails there, and to check again after the fix, unless the user says to only report.
 
 ## Workflow
 
@@ -150,8 +151,9 @@ three also take `--click "<selector>;;<selector>"` (clicks to open a menu or dia
   test the real scroll behavior, including expanded and collapsed navigation, rather than only checking CSS classes.
 - **Structure:** one `h1`, headings in order, landmarks present (`header`, `nav`, `main`), lists and tables use
   real elements, reading order matches visual order.
-- **Dynamic content:** status and error messages reach screen readers without stealing focus; focus moves
-  sensibly when content opens, closes or is replaced. After a delayed action removes the focused item, test that
+- **Dynamic content:** status and error messages reach screen readers without stealing focus, through the
+  design system's live announcer when it has one (add `role="status"` or `role="alert"` only when it has none); the
+  announced text has real spaces between its parts; focus moves sensibly when content opens, closes or is replaced. After a delayed action removes the focused item, test that
   focus moves to the next/previous item or a meaningful heading, and that it does not steal focus if the user moved
   elsewhere while the action was pending.
 - **Pointer:** targets are at least 24×24 CSS px (or have enough spacing); nothing needs a drag as the only way.
