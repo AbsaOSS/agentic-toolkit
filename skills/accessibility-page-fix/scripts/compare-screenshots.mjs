@@ -177,6 +177,10 @@ async function diffFolders(beforeDir, afterDir, outDir) {
       results.push({ name, status: `${result.changed} pixels differ in ${result.regions.length} region(s)${shown.join('')}${more}` });
     }
   }
+  // A screenshot taken only on the "after" side was never compared
+  for (const name of fs.readdirSync(afterDir).filter(f => f.endsWith('.png') && !fs.existsSync(path.join(beforeDir, f)))) {
+    results.push({ name, status: `missing in ${beforeDir}` });
+  }
   await browser.close();
   return results;
 }

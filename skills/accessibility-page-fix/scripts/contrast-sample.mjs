@@ -6,13 +6,13 @@
 // Usage (run from the app directory):
 //   node <skill>/scripts/contrast-sample.mjs <url> <css-selector> [--wait <selector>] [--storage <state.json>]
 //        [--color <css color>]   text color override, e.g. for placeholders: --color "rgb(255,255,255)"
-//        [--inset 4]
+//        [--inset 4] [--click "<selector>;;<selector>"]   clicks to open a menu or dialog first
 import { openPage, parseArgs } from './_shared.mjs';
 
 const { positional, flags } = parseArgs(process.argv.slice(2), { inset: 4 });
 const [url, selector] = positional;
 if (!url || !selector) {
-  console.error('Usage: contrast-sample.mjs <url> <css-selector> [--wait <selector>] [--storage <state.json>] [--color <css color>] [--inset 4]');
+  console.error('Usage: contrast-sample.mjs <url> <css-selector> [--wait <selector>] [--storage <state.json>] [--color <css color>] [--inset 4] [--click <selectors>]');
   process.exit(2);
 }
 const { browser, page } = await openPage(url, flags);
@@ -23,13 +23,23 @@ if (!(await target.count())) {
   process.exit(2);
 }
 
-const info = await target.evaluate(el => {
+// An element below the fold can't be screenshotted where it is
+await target.scrollIntoViewIfNeeded();
+const info = await target.evaluate((el, override) => {
   const cs = getComputedStyle(el);
   const ph = el.matches('input,textarea') && el.placeholder && !el.value ? getComputedStyle(el, '::placeholder') : null;
   const r = el.getBoundingClientRect();
-  return { color: (ph ?? cs).color, fontSize: parseFloat(cs.fontSize), fontWeight: Number(cs.fontWeight) || 400, box: { x: r.x, y: r.y, width: r.width, height: r.height } };
-});
-const textColor = (flags.color ?? info.color).match(/[\d.]+/g).slice(0, 3).map(Number);
+  // Let the browser turn any CSS color (oklch(), color-mix(), a name) into RGBA; a regex over the text would read
+  // oklch(0.85 0 0) as rgb(0.85, 0, 0) and ignore the alpha of rgba()
+  const canvas = document.createElement('canvas').getContext('2d');
+  canvas.fillStyle = override ?? (ph ?? cs).color;
+  canvas.fillRect(0, 0, 1, 1);
+  const [red, green, blue, alpha] = canvas.getImageData(0, 0, 1, 1).data;
+  return { color: [red, green, blue, alpha / 255], fontSize: parseFloat(cs.fontSize), fontWeight: Number(cs.fontWeight) || 400, box: { x: r.x, y: r.y, width: r.width, height: r.height } };
+}, flags.color ?? null);
+const [textAlpha, textColor] = [info.color[3], info.color.slice(0, 3)];
+// Semi-transparent text shows the background through it: blend it over each background pixel
+const shown = bg => textColor.map((c, i) => c * textAlpha + bg[i] * (1 - textAlpha));
 
 // Make the element's text invisible (also placeholder and child text) but keep its own background, then sample.
 await page.evaluate(selector => {
@@ -78,13 +88,13 @@ const ratio = (a, b) => {
 };
 let worst = { r: Infinity, bg: null };
 for (const bg of pixels) {
-  const r = ratio(textColor, bg);
+  const r = ratio(shown(bg), bg);
   if (r < worst.r) worst = { r, bg };
 }
 const large = info.fontSize >= 24 || (info.fontSize >= 18.66 && info.fontWeight >= 700);
 const need = large ? 3 : 4.5;
 console.log(`element: ${selector}`);
-console.log(`text color rgb(${textColor}), ${info.fontSize}px, weight ${info.fontWeight} -> ${large ? 'large' : 'normal'} text, needs ${need}:1`);
+console.log(`text color rgb(${textColor})${textAlpha < 1 ? ` at ${Math.round(textAlpha * 100)}% opacity` : ''}, ${info.fontSize}px, weight ${info.fontWeight} -> ${large ? 'large' : 'normal'} text, needs ${need}:1`);
 console.log(`${pixels.length} distinct background colors sampled; worst case rgb(${worst.bg}) -> ${worst.r.toFixed(2)}:1`);
 console.log(worst.r >= need ? 'PASS' : 'FAIL: below the required ratio at its worst point');
 await browser.close();

@@ -85,6 +85,20 @@ const measure = scope =>
       const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
       const clips = ['hidden', 'clip'].includes(cs.overflowX) || ['hidden', 'clip'].includes(cs.overflowY);
       if (hasText && clips && cs.textOverflow !== 'ellipsis' && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) issues.push(`clipped text: ${label(el)} (content ${el.scrollWidth}x${el.scrollHeight}, box ${el.clientWidth}x${el.clientHeight})`);
+      // A fixed-height box (a card, a dialog) whose text sits in child elements: report text that ends below its edge
+      else if (clips && el.scrollHeight > el.clientHeight + 1) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.textContent.trim() || !node.parentElement?.checkVisibility()) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const box = range.getBoundingClientRect();
+          if (box.height && box.bottom > r.bottom + 1) {
+            issues.push(`clipped text: ${label(el)} cuts off "${node.textContent.trim().replace(/\s+/g, ' ').slice(0, 28)}" (content ${el.scrollHeight}px tall, box ${el.clientHeight}px)`);
+            break;
+          }
+        }
+      }
       if (hasText && cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) issues.push(`truncated with "…": ${label(el)} (check the full text is still available)`);
       if (el.matches('input,textarea') && el.placeholder && !el.value) {
         canvas.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
