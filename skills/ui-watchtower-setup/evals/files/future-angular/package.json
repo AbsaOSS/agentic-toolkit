@@ -1,0 +1,23 @@
+{
+  "name": "customer-portal",
+  "version": "1.4.0",
+  "scripts": { "start": "ng serve", "build": "ng build", "test": "ng test" },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^24.0.0",
+    "@angular/compiler": "^24.0.0",
+    "@angular/core": "^24.0.0",
+    "@angular/platform-browser": "^24.0.0",
+    "@angular/router": "^24.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^24.0.0",
+    "@angular/cli": "^24.0.0",
+    "@angular/compiler-cli": "^24.0.0",
+    "jsdom": "^28.0.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.8"
+  }
+}
