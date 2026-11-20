@@ -131,6 +131,8 @@ three also take `--click "<selector>;;<selector>"` (clicks to open a menu or dia
   with a visible focus indicator that is not hidden behind sticky UI. No keyboard traps. Enter/Space/Esc/arrow
   keys work as users expect for buttons, menus, dialogs and widgets. Open **every** menu, dropdown and dialog with
   the keyboard and check where focus lands (inside it, not on `<body>`) and where it returns on Esc (the opener).
+  In arrow-driven widgets, check that expected visual and accessible state changes happen promptly without another
+  interaction.
 - **Names, roles, values:** each control has an accessible name (check the accessibility tree, not just the
   markup), the right role, and its state exposed (expanded, selected, checked, busy, current).
 - **Text size and reflow:** set the browser/root font size to 200% and the viewport to 320 CSS px wide. All text
@@ -196,12 +198,15 @@ Rules while fixing:
    intentionally remove behavior, also remove tests that exist only to assert that behavior and update docs or test
    descriptions that still claim it; keep any unrelated assertions and coverage.
 2. **Prove the new tests catch the problems:** temporarily revert only the fix, run the new tests and confirm they
-   fail; restore the fix and confirm they pass. A test that passes either way protects nothing: if it passes on
-   the old code, the scenario misses the bug (the last page of a list, where the widget re-focuses and scrolls,
-   instead of a middle page), so change the scenario, not the assertion. Check a suspected issue on every page you
+   fail; restore the fix and confirm they pass. If a test passes on the old code, check that it exercises the reported
+   environment, state and interaction sequence (the last page of a list, where the widget re-focuses and scrolls,
+   instead of a middle page); change the scenario, not the assertion. Check a suspected issue on every page you
    plan to fix it on: a detail such as a sticky footer can make it a non-issue there. A probe can be wrong too:
-   pressing a button that is still disabled looks like lost focus. If no scenario fails on the old code, the problem
-   isn't there: remove the fix, and keep the test only as a scan of that state. If the new tests fail early
+   pressing a button that is still disabled looks like lost focus. For timing-sensitive problems, include repeated
+   visits where relevant and retry within a fixed limit: a single passing run does not disprove the problem. If the
+   correct conditions still cannot reproduce it, report the result as inconclusive rather than claiming the issue is
+   absent or the fix verified. Remove a fix for a page only when the issue has been shown not to apply there; keep
+   the test only as a scan of that state. If the new tests fail early
    for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
    something else, so the scans themselves run against the old code and report the real problems.
 3. Use fake timers for timer-based behavior where the test runner supports them: install the clock before the

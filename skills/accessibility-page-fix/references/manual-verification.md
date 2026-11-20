@@ -79,7 +79,11 @@ order is logical or the indicator is strong enough; look at those yourself.
    reading order.
 3. Shift+Tab backwards through the same path; the order should reverse.
 4. Operate each control with the keys users expect: Enter/Space on buttons, Enter on links, arrows inside menus,
-   tabs and radio groups, Esc to close menus and dialogs.
+   tabs and radio groups, Esc to close menus and dialogs. After each arrow, check that any expected change to focus,
+   the active highlight, exposed state (such as `aria-activedescendant`, where used), or content happens promptly;
+   focus can move while the rendered highlight or content lags. For affected embedded widgets, compare the real host
+   with standalone. In a regression test, assert within a bounded, user-meaningful time without extra clicks,
+   manually forcing change detection, or unrelated events between the key and the assertion, which can mask the lag.
 5. Open every menu/dialog, confirm focus moves in, Esc closes, and focus returns to the opener.
 6. Make sure Tab never gets stuck (outside of an open modal dialog) and never lands on something invisible or
    off-screen.
@@ -212,9 +216,13 @@ Inside the host, also check what a standalone run can't show:
   An observer added by a fix (re-applying ARIA, watching a carousel) is a typical trigger.
 - **Links and navigation.** Activate every link and button that navigates, through the host, and check where you
   land. A URL built from the app's own routes can lose the host's path prefix and open a host page instead.
-- **History.** The host may replace history state or fire its own `popstate`. If a fix saves a position for the
-  return trip (page number, focused item), test app Back, browser Back and Back → Forward → Back through the host,
-  not only the in-app Back button.
+- **History.** The host may replace history state or fire its own `popstate`, including after a state-only write.
+  If a fix saves a position for the return trip (page number, focused item), verify it is restored after app Back,
+  browser Back and Back → Forward → Back through the host. For navigation or history changes, test a cold visit in a
+  fresh session and a repeated visit of the same destination after returning, starting from a non-default position
+  where applicable. Confirm the expected page and URL stay stable on both visits. If the URL oscillates or the browser
+  throttles navigation, collect a time- or count-bounded trace of history writes and navigation events to inspect the
+  host/fragment sequence; don't disable browser flood protection or assume caching is the cause.
 
 ## Target size
 
