@@ -1,0 +1,25 @@
+/* Design tokens of the UI kit. */
+:root {
+  /* Brand */
+  --uk-orange-50: #fff3e0;
+  --uk-orange-100: #ffe0b2;
+  --uk-orange-500: #f7931e;
+  --uk-orange-600: #b35c00;
+  --uk-orange-700: #9a4d00;
+
+  /* FINAL: approved by the design owner (2026-09). Do not change this value. */
+  --uk-primary: #2563eb;
+  --uk-on-primary: #ffffff;
+
+  --uk-gray-50: #f8f9fb;
+  --uk-gray-100: #eef0f4;
+  --uk-gray-300: #cfd5df;
+  --uk-gray-500: #8a94a6;
+  --uk-gray-700: #4a5568;
+  --uk-gray-900: #1a202c;
+  --uk-danger: #e57373;
+  --uk-success: #4caf50;
+
+  --uk-focus-ring: 0 0 0 3px #1d4ed8;
+  --uk-radius: 6px;
+}

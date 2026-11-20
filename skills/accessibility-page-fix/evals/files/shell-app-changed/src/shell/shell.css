@@ -1,0 +1,15 @@
+/* App shell: a fixed top bar and a fixed left sidebar; pages scroll inside .shell__content. */
+.shell__topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: #1e293b; color: #fff; z-index: 10; white-space: nowrap; }
+.shell__logo { width: 28px; height: 28px; }
+.shell__name { font-weight: bold; font-size: 1rem; }
+.shell__breadcrumb { color: #94a3b8; }
+.shell__version { margin-left: auto; color: #64748b; font-size: 0.75rem; }
+.shell__user { display: flex; align-items: center; gap: 8px; }
+.shell__user .uk-menu-trigger { color: #cbd5e1; }
+.shell__sidebar { position: fixed; top: 56px; left: 0; bottom: 0; width: 240px; background: #fff; border-right: 1px solid var(--uk-gray-300); padding: 16px 0; box-sizing: border-box; }
+.shell__nav a { display: block; padding: 10px 24px; color: var(--uk-gray-700); text-decoration: none; }
+.shell__nav a:hover { background: var(--uk-gray-100); }
+.shell__nav a.active { color: var(--uk-primary); font-weight: bold; background: #eff6ff; }
+.shell__content { position: fixed; top: 56px; left: 240px; right: 0; bottom: 0; overflow: auto; }
+.page { padding: 24px 32px; }
+.page__title { font-size: 1.5rem; font-weight: bold; margin-bottom: 16px; }

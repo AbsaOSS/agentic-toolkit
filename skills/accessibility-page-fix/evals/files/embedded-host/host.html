@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Partner portal</title>
+    <link rel="stylesheet" href="/src/host/host.css" />
+  </head>
+  <body class="host-portal">
+    <header class="host-header"><a class="host-brand" href="/host/home">Partner portal</a></header>
+    <div class="host-body">
+      <nav class="host-nav" aria-label="Portal">
+        <a href="/host/home">Home</a>
+        <a href="/host/curation/orders" aria-current="page">Curation</a>
+        <a href="/host/billing">Billing</a>
+      </nav>
+      <main class="host-main">
+        <curation-app></curation-app>
+      </main>
+    </div>
+    <script type="module" src="/src/host/host.ts"></script>
+  </body>
+</html>
