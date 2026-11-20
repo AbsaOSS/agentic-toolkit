@@ -23,8 +23,13 @@ Finish every run with a report in this shape. Keep it short and factual; use pla
 | Item | Other places that use it | How checked |
 |---|---|---|
 
-### Visual changes
+### Visual and behaviour changes
 - <intended changes users will notice, e.g. darker arrow color>
+- <behaviour users lose, e.g. Tab no longer indents list items in the editor>
+
+### Reused or checked before adding
+- <existing helpers, tokens and services searched for and what was reused, e.g. the sr-only class; announcements
+  that already existed, e.g. the toast container is already a live region>
 
 ### Not fixed / needs a decision
 | Issue | Why | Owner / next step |
@@ -36,6 +41,8 @@ Finish every run with a report in this shape. Keep it short and factual; use pla
 ### Tests added or changed
 - <scans per state, keyboard or text-size tests, unit tests>
 - Fail-before / pass-after: <confirmed by reverting the fix, new tests failed; restored, they pass>
+- Evidence of the checks: <exit codes and error text of commands that should fail, base compared with itself,
+  screenshot heights against the viewport>
 
 ### How to verify
 <commands to run, plus 3-5 manual steps>

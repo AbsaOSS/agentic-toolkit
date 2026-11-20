@@ -23,7 +23,7 @@ fs.mkdirSync(flags.out, { recursive: true });
 
 const SETTINGS = [
   { name: 'baseline (100%)', viewport: { width: 1440, height: 900 }, css: '' },
-  { name: '200% text', viewport: { width: 1440, height: 900 }, css: 'html, wf-html { font-size: 200% !important; }' },
+  { name: '200% text', viewport: { width: 1440, height: 900 }, css: 'html { font-size: 200% !important; }' },
   { name: '320px wide', viewport: { width: 320, height: 640 }, css: '' },
   { name: 'short viewport', viewport: { width: 320, height: 256 }, css: '' },
   {
@@ -172,7 +172,7 @@ const fixedSizeText = scope => {
   const roots = [document, ...allElements.filter(el => el.shadowRoot).map(el => el.shadowRoot)];
   const styles = roots.map(root => {
     const style = document.createElement('style');
-    style.textContent = 'html, wf-html { font-size: 200% !important; } *, *::before, *::after { transition: none !important; }';
+    style.textContent = 'html { font-size: 200% !important; } *, *::before, *::after { transition: none !important; }';
     (root instanceof Document ? root.head : root).appendChild(style);
     return style;
   });

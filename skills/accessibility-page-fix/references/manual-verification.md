@@ -287,8 +287,8 @@ node <skill>/scripts/compare-screenshots.mjs compare shots /orders "/orders@@#ex
 ```
 
 4. Investigate **every** pair that differs. Open `shots/diff/<name>.png` (changed pixels in red) and the two
-   originals; measure the element boxes and computed styles in both builds; find the rule in your diff that causes
-   it. Classify each difference:
+   originals; measure the element boxes and computed styles in both builds at that pair's width (`boxes --viewport`);
+   find the rule in your diff that causes it. Classify each difference:
    - **intended** (new focus ring, darker color, larger target): list it in the report;
    - **regression** (shifted layout, changed spacing, lost icon): fix it and compare again;
    - **noise** (animation frame, loading state, time-dependent text): stabilise the capture and compare again.

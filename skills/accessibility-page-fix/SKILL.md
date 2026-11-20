@@ -28,7 +28,8 @@ The user names the page to fix. Accept any of these and resolve it to a URL you 
 - a feature name ("the settings page") — find it in the router/navigation, confirm with the user if ambiguous
 
 If no page is given, ask for one. Do not audit the whole app. If the user wants several pages, do them one by one,
-each with its own Steps 1–6.
+each with its own Steps 1–6. A request to check a named page or part of it ("check the export dialog", "check that
+the failure states are covered") also asks you to fix what fails there, unless the user says to only report.
 
 ## Workflow
 
@@ -72,7 +73,8 @@ Copy this checklist and track progress:
    when it uses an open shadow root, that the checks reached into it. If the root is closed, use the host's supported
    test hooks and verify through browser-visible behavior; don't report an empty DOM query as a pass.
 6. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
-   mock a short token lifetime to get a session-expired dialog, mock an empty response for the empty state
+   return a short-lived token from the mocked sign-in request to get a session-expired dialog (writing the token into
+   storage skips the code that reads it), mock an empty response for the empty state
    ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
    For **failure states**, go through every request the page and its dialogs make, and read what its error handler
    shows. Check app-wide error handling (HTTP interceptors, global error handlers) first: some failures replace
@@ -101,7 +103,6 @@ For each group, note the WCAG criterion, the affected elements, and where the fi
 | A shared component or global style used by other pages | Fix at the root, but first find every consumer and decide whether the change is safe for all of them (see Gotchas). |
 | A third-party library you cannot edit | Fix through its supported options, wrap it, or adjust the DOM it renders; never patch `node_modules`. |
 | A design decision (colors, sizes) | Prefer existing design tokens. If none fits, propose the smallest change and flag it for the design owner. |
-| Shared code another open, unmerged change already fixes | Reuse that change **byte for byte** (copy the files from its branch) instead of fixing it again differently: identical changes merge without conflicts. Put anything extra in separate blocks. |
 
 Each **incomplete** result is a question for a human: check it by hand (Step 4) and decide — never ignore it,
 never silence the rule. Details in [references/fix-patterns.md](references/fix-patterns.md#incomplete-results).
@@ -121,7 +122,9 @@ verdicts:
 | `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
-look for) and `--storage <state.json>` (a saved Playwright login state for pages behind authentication). The first
+look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
+`--init <file.js>` (a script that runs before the page's own code, for a login kept in `sessionStorage`, which a
+saved login state cannot hold). The first
 three also take `--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking);
 `compare-screenshots` takes the clicks per path instead (`/orders@@#export;;#next`). If a requested `--wait` or
 `--click` target is missing, the script fails instead of silently checking a different state. `text-size-check` also takes
@@ -165,8 +168,7 @@ perceivability, then polish). For each group:
    for something that already does the job — a screen-reader-only class, a focus-ring mixin, color tokens, a
    component option for accessible names — and reuse it instead of adding a new one. This matters most for
    behaviour: if the design system ships accessibility services (focus management, a live announcer, focus
-   trapping, root-font-size tracking), use them, through their injection tokens or public API, instead of local
-   code. List its exports once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`).
+   trapping, root-font-size tracking), use them through their public API instead of local code. List its exports once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`).
    Check the design system's newer releases and changelog too: a fix you are about to work around may already be
    released. When a library component fails because of a local style override (a recoloured menu, a custom
    button), try removing the override before patching it: the library default often passes as it is.
@@ -232,11 +234,10 @@ Rules while fixing:
    in a table, and share helpers, but re-run the revert proof for any check you rewrote.
 4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
 5. Report using [references/report-template.md](references/report-template.md): what was found, what was fixed,
-   what remains and why, observations that are not failures, shared code touched, and visual changes. If CI fails
-   on the pull request, check which jobs ran: jobs that never started (a missing runner or registry) are a CI setup
-   problem, not a test result, and the report says so. The same goes for a job the runner stopped mid-run (a
-   "shutdown signal" or "operation was canceled" in the log): it is marked failed, but no test failed. Read the log
-   for real test failures before changing code, and re-run only the failed jobs.
+   what remains and why, observations that are not failures, shared code touched, visual changes, behaviour users
+   lose, and what you looked for before adding something (existing helpers and services, notifications that already
+   announce themselves). Write down the evidence of each check where you ran it (a command's exit code and error,
+   the screenshot height, the base compared with itself): a check with no record can't be told from one never run.
 
 Done means: all scans for the page's states pass with no violations, every incomplete is resolved or explained,
 Step 4 passes, and no regressions in tests or screenshots.
@@ -278,8 +279,6 @@ Step 4 passes, and no regressions in tests or screenshots.
   Below a breakpoint, switch the shell to normal flow (header wraps, page scrolls, sidebar collapses), leaving the
   desktop layout untouched. Making the header static is not enough: its own row of logo, breadcrumb, version and
   user menu must wrap too, or it alone makes the page twice as wide.
-- **Branch from the right base, without tracking main.** A branch created from `origin/main` tracks it, so a plain
-  push sends commits to `main`. Create fix branches with `--no-track` and push with `-u origin <branch>`.
 - **One component, several contexts.** Landmarks and headings that are right for a page are wrong inside a dialog
   (a second `main`, a second `h1`). Make them depend on the context, and scan the dialog on its own with
   axe's `include` so the page behind it does not add noise.
@@ -324,9 +323,6 @@ Step 4 passes, and no regressions in tests or screenshots.
   so a difference can only come from code. `--detach` matters: a worktree that holds a branch stops anyone checking
   that branch out elsewhere. A saved login is per origin: put both origins in the state file. The worktree is only
   for running the base: make the fix itself on a branch in the user's own checkout.
-- **A fix to a copied shared file goes to every copy.** When parallel branches carry byte-identical copies of a
-  shared file, make the fix once, apply the same change to every branch that carries it, and run each branch's own
-  tests on its own code (a detached worktree with its own dev server), so the copies stay identical.
 - **Shared global styles.** Converting a shared stylesheet from px to rem renders the same pixels at the default
   size and fixes every page that uses it. Prove it with screenshots of those pages, and list them as shared code.
 - **Placeholder is not a label.** Inputs labelled only by a placeholder need an accessible name (visible label,

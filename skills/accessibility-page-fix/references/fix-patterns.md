@@ -166,39 +166,19 @@ Accessible name priority: visible text content → `aria-labelledby` → `aria-l
 - Notifications: keep error and warning information available long enough for users to perceive and act on it
   (WCAG 2.2.1); routine success messages can close on their own. A brief hint may be transient if it is not
   essential information and remains available elsewhere, such as inline validation beside the field. The close
-  button needs a name and a 24×24 px target. Persistent notifications can cover the
-  focused element (WCAG 2.4.11): make Esc close them without moving focus, or place them where they cover nothing
-  interactive. When the notification service belongs to a design system you can change, fix it there, not in each
-  app. Until that release ships, an app-level listener in the app's notification wrapper can stand in; mark it as
-  temporary and delete it on upgrade. Esc closes one layer at a time, top first, the same way whatever is on screen:
-  an open menu, list or tooltip, or a drag in progress first, then whichever of the notifications and the dialog or
-  side panel is on top. That order is not fixed: a dialog opened after the notifications sits above them, and Esc
-  must close it, not the notifications under it. Ask the overlay library's own stacking order (a shared z-index
-  stack: compare the notification container's z-index with the current top) instead of assuming notifications are
-  always on top, and test a dialog opened over an open error. Don't take Esc only when a notification overlaps the
-  focused element: overlap changes with scrolling, zoom and window size, screen-reader users can't see it, and an
-  error shown beside a dialog's form would let Esc close the dialog and discard the form while the error stays.
-  Inside the library, let every popup that handles Esc (menu, list, table drag, dialog) call `preventDefault()`.
-  Have the notification service listen on `window`, in the bubble phase so it runs after them. It skips an Esc that
-  is already `defaultPrevented` or when the notifications aren't on top. Otherwise it closes them and calls
-  `preventDefault()`, so the dialog under them stays open with its form intact. Check every Esc handler, not only
-  the popups: a component that closes its menu from its own key handler runs first, so the menu is already closed
-  when its listener looks and doesn't mark the Esc; that component must call `preventDefault()` itself. A listener
-  added while an Esc is being dispatched (the first notification, shown by an Esc handler that closed a panel,
-  starts the listening) still receives that Esc on `window` and closes the new notification at once: remember
-  `window.event` when a notification is shown and skip that event. An app can't change library popups, so its
-  stopgap listener works the other way round: it runs first, in the capture phase. It skips when focus is inside a
-  popup or on a control whose popup is open (`aria-expanded="true"` together with `role="combobox"` or
-  `aria-haspopup`; a section that expands in place is not a popup), or when a tooltip is showing, a drag is in
-  progress, or another overlay is on top. To tell what is on top it must read the stack the library writes to: a
-  library version that vendors its own copy keeps a separate stack, so the check is always false and Esc silently
-  stops closing notifications. Tests that mock the stack can't see this; with the real components, check that Esc
-  closes a dialog opened over an error, and then the error. Otherwise it closes the notifications and stops the
-  event. When focus was
-  on a notification's own button, send it back to where it was before; if that element is gone (its panel closed, or
-  it was drawn again), to the open dialog or the main landmark, with a `tabindex="-1"` that is removed again on
-  blur. Focus must never fall to the top of the document. Checking whether a popup is visible fails while it
-  animates closed. Remove the listeners when the app is destroyed.
+  button needs a name and a 24×24 px target. Persistent notifications can cover the focused element (WCAG 2.4.11):
+  make Esc close them without moving focus, or place them where they cover nothing interactive. When the
+  notification service belongs to a design system you can change, fix it there, not in each app; an app-level
+  stopgap in the app's notification wrapper is marked temporary.
+- Esc closes one layer at a time, top first, the same way whatever is on screen: an open menu, list or tooltip, or a
+  drag in progress first, then whichever of the notifications and the dialog or side panel is on top. That order is
+  not fixed (a dialog opened over an error is above it), so read it from the overlay library's stacking order
+  instead of assuming notifications are on top. Don't take Esc only when a notification overlaps the focused
+  element: overlap changes with scrolling and zoom, and screen-reader users can't see it. A popup that handles Esc
+  marks it handled (`preventDefault()`), and the notification listener skips handled events. Test with the real
+  components: a dialog opened over an error closes first, then the error. When focus was on a notification's own
+  button, send it back to where it was before, or to the open dialog or main landmark if that element is gone; focus
+  must never fall to the top of the document.
 - Notification libraries may drop a message identical to one that is still open. Check whether important information
   remains available and how a repeat is announced before changing that behavior. Do not add custom duplicate
   announcements unless a demonstrated user need requires them and the library has no suitable behavior. If the stack
@@ -285,7 +265,7 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 - If it renders its own controls (previous/next buttons, close buttons) without names, add them through supported
   inputs or by decorating the rendered DOM.
 - Widgets may re-render and drop what you added. Decorate in an idempotent function and re-run it when the widget
-  changes its DOM (a `MutationObserver` scoped to the widget, run outside change-detection loops, ignoring changes
+  changes its DOM (a `MutationObserver` scoped to the widget, run outside the framework's render loop, ignoring changes
   inside the widget's content). When the app also runs embedded in a host, check the console there: the host may
   supply an observer that the app's own polyfills patch a second time, and every `new` call then fails.
 - Don't fork or patch vendored code, unless the vendored copy belongs to your own library and the user agrees.
@@ -322,8 +302,8 @@ Design systems often ship accessibility **services** too, and these come first:
 | Announce a result that appears without moving focus | A live announcer service (`announce(message, politeness)`) | A new `role="status"` / `aria-live` element |
 | Follow the root font size (for px-only libraries) | A root-font-size service or signal | Reading `getComputedStyle(document.documentElement)` and your own observers |
 
-Prefer their injection tokens over the classes when both exist: the app can then override or disable them, so
-handle a missing (null) service with a plain fallback.
+Get them the way the app is meant to (a provider or factory the app can override) rather than importing the class
+directly, and handle a missing service with a plain fallback.
 
 ## Contrast
 

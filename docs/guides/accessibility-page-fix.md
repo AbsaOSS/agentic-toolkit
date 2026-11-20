@@ -58,8 +58,9 @@ skills/accessibility-page-fix/
 
 ## Scripts
 
-Run them from the app's directory; they load the app's own Playwright. All accept `--wait <selector>` and
-`--storage <state.json>` (a saved Playwright login state for pages behind a login). The keyboard, text-size and
+Run them from the app's directory; they load the app's own Playwright. All accept `--wait <selector>`,
+`--storage <state.json>` (a saved Playwright login state for pages behind a login) and `--init <file.js>` (a
+script that runs before the page loads, for a login kept in `sessionStorage`). The keyboard, text-size and
 contrast scripts also accept `--click "<selector>;;<selector>"` (opens a menu or dialog first); the screenshot
 comparison takes the clicks per path (`/orders@@#export-button`).
 

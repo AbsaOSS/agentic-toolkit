@@ -34,11 +34,15 @@ export function parseArgs(argv, defaults = {}) {
   return { positional, flags };
 }
 
-/** Opens `url` in a fresh browser context; `--storage` loads a saved Playwright storageState (for logged-in pages). */
+/**
+ * Opens `url` in a fresh browser context; `--storage` loads a saved Playwright storageState (for logged-in pages) and
+ * `--init` runs a script before the page's own code (a login kept in sessionStorage, which storageState can't hold).
+ */
 export async function openPage(url, flags, viewport = { width: 1440, height: 900 }) {
   const { chromium } = loadPlaywright();
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport, ...(flags.storage ? { storageState: flags.storage } : {}) });
+  if (flags.init) await context.addInitScript({ path: path.resolve(String(flags.init)) });
   const page = await context.newPage();
   await page.goto(url);
   if (flags.wait) {

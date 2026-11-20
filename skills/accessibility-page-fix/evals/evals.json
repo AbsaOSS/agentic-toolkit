@@ -10,6 +10,7 @@
         "evals/files/sample-page/.gitignore",
         "evals/files/sample-page/README.md",
         "evals/files/sample-page/index.html",
+        "evals/files/sample-page/logo.svg",
         "evals/files/sample-page/package.json",
         "evals/files/sample-page/playwright.config.ts",
         "evals/files/sample-page/playwright/a11y/example.accessibility.spec.ts",
@@ -47,6 +48,7 @@
         "evals/files/sample-page/.gitignore",
         "evals/files/sample-page/README.md",
         "evals/files/sample-page/index.html",
+        "evals/files/sample-page/logo.svg",
         "evals/files/sample-page/package.json",
         "evals/files/sample-page/playwright.config.ts",
         "evals/files/sample-page/playwright/a11y/example.accessibility.spec.ts",
@@ -120,6 +122,7 @@
         "evals/files/sample-page/.gitignore",
         "evals/files/sample-page/README.md",
         "evals/files/sample-page/index.html",
+        "evals/files/sample-page/logo.svg",
         "evals/files/sample-page/package.json",
         "evals/files/sample-page/playwright.config.ts",
         "evals/files/sample-page/playwright/a11y/example.accessibility.spec.ts",
@@ -510,7 +513,7 @@
     {
       "id": "failure-states",
       "category": "edge",
-      "prompt": "Check that the accessibility of the /projects page of our app (evals/files/shell-app) covers every failure state that can appear on it (requests failing, validation errors in its dialogs). Ignore the app's shared error page.",
+      "prompt": "Check that the accessibility of the /projects page of our app (evals/files/shell-app) covers every failure state that can appear on it (requests failing, validation errors in its dialogs), and fix what doesn't. Ignore the app's shared error page.",
       "expected_output": "Skill lists the page's requests and their error handlers, checks app-wide error handling first, mocks each failure, scans each resulting state with notifications open, and fixes timing, contrast and announcement problems.",
       "files": [
         "evals/files/shell-app/.gitignore",
@@ -676,7 +679,7 @@
     {
       "id": "embedded-open-shadow-root",
       "category": "edge",
-      "prompt": "Check the /curation/orders page inside our local host app (evals/files/embedded-host). It embeds the app in an open shadow root, and the standalone route only imitates the host's URL and CSS class.",
+      "prompt": "Check the /curation/orders page inside our local host app (evals/files/embedded-host) and fix what fails. It embeds the app in an open shadow root, and the standalone route only imitates the host's URL and CSS class.",
       "expected_output": "Skill runs the real host with the embedded app, confirms the fragment rendered inside its shadow root, and uses checks that inspect open shadow DOM rather than trusting document-only queries.",
       "files": [
         "evals/files/embedded-host/.gitignore",
@@ -809,7 +812,7 @@
     {
       "id": "transient-hints-and-notification-cap",
       "category": "edge",
-      "prompt": "On the /reports page of our app (evals/files/shell-app), the export failure notification must remain available, but the file-picker hint disappears after five seconds and is also shown beside the field. The stack is capped at three messages. Check that behavior.",
+      "prompt": "On the /reports page of our app (evals/files/shell-app), the export failure notification must remain available, but the file-picker hint disappears after five seconds and is also shown beside the field. The stack is capped at three messages. Check that behavior and fix what doesn't hold.",
       "expected_output": "Skill distinguishes essential error information from a transient hint duplicated inline, checks how the stack cap affects persistent errors, and tests the timeout without a real-time sleep.",
       "files": [
         "evals/files/shell-app/.gitignore",
