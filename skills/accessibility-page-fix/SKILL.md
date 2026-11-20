@@ -7,8 +7,8 @@ description: >
   or remediate axe violations on a given page, route, URL or component.
 license: Apache-2.0
 compatibility: >
-  A web app with a runnable dev server and Node.js 22+. Uses Playwright + axe-core (set up by the
-  accessibility-infra-setup skill if missing). Installing browsers needs network access on first run.
+  A web app with a runnable dev server and Node.js 22+. Uses Playwright + axe-core (in an Angular app, set up by
+  the accessibility-infra-setup skill if missing). Installing browsers needs network access on first run.
 ---
 
 # accessibility-page-fix
@@ -46,8 +46,9 @@ Copy this checklist and track progress:
 ### Step 1 · Make the page reachable and list its states
 
 1. Check for existing accessibility test infrastructure (an axe fixture, an `accessibility` test project, a
-   `test:a11y` script). If it is missing, tell the user and offer the `accessibility-infra-setup` skill; do not
-   build a parallel setup. For a one-off scan without infrastructure, use `@axe-core/playwright` directly.
+   `test:a11y` script). If it is missing, tell the user. In an Angular app, offer the `accessibility-infra-setup`
+   skill (it supports Angular only); do not build a parallel setup. In other apps, or for a one-off scan, use
+   `@axe-core/playwright` directly.
 2. Find out which **variant** of the page you are fixing. Pages often switch implementation on runtime config or
    feature flags (a config file the app loads at start-up). Check which value local runs and CI use (CI may build
    its config from a template), test that variant, and name any variant you did not cover in the report.
@@ -108,7 +109,7 @@ never silence the rule. Details in [references/fix-patterns.md](references/fix-p
 ### Step 4 · Manual checks
 
 Do these on every state; the full procedure is in
-[references/manual-verification.md](references/manual-verification.md). Three bundled scripts do the repetitive
+[references/manual-verification.md](references/manual-verification.md). Four bundled scripts do the repetitive
 parts. Run them from the app directory (they load the app's own Playwright), and read their output as leads, not
 verdicts:
 
@@ -120,8 +121,9 @@ verdicts:
 | `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
-look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
-`--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking). If a requested `--wait` or
+look for) and `--storage <state.json>` (a saved Playwright login state for pages behind authentication). The first
+three also take `--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking);
+`compare-screenshots` takes the clicks per path instead (`/orders@@#export;;#next`). If a requested `--wait` or
 `--click` target is missing, the script fails instead of silently checking a different state. `text-size-check` also takes
 `--scope <selector>` to report only one part of the page, such as `[role="dialog"]`.
 

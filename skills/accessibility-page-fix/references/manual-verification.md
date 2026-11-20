@@ -15,6 +15,7 @@ Playwright storage state once and pass `--storage state.json`.
 - [Text size and reflow](#text-size-and-reflow)
 - [Text spacing](#text-spacing)
 - [Focus not obscured](#focus-not-obscured)
+- [Embedded apps and shadow roots](#embedded-apps-and-shadow-roots)
 - [Target size](#target-size)
 - [Screen reader spot-check](#screen-reader-spot-check)
 - [Contrast over images](#contrast-over-images)

@@ -2,7 +2,7 @@
 
 The `accessibility-page-fix` skill finds and fixes accessibility problems on **one page of a web app** and proves the fixes. It targets **WCAG 2.2 AA**. It is not tied to any framework, component library or backend, so you can use it in any web app.
 
-It pairs with [`accessibility-infra-setup`](./accessibility-infra-setup.md): that skill sets up the scanning tools, this one fixes a page using them.
+It pairs with [`accessibility-infra-setup`](./accessibility-infra-setup.md): that skill sets up the scanning tools in an Angular app, this one fixes a page using them. In other apps, this skill uses `@axe-core/playwright` directly.
 
 ---
 
@@ -58,9 +58,10 @@ skills/accessibility-page-fix/
 
 ## Scripts
 
-Run them from the app's directory; they load the app's own Playwright. All accept `--wait <selector>`,
-`--storage <state.json>` (a saved Playwright login state for pages behind a login) and `--click "<selector>"`
-(opens a menu or dialog first).
+Run them from the app's directory; they load the app's own Playwright. All accept `--wait <selector>` and
+`--storage <state.json>` (a saved Playwright login state for pages behind a login). The keyboard, text-size and
+contrast scripts also accept `--click "<selector>;;<selector>"` (opens a menu or dialog first); the screenshot
+comparison takes the clicks per path (`/orders@@#export-button`).
 
 ```bash
 node <skill>/scripts/keyboard-walk.mjs http://localhost:4200/orders --wait h1
@@ -78,7 +79,7 @@ Their output is a set of leads for the agent and the engineer to check, not a pa
 
 - A web app with a runnable dev server
 - Node.js 22+
-- Playwright + axe-core. If they're missing, the skill points to `accessibility-infra-setup`.
+- Playwright + axe-core. If they're missing in an Angular app, the skill points to `accessibility-infra-setup`; in other apps it uses `@axe-core/playwright` directly.
 - Network access on first run (Playwright downloads a browser)
 
 ---

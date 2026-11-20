@@ -15,6 +15,7 @@ native element; reach for ARIA only when no native element does the job.**
 - [Sizing and text scaling](#sizing-and-text-scaling)
 - [Off-screen and hidden content](#off-screen-and-hidden-content)
 - [Third-party widgets](#third-party-widgets)
+- [Reuse before adding](#reuse-before-adding)
 - [Contrast](#contrast)
 - [Incomplete results](#incomplete-results)
 

@@ -4,13 +4,14 @@
 //
 // Usage (run from the app directory):
 //   node <skill>/scripts/keyboard-walk.mjs <url> [--wait <selector>] [--max 80] [--storage <state.json>]
-//        [--start <selector>] [--no-visual]
+//        [--start <selector>] [--no-visual] [--click "<selector>;;<selector>"]
 //   --start  element to click before walking (default: the first h1, else the page corner)
+//   --click  clicks to open a menu or dialog before walking
 import { openPage, parseArgs } from './_shared.mjs';
 
 const { positional, flags } = parseArgs(process.argv.slice(2), { max: 80 });
 if (!positional[0]) {
-  console.error('Usage: keyboard-walk.mjs <url> [--wait <selector>] [--max 80] [--storage <state.json>] [--start <selector>] [--no-visual]');
+  console.error('Usage: keyboard-walk.mjs <url> [--wait <selector>] [--max 80] [--storage <state.json>] [--start <selector>] [--no-visual] [--click <selectors>]');
   process.exit(2);
 }
 const { browser, page } = await openPage(positional[0], flags);
