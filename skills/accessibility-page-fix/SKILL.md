@@ -170,7 +170,9 @@ perceivability, then polish). For each group:
    for something that already does the job — a screen-reader-only class, a focus-ring mixin, color tokens, a
    component option for accessible names — and reuse it instead of adding a new one. This matters most for
    behaviour: if the design system ships accessibility services (focus management, a live announcer, focus
-   trapping, root-font-size tracking), use them through their public API instead of local code. List its exports once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`).
+   trapping, root-font-size tracking), use them through their public API instead of local code. List its exports
+   once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`), and write down what you
+   searched and what you found, even when it was nothing, before you add a helper of your own.
    Check the design system's newer releases and changelog too: a fix you are about to work around may already be
    released. When a library component fails because of a local style override (a recoloured menu, a custom
    button), try removing the override before patching it: the library default often passes as it is.

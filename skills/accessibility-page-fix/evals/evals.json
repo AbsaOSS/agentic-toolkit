@@ -391,12 +391,12 @@
         "evals/files/shell-app/vite.config.ts"
       ],
       "expectations": [
-        "Gives each card's version dropdown and menu button a name that contains the visible text and the project name, not one shared name",
+        "Gives each card's version dropdown and menu button a name that contains its visible label (if it has one) and the project name, not one shared name; a combobox may expose its current value separately",
         "Adds aria-haspopup and aria-expanded to the menu button, opens the menu with the keyboard, and confirms focus moves into it and returns on Esc",
         "Scans the page with the open popup excluded and the popup alone with only the region rule disabled, instead of disabling region for the whole page",
         "Checks focus near the sticky paginator and fixes hidden focus with scroll-padding or scroll-margin",
         "Checks the page at 320 px, finds that the fixed shell blocks reflow, and changes the shell only below a breakpoint",
-        "Compares desktop screenshots of this page and at least one other page using the shell before and after, and confirms they are identical",
+        "Compares desktop screenshots of this page and at least one other page using the shell before and after, confirms the layout is unchanged (no element box moved), and lists every remaining pixel difference as an intended visual change",
         "Lists the shell and other shared components as shared code in the report",
         "Checks the UI library's exports for accessibility services (focus management, live announcer, root font size) and uses them, through their injection tokens where available, instead of writing local equivalents"
       ]
