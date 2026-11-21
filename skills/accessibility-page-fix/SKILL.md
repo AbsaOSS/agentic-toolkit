@@ -1,0 +1,429 @@
+---
+name: accessibility-page-fix
+description: >
+  Finds and fixes WCAG 2.2 AA accessibility issues on one specific page of a web app: scans with axe-core,
+  walks the page by keyboard, checks text resize and screen-reader semantics, fixes the code, verifies, and
+  reports. Use when asked to fix a11y/accessibility/WCAG issues, make a page keyboard- or screen-reader-friendly,
+  or remediate axe violations on a given page, route, URL or component.
+license: Apache-2.0
+compatibility: >
+  A web app with a runnable dev server and Node.js 22+. Uses Playwright + axe-core (in an Angular app, set up by
+  the accessibility-infra-setup skill if missing). Installing browsers needs network access on first run.
+---
+
+# accessibility-page-fix
+
+Fixes accessibility issues on **one page at a time** and proves the fixes. Targets **WCAG 2.2 level AA**.
+Works on any web app: nothing here depends on a particular framework, component library or backend.
+
+Automated scanners catch only part of WCAG. A page is not done when axe is green — it is done when axe is green
+**and** the manual checks in Step 4 pass. Do both.
+
+## Input
+
+The user names the page to fix. Accept any of these and resolve it to a URL you can open:
+
+- a URL or route path (`/orders/123`, `https://…`)
+- a component, template or file (find the route that renders it)
+- a feature name ("the settings page") — find it in the router/navigation, confirm with the user if ambiguous
+
+If no page is given, ask for one. Do not audit the whole app. If the user wants several pages, do them one by one,
+each with its own Steps 1–6. A request to check, verify or prove something on a named page ("check the export
+dialog", "check that the failure states are covered", "prove the layout is unchanged") also asks you to fix what
+fails there, and to check again after the fix, unless the user says to only report.
+
+## Workflow
+
+Copy this checklist and track progress:
+
+```
+- [ ] Step 1: Make the page reachable and list its states
+- [ ] Step 2: Baseline scan (axe) and capture current behaviour
+- [ ] Step 3: Triage findings
+- [ ] Step 4: Manual checks (keyboard, focus, zoom/text size, semantics)
+- [ ] Step 5: Fix, one cause at a time, verifying each
+- [ ] Step 6: Lock in with tests, run regressions, report
+```
+
+### Step 1 · Make the page reachable and list its states
+
+1. Check for existing accessibility test infrastructure (an axe fixture, an `accessibility` test project, a
+   `test:a11y` script). If it is missing, tell the user. In an Angular app, offer the `accessibility-infra-setup`
+   skill (it supports Angular only); do not build a parallel setup. In other apps, or for a one-off scan, use
+   `@axe-core/playwright` directly.
+2. Find out which **variant** of the page you are fixing. Pages often switch implementation on runtime config or
+   feature flags (a config file the app loads at start-up). Check which value local runs and CI use (CI may build
+   its config from a template), test that variant, and name any variant you did not cover in the report.
+3. Start the app and open the page. If it needs a login, use the test credentials the project already uses; never
+   invent or hard-code real credentials. If the backend is unavailable, intercept network calls in the browser
+   (Playwright `page.route`) and return small fake responses that satisfy the page — only enough to render it.
+   Keep mocks inside test or local-dev code, never in production code. A request that fails with status 0 got no
+   response at all: the app was started without its proxy or mock backend, or the host is unreachable from here.
+   Tests that mock the backend must also mock the runtime config and the login endpoints: a developer machine often
+   has a local config file that CI doesn't create. Run the new tests once with that file moved aside. Answer
+   requests nobody mocked with a test failure that names them, never with a catch-all empty response: `{}` for
+   every unknown call hides the endpoints the page really uses and renders states that can't happen.
+4. List the page's **states**. Each one is scanned separately because hidden or conditional UI is invisible to axe:
+   default, loading, empty, error, populated, dialogs and menus open, expanded/collapsed sections, tabs, form
+   validation errors, hover/focus-only content, carousels or pagers moved to a later position.
+5. List the **contexts** the page's components render in. The same component is often a full page in one place
+   and a dialog, drawer or embedded panel in another (for example a login form shown again in a session-expired
+   dialog). Each context is its own state to scan, and fixes must work in all of them. The app itself may also run
+   embedded in a host page that provides its own landmarks (a micro-frontend); check that mode in the actual host
+   app, not only on a standalone route that imitates its URL or CSS class. Confirm the embedded page rendered and,
+   when it uses an open shadow root, that the checks reached into it. If the root is closed, use the host's supported
+   test hooks and verify through browser-visible behavior; don't report an empty DOM query as a pass.
+6. Reach hard-to-reach states on purpose instead of skipping them: mock a failing request to get an error message,
+   return a short-lived token from the mocked sign-in request to get a session-expired dialog (writing the token into
+   storage skips the code that reads it), mock an empty response for the empty state
+   ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
+   For **failure states**, go through every request the page and its dialogs make, and read what its error handler
+   shows. Check app-wide error handling (HTTP interceptors, global error handlers) first: some failures replace
+   the page with a shared error page, which is out of the page's scope. List the rest in a table (request, what
+   its failure shows, the test that mocks it), including requests a dialog sends while the user types; each row
+   gets a mocked test and a scan. After a failed action that closed a dialog or menu, check where focus went.
+7. Wait for animations and async content to settle before every scan (scanning mid-transition gives false
+   contrast failures).
+
+### Step 2 · Baseline
+
+1. Run axe on every state with the tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22a`, `wcag22aa`,
+   `best-practice`. Save the full results (violations **and** incomplete).
+2. Plan the visual comparison now: the base branch will be run next to yours and every page and state you touch,
+   and every page that uses a shared component or layout you may touch, will be compared pixel by pixel
+   ([references/manual-verification.md](references/manual-verification.md#visual-regression)).
+3. Record the page's current keyboard behaviour in Step 4 *before* changing code — it is the reference for
+   regressions.
+
+### Step 3 · Triage
+
+Group findings by **root cause**, not by rule count — one wrong shared component can produce dozens of violations.
+For each group, note the WCAG criterion, the affected elements, and where the fix belongs:
+
+| Where the cause lives | What to do |
+|---|---|
+| This page's own code | Fix it. |
+| A shared component or global style used by other pages | Fix at the root, but first find every consumer and decide whether the change is safe for all of them (see Gotchas). |
+| A third-party library you cannot edit | Fix through its supported options, wrap it, or adjust the DOM it renders; never patch `node_modules`. |
+| A design decision (colors, sizes) | Prefer existing design tokens. If none fits, propose the smallest change and flag it for the design owner. |
+
+Each **incomplete** result is a question for a human: check it by hand (Step 4) and decide — never ignore it,
+never silence the rule. Details in [references/fix-patterns.md](references/fix-patterns.md#incomplete-results).
+
+### Step 4 · Manual checks
+
+Do these on every state; the full procedure is in
+[references/manual-verification.md](references/manual-verification.md). Four bundled scripts do the repetitive
+parts. Run them from the app directory (they load the app's own Playwright), and read their output as leads, not
+verdicts:
+
+| Script | What it does |
+|---|---|
+| `scripts/keyboard-walk.mjs <url>` | Tabs through the page, including open shadow roots; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
+| `scripts/text-size-check.mjs <url>` | Checks open shadow roots at 200% text, 320 px wide, a short viewport, and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
+| `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast, including inside open shadow roots, for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
+| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, writes a diff image for every change, prints each screenshot's height against the viewport, and for every pair that differs lists the elements whose box or computed style changed at that width; it writes these in `comparison.md`, a table to fill in for the report, and shows every changed region in overview images (`comparison-N.png`); `boxes` does the box comparison for one page; `diff` compares two folders of screenshots |
+
+All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
+look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
+`--init <file.js>` (a script that runs before the page's own code, for a login kept in `sessionStorage`, which a
+saved login state cannot hold). The first
+three also take `--click "<selector>;;<selector>"` (clicks to open a menu or dialog before checking);
+`compare-screenshots` takes the clicks per path instead (`/orders@@#export;;#next`). If a requested `--wait` or
+`--click` target is missing, the script fails instead of silently checking a different state. `text-size-check` also takes
+`--scope <selector>` to report only one part of the page, such as `[role="dialog"]`.
+
+- **Keyboard:** Tab and Shift+Tab through everything. Every interactive element is reachable, in a logical order,
+  with a visible focus indicator that is not hidden behind sticky UI. No keyboard traps. Enter/Space/Esc/arrow
+  keys work as users expect for buttons, menus, dialogs and widgets. Open **every** menu, dropdown and dialog with
+  the keyboard and check where focus lands (inside it, not on `<body>`) and where it returns on Esc (the opener).
+  In arrow-driven widgets, check that expected visual and accessible state changes happen promptly without another
+  interaction.
+- **Names, roles, values:** each control has an accessible name (check the accessibility tree, not just the
+  markup), the right role, and its state exposed (expanded, selected, checked, busy, current).
+- **Text size and reflow:** set the browser/root font size to 200% and the viewport to 320 CSS px wide. All text
+  grows, and nothing is cut off, overlaps, or needs two-dimensional scrolling (except truly 2D content like maps or
+  tables). Also try a short viewport height (for example 320×256 or 640×360 CSS px) when sticky controls or wrapped
+  toolbars may cover content; test the actual zoomed viewport rather than approximating browser zoom with font-size
+  CSS alone. Check **every dialog and menu** this way too, not only the page: they are sized separately and often
+  in px.
+- **Responsive shell scrolling:** identify what actually scrolls (the document, main content, or an inner panel).
+  At the narrow breakpoint and just above it, scroll that content and verify any sidebar meant to stay pinned does
+  so. A shell that changes from fixed positioning to document flow can change the sidebar's containing block;
+  test the real scroll behavior, including expanded and collapsed navigation, rather than only checking CSS classes.
+- **Structure:** one `h1`, headings in order, landmarks present (`header`, `nav`, `main`), lists and tables use
+  real elements, reading order matches visual order.
+- **Dynamic content:** status and error messages reach screen readers without stealing focus, through the
+  design system's live announcer when it has one (add `role="status"` or `role="alert"` only when it has none); the
+  announced text has real spaces between its parts; focus moves sensibly when content opens, closes or is replaced. After a delayed action removes the focused item, test that
+  focus moves to the next/previous item or a meaningful heading, and that it does not steal focus if the user moved
+  elsewhere while the action was pending.
+- **Pointer:** targets are at least 24×24 CSS px (or have enough spacing); nothing needs a drag as the only way.
+- **Contrast and color:** text 4.5:1 (3:1 for large text), UI components and meaningful graphics 3:1; color is
+  never the only signal.
+
+### Step 5 · Fix
+
+Work through the triage groups one at a time, highest impact first (blockers for keyboard/screen-reader users, then
+perceivability, then polish). For each group:
+
+1. Make the smallest change that fixes the cause, using native HTML elements before ARIA
+   ([references/fix-patterns.md](references/fix-patterns.md)). **Search the project and its design system first**
+   for something that already does the job — a screen-reader-only class, a focus-ring mixin, color tokens, a
+   component option for accessible names — and reuse it instead of adding a new one. This matters most for
+   behaviour: if the design system ships accessibility services (focus management, a live announcer, focus
+   trapping, root-font-size tracking), use them through their public API instead of local code. List its exports
+   once at the start (search for `focus`, `announc`, `live`, `trap`, `font`, `sr-only`), and write down what you
+   searched and what you found, even when it was nothing, before you add a helper of your own.
+   Check the design system's newer releases and changelog too: a fix you are about to work around may already be
+   released. When a library component fails because of a local style override (a recoloured menu, a custom
+   button), try removing the override before patching it: the library default often passes as it is.
+2. Re-run only the affected scans and the keyboard check for that area.
+3. Re-run the comparison (`compare-screenshots.mjs compare`). Unintended visual changes are bugs; intended ones
+   (a darker color, a larger target) are listed in the report. Changes for narrow screens or large text must leave
+   the desktop layout pixel-identical. Capture every page, dialog and state you listed as a user of the changed
+   code: a listed user with no screenshot is unchecked. `compare` writes overview images (`comparison-N.png`: every
+   changed region of every differing pair as base | head | diff, each distinct change once) and `comparison.md`, a
+   table with one row per differing pair. Open every overview image, read each pair's `boxes:` and `styles:` lines,
+   and trace each change to a rule in your diff. Fill in every row of the table, at every width you compared (what
+   the diff image shows, the cause, and intended, regression or noise), and put the table in the report. Fix every
+   regression, small ones included (a popup 2 px off is a regression), and compare again.
+4. Move on only when the group is green.
+
+Rules while fixing:
+
+- **Do not** suppress or disable axe rules, add `aria-hidden` to hide a problem, or `display:none` things to make a
+  scan pass.
+- **Do not** change business logic, data flow or API contracts. If a fix seems to need it, stop and ask.
+- Fix what the finding needs, no more. A bug you come across that the base branch has too and that is not an
+  accessibility failure (a race when switching items, a validation message shown too early) goes in the report as
+  unchanged, not into the fix.
+- Do not add ARIA that repeats what the native element already says (`role="button"` on a `<button>`).
+- Prefer changing the element (div → button, span → link) over bolting on `role`, `tabindex` and key handlers.
+- Keep the diff reviewable: avoid reformatting unrelated code. Re-indentation from new wrappers is fine; mixed
+  refactors are not.
+
+### Step 6 · Lock in, regress, report
+
+1. **Add a scan per state** for this page in the project's accessibility test project, following the existing
+   fixture and conventions. Mock only what the page needs. Add a focused test for behaviour axe cannot check
+   (keyboard path, focus return, text-size layout) when you changed it. When you rewrite an existing test file,
+   keep its tests that still apply: compare the removed `it(`/`test(` lines in the diff before you finish. If you
+   intentionally remove behavior, also remove tests that exist only to assert that behavior and update docs or test
+   descriptions that still claim it; keep any unrelated assertions and coverage.
+2. **Prove the new tests catch the problems:** temporarily revert only the fix, run the new tests and confirm they
+   fail; restore the fix and confirm they pass. If a test passes on the old code, check that it exercises the reported
+   environment, state and interaction sequence (the last page of a list, where the widget re-focuses and scrolls,
+   instead of a middle page); change the scenario, not the assertion. Check a suspected issue on every page you
+   plan to fix it on: a detail such as a sticky footer can make it a non-issue there. A probe can be wrong too:
+   pressing a button that is still disabled looks like lost focus. For timing-sensitive problems, include repeated
+   visits where relevant and retry within a fixed limit: a single passing run does not disprove the problem. If the
+   correct conditions still cannot reproduce it, report the result as inconclusive rather than claiming the issue is
+   absent or the fix verified. Remove a fix for a page only when the issue has been shown not to apply there; keep
+   the test only as a scan of that state. If the new tests fail early
+   for an unrelated reason (for example waiting for a heading the fix adds), run a temporary copy that waits for
+   something else, so the scans themselves run against the old code and report the real problems.
+3. Use fake timers for timer-based behavior where the test runner supports them: install the clock before the
+   page's timer is created, advance it past the relevant threshold, and assert the resulting state instead of
+   waiting in real time. Run: the new scans, the existing accessibility tests, the unit tests for everything you touched, lint, the type
+   check, the project's functional tests for pages that use any shared component you changed, and the screenshot
+   comparison with the base branch (Step 5.3). Passing scans are not a substitute for the comparison. Run the new
+   tests several times (`--repeat-each`) before calling them stable, and report any failure you could not explain.
+   A test that fails only sometimes: run it on the code without your change before blaming the change, and report
+   it as an existing problem if it fails there too. After editing files, let the dev server finish rebuilding before
+   running tests: a reload mid-test drops focus. Don't stop a dev server in the same command as the run that uses
+   it, and don't `git stash` the user's work to compare with the base: use the detached worktree. Before checking
+   that something stays visible, wait for exit animations (a closing element still counts as visible), and wait
+   for widgets that build their DOM after the page renders (an editor's toolbar) before tabbing to them. A dialog
+   moves focus into itself only when its opening animation ends: wait until focus is inside it before a test moves
+   focus, or the dialog's own focus arrives later and looks like a focus bug. A list that filters as you type is
+   rebuilt a moment after the last key: wait for the filtered result before pressing arrow keys. After choosing,
+   check something only the choice produces (a dependent field filling in): the field shows the typed text whether
+   or not an option was chosen. Never retry without a time limit
+   (`toPass()` without a `timeout`, open-ended loops): if the state never comes, every test hangs until the test
+   timeout. Cap long runs with `--timeout` and `--max-failures`.
+   When you later simplify the tests, keep every assertion: merge tests that share a setup, put repeated states
+   in a table, and share helpers, but re-run the revert proof for any check you rewrote.
+4. If the project documents accessibility conventions, add the new ones (for example "icon buttons use X").
+5. Report using [references/report-template.md](references/report-template.md): what was found, what was fixed,
+   what remains and why, observations that are not failures, shared code touched, visual changes, behaviour users
+   lose, and what you looked for before adding something (existing helpers and services, notifications that already
+   announce themselves). Write down the evidence of each check where you ran it (a command's exit code and error,
+   the screenshot height, the base compared with itself): a check with no record can't be told from one never run.
+
+Done means: all scans for the page's states pass with no violations, every incomplete is resolved or explained,
+Step 4 passes, and no regressions in tests or screenshots. Before you report, go through Step 4's checks and the
+report template line by line and give each a result: done (with its evidence), not applicable, or not done and why.
+
+## Gotchas
+
+- **Open shadow roots hide content from document queries.** `document.querySelectorAll`, `document.activeElement`
+  and styles injected into the document do not reach an embedded app's shadow DOM. The bundled keyboard, text-size,
+  contrast and screenshot checks traverse open shadow roots; still verify that the host and fragment actually
+  rendered and that the observed result is inside the right root. Closed roots need host-supported test hooks or
+  browser-visible interaction checks; never treat an empty query as evidence that the embedded UI passed.
+- **The host changes more than the DOM.** Inside a host, the fragment's links, history and even browser APIs can
+  behave differently: a link loses the host's path prefix, the host rewrites history state, an observer the fix
+  creates throws. Through the real host, read the console, follow every link the fix touches, and test Back and
+  Forward ([references/manual-verification.md](references/manual-verification.md#embedded-apps-and-shadow-roots)).
+- **Library popups sit outside every landmark.** Many UI kits attach open menus and dropdown lists to the end of
+  `<body>`, so axe's `region` best practice flags them. When the library offers no inline option, scan the page
+  with the popup excluded, then the popup on its own with every rule except `region`, and document it. Don't
+  disable `region` for the whole page. Assert the violations of both scans together: asserting the page first
+  hides every popup violation until the page is clean.
+- **Sticky footers and headers hide focus.** A sticky paginator or toolbar covers the controls that scroll under it
+  (WCAG 2.4.11). The keyboard walk shows it as stops with no visible focus near the screen edge. Give focusable
+  elements a `scroll-margin` at least as tall as the sticky bar.
+- **Async refreshes drop focus.** A menu that reloads its items after opening re-renders them and loses the focused
+  element. Restore focus into the menu after the refresh if it was there before.
+- **Global CSS can remove focus outlines.** A rule such as `button:focus { outline: none }` beats a component's own
+  `:focus` outline. Check the computed style, and draw the design system's focus ring on `:focus-visible`.
+- **An override that loads can still lose.** Libraries style their parts with long, nested selectors, so a
+  component's override of the same property (a padding, a size) is often outranked and changes nothing. After
+  every style fix, check the computed value in the browser, not just that the rule is in the stylesheet. A global
+  stylesheet loses even with `!important` when the library's rule is also `!important` and more specific (scoped
+  component styles add attribute selectors); put the override in the consuming component's own styles instead.
+  The same goes for the element: a library field's border is often drawn by a wrapper, not the `<input>`.
+- **Brand colors often fail contrast.** Test a replacement token against every background it appears on, including
+  hover, selected and highlighted states, not just white. One token may not fit all of them. Libraries also tint
+  solid buttons on hover and keyboard focus (a translucent overlay): white text that passes on the plain color can
+  fail in those states, so measure the button hovered and focused too.
+- **The app shell must reflow too.** At 320 px a fixed-position header and sidebar push every page off-screen.
+  Below a breakpoint, switch the shell to normal flow (header wraps, page scrolls, sidebar collapses), leaving the
+  desktop layout untouched. Making the header static is not enough: its own row of logo, breadcrumb, version and
+  user menu must wrap too, or it alone makes the page twice as wide.
+- **One component, several contexts.** Landmarks and headings that are right for a page are wrong inside a dialog
+  (a second `main`, a second `h1`). Make them depend on the context, and scan the dialog on its own with
+  axe's `include` so the page behind it does not add noise.
+- **Axe cannot see fixed sizes.** Widths and heights in px clip text when users enlarge it (a placeholder or
+  label cut off at 200%). The text-size script and screenshots find these; axe does not.
+- **Text in px doesn't grow, and not all px is in your CSS.** Look for: browser defaults (a `<button>` without a
+  font size is a fixed 13.33 px), component inputs that turn a px size into a px font size (a button `height` in
+  px), and library CSS variables nobody sets, whose fallback is fixed. Compare each text's font size before and
+  after doubling the root font size; `text-size-check` does this.
+- **Breakpoints don't help when only the root font size grows.** Media queries in `rem`/`em` follow the browser's
+  default font size, not the page's root font size. With 200% text set on `html`, a layout that only stacks below
+  a breakpoint stays side by side and controls start covering each other. Grid and flex rows should hold on their
+  own: `minmax(min-content, 1fr)` instead of `minmax(0, 1fr)` for columns holding controls, and `flex-wrap` on
+  rows. Check at more than one viewport width, and look for overlapping controls, not just off-screen ones.
+- **Inner scroll containers hide reflow failures.** A tab panel or card body with `overflow: auto` scrolls sideways
+  on its own, so the page reports no horizontal scroll while a toggle or toolbar is cut off at its edge. Check each
+  scroll container's `scrollWidth` at 320 px (`text-size-check` does); only a data table's own frame may scroll
+  sideways. Rows of controls need to wrap below the breakpoint.
+- **Scrolling can hide a reflow failure.** A dialog wider than a 320 px screen can still let every control be
+  scrolled into view, sideways. That's two-dimensional scrolling, which fails reflow. Check that the dialog itself
+  fits the screen width before checking its controls, and look at the screenshot when a new check passes on the
+  first try.
+- **Notifications that close on their own.** A toast that disappears after a few seconds fails WCAG 2.2.1 for
+  errors people need time to read, even if it pauses on hover or focus: keyboard users rarely reach it in time.
+  Keep errors and warnings open until closed (usually one setting in the app's notification wrapper; it is shared,
+  so list it). Scan the page with the notification open. A notification that stays open can then cover the focused
+  element (WCAG 2.4.11), typically a sticky footer under a bottom toast: Tab through the page with one open, and
+  let Esc close notifications without moving focus. Check how the library handles duplicate messages and whether
+  users still have access to important information. Do not add custom re-announcement just because the library
+  suppresses a duplicate; add it only when a demonstrated user need requires it and the library offers no suitable
+  behavior. Prefer a supported announcement API over inspecting rendered notification DOM.
+- **Live regions need real spaces.** Frameworks that strip whitespace between elements can turn "1 source,
+  0 replacements" into "1source0replacements" in the announced text. Check the region's `textContent`.
+- **Playwright's `fullPage` is not the full page.** Apps that scroll an inner container (a shell with a fixed
+  header and sidebar) show only the first screen. Use `compare-screenshots.mjs --full`, which grows the viewport to
+  the tallest scrolling element, and check that the PNG is taller than the viewport.
+- **Layout fixes for small screens belong in a media query.** Wrapping, new flex bases and relaxed minimum
+  widths added without one change the wide layout too: the page looks the same at first glance and differs by a
+  few pixels. The pixel comparison with the base branch finds this; measure element boxes to find the cause.
+- **Compare like with like.** Run the base branch from a separate worktree (`git worktree add --detach ../base
+  <base>`, with `node_modules` linked from the main checkout), against the same mocked backend and the same login,
+  so a difference can only come from code. `--detach` matters: a worktree that holds a branch stops anyone checking
+  that branch out elsewhere. A saved login is per origin: put both origins in the state file. The worktree is only
+  for running the base: make the fix itself on a branch in the user's own checkout.
+- **Shared global styles.** Converting a shared stylesheet from px to rem renders the same pixels at the default
+  size and fixes every page that uses it. Prove it with screenshots of those pages, and list them as shared code.
+- **Placeholder is not a label.** Inputs labelled only by a placeholder need an accessible name (visible label,
+  or the component's accessible-name option with the placeholder text contained in it) and an `autocomplete`
+  token where the field is personal data or a credential.
+- **Check existing announcements before adding live regions.** Toasts and notification components often announce
+  themselves already; inspect their DOM before adding another.
+- **Don't write environment claims into tests.** Comments such as "no credentials needed" are true only for one
+  setup; tests move between repos. Describe what the test does, not where it runs.
+- **Shared code has a blast radius.** Before editing a shared component, directive, mixin or global style, search for
+  every use, run the tests for those places, and look at one or two of them in the browser. A fix that is right for
+  this page can break another.
+- **Scan whole states, not just the happy path.** Open menus, dialogs and error states are where most violations
+  hide. Everything inside a dialog or panel you check is in scope, including text that appears later (the result
+  of a check that runs while the user types): announce it, keep real spaces in it, and never exclude part of a
+  state from its scan to keep it out of the work.
+- **A check that matches nothing passes.** Changing a landmark's element (`<main>` to a `div` with `role="main"`)
+  or a class leaves tests and scripts that select it by tag or class measuring nothing, and they still pass. Select
+  landmarks by role, and make every check limited to an area fail when nothing matches the area.
+- **A state that didn't render passes every scan.** Content shown only when the data has certain fields (a tab, a
+  section, a badge) silently stays away when a mock leaves those fields out, and axe then scans a page without it.
+  Copy mock shapes from a real response, assert something unique to the state is visible before scanning, and check
+  that the new test fails on the base code. Wait for something the state shows, never for something it lacks: "no
+  rows" is already true while the list is still loading.
+- **Every variant of a shared component.** A narrow-screen rule that makes a panel fill the screen can be undone by a
+  variant's own offsets (a centred pop-up version with fixed `top`, `right` and `height`). List the component's
+  modifier classes and check each one at the narrow width.
+- **Persistent notifications and dialogs share Esc.** An error that stays open over a side panel's buttons needs a
+  way to close it while focus stays in the panel. If the panel takes Esc first, it closes the panel (and may discard
+  the form) while the notification stays on top. Let Esc close the top layer, the same way every time: an open
+  menu, list, tooltip or drag first, then whichever of the notifications and the dialog or panel is on top, read
+  from the overlay library's stacking order (a dialog opened over an error is above it). Don't make it depend on
+  whether a notification covers the focused element: that changes with scrolling, zoom and window size, a
+  screen-reader user can't see it, and an error beside a dialog's form would let Esc discard the form. See
+  [references/fix-patterns.md](references/fix-patterns.md).
+- **jsdom lags behind browsers.** Unit tests run in jsdom, which may not support newer selectors such as `:is()`, so
+  `matches()` quietly returns false there. Use selectors both understand, or the unit test and the browser disagree.
+- **Custom radios and checkboxes hide the real input.** The visible box covers a transparent native input, so
+  Playwright's `check()` and `uncheck()` time out on it. In tests, click the label text (or focus the input and press
+  Space), and keep role-based locators for the assertions.
+- **Zero-size containers.** Some drawer and dialog libraries give the outer element no width and draw the content
+  in a child, so visibility checks and screenshots of the outer element fail. Point tests at the content element,
+  found by role and name or a stable test id.
+- **`incomplete` is not "pass".** Typical causes: text over images or gradients, content partly clipped by a
+  scroll container, elements axe could not measure. Resolve by hand, and where it is a test artifact (scroll
+  position, animation) fix the test setup rather than excluding the rule. A scan right after load can catch a
+  library's opening animation (collapsed content still focusable for a moment): repeat the check after it settles
+  before calling it a bug, and describe it as transient if it only exists during the animation.
+- **Visible focus is not enough.** The indicator must not be clipped by `overflow: hidden` or covered by sticky
+  headers/footers (WCAG 2.4.11), and mouse clicks should not leave sticky highlight states meant for keyboard users
+  — use `:focus-visible` for those.
+- **Hover-only is not enough.** Anything revealed on hover must also appear on keyboard focus and be dismissible
+  without moving the pointer (1.4.13).
+- **Sizes in px break text scaling.** Libraries and canvases that only accept px need values derived from the
+  current root font size and updated when it changes.
+- **Rich text editors trap the keyboard.** Many type a tab character on Tab, or indent a list item, so focus never
+  leaves (WCAG 2.1.2), and their editable area and toolbar dropdowns have no names. `keyboard-walk` reports the trap
+  in plain text; test an empty list item by hand or in a test. The fix is in
+  [references/fix-patterns.md](references/fix-patterns.md#third-party-widgets).
+- **`pointer-events: none` only stops the mouse.** A list dimmed while it reloads, a panel greyed out while it saves:
+  keyboard and screen reader users still reach and activate everything in it. Add `inert` for as long as it is
+  disabled, and test that Tab skips it.
+- **Attributes on a component's host don't reach its inner control.** A library button or input renders its own
+  `<button>` or `<input>`; an ARIA attribute written on the component tag lands on a wrapper that can't take focus
+  and does nothing. Use the component's inputs, and if it has none for the attribute, ask the library for one
+  rather than patching its DOM.
+- **Spacing that came from a minimum height disappears when the row wraps.** A toolbar with `min-height` and
+  centred content looks padded on one line; stacked on a narrow screen, its items touch whatever is above and
+  below. Give it vertical padding.
+- **Off-screen is still focusable.** Slides, collapsed panels and hidden drawers that stay in the DOM need
+  `inert` (or `hidden`) so Tab and screen readers skip them.
+- **Live regions are tricky.** `role="alert"` interrupts; several at once talk over each other. Use `role="status"`
+  (polite) for routine updates and reserve `alert` for urgent, single messages. A live region reads most reliably
+  when it exists before its text changes.
+- **Third-party widgets re-render.** A widget can recreate its own DOM (resize, data change) and drop attributes you
+  added once. Apply fixes in a way that survives re-rendering (supported options, or an observer that re-applies).
+- **Do not rely on one tool.** axe finds roughly a third to half of issues. Keyboard, zoom and accessibility-tree
+  checks find the rest.
+- **Not every oddity is a failure.** A submit button that stays disabled until the form is valid, a missing skip
+  link on a one-form page, or a design choice you would change are observations. Report them in their own list;
+  do not change behaviour to "fix" them without asking.
+- **Don't lose the accessible name when restyling.** An icon-only control needs a name from text, `aria-label` or
+  `aria-labelledby`; a tooltip alone is not a name.
+
+## Out of scope
+
+- Setting up the accessibility test infrastructure → use `accessibility-infra-setup`.
+- Auditing or fixing the whole app in one pass.
+- WCAG AAA criteria, or standards other than WCAG 2.2 AA.
+- Native mobile apps and PDFs.
+- Legal conformance statements (VPAT/ACR). Say what was tested and what was not; do not claim "fully compliant".

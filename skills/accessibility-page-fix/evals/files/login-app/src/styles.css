@@ -1,0 +1,37 @@
+html { font-size: 16px; }
+body { margin: 0; font-family: Arial, sans-serif; color: #222; background: #f4f5f7; }
+:focus { outline: none; }
+.logo { width: 32px; height: 32px; }
+
+.login-page { display: flex; flex-direction: column; align-items: center; padding-top: 80px; gap: 16px; }
+.sign-in { width: 320px; background: #fff; padding: 24px; border-radius: 8px; display: flex; flex-direction: column; gap: 12px; }
+.sign-in__title { font-size: 24px; font-weight: bold; }
+.sign-in__field { height: 36px; padding: 0 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+.sign-in__field::placeholder { color: #aaa; }
+.sign-in__error { color: #e57373; font-size: 13px; }
+.sign-in__submit { height: 36px; background: #2f6fde; color: #fff; border: 0; border-radius: 4px; }
+
+.backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; }
+.dialog { border-radius: 8px; }
+
+.notifications { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.notification { padding: 12px 16px; border-radius: 4px; color: #fff; font-size: 14px; }
+.notification--error { background: #d9534f; }
+.notification--success { background: #5cb85c; }
+
+.topbar { display: flex; align-items: center; gap: 16px; height: 48px; padding: 0 16px; background: #1d2a44; color: #fff; }
+.topbar__link, .topbar__signout { cursor: pointer; font-size: 14px; }
+.topbar__user { margin-left: auto; color: #8a94a6; font-size: 13px; }
+.page { max-width: 720px; margin: 24px auto; background: #fff; padding: 24px; border-radius: 8px; }
+.page__title { font-size: 22px; font-weight: bold; margin-bottom: 16px; }
+.loading { color: #999; }
+.load-error { color: #e57373; }
+.settings { display: grid; grid-template-columns: 160px 1fr; gap: 12px 16px; align-items: center; }
+.settings input:not([type='checkbox']), .settings select { height: 32px; font-size: 14px; }
+.group-title { grid-column: 1 / -1; font-weight: bold; margin-top: 8px; }
+.toggle { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative; }
+.toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.toggle__box { width: 32px; height: 18px; border-radius: 9px; background: #ccc; }
+.toggle input:checked + .toggle__box { background: #2f6fde; }
+.save { grid-column: 2; justify-self: start; height: 32px; padding: 0 16px; }
+.saved { grid-column: 1 / -1; color: #5cb85c; }

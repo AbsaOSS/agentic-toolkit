@@ -1,0 +1,86 @@
+[
+  {
+    "query": "Fix the accessibility issues on the settings page.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make the /checkout page WCAG 2.2 AA compliant.",
+    "should_trigger": true
+  },
+  {
+    "query": "axe reports 12 violations on the login page, please fix them.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our dashboard isn't usable with a keyboard or a screen reader. Can you remediate it?",
+    "should_trigger": true
+  },
+  {
+    "query": "Address the a11y problems in the profile component and check it at 200% text size.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make this page accessible: https://staging.example.com/reports",
+    "should_trigger": true
+  },
+  {
+    "query": "Resolve the color-contrast and missing-label issues on the invoices screen.",
+    "should_trigger": true
+  },
+  {
+    "query": "Do an accessibility remediation pass on the order details page.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up Playwright and axe-core so we can run accessibility tests.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add a unit test for the price calculator.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this pull request for security problems.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a WCAG compliance statement for our marketing site.",
+    "should_trigger": false
+  },
+  {
+    "query": "Why is my page slow? Profile the rendering.",
+    "should_trigger": false
+  },
+  {
+    "query": "Add dark mode to the settings page.",
+    "should_trigger": false
+  },
+  {
+    "query": "Convert our logo to SVG.",
+    "should_trigger": false
+  },
+  {
+    "query": "The sign-in form is hard to use with a keyboard and our screen reader users complain. Fix the login page's accessibility.",
+    "should_trigger": true
+  },
+  {
+    "query": "axe says color-contrast is incomplete for text over a banner image on /pricing, resolve it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Check the contrast ratio of our brand colors in the design system.",
+    "should_trigger": false
+  },
+  {
+    "query": "Make the /account page load faster.",
+    "should_trigger": false
+  },
+  {
+    "query": "The menus on the projects page lose keyboard focus and the page breaks at 400% zoom. Fix its accessibility.",
+    "should_trigger": true
+  },
+  {
+    "query": "Take before and after screenshots of the home page for the release notes.",
+    "should_trigger": false
+  }
+]

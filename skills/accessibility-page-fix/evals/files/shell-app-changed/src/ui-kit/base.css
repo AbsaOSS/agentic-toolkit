@@ -1,0 +1,69 @@
+/* Global styles of the UI kit, loaded once by the app. */
+html { font-size: 16px; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 0.875rem; color: var(--uk-gray-900); background: var(--uk-gray-50); }
+button:focus, [tabindex]:focus, a:focus { outline: none; }
+
+/* Hides content visually but keeps it for screen readers. */
+.uk-visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* The kit's keyboard focus ring. */
+.uk-focus-ring:focus-visible { box-shadow: var(--uk-focus-ring); }
+
+.uk-btn { display: inline-flex; align-items: center; gap: 0.5rem; height: 2.25rem; padding: 0 1rem; border-radius: var(--uk-radius); font: inherit; cursor: pointer; position: relative; }
+.uk-btn + .uk-btn { margin-left: 8px; }
+.uk-btn--solid { background: var(--uk-primary); color: var(--uk-on-primary); border: 0; }
+.uk-btn--solid:hover::after, .uk-btn--solid:focus-visible::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: rgba(255, 255, 255, 0.2); }
+.uk-btn--outline { background: #fff; color: var(--uk-orange-500); border: 1px solid var(--uk-orange-500); }
+.uk-btn--outline:hover { background: var(--uk-orange-50); }
+
+.uk-chip { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 999px; font-size: 0.75rem; background: var(--uk-gray-100); color: var(--uk-gray-500); }
+.uk-input { height: 36px; padding: 0 0.5rem; border: 1px solid var(--uk-gray-300); border-radius: var(--uk-radius); font: inherit; }
+.uk-input::placeholder { color: #b0b7c3; }
+
+/* Menu */
+.uk-menu-trigger { width: 24px; height: 24px; padding: 0; border: 0; background: none; color: var(--uk-gray-700); cursor: pointer; position: relative; }
+.uk-menu-trigger svg { width: 16px; height: 16px; }
+.uk-menu-trigger[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; top: 100%; right: 0; white-space: nowrap; background: var(--uk-gray-900); color: #fff; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.uk-menu { position: absolute; min-width: 10rem; background: #fff; border: 1px solid var(--uk-gray-300); border-radius: var(--uk-radius); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); padding: 0.25rem 0; z-index: 30; }
+.uk-menu__item { padding: 0.5rem 1rem; cursor: pointer; }
+.uk-menu__item:hover { background: var(--uk-gray-100); }
+
+/* Dropdown */
+.uk-dropdown { display: inline-flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-width: 8rem; height: 2rem; padding: 0 0.5rem; border: 1px solid var(--uk-gray-300); border-radius: var(--uk-radius); background: #fff; cursor: pointer; }
+.uk-dropdown::after { content: '▾'; color: var(--uk-gray-500); }
+.uk-dropdown__list { position: absolute; background: #fff; border: 1px solid var(--uk-gray-300); border-radius: var(--uk-radius); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); padding: 0.25rem 0; z-index: 30; }
+.uk-dropdown__option { padding: 0.5rem 0.75rem; color: var(--uk-orange-500); cursor: pointer; }
+.uk-dropdown__option:hover, .uk-dropdown__option--active { background: var(--uk-orange-50); }
+.uk-dropdown__option--selected { background: var(--uk-orange-100); }
+
+/* Dialog */
+.uk-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 10vh; overflow: auto; z-index: 40; }
+.uk-dialog { background: #fff; border-radius: var(--uk-radius); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; }
+.uk-dialog__header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--uk-gray-100); }
+.uk-dialog__title { font-size: 1.125rem; font-weight: bold; }
+.uk-dialog__close { cursor: pointer; font-size: 20px; color: var(--uk-gray-500); }
+.uk-dialog__body { padding: 20px; }
+.uk-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--uk-gray-100); }
+
+/* Stepper */
+.uk-stepper { display: flex; gap: 24px; margin-bottom: 16px; white-space: nowrap; }
+.uk-stepper__step { display: flex; align-items: center; gap: 8px; font-size: var(--uk-stepper-label-size, 13px); color: var(--uk-gray-500); }
+.uk-stepper__step--current { color: var(--uk-gray-900); font-weight: bold; }
+.uk-stepper__number { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--uk-gray-100); }
+
+/* Toasts */
+.uk-toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+.uk-toast { display: flex; align-items: center; gap: 12px; min-width: 16rem; padding: 0.75rem 1rem; border-radius: var(--uk-radius); color: #fff; background: var(--uk-gray-700); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); }
+.uk-toast--error { background: var(--uk-danger); }
+.uk-toast--success { background: var(--uk-success); }
+.uk-toast__close { margin-left: auto; cursor: pointer; font-size: 12px; }
+
+/* Paginator */
+.uk-paginator { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; background: #fff; border-top: 1px solid var(--uk-gray-300); }
+.uk-paginator__page { min-width: 2rem; height: 2rem; border: 1px solid var(--uk-gray-300); border-radius: var(--uk-radius); background: #fff; font: inherit; cursor: pointer; }
+.uk-paginator__page--current { background: var(--uk-primary); color: #fff; border-color: var(--uk-primary); }
+.uk-paginator__info { margin-left: auto; color: var(--uk-gray-500); }
+/* Narrow screens: touch-sized page buttons, the summary on its own line */
+@media (max-width: 760px) {
+  .uk-paginator__page { min-width: 3rem; height: 3rem; }
+  .uk-paginator__info { flex-basis: 100%; margin-left: 0; }
+}
