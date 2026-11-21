@@ -14,8 +14,9 @@
 //   `@@selector;;selector` to click through to a menu or dialog first. Writes <out>/base, <out>/head and, for every
 //   pair that differs, <out>/diff (changed pixels in red over a faded copy of the base). Each separate changed region
 //   is listed with its box and pixel count, followed by the elements whose box or computed style changed at that width.
-//   Also writes <out>/comparison.md: one table row per differing pair, with empty cells for what the diff image shows,
-//   the cause, and whether it is intended, a regression or noise.
+//   Also writes <out>/comparison-N.png, every changed region as base | head | diff crops (each distinct change once),
+//   and <out>/comparison.md: one table row per differing pair, with empty cells for what the diff image shows, the
+//   cause, and whether it is intended, a regression or noise.
 // boxes: finds WHY two screenshots differ. Lists the elements whose position or size differs between the builds,
 //   matched by their place in the DOM tree. The first one in the list is the cause; the rest only moved.
 // --full: the page is captured at its whole height, including content that scrolls INSIDE the page (app shells
@@ -258,7 +259,7 @@ async function diffFolders(beforeDir, afterDir, outDir) {
       if (outDir) fs.writeFileSync(path.join(outDir, name), Buffer.from(result.image, 'base64'));
       const shown = result.regions.slice(0, 8).map(r => `\n    x ${r.left}-${r.right}, y ${r.top}-${r.bottom}: ${r.pixels} px`);
       const more = result.regions.length > 8 ? `\n    … ${result.regions.length - 8} more` : '';
-      results.push({ name, status: `${result.changed} pixels differ in ${result.regions.length} region(s)${shown.join('')}${more}` });
+      results.push({ name, status: `${result.changed} pixels differ in ${result.regions.length} region(s)${shown.join('')}${more}`, regions: result.regions });
     }
   }
   // A screenshot taken only on the "after" side was never compared
@@ -267,6 +268,93 @@ async function diffFolders(beforeDir, afterDir, outDir) {
   }
   await browser.close();
   return results;
+}
+
+/**
+ * Writes comparison-1.png, comparison-2.png…: every changed region of every differing pair as base | head | diff
+ * crops. A crop that looks exactly the same in several places (one change repeated on many pages and widths) is shown
+ * once, so a few images cover every pair. Returns the images and, per pair, the rows that show its regions.
+ */
+async function overview(outDir, results) {
+  const files = [];
+  const where = new Map();
+  const pairs = results.filter(r => r.regions);
+  if (!pairs.length) return { files, where };
+  const { chromium } = loadPlaywright();
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  const found = new Map(); // crop image -> the pair of each region that looks like it
+  for (const r of pairs) {
+    const images = ['base', 'head', 'diff'].map(dir => fs.readFileSync(path.join(outDir, dir, r.name)).toString('base64'));
+    const crops = await page.evaluate(async ([images, regions]) => {
+      const loaded = await Promise.all(images.map(async data => {
+        const img = new Image();
+        img.src = 'data:image/png;base64,' + data;
+        await img.decode();
+        return img;
+      }));
+      return regions.map(r => {
+        const [left, top] = [Math.max(0, r.left - 12), Math.max(0, r.top - 12)];
+        const width = Math.min(loaded[0].width, r.right + 13) - left;
+        const height = Math.min(loaded[0].height, r.bottom + 13) - top;
+        // Small changes are enlarged (up to 4x) so a 1 px shift shows; large ones shrink to fit the sheet
+        const scale = Math.min(4, 392 / width, 240 / height);
+        const [w, h] = [Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale))];
+        const canvas = document.createElement('canvas');
+        canvas.width = w * 3 + 16;
+        canvas.height = h;
+        const context = canvas.getContext('2d');
+        context.imageSmoothingEnabled = false;
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        loaded.forEach((img, i) => context.drawImage(img, left, top, width, height, i * (w + 8), 0, w, h));
+        return canvas.toDataURL('image/png');
+      });
+    }, [images, r.regions]);
+    for (const crop of crops) found.set(crop, [...(found.get(crop) ?? []), r.name]);
+  }
+  const groups = [...found];
+  const ROWS = 6;
+  for (let start = 0; start < groups.length; start += ROWS) {
+    const file = `comparison-${files.length + 1}.png`;
+    const items = groups.slice(start, start + ROWS).map(([crop, names], i) => {
+      const counts = new Map();
+      for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
+      for (const name of counts.keys()) where.set(name, [...(where.get(name) ?? []), `${file} row ${i + 1}`]);
+      const listed = [...counts].map(([name, n]) => (n > 1 ? `${name} (${n} regions)` : name));
+      const label = listed.length > 3 ? `${listed.slice(0, 3).join(', ')} and ${listed.length - 3} more pair${listed.length > 4 ? 's' : ''}` : listed.join(', ');
+      return [crop, `${i + 1}. ${label}`];
+    });
+    const sheet = await page.evaluate(async items => {
+      const loaded = await Promise.all(items.map(async ([crop]) => {
+        const img = new Image();
+        img.src = crop;
+        await img.decode();
+        return img;
+      }));
+      const LINE = 18;
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = LINE + loaded.reduce((sum, img) => sum + LINE + img.height + 14, 0);
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#000';
+      context.font = '13px sans-serif';
+      context.fillText('Each row: base | head | diff (changed pixels in red), below the pairs where it occurs', 4, 13);
+      let y = LINE;
+      items.forEach(([, label], i) => {
+        context.fillText(label, 4, y + 13);
+        context.drawImage(loaded[i], 0, y + LINE);
+        y += LINE + loaded[i].height + 14;
+      });
+      return canvas.toDataURL('image/png').split(',')[1];
+    }, items);
+    fs.writeFileSync(path.join(outDir, file), Buffer.from(sheet, 'base64'));
+    files.push(file);
+  }
+  await browser.close();
+  return { files, where };
 }
 
 if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
@@ -311,21 +399,24 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
     // Screenshots of different sizes get no diff image
     const image = r.status.startsWith('different size') ? '' : path.join('diff', r.name);
     if (image) console.log(`    diff image: ${path.join(outDir, image)}`);
-    rows.push([shot.entry, shot.viewport[0], r.status.split('\n')[0], measured.join('<br>'), image || 'none (sizes differ)', '', '', '']);
+    rows.push({ name: r.name, cells: [shot.entry, shot.viewport[0], r.status.split('\n')[0], measured.join('<br>'), image || 'none (sizes differ)', '', '', ''] });
   }
   const different = results.filter(r => r.status !== 'identical');
   console.log(`\n${results.length - different.length} identical, ${different.length} different. Diff images: ${path.join(outDir, 'diff')}`);
+  const { files, where } = await overview(outDir, results);
+  for (const row of rows) if (where.has(row.name)) row.cells[4] += `<br>${where.get(row.name).join(', ')}`;
   // A table with one row per differing pair; the last three cells are for the person who checks the pair
   const table = [
     `# Screenshot comparison: base ${flags.base}, head ${flags.head}`,
     '',
-    `${results.length - different.length} of ${results.length} pairs identical. Open each diff image (changed pixels in red), fill the last three cells of every row, and put the table in the report.`,
+    `${results.length - different.length} of ${results.length} pairs identical. Open the overview images (${files.join(', ') || 'none'}): they show every changed region of every pair, base | head | diff, each distinct change once. Then fill the last three cells of every row, and put the table in the report.`,
     '',
     '| Page and state | Width | Pixels differ | Measured (boxes, computed style) | Diff image | What the diff image shows | Cause (rule in the diff) | Intended / regression / noise |',
     '|---|---|---|---|---|---|---|---|',
-    ...rows.map(row => `| ${row.map(cell => String(cell).replace(/\|/g, '\\|')).join(' | ')} |`),
+    ...rows.map(row => `| ${row.cells.map(cell => String(cell).replace(/\|/g, '\\|')).join(' | ')} |`),
   ];
   fs.writeFileSync(path.join(outDir, 'comparison.md'), table.join('\n') + '\n');
+  if (files.length) console.log(`Overview of every change: ${files.map(file => path.join(outDir, file)).join(', ')}`);
   console.log(`Table to fill in: ${path.join(outDir, 'comparison.md')}`);
   process.exitCode = different.length ? 1 : 0;
 } else if (mode === 'boxes' && rest.length === 1 && flags.base && flags.head) {

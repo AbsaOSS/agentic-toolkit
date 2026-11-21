@@ -122,7 +122,7 @@ verdicts:
 | `scripts/keyboard-walk.mjs <url>` | Tabs through the page, including open shadow roots; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
 | `scripts/text-size-check.mjs <url>` | Checks open shadow roots at 200% text, 320 px wide, a short viewport, and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
 | `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast, including inside open shadow roots, for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
-| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, writes a diff image for every change, prints each screenshot's height against the viewport, and for every pair that differs lists the elements whose box or computed style changed at that width; it writes these in `comparison.md`, a table to fill in for the report; `boxes` does the box comparison for one page; `diff` compares two folders of screenshots |
+| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, writes a diff image for every change, prints each screenshot's height against the viewport, and for every pair that differs lists the elements whose box or computed style changed at that width; it writes these in `comparison.md`, a table to fill in for the report, and shows every changed region in overview images (`comparison-N.png`); `boxes` does the box comparison for one page; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
 look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
@@ -181,11 +181,13 @@ perceivability, then polish). For each group:
 2. Re-run only the affected scans and the keyboard check for that area.
 3. Re-run the comparison (`compare-screenshots.mjs compare`). Unintended visual changes are bugs; intended ones
    (a darker color, a larger target) are listed in the report. Changes for narrow screens or large text must leave
-   the desktop layout pixel-identical. For every pair that differs (each page, state and width), open its diff
-   image (not only the two screenshots), read its `boxes:` and `styles:` lines, and trace it to a rule in your diff.
-   `compare` writes `comparison.md` with one row per differing pair: fill in every row, at every width you
-   compared (what the diff image shows, the cause, and intended, regression or noise), and put the table in the
-   report. Fix every regression, small ones included (a popup 2 px off is a regression), and compare again.
+   the desktop layout pixel-identical. Capture every page, dialog and state you listed as a user of the changed
+   code: a listed user with no screenshot is unchecked. `compare` writes overview images (`comparison-N.png`: every
+   changed region of every differing pair as base | head | diff, each distinct change once) and `comparison.md`, a
+   table with one row per differing pair. Open every overview image, read each pair's `boxes:` and `styles:` lines,
+   and trace each change to a rule in your diff. Fill in every row of the table, at every width you compared (what
+   the diff image shows, the cause, and intended, regression or noise), and put the table in the report. Fix every
+   regression, small ones included (a popup 2 px off is a regression), and compare again.
 4. Move on only when the group is green.
 
 Rules while fixing:
