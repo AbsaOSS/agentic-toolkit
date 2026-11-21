@@ -181,8 +181,9 @@ perceivability, then polish). For each group:
 2. Re-run only the affected scans and the keyboard check for that area.
 3. Re-run the comparison (`compare-screenshots.mjs compare`). Unintended visual changes are bugs; intended ones
    (a darker color, a larger target) are listed in the report. Changes for narrow screens or large text must leave
-   the desktop layout pixel-identical. For every pair that differs (each page, state and width), measure the
-   element boxes at that width and the computed style that changed, and trace it to a rule in your diff. Fix every
+   the desktop layout pixel-identical. For every pair that differs (each page, state and width), open its diff
+   image (not only the two screenshots), read its `boxes:` and `styles:` lines, and trace it to a rule in your diff.
+   Write down what each diff image shows and its cause: they fill the report's comparison table. Fix every
    regression, small ones included (a popup 2 px off is a regression), and compare again.
 4. Move on only when the group is green.
 
