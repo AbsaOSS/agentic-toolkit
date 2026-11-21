@@ -22,10 +22,18 @@ Finish every run with a report in this shape. Keep it short and factual; use pla
 ### Shared code changed
 | Item | Other places that use it | How checked |
 |---|---|---|
+| <every shared file or folder you changed: app shell, layout, design-system part, global style> | <pages> | <tests, screenshots> |
 
 ### Visual and behaviour changes
 - <intended changes users will notice, e.g. darker arrow color>
 - <behaviour users lose, e.g. Tab no longer indents list items in the editor>
+
+### Visual comparison with the base branch
+Screenshot heights: <e.g. /projects 1440x1932 in a 900 px viewport; /pricing fits the viewport>. Base compared with
+itself: <result>.
+
+| Page and state | Width | Pixels differ | Measured (boxes, computed style) | Cause (rule in the diff) | Intended / regression / noise |
+|---|---|---|---|---|---|
 
 ### Reused or checked before adding
 - <existing helpers, tokens and services searched for and what was reused, e.g. the sr-only class; announcements
@@ -50,7 +58,8 @@ Finish every run with a report in this shape. Keep it short and factual; use pla
 
 Guidance:
 
-- Describe problems by **user impact** ("keyboard users could not open the menu"), not only rule ids.
+- Describe problems by **user impact** ("keyboard users could not open the menu"), not only rule ids, and name the
+  WCAG criterion of each one (a keyboard trap is 2.1.2).
 - List every shared component, style or helper you touched, and the other pages you checked.
 - Anything that is still `incomplete` or only checked by hand goes in "Not fixed / needs a decision" with the reason.
 - Be honest about what you could not test (no screen reader, no mobile device, a state you could not reach).

@@ -37,10 +37,8 @@ const parseViewport = text => String(text).split('x').map(Number);
 
 const FREEZE = '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important;scroll-behavior:auto!important}';
 
-/** Opens the page, freezes motion and (with --full) grows the viewport to the page's whole scrollable height. */
-async function capture(url, file, viewport, options, clicks = '') {
-  const [width, height] = viewport;
-  const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
+/** Freezes animations, transitions and the caret, in the document and in every open shadow root. */
+async function freeze(page) {
   await page.evaluate(css => {
     const roots = [document];
     const walk = root => {
@@ -58,6 +56,16 @@ async function capture(url, file, viewport, options, clicks = '') {
       (root instanceof Document ? root.head : root).appendChild(style);
     }
   }, FREEZE);
+}
+
+/**
+ * Opens the page, freezes motion and (with --full) grows the viewport to the page's whole scrollable height.
+ * Returns the screenshot's height, so the caller can show whether it is taller than the viewport.
+ */
+async function capture(url, file, viewport, options, clicks = '') {
+  const [width, height] = viewport;
+  const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
+  await freeze(page);
   if (options.full) {
     // The tallest scrolling element decides the height: the document, or an inner container of the app shell.
     // Scrollers with no visible height (collapsed panels) hide their content and don't count.
@@ -81,7 +89,44 @@ async function capture(url, file, viewport, options, clicks = '') {
     await page.waitForTimeout(500);
   }
   await page.screenshot({ path: file });
+  const shotHeight = page.viewportSize().height;
   await browser.close();
+  return shotHeight;
+}
+
+/** Every element's box (left, top, width, height), keyed by its place in the DOM tree, open shadow roots included. */
+async function elementBoxes(url, viewport, options, clicks = '') {
+  const [width, height] = viewport;
+  const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
+  await freeze(page);
+  const boxes = await page.evaluate(() => {
+    const out = {};
+    const walk = (el, at) => {
+      const r = el.getBoundingClientRect();
+      // getAttribute, not className: an SVG element's className is an object, not a string
+      const cls = (el.getAttribute('class') || '').split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+      out[at] = { label: el.tagName.toLowerCase() + (cls ? '.' + cls : ''), box: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 10) / 10) };
+      [...el.children].forEach((child, i) => walk(child, `${at}/${i}`));
+      [...(el.shadowRoot?.children ?? [])].forEach((child, i) => walk(child, `${at}/shadow/${i}`));
+    };
+    walk(document.body, 'body');
+    return out;
+  });
+  await browser.close();
+  return boxes;
+}
+
+/** Elements whose box differs, matched by their place in the tree; the first one is the cause, the rest only moved. */
+function boxChanges(base, head) {
+  const changed = [];
+  let compared = 0;
+  for (const [at, h] of Object.entries(head)) {
+    const b = base[at];
+    if (!b || b.label !== h.label) continue; // the trees diverge here: an element was added or removed
+    compared++;
+    if (b.box.join() !== h.box.join()) changed.push({ at, label: h.label, base: b.box, head: h.box });
+  }
+  return { changed, compared, baseCount: Object.keys(base).length, headCount: Object.keys(head).length };
 }
 
 /** Compares two folders of PNGs by name; returns one result per file and writes diff images when `outDir` is set. */
@@ -189,70 +234,47 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
   const [outDir, ...entries] = rest;
   const viewports = String(flags.viewports || flags.viewport).split(',').map(parseViewport);
   for (const side of ['base', 'head']) fs.mkdirSync(path.join(outDir, side), { recursive: true });
+  const shots = {};
   for (const entry of entries) {
     const [route, clicks] = entry.split('@@');
     for (const viewport of viewports) {
       const name = `${slug(entry)}-${viewport[0]}.png`;
+      const heights = [];
       for (const side of ['base', 'head']) {
-        await capture(String(flags[side]).replace(/\/$/, '') + route, path.join(outDir, side, name), viewport, flags, clicks);
+        heights.push(await capture(String(flags[side]).replace(/\/$/, '') + route, path.join(outDir, side, name), viewport, flags, clicks));
       }
-      console.log(`shot ${name}`);
+      shots[name] = { route, clicks, viewport };
+      // With --full, a screenshot no taller than the viewport means the page fits it (or the inner scroller was missed)
+      const fits = heights.map(h => (h > viewport[1] ? `${h} px` : `${h} px, fits the viewport`));
+      console.log(`shot ${name}: base ${fits[0]}, head ${fits[1]} (viewport ${viewport[1]} px)`);
     }
   }
   const results = await diffFolders(path.join(outDir, 'base'), path.join(outDir, 'head'), path.join(outDir, 'diff'));
   console.log();
-  for (const r of results) console.log(`${r.name}: ${r.status}`);
+  for (const r of results) {
+    console.log(`${r.name}: ${r.status}`);
+    const shot = shots[r.name];
+    if (!shot || r.status === 'identical' || r.status.startsWith('missing')) continue;
+    // Measure why this pair differs, at its own width: the first element whose box changed is the cause
+    const [base, head] = await Promise.all(['base', 'head'].map(side => elementBoxes(String(flags[side]).replace(/\/$/, '') + shot.route, shot.viewport, flags, shot.clicks)));
+    const { changed } = boxChanges(base, head);
+    if (!changed.length) console.log(`    boxes: no element moved or changed size; open ${path.join(outDir, 'diff', r.name)} and compare the computed styles of the elements in the red area`);
+    for (const c of changed.slice(0, 3)) console.log(`    boxes: ${c.label} at ${c.at}: base ${c.base.join(', ')} -> head ${c.head.join(', ')}`);
+    if (changed.length > 3) console.log(`    boxes: … ${changed.length - 3} more elements moved`);
+  }
   const different = results.filter(r => r.status !== 'identical');
   console.log(`\n${results.length - different.length} identical, ${different.length} different. Diff images: ${path.join(outDir, 'diff')}`);
   process.exitCode = different.length ? 1 : 0;
 } else if (mode === 'boxes' && rest.length === 1 && flags.base && flags.head) {
   const [route, clicks] = rest[0].split('@@');
-  const [width, height] = parseViewport(flags.viewport);
-  const boxes = {};
-  for (const side of ['base', 'head']) {
-    const { browser, page } = await openPage(String(flags[side]).replace(/\/$/, '') + route, { ...flags, click: clicks || undefined }, { width, height });
-    await page.evaluate(css => {
-      const roots = [document];
-      const collect = root => {
-        for (const el of root.querySelectorAll('*')) {
-          if (el.shadowRoot) {
-            roots.push(el.shadowRoot);
-            collect(el.shadowRoot);
-          }
-        }
-      };
-      collect(document);
-      for (const root of roots) {
-        const style = document.createElement('style');
-        style.textContent = css;
-        (root instanceof Document ? root.head : root).appendChild(style);
-      }
-    }, FREEZE);
-    boxes[side] = await page.evaluate(() => {
-      const out = {};
-      const walk = (el, at) => {
-        const r = el.getBoundingClientRect();
-        const cls = (el.className?.toString() || '').split(/\s+/).filter(Boolean).slice(0, 2).join('.');
-        out[at] = { label: el.tagName.toLowerCase() + (cls ? '.' + cls : ''), box: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 10) / 10) };
-        [...el.children].forEach((child, i) => walk(child, `${at}/${i}`));
-        [...(el.shadowRoot?.children ?? [])].forEach((child, i) => walk(child, `${at}/shadow/${i}`));
-      };
-      walk(document.body, 'body');
-      return out;
-    });
-    await browser.close();
+  const viewport = parseViewport(flags.viewport);
+  const sides = {};
+  for (const side of ['base', 'head']) sides[side] = await elementBoxes(String(flags[side]).replace(/\/$/, '') + route, viewport, flags, clicks);
+  const { changed, compared, baseCount, headCount } = boxChanges(sides.base, sides.head);
+  for (const c of changed.slice(0, Number(flags.max ?? 30))) {
+    console.log(`${c.at.split('/').length}  ${c.label}\n      base ${c.base.join(', ')}\n      head ${c.head.join(', ')}`);
   }
-  let shown = 0;
-  let compared = 0;
-  for (const [at, head] of Object.entries(boxes.head)) {
-    const base = boxes.base[at];
-    if (!base || base.label !== head.label) continue; // the trees diverge here: an element was added or removed
-    compared++;
-    if (base.box.join() !== head.box.join() && shown++ < Number(flags.max ?? 30)) {
-      console.log(`${at.split('/').length}  ${head.label}\n      base ${base.box.join(', ')}\n      head ${head.box.join(', ')}`);
-    }
-  }
-  console.log(`\n${shown} of ${compared} elements differ (base ${Object.keys(boxes.base).length}, head ${Object.keys(boxes.head).length}). Boxes are left, top, width, height.`);
+  console.log(`\n${changed.length} of ${compared} elements differ (base ${baseCount}, head ${headCount}). Boxes are left, top, width, height.`);
 } else if (mode === 'diff' && rest.length === 2) {
   for (const r of await diffFolders(rest[0], rest[1], flags.out)) console.log(`${r.name}: ${r.status}`);
 } else {

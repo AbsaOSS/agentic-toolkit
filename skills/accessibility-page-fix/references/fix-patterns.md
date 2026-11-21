@@ -262,6 +262,8 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
 ## Third-party widgets
 
 - Prefer the library's accessibility options; read its docs for labels, keyboard support and ARIA.
+- Inside the widget, change only what a finding needs, and list every visible or behaviour change you made in the
+  report: the widget's look and behaviour belong to the library and to the people used to it.
 - If it renders its own controls (previous/next buttons, close buttons) without names, add them through supported
   inputs or by decorating the rendered DOM.
 - Widgets may re-render and drop what you added. Decorate in an idempotent function and re-run it when the widget
@@ -274,7 +276,7 @@ Content that is out of view but still in the DOM is reachable by Tab and screen 
   popup alone with `region` disabled for that scan only, and note it in the test.
 - Rich text editors: Tab often types a tab character, and in lists, quotes and code blocks Tab and Shift+Tab indent
   and outdent instead. In an empty list item that leaves no way out (WCAG 2.1.2). Turn off every key binding that
-  takes Tab through the editor's options, and test Tab from plain text and from an empty list item. The editable
+  takes Tab through the editor's options, and test Tab and Shift+Tab from plain text and from an empty list item. The editable
   area is usually a plain `contenteditable` element: give it `role="textbox"`, `aria-multiline="true"` and a name
   that matches its visible label. Every place that uses the editor must pass that name: a textbox without one is a
   new axe failure. Toolbar dropdowns and their options often have no names, and color swatches are smaller than

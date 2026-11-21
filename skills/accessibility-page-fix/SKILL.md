@@ -79,7 +79,9 @@ Copy this checklist and track progress:
    ([references/manual-verification.md](references/manual-verification.md#reaching-states)).
    For **failure states**, go through every request the page and its dialogs make, and read what its error handler
    shows. Check app-wide error handling (HTTP interceptors, global error handlers) first: some failures replace
-   the page with a shared error page, which is out of the page's scope.
+   the page with a shared error page, which is out of the page's scope. List the rest in a table (request, what
+   its failure shows, the test that mocks it), including requests a dialog sends while the user types; each row
+   gets a mocked test and a scan. After a failed action that closed a dialog or menu, check where focus went.
 7. Wait for animations and async content to settle before every scan (scanning mid-transition gives false
    contrast failures).
 
@@ -120,7 +122,7 @@ verdicts:
 | `scripts/keyboard-walk.mjs <url>` | Tabs through the page, including open shadow roots; lists each stop, flags invisible stops, stops with no visible focus change, keyboard traps (Tab leaves focus where it is), and clickable-looking elements the keyboard cannot reach |
 | `scripts/text-size-check.mjs <url>` | Checks open shadow roots at 200% text, 320 px wide, a short viewport, and with text-spacing overrides; reports text that does not grow, horizontal scroll (also inside a tab panel or other scroll container), clipped text, placeholders that do not fit, dialogs wider than the screen, controls pushed off-screen or covering each other; saves screenshots (to the temp folder unless `--out` is given) |
 | `scripts/contrast-sample.mjs <url> <selector>` | Measures real contrast, including inside open shadow roots, for text over an image, gradient or pattern (axe `incomplete`), using the worst background pixel |
-| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, and writes a diff image for every change; `boxes` lists the elements whose position or size differs, which finds the cause; `diff` compares two folders of screenshots |
+| `scripts/compare-screenshots.mjs compare` | Pixel-compares full-page screenshots of the base branch and your branch (including open shadow roots and inner scrollers) across pages, states and widths, writes a diff image for every change, prints each screenshot's height against the viewport, and for every pair that differs lists the elements whose box changed at that width; `boxes` does the box comparison for one page; `diff` compares two folders of screenshots |
 
 All take `--wait <selector>` (an element that must exist; it may be hidden at some sizes, which is what the checks
 look for), `--storage <state.json>` (a saved Playwright login state for pages behind authentication) and
@@ -179,7 +181,9 @@ perceivability, then polish). For each group:
 2. Re-run only the affected scans and the keyboard check for that area.
 3. Re-run the comparison (`compare-screenshots.mjs compare`). Unintended visual changes are bugs; intended ones
    (a darker color, a larger target) are listed in the report. Changes for narrow screens or large text must leave
-   the desktop layout pixel-identical.
+   the desktop layout pixel-identical. For every pair that differs (each page, state and width), measure the
+   element boxes at that width and the computed style that changed, and trace it to a rule in your diff. Fix every
+   regression, small ones included (a popup 2 px off is a regression), and compare again.
 4. Move on only when the group is green.
 
 Rules while fixing:
@@ -244,7 +248,8 @@ Rules while fixing:
    the screenshot height, the base compared with itself): a check with no record can't be told from one never run.
 
 Done means: all scans for the page's states pass with no violations, every incomplete is resolved or explained,
-Step 4 passes, and no regressions in tests or screenshots.
+Step 4 passes, and no regressions in tests or screenshots. Before you report, go through Step 4's checks and the
+report template line by line and give each a result: done (with its evidence), not applicable, or not done and why.
 
 ## Gotchas
 
@@ -340,7 +345,9 @@ Step 4 passes, and no regressions in tests or screenshots.
   every use, run the tests for those places, and look at one or two of them in the browser. A fix that is right for
   this page can break another.
 - **Scan whole states, not just the happy path.** Open menus, dialogs and error states are where most violations
-  hide.
+  hide. Everything inside a dialog or panel you check is in scope, including text that appears later (the result
+  of a check that runs while the user types): announce it, keep real spaces in it, and never exclude part of a
+  state from its scan to keep it out of the work.
 - **A check that matches nothing passes.** Changing a landmark's element (`<main>` to a `div` with `role="main"`)
   or a class leaves tests and scripts that select it by tag or class measuring nothing, and they still pass. Select
   landmarks by role, and make every check limited to an area fail when nothing matches the area.
