@@ -13,7 +13,7 @@
 // compare: shoots every path on both servers at every viewport and diffs them. Each path may end in
 //   `@@selector;;selector` to click through to a menu or dialog first. Writes <out>/base, <out>/head and, for every
 //   pair that differs, <out>/diff (changed pixels in red over a faded copy of the base). Each separate changed region
-//   is listed with its box and pixel count.
+//   is listed with its box and pixel count, followed by the elements whose box or computed style changed at that width.
 // boxes: finds WHY two screenshots differ. Lists the elements whose position or size differs between the builds,
 //   matched by their place in the DOM tree. The first one in the list is the cause; the rest only moved.
 // --full: the page is captured at its whole height, including content that scrolls INSIDE the page (app shells
@@ -94,26 +94,63 @@ async function capture(url, file, viewport, options, clicks = '') {
   return shotHeight;
 }
 
-/** Every element's box (left, top, width, height), keyed by its place in the DOM tree, open shadow roots included. */
+// The computed styles that change pixels without moving a box
+const STYLES = ['color', 'background-color', 'border-color', 'outline', 'font-size', 'font-weight', 'opacity', 'fill'];
+
+/**
+ * Every element's box (left, top, width, height) and STYLES, keyed by its place in the DOM tree, open shadow roots
+ * included.
+ */
 async function elementBoxes(url, viewport, options, clicks = '') {
   const [width, height] = viewport;
   const { browser, page } = await openPage(url, { ...options, click: clicks || undefined }, { width, height });
   await freeze(page);
-  const boxes = await page.evaluate(() => {
+  const boxes = await page.evaluate(styles => {
     const out = {};
     const walk = (el, at) => {
       const r = el.getBoundingClientRect();
       // getAttribute, not className: an SVG element's className is an object, not a string
       const cls = (el.getAttribute('class') || '').split(/\s+/).filter(Boolean).slice(0, 2).join('.');
-      out[at] = { label: el.tagName.toLowerCase() + (cls ? '.' + cls : ''), box: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 10) / 10) };
+      const computed = getComputedStyle(el);
+      out[at] = {
+        label: el.tagName.toLowerCase() + (cls ? '.' + cls : ''),
+        box: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 10) / 10),
+        style: Object.fromEntries(styles.map(name => [name, computed.getPropertyValue(name)])),
+      };
       [...el.children].forEach((child, i) => walk(child, `${at}/${i}`));
       [...(el.shadowRoot?.children ?? [])].forEach((child, i) => walk(child, `${at}/shadow/${i}`));
     };
     walk(document.body, 'body');
     return out;
-  });
+  }, STYLES);
   await browser.close();
   return boxes;
+}
+
+/**
+ * Elements whose computed styles differ, matched like boxes. An inherited change (a parent's color) shows up on every
+ * child, so a change is listed only on the first element that has it, not on children that have the same change.
+ */
+function styleChanges(base, head) {
+  const changed = [];
+  const keys = {};
+  for (const [at, h] of Object.entries(head)) {
+    const b = base[at];
+    if (!b || b.label !== h.label) continue;
+    keys[at] = new Set();
+    const parent = keys[at.replace(/\/(shadow\/)?\d+$/, '')];
+    const own = [];
+    for (const name of STYLES) {
+      if (b.style[name] === h.style[name]) continue;
+      // Borders, outlines and SVG fills default to the text color: a change there that only follows it adds nothing
+      if (['border-color', 'outline', 'fill'].includes(name) && b.style[name].includes(b.style.color) && h.style[name].includes(h.style.color)) continue;
+      const key = `${name} ${b.style[name]} -> ${h.style[name]}`;
+      keys[at].add(key);
+      if (!parent?.has(key)) own.push(key);
+    }
+    if (own.length) changed.push({ at, label: h.label, change: own.join('; ') });
+  }
+  return changed;
 }
 
 /** Elements whose box differs, matched by their place in the tree; the first one is the cause, the rest only moved. */
@@ -258,9 +295,14 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
     // Measure why this pair differs, at its own width: the first element whose box changed is the cause
     const [base, head] = await Promise.all(['base', 'head'].map(side => elementBoxes(String(flags[side]).replace(/\/$/, '') + shot.route, shot.viewport, flags, shot.clicks)));
     const { changed } = boxChanges(base, head);
-    if (!changed.length) console.log(`    boxes: no element moved or changed size; open ${path.join(outDir, 'diff', r.name)} and compare the computed styles of the elements in the red area`);
+    if (!changed.length) console.log('    boxes: no element moved or changed size');
     for (const c of changed.slice(0, 3)) console.log(`    boxes: ${c.label} at ${c.at}: base ${c.base.join(', ')} -> head ${c.head.join(', ')}`);
     if (changed.length > 3) console.log(`    boxes: … ${changed.length - 3} more elements moved`);
+    const styled = styleChanges(base, head);
+    if (!styled.length) console.log('    styles: no computed style changed (look for an image, a pseudo-element or anti-aliasing)');
+    for (const c of styled.slice(0, 3)) console.log(`    styles: ${c.label} at ${c.at}: ${c.change}`);
+    if (styled.length > 3) console.log(`    styles: … ${styled.length - 3} more elements changed style`);
+    console.log(`    diff image: ${path.join(outDir, 'diff', r.name)}`);
   }
   const different = results.filter(r => r.status !== 'identical');
   console.log(`\n${results.length - different.length} identical, ${different.length} different. Diff images: ${path.join(outDir, 'diff')}`);

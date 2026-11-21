@@ -32,7 +32,7 @@ Finish every run with a report in this shape. Keep it short and factual; use pla
 Screenshot heights: <e.g. /projects 1440x1932 in a 900 px viewport; /pricing fits the viewport>. Base compared with
 itself: <result>.
 
-| Page and state | Width | Pixels differ | Measured (boxes, computed style) | Cause (rule in the diff) | Intended / regression / noise |
+| Page and state | Width | Pixels differ (what the diff image shows) | Measured (boxes, computed style) | Cause (rule in the diff) | Intended / regression / noise |
 |---|---|---|---|---|---|
 
 ### Reused or checked before adding

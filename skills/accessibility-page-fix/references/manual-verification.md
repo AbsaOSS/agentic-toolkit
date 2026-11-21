@@ -294,11 +294,12 @@ node <skill>/scripts/compare-screenshots.mjs compare shots /orders "/orders@@#ex
    - **noise** (animation frame, loading state, time-dependent text): stabilise the capture and compare again.
 5. A size mismatch (`different size`) always means a layout change: the page got taller or wider.
 6. Measuring beats looking. `compare` already lists, for every pair that differs, the elements whose box changed at
-   that width; `compare-screenshots.mjs boxes <path> --base … --head …` does the same for one page with a longer
-   list. Elements are matched by position in the DOM tree (not by class name). The cause is usually the first
-   element whose own size changed; in a right-aligned row, the siblings before it move too. If no box differs, the
-   change is colour or anti-aliasing: open the diff image and compare the computed styles of the elements in the red
-   area. Copy these lines and the computed styles into the report's comparison table.
+   that width (`boxes:`), the elements whose colour, background, border, outline, font or opacity changed
+   (`styles:`), and the pair's diff image; `compare-screenshots.mjs boxes <path> --base … --head …` lists the boxes
+   for one page with a longer list. Elements are matched by position in the DOM tree (not by class name). The cause
+   is usually the first element whose own size changed; in a right-aligned row, the siblings before it move too. If
+   no box or style changed, the difference is an image, a pseudo-element or anti-aliasing. Open the diff image of
+   every pair, and copy these lines and what the image shows into the report's comparison table.
 7. Run the **base against itself** twice. Differences that appear there (animated artwork, logos, canvases) are
    noise: list them once and ignore them. Some noise comes and goes: anti-aliasing of a border at a fractional
    position can differ by a few pixels between two loads of the same code. Compare each side with itself several
