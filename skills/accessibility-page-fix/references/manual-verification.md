@@ -298,8 +298,9 @@ node <skill>/scripts/compare-screenshots.mjs compare shots /orders "/orders@@#ex
    (`styles:`), and the pair's diff image; `compare-screenshots.mjs boxes <path> --base … --head …` lists the boxes
    for one page with a longer list. Elements are matched by position in the DOM tree (not by class name). The cause
    is usually the first element whose own size changed; in a right-aligned row, the siblings before it move too. If
-   no box or style changed, the difference is an image, a pseudo-element or anti-aliasing. Open the diff image of
-   every pair, and copy these lines and what the image shows into the report's comparison table.
+   no box or style changed, the difference is an image, a pseudo-element or anti-aliasing. `compare` also writes
+   `comparison.md` with one row per differing pair: open each diff image, fill in the row's last three cells, and
+   put the table in the report.
 7. Run the **base against itself** twice. Differences that appear there (animated artwork, logos, canvases) are
    noise: list them once and ignore them. Some noise comes and goes: anti-aliasing of a border at a fractional
    position can differ by a few pixels between two loads of the same code. Compare each side with itself several

@@ -14,6 +14,8 @@
 //   `@@selector;;selector` to click through to a menu or dialog first. Writes <out>/base, <out>/head and, for every
 //   pair that differs, <out>/diff (changed pixels in red over a faded copy of the base). Each separate changed region
 //   is listed with its box and pixel count, followed by the elements whose box or computed style changed at that width.
+//   Also writes <out>/comparison.md: one table row per differing pair, with empty cells for what the diff image shows,
+//   the cause, and whether it is intended, a regression or noise.
 // boxes: finds WHY two screenshots differ. Lists the elements whose position or size differs between the builds,
 //   matched by their place in the DOM tree. The first one in the list is the cause; the rest only moved.
 // --full: the page is captured at its whole height, including content that scrolls INSIDE the page (app shells
@@ -280,7 +282,7 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
       for (const side of ['base', 'head']) {
         heights.push(await capture(String(flags[side]).replace(/\/$/, '') + route, path.join(outDir, side, name), viewport, flags, clicks));
       }
-      shots[name] = { route, clicks, viewport };
+      shots[name] = { entry, route, clicks, viewport };
       // With --full, a screenshot no taller than the viewport means the page fits it (or the inner scroller was missed)
       const fits = heights.map(h => (h > viewport[1] ? `${h} px` : `${h} px, fits the viewport`));
       console.log(`shot ${name}: base ${fits[0]}, head ${fits[1]} (viewport ${viewport[1]} px)`);
@@ -288,6 +290,7 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
   }
   const results = await diffFolders(path.join(outDir, 'base'), path.join(outDir, 'head'), path.join(outDir, 'diff'));
   console.log();
+  const rows = [];
   for (const r of results) {
     console.log(`${r.name}: ${r.status}`);
     const shot = shots[r.name];
@@ -295,17 +298,35 @@ if (mode === 'compare' && rest.length >= 2 && flags.base && flags.head) {
     // Measure why this pair differs, at its own width: the first element whose box changed is the cause
     const [base, head] = await Promise.all(['base', 'head'].map(side => elementBoxes(String(flags[side]).replace(/\/$/, '') + shot.route, shot.viewport, flags, shot.clicks)));
     const { changed } = boxChanges(base, head);
-    if (!changed.length) console.log('    boxes: no element moved or changed size');
-    for (const c of changed.slice(0, 3)) console.log(`    boxes: ${c.label} at ${c.at}: base ${c.base.join(', ')} -> head ${c.head.join(', ')}`);
-    if (changed.length > 3) console.log(`    boxes: … ${changed.length - 3} more elements moved`);
     const styled = styleChanges(base, head);
-    if (!styled.length) console.log('    styles: no computed style changed (look for an image, a pseudo-element or anti-aliasing)');
-    for (const c of styled.slice(0, 3)) console.log(`    styles: ${c.label} at ${c.at}: ${c.change}`);
-    if (styled.length > 3) console.log(`    styles: … ${styled.length - 3} more elements changed style`);
-    console.log(`    diff image: ${path.join(outDir, 'diff', r.name)}`);
+    const measured = [
+      ...(changed.length ? [] : ['boxes: no element moved or changed size']),
+      ...changed.slice(0, 3).map(c => `boxes: ${c.label} at ${c.at}: base ${c.base.join(', ')} -> head ${c.head.join(', ')}`),
+      ...(changed.length > 3 ? [`boxes: … ${changed.length - 3} more elements moved`] : []),
+      ...(styled.length ? [] : ['styles: no computed style changed (look for an image, a pseudo-element or anti-aliasing)']),
+      ...styled.slice(0, 3).map(c => `styles: ${c.label} at ${c.at}: ${c.change}`),
+      ...(styled.length > 3 ? [`styles: … ${styled.length - 3} more elements changed style`] : []),
+    ];
+    for (const line of measured) console.log(`    ${line}`);
+    // Screenshots of different sizes get no diff image
+    const image = r.status.startsWith('different size') ? '' : path.join('diff', r.name);
+    if (image) console.log(`    diff image: ${path.join(outDir, image)}`);
+    rows.push([shot.entry, shot.viewport[0], r.status.split('\n')[0], measured.join('<br>'), image || 'none (sizes differ)', '', '', '']);
   }
   const different = results.filter(r => r.status !== 'identical');
   console.log(`\n${results.length - different.length} identical, ${different.length} different. Diff images: ${path.join(outDir, 'diff')}`);
+  // A table with one row per differing pair; the last three cells are for the person who checks the pair
+  const table = [
+    `# Screenshot comparison: base ${flags.base}, head ${flags.head}`,
+    '',
+    `${results.length - different.length} of ${results.length} pairs identical. Open each diff image (changed pixels in red), fill the last three cells of every row, and put the table in the report.`,
+    '',
+    '| Page and state | Width | Pixels differ | Measured (boxes, computed style) | Diff image | What the diff image shows | Cause (rule in the diff) | Intended / regression / noise |',
+    '|---|---|---|---|---|---|---|---|',
+    ...rows.map(row => `| ${row.map(cell => String(cell).replace(/\|/g, '\\|')).join(' | ')} |`),
+  ];
+  fs.writeFileSync(path.join(outDir, 'comparison.md'), table.join('\n') + '\n');
+  console.log(`Table to fill in: ${path.join(outDir, 'comparison.md')}`);
   process.exitCode = different.length ? 1 : 0;
 } else if (mode === 'boxes' && rest.length === 1 && flags.base && flags.head) {
   const [route, clicks] = rest[0].split('@@');
